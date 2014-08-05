@@ -33,6 +33,13 @@
         <activity
             android:name="kr.poturns.blink.external.preference.PreferenceActivity"
             android:label="@string/preference" />
+        
+        <service android:name=".BlinkLocalService" android:process=":remote" android:exported="true">
+            <intent-filter>
+                <action android:name="kr.poturns.blink.internal.BlinkLocalService"/>
+            </intent-filter>
+        </service>
+        
     </application>
 
 </manifest>

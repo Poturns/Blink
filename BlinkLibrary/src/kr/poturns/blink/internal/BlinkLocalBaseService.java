@@ -28,18 +28,18 @@ abstract class BlinkLocalBaseService extends Service /*implements InterDeviceEve
 		FileUtil.createExternalDirectory();
 		
 		// Identity를 확인하고, 서비스가 정상적으로 동작할 수 없는 환경이면 종료한다.
-		mIdentity = DeviceAnalyzer.getInstance(this).getCurrentIdentity();
-		if (DeviceAnalyzer.Identity.UNKNOWN.equals(mIdentity)) {
-			Toast.makeText(this, R.string.internal_baseservice_unable_alert, Toast.LENGTH_LONG).show();
-			stopSelf();
-			return;
-		}
-		
-		// Device간 통신 모듈을 연결한다. 
-		mInterDeviceManager = InterDeviceManager.getInstance(this);
-		if (mInterDeviceManager == null) {
-			
-		}
+//		mIdentity = DeviceAnalyzer.getInstance(this).getCurrentIdentity();
+//		if (DeviceAnalyzer.Identity.UNKNOWN.equals(mIdentity)) {
+//			Toast.makeText(this, R.string.internal_baseservice_unable_alert, Toast.LENGTH_LONG).show();
+//			stopSelf();
+//			return;
+//		}
+//		
+//		// Device간 통신 모듈을 연결한다. 
+//		mInterDeviceManager = InterDeviceManager.getInstance(this);
+//		if (mInterDeviceManager == null) {
+//			
+//		}
 		//mInterDeviceManager.setInterDeviceListener(this);
 
 	}

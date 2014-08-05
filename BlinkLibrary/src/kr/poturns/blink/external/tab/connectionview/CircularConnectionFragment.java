@@ -142,8 +142,7 @@ public final class CircularConnectionFragment extends Fragment {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.action_connection_view_change:
+		if(item.getItemId()==R.id.action_connection_view_change){
 			getFragmentManager()
 					.beginTransaction()
 					.replace(
@@ -153,7 +152,7 @@ public final class CircularConnectionFragment extends Fragment {
 					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
 					.commit();
 			return true;
-		default:
+		}else {
 			return super.onOptionsItemSelected(item);
 		}
 	}

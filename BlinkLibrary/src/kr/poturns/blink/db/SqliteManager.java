@@ -21,6 +21,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 
 /*
  * DB 생성 및 업그레이드를 도와주는 도우미 클래스 만들기
@@ -29,9 +32,9 @@ import android.util.Log;
 public class SqliteManager extends SQLiteOpenHelper {
 	private final String tag = "SqliteManager";
 	
-	private final static int CONTAIN_DEFAULT = 0;
-	private final static int CONTAIN_PARENT = 1;
-	private final static int CONTAIN_FIELD = 2;
+	public final static int CONTAIN_DEFAULT = 0;
+	public final static int CONTAIN_PARENT = 1;
+	public final static int CONTAIN_FIELD = 2;
 	
 	private final String SQL_SELECT_DEVICEAPPLIST = "SELECT * FROM DeviceAppList where Device=? and App=?";
 	private final String SQL_SELECT_DEVICEAPPFUNCTION = "SELECT * FROM DeviceAppFunction where DeviceAppId=?";
@@ -44,7 +47,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	public static final String EXTERNAL_DB_FILE_NAME = "BlinkDatabase.db";
 	
 	SQLiteDatabase mSQLiteDatabase;
-	
+	Gson gson;
 	
 	
 	private SqliteManager(Context context, String name, CursorFactory factory,
@@ -56,6 +59,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	public SqliteManager(Context context){
 		super(context, EXTERNAL_DB_FILE_PATH+EXTERNAL_DB_FILE_NAME, null, 1);
 		mSQLiteDatabase = this.getWritableDatabase();
+		gson = new GsonBuilder().setPrettyPrinting().create();
 	}
 
 	public static SqliteManager getSqliteManager(Context context){
@@ -216,16 +220,16 @@ public class SqliteManager extends SQLiteOpenHelper {
 		String sql = "";
 		switch (ContainType) {
 		case CONTAIN_DEFAULT:
-			args[0] = Measurement.getName();
+			args[0] = ClassUtil.obtainFieldSchema(Measurement);
 			sql = SQL_SELECT_DEVICEAPPMEASUREMENT + "where Measurement=?";
 			break;
 		case CONTAIN_FIELD:
 			args[0] = Measurement.getName();
-			sql = SQL_SELECT_DEVICEAPPMEASUREMENT + "where Measurement like %?";
+			sql = SQL_SELECT_DEVICEAPPMEASUREMENT + "where Measurement like %/?";
 			break;
 		
 		case CONTAIN_PARENT:
-			args[0] = Measurement.getName();
+			args[0] = ClassUtil.obtainParentSchema(Measurement);
 			sql = SQL_SELECT_DEVICEAPPMEASUREMENT + "where Measurement like %?";
 			break;
 		} 
@@ -345,11 +349,11 @@ public class SqliteManager extends SQLiteOpenHelper {
 	 * @throws IllegalAccessException : private 타입에 데이터를 대입할때 생기는 오류
 	 * @throws ClassNotFoundException : Class c = Class.forName(obj.getName());에서 해당 클래스를 얻어오지 못했을 경우
 	 */
-	public <Object> Object obtainMeasurementData(Class<?> obj) throws InstantiationException, IllegalAccessException, ClassNotFoundException{
+	public String obtainMeasurementData(Class<?> obj) throws InstantiationException, IllegalAccessException, ClassNotFoundException{
 		return obtainMeasurementData(obj,null,null,CONTAIN_DEFAULT);
 	}
-	public <Object> Object obtainMeasurementData(Class<?> obj,String DateTimeForm,String DateTimeTo) throws InstantiationException, IllegalAccessException, ClassNotFoundException{
-		return obtainMeasurementData(obj,DateTimeForm,DateTimeTo,CONTAIN_DEFAULT);
+	public String obtainMeasurementData(Class<?> obj,String DateTimeFrom,String DateTimeTo) throws InstantiationException, IllegalAccessException, ClassNotFoundException{
+		return obtainMeasurementData(obj,DateTimeFrom,DateTimeTo,CONTAIN_DEFAULT);
 	}
 	/**
 	 * obtainMeasurementData 함수에서 추가적으로 시간을 검색 조건에 줄 수 있으며
@@ -362,8 +366,8 @@ public class SqliteManager extends SQLiteOpenHelper {
 	 * @throws IllegalAccessException
 	 * @throws ClassNotFoundException
 	 */
-	public <Object> Object obtainMeasurementData(Class<?> obj,String DateTimeFrom,String DateTimeTo,int ContainType) throws InstantiationException, IllegalAccessException, ClassNotFoundException{
-		ArrayList<java.lang.Object> retObejct = new ArrayList<java.lang.Object>();
+	public String obtainMeasurementData(Class<?> obj,String DateTimeFrom,String DateTimeTo,int ContainType) throws InstantiationException, IllegalAccessException, ClassNotFoundException{
+		ArrayList<java.lang.Object> retObject = new ArrayList<java.lang.Object>();
 		Field[] mFields = obj.getFields();
 		Field mDateTimeField = null;
 		//DeviceAppMeasurement 리스트를 얻어온다.
@@ -412,10 +416,9 @@ public class SqliteManager extends SQLiteOpenHelper {
 		
 		//mObjectMap에 넣은 데이터를 리턴할 ArrayList에 넣어준다.
         for( Integer key : mObjectMap.keySet() ){
-        	retObejct.add(mObjectMap.get(key));
+        	retObject.add(mObjectMap.get(key));
         }
-        
-		return (Object) retObejct;
+		return gson.toJson(retObject);
 	}
 	
 	/**

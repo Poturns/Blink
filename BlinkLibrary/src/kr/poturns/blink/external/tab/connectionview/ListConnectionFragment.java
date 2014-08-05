@@ -60,8 +60,7 @@ public class ListConnectionFragment extends Fragment {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.action_connection_view_change:
+		if(item.getItemId()==R.id.action_connection_view_change){
 			getFragmentManager()
 					.beginTransaction()
 					.replace(
@@ -71,14 +70,15 @@ public class ListConnectionFragment extends Fragment {
 					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
 					.commit();
 			return true;
-		case R.id.action_list_fillter:
+		}
+		else if(item.getItemId()==R.id.action_list_fillter){
 			boolean check;
 			if ((check = !item.isChecked()))
 				fillterDevice();
 
 			item.setChecked(check);
 			return true;
-		default:
+		}else {
 			return super.onOptionsItemSelected(item);
 		}
 	}
