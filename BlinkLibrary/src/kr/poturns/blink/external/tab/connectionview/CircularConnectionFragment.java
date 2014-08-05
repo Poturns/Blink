@@ -142,20 +142,18 @@ public final class CircularConnectionFragment extends Fragment {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.action_connection_view_change:
-			getFragmentManager()
+		final int id = item.getItemId();
+		if (id == R.id.action_connection_view_change) {
+			getChildFragmentManager()
 					.beginTransaction()
-					.replace(
-							R.id.activity_main_fragment_content,
+					.add(R.id.activity_main_fragment_content,
 							Fragment.instantiate(getActivity(),
 									ListConnectionFragment.class.getName()))
 					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
 					.commit();
 			return true;
-		default:
-			return super.onOptionsItemSelected(item);
 		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	@Override

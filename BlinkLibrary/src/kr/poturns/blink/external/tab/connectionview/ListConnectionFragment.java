@@ -3,8 +3,6 @@ package kr.poturns.blink.external.tab.connectionview;
 import java.util.ArrayList;
 import java.util.Random;
 
-
-
 import kr.poturns.blink.R;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -60,27 +58,25 @@ public class ListConnectionFragment extends Fragment {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.action_connection_view_change:
-			getFragmentManager()
+		final int id = item.getItemId();
+		if (id == R.id.action_connection_view_change) {
+			getChildFragmentManager()
 					.beginTransaction()
-					.replace(
-							R.id.activity_main_fragment_content,
+					.add(R.id.activity_main_fragment_content,
 							Fragment.instantiate(getActivity(),
 									CircularConnectionFragment.class.getName()))
 					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
 					.commit();
 			return true;
-		case R.id.action_list_fillter:
+		} else if (id == R.id.action_list_fillter) {
 			boolean check;
 			if ((check = !item.isChecked()))
 				fillterDevice();
 
 			item.setChecked(check);
 			return true;
-		default:
-			return super.onOptionsItemSelected(item);
 		}
+		return super.onOptionsItemSelected(item);
 	}
 
 	private void fillterDevice() {
