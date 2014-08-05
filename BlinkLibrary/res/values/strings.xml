@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">BlinkMain</string>
+    
+    <string name="internal_baseservice_unable_alert">BLINK 서비스를 구동할 수 없습니다!</string>
+    <string name="internal_baseservice_exit_alert">BLINK 서비스를 종료합니다.</string>
+
+    <string-array name="activity_sercive_control_menu_array">
+        <item>연결 상태</item>
+        <item>측정 데이터</item>
+        <item>로그</item>
+        <item>설정</item>
+    </string-array>
+
+</resources>

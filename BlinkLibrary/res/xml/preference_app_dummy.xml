@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceScreen android:title="앱 설정 1" >
+    </PreferenceScreen>
+    <PreferenceScreen android:title="앱 설정 2" >
+    </PreferenceScreen>
+
+    <EditTextPreference
+        android:dialogMessage="테스트 메시지를 입력하세요"
+        android:dialogTitle="앱 내부 xml 테스트"
+        android:key="sample"
+        android:title="앱 내부 xml 테스트 &lt;텍스트 입력>" />
+
+</PreferenceScreen>

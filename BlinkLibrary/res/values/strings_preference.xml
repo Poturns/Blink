@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="title_preference_app">앱 설정</string>
+    <string name="title_preference_global">전체 설정</string>
+    <string name="preference">설정</string>
+    <string name="preference_global_title_set_this_device_to_host">이 기기를 센터로 설정</string>
+    <string name="preference_global_key_set_this_device_to_host">KEY_SET_THIS_DEVICE_TO_HOST</string>
+    <string name="preference_global_summary_set_this_device_to_host">현재 기기를 Blink Library의 연결의 중심으로 설정하여 모든 데이터 및 연결의 관리를 수행합니다.</string>
+
+</resources>

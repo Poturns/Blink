@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="@string/preference_global_key_set_this_device_to_host"
+        android:summary="@string/preference_global_summary_set_this_device_to_host"
+        android:title="@string/preference_global_title_set_this_device_to_host" />
+
+</PreferenceScreen>

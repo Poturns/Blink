@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/action_connection_view_change"
+        android:icon="@drawable/ic_action_collections_sort_by_size"
+        android:orderInCategory="100"
+        android:showAsAction="always"
+        android:title="리스트로 보기">
+    </item>
+
+</menu>
