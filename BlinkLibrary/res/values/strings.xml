@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">BlinkMain</string>
+    <string name="app_name">Blink</string>
     
     <string name="internal_baseservice_unable_alert">BLINK 서비스를 구동할 수 없습니다!</string>
     <string name="internal_baseservice_exit_alert">BLINK 서비스를 종료합니다.</string>

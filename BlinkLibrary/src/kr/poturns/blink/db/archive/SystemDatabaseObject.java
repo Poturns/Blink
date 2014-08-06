@@ -3,12 +3,14 @@ package kr.poturns.blink.db.archive;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 
+import kr.poturns.blink.db.JsonManager;
 import kr.poturns.blink.util.ClassUtil;
-
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
 
-public class SystemDatabaseObject  {
+public class SystemDatabaseObject implements Parcelable {
 	private final String tag = "SystemDatabaseObject";
 	
 	public boolean isExist;
@@ -63,5 +65,41 @@ public class SystemDatabaseObject  {
 			ret += mDeviceAppMeasurementList.get(i).toString();
 		}
 		return ret;
+	}
+	
+	@Override
+	public int describeContents() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		// TODO Auto-generated method stub
+		ArrayList<SystemDatabaseObject> mSystemDatabaseObjectList = new ArrayList<SystemDatabaseObject>();
+		mSystemDatabaseObjectList.add(this);
+		dest.writeString(JsonManager.obtainJsonSystemDatabaseObject(mSystemDatabaseObjectList));
+	}
+	public static final Parcelable.Creator<SystemDatabaseObject> CREATOR = new Parcelable.Creator<SystemDatabaseObject>() {
+		 public SystemDatabaseObject createFromParcel(Parcel in) {
+		 	return new SystemDatabaseObject(in);
+		 }
+	        
+		 public SystemDatabaseObject[] newArray( int size ) {
+			 return new SystemDatabaseObject[size];
+		 }
+	};
+	public SystemDatabaseObject(Parcel in){
+		readFromParcel(in);
+	}
+	public void readFromParcel(Parcel in){
+		ArrayList<SystemDatabaseObject> mSystemDatabaseObjectList = JsonManager.obtainJsonSystemDatabaseObject(in.readString());
+		CopyFromOtherObject(mSystemDatabaseObjectList.get(0));
+	}
+	public void CopyFromOtherObject(SystemDatabaseObject mSystemDatabaseObject){
+		this.isExist = mSystemDatabaseObject.isExist;
+		this.mDeviceAppList = mSystemDatabaseObject.mDeviceAppList;
+		this.mDeviceAppFunctionList = mSystemDatabaseObject.mDeviceAppFunctionList;
+		this.mDeviceAppMeasurementList = mSystemDatabaseObject.mDeviceAppMeasurementList;
 	}
 }

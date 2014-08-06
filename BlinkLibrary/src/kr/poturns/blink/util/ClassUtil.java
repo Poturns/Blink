@@ -27,7 +27,18 @@ public class ClassUtil {
 		return obtainClassSchema(field.getDeclaringClass())+"/"+field.getName();
 	}
 	public static String obtainParentSchema(Field field){
-		return field.getDeclaringClass().getSuperclass().getName()+"/"+field.getName();
+		String schema = "";
+		Class<?> SuperClass = field.getDeclaringClass();
+		if(hasSuperClass(SuperClass)){
+			SuperClass = SuperClass.getSuperclass();
+			schema += obtainClassName(SuperClass);
+		}
+		while(hasSuperClass(SuperClass)){
+			SuperClass = SuperClass.getSuperclass();
+			schema += "."+obtainClassName(SuperClass);
+		}
+		schema.substring(1);
+		return schema+"/"+field.getName();
 	}
 	
 }
