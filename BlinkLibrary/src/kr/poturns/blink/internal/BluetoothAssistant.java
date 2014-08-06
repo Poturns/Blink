@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import kr.poturns.blink.internal.comm.BlinkProfile;
 import kr.poturns.blink.internal.comm.BluetoothDeviceExtended;
 import kr.poturns.blink.internal.comm.InterDeviceEventListener;
 import android.bluetooth.BluetoothAdapter;
@@ -34,7 +35,6 @@ import android.content.IntentFilter;
 class BluetoothAssistant implements InterDeviceEventListener {
 
 	// *** CONSTANT DECLARATION *** //
-	public final static String ACTION_STATE_ON = "android.bluetooth.adapter.action.STATE_ON";
 	
 	final static int MESSAGE_READ_STREAM = 0x1;
 
@@ -71,8 +71,6 @@ class BluetoothAssistant implements InterDeviceEventListener {
 		mIntentFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
 		mIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);
 		
-		mIntentFilter.addAction(BluetoothAssistant.ACTION_STATE_ON);
-		
 		return mIntentFilter;
 	}
 
@@ -106,32 +104,39 @@ class BluetoothAssistant implements InterDeviceEventListener {
 	public void init() {
 		Context mContext = INTER_DEV_MANAGER.getContext();
 		BluetoothAdapter mAdapter = BLUETOOTH_MANAGER.getAdapter();
-		
+
+		mFunctionOperator = new FunctionOperator(mContext);
+		isLeSupported = DeviceAnalyzer.getInstance(mContext).hasBluetoothLE;
 		
 		int state = mAdapter.getState();
 		switch (state) {
 		case BluetoothAdapter.STATE_OFF:
-			Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-			mContext.startActivity(intent);
+			onBluetoothStateOff();
 			break;
 			
 		case BluetoothAdapter.STATE_ON:
-			//TODO : StartServer to listen connection
-			startClassicServer(null, true);
-			if (isLeSupported)
-				startLeServer(null);
+			onBluetoothStateOn();
 			break;
 		}
 
 		LE_MAP.clear();
 		CLASSIC_MAP.clear();
 		DISCOVERY_LIST.clear();
-		
-		mFunctionOperator = new FunctionOperator(mContext);
-		isLeSupported = DeviceAnalyzer.getInstance(mContext).hasBluetoothLE;
 	}
 
+	void onBluetoothStateOff() {
+		Intent intent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		INTER_DEV_MANAGER.getContext().startActivity(intent);
+	}
+	
+	void onBluetoothStateOn() {
+		startClassicServer(BlinkProfile.UUID_BLINK, true);
+		if (isLeSupported)
+			startLeServer(new BluetoothGattService(
+					BlinkProfile.UUID_BLINK, BluetoothGattService.SERVICE_TYPE_PRIMARY));
+	}
+	
 	private boolean isServerActivated = false;
 	private Thread mServerThread = null;
 	private BluetoothGattServer mGattServer;
@@ -147,7 +152,7 @@ class BluetoothAssistant implements InterDeviceEventListener {
 				return;
 		
 		isServerActivated = true;
-	
+		
 		mServerThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -161,13 +166,18 @@ class BluetoothAssistant implements InterDeviceEventListener {
 								adapter.listenUsingInsecureRfcommWithServiceRecord(name, uuid);
 							
 					while (isServerActivated) {
-						BluetoothSocket mBluetoothSocket = mServerSocket.accept();
-						BluetoothDeviceExtended deviceX = new BluetoothDeviceExtended(mBluetoothSocket.getRemoteDevice());
-						
-						ClassicLinkThread thread = new ClassicLinkThread(sInstance, mBluetoothSocket, false);
-						thread.startListening();
-						
-						CLASSIC_MAP.put(deviceX, thread);
+						try {
+							BluetoothSocket mBluetoothSocket = mServerSocket.accept(5000);
+							BluetoothDeviceExtended deviceX = new BluetoothDeviceExtended(mBluetoothSocket.getRemoteDevice());
+							
+							ClassicLinkThread thread = new ClassicLinkThread(sInstance, mBluetoothSocket, false);
+							thread.startListening();
+							
+							CLASSIC_MAP.put(deviceX, thread);
+							
+						} catch (IOException e) {
+							
+						}
 					}
 
 					mServerSocket.close();
@@ -187,16 +197,16 @@ class BluetoothAssistant implements InterDeviceEventListener {
 	 * 
 	 */
 	public synchronized void stopClassicServer() {
-			isServerActivated = false;
+		isServerActivated = false;
 
-			if (mServerThread != null) {
-				try {
-					mServerThread.join(3000);
+		if (mServerThread != null) {
+			try {
+				mServerThread.join(3000);
 					
-				} catch (InterruptedException e) {
-				} finally {
-					mServerThread = null;
-				}
+			} catch (InterruptedException e) {
+			} finally {
+				mServerThread = null;
+			}
 		}
 	}
 
@@ -208,12 +218,11 @@ class BluetoothAssistant implements InterDeviceEventListener {
 		if (!isLeSupported)
 			return;
 		
-		if (mGattServer == null)
+		if (mGattServer == null) 
 			mGattServer = BLUETOOTH_MANAGER.openGattServer(INTER_DEV_MANAGER.getContext(), mBluetoothGattServerCallback);
 		
-		else if (service != null)
+		if (service != null)
 			mGattServer.addService(service);
-		
 	}
 	
 	/**
@@ -259,19 +268,10 @@ class BluetoothAssistant implements InterDeviceEventListener {
 
 	/**
 	 * 
-	 * @param deviceX
-	 */
-	void addDiscoveryDevice(BluetoothDeviceExtended deviceX) {
-		DISCOVERY_LIST.add(deviceX);
-	}
-	
-	/**
-	 * 
 	 * @param receivedList
 	 * @return 디바이스 탐색 중일 때 true, 탐색이 끝났을 때 false.
 	 */
 	public boolean pushDiscoveryListUntilNow(List<BluetoothDeviceExtended> receivedList) {
-		
 		receivedList.clear();
 		receivedList.addAll(DISCOVERY_LIST);
 		
@@ -285,7 +285,6 @@ class BluetoothAssistant implements InterDeviceEventListener {
 	public void connectToDeviceAsClient(BluetoothDeviceExtended deviceX) {
 		UUID uuid = deviceX.getDevice().getUuids()[0].getUuid();
 		connectToDeviceAsClient(deviceX, uuid);
-		
 	}
 	
 	/**
@@ -314,9 +313,9 @@ class BluetoothAssistant implements InterDeviceEventListener {
 				CLASSIC_MAP.put(deviceX, thread);
 				
 			} catch (IOException e) {
-				InterDeviceEventListener mListener = INTER_DEV_MANAGER.getInterDeviceListener();
-				if (mListener != null) 
-					mListener.onDeviceConnectionFailed(deviceX);
+				
+				for (InterDeviceEventListener listener : INTER_DEV_MANAGER.getAllInterDeviceListener())
+					listener.onDeviceConnectionFailed(deviceX);
 			}
 		}
 	}
@@ -333,16 +332,15 @@ class BluetoothAssistant implements InterDeviceEventListener {
 		} else {
 			ClassicLinkThread mThread = CLASSIC_MAP.get(deviceX);
 			mThread.destroy();
-			
-			CLASSIC_MAP.remove(deviceX);
 		}
 	}
 	
 	/**
 	 * 
-	 * @param obj
+	 * @param json
+	 * @param deviceX
 	 */
-	public void write(BluetoothDeviceExtended deviceX, String json) {
+	void onMessageWrittenTo(String json, BluetoothDeviceExtended deviceX) {
 		if (deviceX.isLESupported()) {
 			
 			
@@ -351,36 +349,43 @@ class BluetoothAssistant implements InterDeviceEventListener {
 			
 		}
 	}
+
+	/**
+	 * 
+	 * @param json
+	 * @param deviceX
+	 */
+	synchronized void onMessageReceivedFrom(String json, BluetoothDeviceExtended deviceX) {
+		mFunctionOperator.acceptJsonData(json, deviceX);
+	}
 	
+	
+	
+	// *** CALLBACK DECLARATION *** //
 	@Override
 	public void onDeviceDiscovered(BluetoothDeviceExtended deviceX) {
-		// TODO Auto-generated method stub
-		
+		DISCOVERY_LIST.add(deviceX);
 	}
 
 	@Override
 	public void onDeviceConnectionFailed(BluetoothDeviceExtended deviceX) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
-	public void onDeviceConnected(BluetoothDeviceExtended deviceX) {
-		// TODO Auto-generated method stub
-		
+	public void onDeviceConnected(BluetoothDeviceExtended deviceX) { 
+		// 각 연결 요청 코드에서 MAPPING 한다.
 	}
 
 	@Override
 	public void onDeviceDisconnected(BluetoothDeviceExtended deviceX) {
-		// TODO Auto-generated method stub
+		if (deviceX.isLESupported())
+			LE_MAP.remove(deviceX);
 		
+		else
+			CLASSIC_MAP.remove(deviceX);
 	}
 
-	@Override
-	public void onMessageReceivedFrom(String json, BluetoothDeviceExtended deviceX) {
-		mFunctionOperator.acceptJsonData(json, deviceX);
-	}
-	
 
 	/**
 	 * Bluetooth Low-Energy Client Callback instance.
@@ -410,7 +415,7 @@ class BluetoothAssistant implements InterDeviceEventListener {
 		
 		@Override
 		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-			InterDeviceEventListener mListener = INTER_DEV_MANAGER.getInterDeviceListener();
+			ArrayList<InterDeviceEventListener> mListeners = INTER_DEV_MANAGER.getAllInterDeviceListener();
 			BluetoothDeviceExtended deviceX = new BluetoothDeviceExtended(gatt.getDevice());
 			
 			if (status == BluetoothGatt.GATT_SUCCESS) {
@@ -418,15 +423,13 @@ class BluetoothAssistant implements InterDeviceEventListener {
 				case BluetoothGatt.STATE_CONNECTED:
 					LE_MAP.put(deviceX, gatt);
 					
-					if (mListener != null) 
-						mListener.onDeviceConnected(deviceX);
+					for (InterDeviceEventListener listener : mListeners)
+						listener.onDeviceConnected(deviceX);
 					break;
 					
 				case BluetoothGatt.STATE_DISCONNECTED:
-					LE_MAP.remove(deviceX);
-					
-					if (mListener != null) 
-						mListener.onDeviceDisconnected(deviceX);
+					for (InterDeviceEventListener listener : mListeners)
+						listener.onDeviceDisconnected(deviceX);
 					break;
 				}
 				
@@ -434,8 +437,8 @@ class BluetoothAssistant implements InterDeviceEventListener {
 				switch (newState) {
 				case BluetoothGatt.STATE_CONNECTED:
 				case BluetoothGatt.STATE_CONNECTING:
-					if (mListener != null)
-						mListener.onDeviceConnectionFailed(deviceX);
+					for (InterDeviceEventListener listener : mListeners)
+						listener.onDeviceConnectionFailed(deviceX);
 					break;
 				}
 			}

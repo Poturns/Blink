@@ -26,4 +26,5 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 		
 		return mBindingStub.asBinder();
 	}
+
 }

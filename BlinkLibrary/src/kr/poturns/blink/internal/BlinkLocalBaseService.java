@@ -25,6 +25,7 @@ abstract class BlinkLocalBaseService extends Service /*implements InterDeviceEve
 	public void onCreate() {
 		super.onCreate();
 
+		// Blink 서비스에 필요한 기본 디렉토리 생성.
 		FileUtil.createExternalDirectory();
 		
 		// Identity를 확인하고, 서비스가 정상적으로 동작할 수 없는 환경이면 종료한다.

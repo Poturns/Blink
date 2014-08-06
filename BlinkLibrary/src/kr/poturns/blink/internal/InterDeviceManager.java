@@ -1,5 +1,7 @@
 package kr.poturns.blink.internal;
 
+import java.util.ArrayList;
+
 import kr.poturns.blink.internal.comm.BluetoothDeviceExtended;
 import kr.poturns.blink.internal.comm.InterDeviceEventListener;
 import android.bluetooth.BluetoothAdapter;
@@ -48,7 +50,8 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 
 	// *** FIELD DECLARATION *** //
 	private final Context MANAGER_CONTEXT;
-	
+	private ArrayList<InterDeviceEventListener> mInterDeviceListeners;
+
 	private InterDeviceManager(Context context) {
 		this.MANAGER_CONTEXT = context;
 		
@@ -60,6 +63,9 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 		
 		BluetoothAssistant mAssistant = BluetoothAssistant.getInstance(this);
 		mAssistant.init();
+		
+		mInterDeviceListeners = new ArrayList<InterDeviceEventListener>();
+		mInterDeviceListeners.add(mAssistant);
 	}
 	
 	void destroy() {
@@ -88,35 +94,35 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			handleStateMonitoring(prev_state, curr_state);
 			
 		} else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+			if (mInterDeviceListeners.isEmpty()) 
+				return;
+
 			BluetoothDeviceExtended deviceX = new BluetoothDeviceExtended(
 					(BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE));
 			
-			BluetoothAssistant.getInstance(this).addDiscoveryDevice(deviceX);
-			
-			if (mInterDeviceListener != null)
-				mInterDeviceListener.onDeviceDiscovered(deviceX);
+			for (InterDeviceEventListener listener : mInterDeviceListeners)	
+				listener.onDeviceDiscovered(deviceX);
 			
 		} else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
+			if (mInterDeviceListeners.isEmpty()) 
+				return;
 			
-			if (mInterDeviceListener != null) {
-				BluetoothDeviceExtended deviceX = new BluetoothDeviceExtended(
-						(BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE));
-				
-				mInterDeviceListener.onDeviceConnected(deviceX);
-			}
+			BluetoothDeviceExtended deviceX = new BluetoothDeviceExtended(
+					(BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE));
+			
+			for (InterDeviceEventListener listener : mInterDeviceListeners)	
+				listener.onDeviceConnected(deviceX);
 			
 		} else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
-
-			if (mInterDeviceListener != null) {
-				BluetoothDeviceExtended deviceX = new BluetoothDeviceExtended(
-						(BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE));
-				
-				mInterDeviceListener.onDeviceDisconnected(deviceX);
-			}
-		}
-		
-		else if (BluetoothAssistant.ACTION_STATE_ON.equals(action)) {
-			BluetoothAssistant.getInstance(this).startClassicServer(null, true);
+			if (mInterDeviceListeners.isEmpty()) 
+				return;
+			
+			BluetoothDeviceExtended deviceX = new BluetoothDeviceExtended(
+					(BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE));
+			
+			for (InterDeviceEventListener listener : mInterDeviceListeners)	
+				listener.onDeviceDisconnected(deviceX);
+			
 		}
 	}
 
@@ -132,37 +138,41 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			
 			break;
 			
-		case BluetoothAdapter.STATE_TURNING_ON: 
 			
 		case BluetoothAdapter.STATE_ON:
-			
-		case BluetoothAdapter.STATE_TURNING_OFF:	
-		
-		case BluetoothAdapter.STATE_OFF:
-			
+			BluetoothAssistant.getInstance(this).onBluetoothStateOn();
 			break;
+	
+		case BluetoothAdapter.STATE_OFF:
+			BluetoothAssistant.getInstance(this).onBluetoothStateOff();
+			break;
+
+		case BluetoothAdapter.STATE_TURNING_OFF:
+		case BluetoothAdapter.STATE_TURNING_ON: 
 		}
 	}
 
 	@Override
 	public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-
-		if (mInterDeviceListener != null) {
-			BluetoothDeviceExtended deviceX = new BluetoothDeviceExtended(device);
-			
-			mInterDeviceListener.onDeviceDiscovered(deviceX);
-		}
+		if (mInterDeviceListeners.isEmpty()) 
+			return;
 		
+		BluetoothDeviceExtended deviceX = new BluetoothDeviceExtended(device);
+		
+		for (InterDeviceEventListener listener : mInterDeviceListeners)	
+			listener.onDeviceDiscovered(deviceX);
 	}
 	
-	private InterDeviceEventListener mInterDeviceListener = null;
-
-	public InterDeviceEventListener getInterDeviceListener() {
-		return mInterDeviceListener;
+	public ArrayList<InterDeviceEventListener> getAllInterDeviceListener() {
+		return mInterDeviceListeners;
 	}
 	
-	public void setInterDeviceListener(InterDeviceEventListener mInterDeviceListener) {
-		this.mInterDeviceListener = mInterDeviceListener;
+	public void addInterDeviceListener(InterDeviceEventListener listener) {
+		this.mInterDeviceListeners.add(listener);
+	}
+	
+	public void removeInterDeviceListener(InterDeviceEventListener listener) {
+		mInterDeviceListeners.remove(listener);
 	}
 	
 	Context getContext() {
