@@ -22,6 +22,8 @@ public class BlinkServiceManager {
 	BlinkServiceListener mBlinkServiceListener = null;
 	IBlinkServiceBinder mBlinkServiceBinder = null;
 	BlinkServiceConnection mBlinkServiceConnection = null;
+	String device = "";
+	String app = "";
 	
 	public static final String SERVICE_NAME = "kr.poturns.blink.internal.BlinkLocalService";
 	
@@ -31,6 +33,8 @@ public class BlinkServiceManager {
 		intent = new Intent(SERVICE_NAME); 
 		mBlinkServiceConnection = new BlinkServiceConnection(this);
 		gson = new GsonBuilder().setPrettyPrinting().create();
+		device = Build.MODEL;
+		app = mContext.getPackageName();
 	}
 	
 	public void connectService(){
@@ -43,8 +47,8 @@ public class BlinkServiceManager {
 	}
 	
 	public boolean registerSystemDatabase(SystemDatabaseObject mSystemDatabaseObject){
-		mSystemDatabaseObject.mDeviceAppList.App = mContext.getPackageName();
-		mSystemDatabaseObject.mDeviceAppList.Device = Build.MODEL;
+		mSystemDatabaseObject.mDeviceAppList.App = app;
+		mSystemDatabaseObject.mDeviceAppList.Device = device;
 		try {
 				mBlinkServiceBinder.registerSystemDatabase(mSystemDatabaseObject);
 				return true;
@@ -56,8 +60,6 @@ public class BlinkServiceManager {
 	}
 	
 	public SystemDatabaseObject obtainSystemDatabase(){
-		String device = Build.MODEL;
-		String app = mContext.getPackageName();
 		try {
 			return mBlinkServiceBinder.obtainSystemDatabase(device, app);
 		} catch (RemoteException e) {

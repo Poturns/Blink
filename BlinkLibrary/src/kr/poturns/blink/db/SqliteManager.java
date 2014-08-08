@@ -494,22 +494,21 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mSQLiteDatabase.delete("MeasurementData", where, null);
 	}
 	
-	public void registerLog(SystemDatabaseObject mSystemDatabaseObject,String Content){
-		DeviceAppList mDeviceAppList = mSystemDatabaseObject.mDeviceAppList;
+	public void registerLog(int mDeviceAppId,String Content){
 		ContentValues values = new ContentValues();
-		values.put("DeviceAppId", ""+mDeviceAppList.DeviceAppId);  
+		values.put("DeviceAppId", ""+mDeviceAppId);  
 	    values.put("Content", Content);
 	    mSQLiteDatabase.insert("DeviceAppLog", null, values);
 	    Log.i(tag, "Log OK");
 	}
 	
-	public ArrayList<DeviceAppLog> obtainLog(ArrayList<DeviceAppList> mDeviceAppArrayList, String DateTimeFrom,String DateTimeTo){
+	public ArrayList<DeviceAppLog> obtainLog(ArrayList<Integer> mDeviceAppIdList, String DateTimeFrom,String DateTimeTo){
 		String where = "where ";
 		ArrayList<String> condition = new ArrayList<String>();
 		String DeviceAppIdcondition = "";
-		for(int i=0;i<mDeviceAppArrayList.size();i++){
-			DeviceAppIdcondition += mDeviceAppArrayList.get(i).DeviceAppId;
-			if(i!=mDeviceAppArrayList.size()-1){
+		for(int i=0;i<mDeviceAppIdList.size();i++){
+			DeviceAppIdcondition += mDeviceAppIdList.get(i);
+			if(i!=mDeviceAppIdList.size()-1){
 				DeviceAppIdcondition += ",";
 			}
 		}
