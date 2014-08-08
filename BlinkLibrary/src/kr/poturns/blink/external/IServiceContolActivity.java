@@ -12,6 +12,10 @@ public interface IServiceContolActivity {
 	/** 앱을 나타내는 Extra name */
 	public static final String EXTRA_DEVICE_APP = "EXTRA_DEVICE_APP";
 
+	public static final int REQUEST_PREFERENCE = 9090;
+	public static final int RESULT_SERVICE = 8473;
+	public static final String RESULT_EXTRA = "RESULT_EXTRA";
+
 	/**
 	 * Fragment를 전환한다.
 	 * 
@@ -22,4 +26,14 @@ public interface IServiceContolActivity {
 	 * 
 	 */
 	public void transitFragment(int position, Bundle arguments);
+
+	/**
+	 * InternalService에 Message를 전달한다.
+	 * 
+	 * @param message
+	 *            전달할 Message정보가 담긴 {@link Bundle}
+	 *          
+	 * @return 성공 여부
+	 */
+	public boolean sendMessageToService(Bundle message);
 }

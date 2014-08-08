@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:id="@+id/fragment_logview_table_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TextView
+            android:id="@+id/fragment_logview_text_device"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="3"
+            android:gravity="center"
+            android:textColor="@android:color/black"
+            android:text="@string/fragment_logview_title_device" />
+
+        <TextView
+            android:id="@+id/fragment_logview_text_app"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="5"
+            android:gravity="center"            
+            android:textColor="@android:color/black"
+            android:text="@string/fragment_logview_title_app" />
+
+        <TextView
+            android:id="@+id/fragment_logview_text_content"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="10"
+            android:gravity="center"
+            android:textColor="@android:color/black"
+            android:text="@string/fragment_logview_title_content" />
+
+        <TextView
+            android:id="@+id/fragment_logview_text_datetime"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="3"
+            android:gravity="center"            
+            android:textColor="@android:color/black"
+            android:text="@string/fragment_logview_title_datetime" />
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/fragment_logview_listview"
+        android:layout_width="fill_parent"
+        android:divider="@android:color/black"
+        android:layout_height="wrap_content" >
+    </ListView>
+
+</LinearLayout>

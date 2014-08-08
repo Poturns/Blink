@@ -197,30 +197,37 @@ public final class CircularConnectionFragment extends Fragment {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					switch (which) {
-					case DialogInterface.BUTTON_NEGATIVE:
+					case DialogInterface.BUTTON_NEGATIVE: {
 						Toast.makeText(getActivity(),
 								info + " 의 자세한 데이터를 보여 줄 예정",
 								Toast.LENGTH_SHORT).show();
+						final Bundle bundle = new Bundle();
+						bundle.putString(IServiceContolActivity.EXTRA_DEVICE,
+								info);
 						v.postDelayed(new Runnable() {
 
 							@Override
 							public void run() {
-								mActivityInterface.transitFragment(1, null);
+								mActivityInterface.transitFragment(1, bundle);
 							}
 						}, 500);
 						break;
-					case DialogInterface.BUTTON_NEUTRAL:
+					}
+					case DialogInterface.BUTTON_NEUTRAL: {
 						Toast.makeText(getActivity(), info + " 의 로그를 보여 줄 예정",
 								Toast.LENGTH_SHORT).show();
+						final Bundle bundle = new Bundle();
+						bundle.putString(IServiceContolActivity.EXTRA_DEVICE,
+								info);
 						v.postDelayed(new Runnable() {
 
 							@Override
 							public void run() {
-								mActivityInterface.transitFragment(2, null);
+								mActivityInterface.transitFragment(2, bundle);
 							}
 						}, 500);
-
 						break;
+					}
 					default:
 						break;
 					}

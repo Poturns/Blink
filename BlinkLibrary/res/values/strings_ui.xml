@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hint">검색어를 입력하세요</string>
+    <string name="fragment_logview_title_device">기기</string>
+    <string name="fragment_logview_title_app">앱</string>
+    <string name="fragment_logview_title_content">내용</string>
+    <string name="fragment_logview_title_datetime">시간</string>
+    <string name="action_search">검색</string>
+    <string name="action_refresh">새로고침</string>
+    <string name="action_show_as_graphic">그래픽으로 보기</string>
+    <string name="action_show_as_list">리스트로 보기</string>
+    <string name="action_show_only_connected">연결된 장비만 보기</string>
+
+</resources>

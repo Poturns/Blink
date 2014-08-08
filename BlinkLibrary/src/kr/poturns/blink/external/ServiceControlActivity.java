@@ -3,23 +3,24 @@ package kr.poturns.blink.external;
 import kr.poturns.blink.R;
 import kr.poturns.blink.external.preference.PreferenceActivity;
 import kr.poturns.blink.external.tab.connectionview.CircularConnectionFragment;
-import kr.poturns.blink.external.tab.dataview.DataViewFragment;
+import kr.poturns.blink.external.tab.dataview.ContentSelectFragment;
 import kr.poturns.blink.external.tab.logview.LogViewFragment;
 import kr.poturns.blink.util.FileUtil;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.widget.SlidingPaneLayout;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 import dev.dworks.libs.actionbartoggle.ActionBarToggle;
 
 public final class ServiceControlActivity extends Activity implements
@@ -56,7 +57,7 @@ public final class ServiceControlActivity extends Activity implements
 			fname = CircularConnectionFragment.class.getName();
 			break;
 		case 1:
-			fname = DataViewFragment.class.getName();
+			fname = ContentSelectFragment.class.getName();
 			break;
 		case 2:
 			fname = LogViewFragment.class.getName();
@@ -66,9 +67,11 @@ public final class ServiceControlActivity extends Activity implements
 		try {
 			f = Fragment.instantiate(this, fname, arguments);
 		} catch (Exception e) {
+			Log.e(this.getClass().getSimpleName(), "", e);
 			return;
 		}
 
+		f.setHasOptionsMenu(true);
 		getFragmentManager().beginTransaction()
 				.replace(R.id.activity_main_fragment_content, f)
 				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
@@ -83,9 +86,23 @@ public final class ServiceControlActivity extends Activity implements
 		mSlidingPaneLayout.closePane();
 	}
 
-	protected static void startPreferenceActivity(Context context) {
-		context.startActivity(new Intent(context, PreferenceActivity.class)
-				.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+	protected void startPreferenceActivity() {
+		startActivityForResult(new Intent(this, PreferenceActivity.class),
+				REQUEST_PREFERENCE);
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		switch (requestCode) {
+		case REQUEST_PREFERENCE:
+			if (resultCode == RESULT_SERVICE) {
+				Bundle bundle = data.getBundleExtra(RESULT_EXTRA);
+				sendMessageToService(bundle);
+			}
+			break;
+		default:
+			super.onActivityResult(requestCode, resultCode, data);
+		}
 	}
 
 	@Override
@@ -142,11 +159,26 @@ public final class ServiceControlActivity extends Activity implements
 				transitFragment(position, null);
 				break;
 			case 3: // setting
-				startPreferenceActivity(ServiceControlActivity.this);
+				startPreferenceActivity();
 				break;
 			}
 			closePane();
 		}
 	};
+
+	@Override
+	public boolean sendMessageToService(Bundle message) {
+		if (message != null) {
+			Object[] keys = message.keySet().toArray();
+			String str = "Send message to Service (\n";
+			for (Object key : keys) {
+				str += key.toString() + " : "
+						+ message.get(key.toString()).toString() + " , \n";
+			}
+			str += " )";
+			Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
+		}
+		return false;
+	}
 
 }
