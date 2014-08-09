@@ -1,6 +1,7 @@
 package kr.poturns.blink.external.tab.logview;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import kr.poturns.blink.R;
@@ -23,10 +24,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.SearchView.OnQueryTextListener;
 
+/** Blink Database에 기록된 Log를 보여주는 Fragment */
 public class LogViewFragment extends Fragment {
+	/** ListAdapter */
 	ArrayAdapter<ExternalDeviceAppLog> mArrayAdapter;
+	/** Log 정렬하는 {@link Comparator} */
 	ExternalDeviceAppLog.LogComparator mLogComparator;
+	/** Log 리스트 */
 	ArrayList<ExternalDeviceAppLog> mLogList;
+	/** 현재 정렬 기준이 되는 Device, App */
 	String mCurrentDevice, mCurrentApp;
 	LogHelper mLogHelper;
 	int mPrevTitleViewSelectionId;
@@ -126,6 +132,7 @@ public class LogViewFragment extends Fragment {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		final int id = item.getItemId();
 		if (id == R.id.action_refresh) {
+			// Log 새로고침
 			getLoader(
 					new Loader.OnLoadCompleteListener<List<ExternalDeviceAppLog>>() {
 						@Override
@@ -143,16 +150,20 @@ public class LogViewFragment extends Fragment {
 			return super.onOptionsItemSelected(item);
 	}
 
+	/** 제목을 나타내는 View에 등록되어 터치하면 List를 정렬하게 한다. */
 	private View.OnClickListener mTitleViewOnClickListener = new View.OnClickListener() {
 
 		@Override
 		public void onClick(View v) {
 			final int id = v.getId();
-
 			for (int i = 0; i < mTitleViewsIdArray.length; i++) {
+				// 현재 터치된 View 탐지
 				if (mTitleViewsIdArray[i] == id) {
-					int compartorField = mLogComparator.mComparatorField;
-					if (compartorField == ExternalDeviceAppLog
+					// 현재 정렬하려는 Field가 이전에 정렬한 Field와 같은 경우
+					// 현재 정렬 순서의 역순으로 정렬시킨다.
+					// (정렬을 처음으로 시도하는 경우, mComparatorField 값이 0이므로 무조건 오름차순으로
+					// 정렬한다.)
+					if (mLogComparator.mComparatorField == ExternalDeviceAppLog
 							.getComparatorFieldNumberByOrder(i))
 						mLogComparator.mIsAsendingOrder = !mLogComparator.mIsAsendingOrder;
 					else

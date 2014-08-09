@@ -125,7 +125,9 @@ public class ExternalDeviceAppLog implements Parcelable {
 
 	public static class LogComparator implements
 			Comparator<ExternalDeviceAppLog> {
+		/** 현재 정렬하려는 Field */
 		int mComparatorField;
+		/** 현재 정렬하는 순서가 오름차순 인지 여부 */
 		boolean mIsAsendingOrder;
 
 		public LogComparator() {

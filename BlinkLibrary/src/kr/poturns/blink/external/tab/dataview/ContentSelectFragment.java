@@ -20,6 +20,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class ContentSelectFragment extends Fragment {
@@ -49,8 +50,9 @@ public class ContentSelectFragment extends Fragment {
 			} else {
 				mDeviceMap = new Hashtable<String, List<DeviceAppList>>();
 			}
-			// mAdapter = new ContentAdapter(getActivity(), android.R.layout.,
-			// childResId, mDeviceMap);
+			mAdapter = new ContentAdapter(getActivity(),
+					android.R.layout.simple_expandable_list_item_1,
+					android.R.layout.simple_expandable_list_item_1, mDeviceMap);
 		}
 	}
 
@@ -66,6 +68,7 @@ public class ContentSelectFragment extends Fragment {
 				container, false);
 		ExpandableListView listView = (ExpandableListView) view
 				.findViewById(R.id.fragment_content_select_list);
+		listView.setEmptyView(view.findViewById(android.R.id.empty));
 		if (mAdapter != null)
 			listView.setAdapter(mAdapter);
 		return view;
@@ -121,7 +124,7 @@ public class ContentSelectFragment extends Fragment {
 
 		@Override
 		public Object getGroup(int groupPosition) {
-			return mDataMap.get(mKeyArray[groupPosition]);
+			return mKeyArray[groupPosition];
 		}
 
 		@Override
@@ -147,11 +150,16 @@ public class ContentSelectFragment extends Fragment {
 		@Override
 		public View getGroupView(int groupPosition, boolean isExpanded,
 				View convertView, ViewGroup parent) {
+			TextView textView;
 			if (convertView == null) {
 				convertView = mInflater.inflate(mGroupResId, parent, false);
+				textView = (TextView) convertView
+						.findViewById(android.R.id.text1);
+				convertView.setTag(android.R.id.text1, textView);
 			} else {
-
+				textView = (TextView) convertView.getTag(android.R.id.text1);
 			}
+			textView.setText(getGroup(groupPosition).toString());
 
 			return convertView;
 		}
@@ -159,11 +167,18 @@ public class ContentSelectFragment extends Fragment {
 		@Override
 		public View getChildView(int groupPosition, int childPosition,
 				boolean isLastChild, View convertView, ViewGroup parent) {
+			TextView textView;
 			if (convertView == null) {
 				convertView = mInflater.inflate(mChildResId, parent, false);
+				textView = (TextView) convertView
+						.findViewById(android.R.id.text1);
+				convertView.setTag(android.R.id.text1, textView);
 			} else {
-
+				textView = (TextView) convertView.getTag(android.R.id.text1);
 			}
+
+			textView.setText(((DeviceAppList) getChild(groupPosition,
+					childPosition)).App);
 			return convertView;
 		}
 
