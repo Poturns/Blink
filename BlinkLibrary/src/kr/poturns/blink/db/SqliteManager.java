@@ -5,8 +5,8 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import kr.poturns.blink.db.archive.DeviceApp;
 import kr.poturns.blink.db.archive.DeviceAppFunction;
-import kr.poturns.blink.db.archive.DeviceAppList;
 import kr.poturns.blink.db.archive.DeviceAppLog;
 import kr.poturns.blink.db.archive.DeviceAppMeasurement;
 import kr.poturns.blink.db.archive.MeasurementData;
@@ -36,7 +36,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	public final static int CONTAIN_PARENT = 1;
 	public final static int CONTAIN_FIELD = 2;
 	
-	private final String SQL_SELECT_DEVICEAPPLIST = "SELECT * FROM DeviceAppList where Device=? and App=?";
+	private final String SQL_SELECT_DEVICEAPPLIST = "SELECT * FROM DeviceAppList ";
 	private final String SQL_SELECT_DEVICEAPPFUNCTION = "SELECT * FROM DeviceAppFunction where DeviceAppId=?";
 	private final String SQL_SELECT_DEVICEAPPMEASUREMENT = "SELECT * FROM DeviceAppMeasurement ";
 	private final String SQL_SELECT_MEASUREMENTDATA =  "SELECT * FROM MeasurementData ";
@@ -106,7 +106,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	}
 	public SystemDatabaseObject obtainSystemDatabase(String device,String app){
 		SystemDatabaseObject mServiceDatabaseObject = new SystemDatabaseObject();
-		DeviceAppList mDeviceAppList = mServiceDatabaseObject.mDeviceAppList;
+		DeviceApp mDeviceAppList = mServiceDatabaseObject.mDeviceApp;
 		mDeviceAppList.Device = device;
 		mDeviceAppList.App = app;
 		//기존에 등록된 값이 없으면
@@ -123,22 +123,57 @@ public class SqliteManager extends SQLiteOpenHelper {
 		}
 		return mServiceDatabaseObject;
 	}
+	public ArrayList<SystemDatabaseObject> obtainSystemDatabase(){
+		ArrayList<SystemDatabaseObject> mSystemDatabaseObjectList = new ArrayList<SystemDatabaseObject>();
+		ArrayList<DeviceApp> mDeviceAppList = obtainDeviceAppList();
+		//기존에 등록된 값이 없으면
+		SystemDatabaseObject mServiceDatabaseObject = null;
+		for(int i=0;i<mDeviceAppList.size();i++){
+			mServiceDatabaseObject = new SystemDatabaseObject();
+			mServiceDatabaseObject.mDeviceApp = mDeviceAppList.get(i);
+			obtainDeviceAppFunction(mServiceDatabaseObject);
+			obtainDeviceAppMeasurement(mServiceDatabaseObject);
+			mServiceDatabaseObject.isExist = true;
+			mSystemDatabaseObjectList.add(mServiceDatabaseObject);
+		}
+		return mSystemDatabaseObjectList;
+	}
+	
 	private boolean obtainDeviceAppList(SystemDatabaseObject mSystemDatabaseObject){
-		DeviceAppList mDeviceAppList = mSystemDatabaseObject.mDeviceAppList;
+		DeviceApp mDeviceAppList = mSystemDatabaseObject.mDeviceApp;
+		String query = SQL_SELECT_DEVICEAPPLIST+"where Device=? and App=?";
 		String[] args = {mDeviceAppList.Device,mDeviceAppList.App};
-		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_DEVICEAPPLIST, args);
+		Cursor mCursor = mSQLiteDatabase.rawQuery(query, args);
 		Log.i(tag, "Device : "+mDeviceAppList.Device+" App : "+mDeviceAppList.App);
 		if(mCursor.moveToNext()){
 			mDeviceAppList.DeviceAppId = mCursor.getInt(mCursor.getColumnIndex("DeviceAppId"));
 			mDeviceAppList.Device = mCursor.getString(mCursor.getColumnIndex("Device"));
+			mDeviceAppList.App = mCursor.getString(mCursor.getColumnIndex("App"));
 			mDeviceAppList.Description = mCursor.getString(mCursor.getColumnIndex("Description"));
 			mDeviceAppList.Version = mCursor.getInt(mCursor.getColumnIndex("Version"));
 			return true;
 		}
 		return false;
 	}
+	
+	private ArrayList<DeviceApp> obtainDeviceAppList(){
+		ArrayList<DeviceApp> mDeviceAppList = new ArrayList<DeviceApp>();
+		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_DEVICEAPPLIST, null);
+		DeviceApp mDeviceApp = null;
+		if(mCursor.moveToNext()){
+			mDeviceApp = new DeviceApp();
+			mDeviceApp.DeviceAppId = mCursor.getInt(mCursor.getColumnIndex("DeviceAppId"));
+			mDeviceApp.Device = mCursor.getString(mCursor.getColumnIndex("Device"));
+			mDeviceApp.App = mCursor.getString(mCursor.getColumnIndex("App"));
+			mDeviceApp.Description = mCursor.getString(mCursor.getColumnIndex("Description"));
+			mDeviceApp.Version = mCursor.getInt(mCursor.getColumnIndex("Version"));
+			mDeviceAppList.add(mDeviceApp);
+		}
+		return mDeviceAppList;
+	}
+	
 	private void registerDeviceAppList(SystemDatabaseObject mSystemDatabaseObject){
-		DeviceAppList mDeviceAppList = mSystemDatabaseObject.mDeviceAppList;
+		DeviceApp mDeviceAppList = mSystemDatabaseObject.mDeviceApp;
 		ContentValues values = new ContentValues();
 		values.put("Device", mDeviceAppList.Device);  
         values.put("App", mDeviceAppList.App); 
@@ -148,7 +183,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	}
 	
 	private void registerDeviceAppFunction(SystemDatabaseObject mSystemDatabaseObject){
-		DeviceAppList mDeviceAppList = mSystemDatabaseObject.mDeviceAppList;
+		DeviceApp mDeviceAppList = mSystemDatabaseObject.mDeviceApp;
 		ArrayList<DeviceAppFunction> mDeviceAppFunctionList = mSystemDatabaseObject.mDeviceAppFunctionList;
 		DeviceAppFunction mDeviceAppFunction;
 		for(int i=0;i<mDeviceAppFunctionList.size();i++){
@@ -164,7 +199,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	}
 	
 	private void registerDeviceAppMeasurement(SystemDatabaseObject mSystemDatabaseObject){
-		DeviceAppList mDeviceAppList = mSystemDatabaseObject.mDeviceAppList;
+		DeviceApp mDeviceAppList = mSystemDatabaseObject.mDeviceApp;
 		ArrayList<DeviceAppMeasurement> mDeviceAppMeasurementList = mSystemDatabaseObject.mDeviceAppMeasurementList;
 		DeviceAppMeasurement mDeviceAppMeasurement;
 		for(int i=0;i<mDeviceAppMeasurementList.size();i++){
@@ -182,7 +217,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	}
 	
 	private void obtainDeviceAppFunction(SystemDatabaseObject mServiceDatabaseObject){
-		DeviceAppList mDeviceAppList = mServiceDatabaseObject.mDeviceAppList;
+		DeviceApp mDeviceAppList = mServiceDatabaseObject.mDeviceApp;
 		String[] args = {String.valueOf(mDeviceAppList.DeviceAppId)};
 		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_DEVICEAPPFUNCTION, args);
 		DeviceAppFunction mDeviceAppFunction;
@@ -196,7 +231,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	}
 	
 	private void obtainDeviceAppMeasurement(SystemDatabaseObject mServiceDatabaseObject){
-		DeviceAppList mDeviceAppList = mServiceDatabaseObject.mDeviceAppList;
+		DeviceApp mDeviceAppList = mServiceDatabaseObject.mDeviceApp;
 		String[] args = {String.valueOf(mDeviceAppList.DeviceAppId)};
 		String sql = SQL_SELECT_DEVICEAPPMEASUREMENT + "where DeviceAppId=?";
 		Cursor mCursor = mSQLiteDatabase.rawQuery(sql, args);
@@ -211,10 +246,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 			mServiceDatabaseObject.mDeviceAppMeasurementList.add(mDeviceAppMeasurement);
 		}
 	}
-	//-------------------------------SystemDatabase---------------------------------------
 	
-	
-	//-------------------------------MeasurementDatabase----------------------------------
 	public ArrayList<DeviceAppMeasurement> obtainDeviceAppMeasurementList(Field Measurement,int ContainType){
 		String[] args = new String[1];
 		String sql = "";
@@ -248,6 +280,11 @@ public class SqliteManager extends SQLiteOpenHelper {
 		}
 		return mDeviceAppMeasurementList;
 	}
+	
+	//-------------------------------SystemDatabase---------------------------------------
+	
+	
+	//-------------------------------MeasurementDatabase----------------------------------
 	
 	/**
 	 * mDeviceAppMeasurementList에 속한 MeasurementData의 리스트를 반환한다.

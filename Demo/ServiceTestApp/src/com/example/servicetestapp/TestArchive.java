@@ -1,21 +1,20 @@
 package com.example.servicetestapp;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-
 import kr.poturns.blink.db.JsonManager;
-import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import kr.poturns.blink.schema.Body;
 import kr.poturns.blink.schema.Eye;
 import kr.poturns.blink.schema.Heart;
 import kr.poturns.blink.service.BlinkServiceManager;
 import android.util.Log;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 public class TestArchive {
 	private final String tag = "TestArchive";
@@ -28,10 +27,11 @@ public class TestArchive {
 		this.mBlinkServiceManager = mBlinkServiceManager;
 	}
 	public void run(){
-		exampleRegisterSystemDatabase();
-		exampleObtainSystemDatabase();
+//		exampleRegisterSystemDatabase();
+		exampleObtainSystemDatabaseAll();
+//		exampleObtainSystemDatabase();
 //		exampleRegisterMeasurementDatabase();
-		exampleObtainMeasurementDatabase();
+//		exampleObtainMeasurementDatabase();
 //		exampleRemoveMeasurementDatabase();
 //		exampleObtainJson();
 	}
@@ -81,6 +81,16 @@ public class TestArchive {
 			Log.i(tag, "등록된 디바이스와 어플리케이션이 있으면");
 		}else {
 			Log.i(tag, "등록된 디바이스와 어플리케이션이 없으면");
+		}
+	}
+	
+	public void exampleObtainSystemDatabaseAll(){
+		Log.i(tag, "exampleObtainSystemDatabaseAll");
+		List<SystemDatabaseObject> mSystemDatabaseObjectList = mBlinkServiceManager.obtainSystemDatabaseAll();
+		SystemDatabaseObject systemDatabaseObject = null;
+		for(int i=0;i<mSystemDatabaseObjectList.size();i++){
+			systemDatabaseObject = mSystemDatabaseObjectList.get(i);
+			Log.i(tag, i+" sdo :"+systemDatabaseObject.toString());
 		}
 	}
 	

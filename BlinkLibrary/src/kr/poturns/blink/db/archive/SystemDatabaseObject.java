@@ -14,7 +14,7 @@ public class SystemDatabaseObject implements Parcelable {
 	private final String tag = "SystemDatabaseObject";
 	
 	public boolean isExist;
-	public DeviceAppList mDeviceAppList;
+	public DeviceApp mDeviceApp;
 	public ArrayList<DeviceAppFunction> mDeviceAppFunctionList;
 	public ArrayList<DeviceAppMeasurement> mDeviceAppMeasurementList;
 
@@ -24,7 +24,7 @@ public class SystemDatabaseObject implements Parcelable {
 	
 	public void onCreate(){
 		isExist = false;
-		mDeviceAppList = new DeviceAppList();
+		mDeviceApp = new DeviceApp();
 		mDeviceAppFunctionList = new ArrayList<DeviceAppFunction>();
 		mDeviceAppMeasurementList = new ArrayList<DeviceAppMeasurement>();
 	}
@@ -57,7 +57,7 @@ public class SystemDatabaseObject implements Parcelable {
 	
 	public String toString(){
 		String ret = "";
-		ret += mDeviceAppList.toString();
+		ret += mDeviceApp.toString();
 		for(int i=0;i<mDeviceAppFunctionList.size();i++){
 			ret += mDeviceAppFunctionList.get(i).toString();
 		}
@@ -98,7 +98,7 @@ public class SystemDatabaseObject implements Parcelable {
 	}
 	public void CopyFromOtherObject(SystemDatabaseObject mSystemDatabaseObject){
 		this.isExist = mSystemDatabaseObject.isExist;
-		this.mDeviceAppList = mSystemDatabaseObject.mDeviceAppList;
+		this.mDeviceApp = mSystemDatabaseObject.mDeviceApp;
 		this.mDeviceAppFunctionList = mSystemDatabaseObject.mDeviceAppFunctionList;
 		this.mDeviceAppMeasurementList = mSystemDatabaseObject.mDeviceAppMeasurementList;
 	}

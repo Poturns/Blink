@@ -1,6 +1,8 @@
 package kr.poturns.blink.service;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
@@ -47,8 +49,8 @@ public class BlinkServiceManager {
 	}
 	
 	public boolean registerSystemDatabase(SystemDatabaseObject mSystemDatabaseObject){
-		mSystemDatabaseObject.mDeviceAppList.App = app;
-		mSystemDatabaseObject.mDeviceAppList.Device = device;
+		mSystemDatabaseObject.mDeviceApp.App = app;
+		mSystemDatabaseObject.mDeviceApp.Device = device;
 		try {
 				mBlinkServiceBinder.registerSystemDatabase(mSystemDatabaseObject);
 				return true;
@@ -62,6 +64,16 @@ public class BlinkServiceManager {
 	public SystemDatabaseObject obtainSystemDatabase(){
 		try {
 			return mBlinkServiceBinder.obtainSystemDatabase(device, app);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public List<SystemDatabaseObject> obtainSystemDatabaseAll(){
+		try {
+			return mBlinkServiceBinder.obtainSystemDatabaseAll();
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

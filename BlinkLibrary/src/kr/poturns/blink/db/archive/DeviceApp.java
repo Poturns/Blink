@@ -1,7 +1,7 @@
 package kr.poturns.blink.db.archive;
 
 
-public class DeviceAppList implements IDatabaseObject{
+public class DeviceApp implements IDatabaseObject{
 
 	public int DeviceAppId;
 	public String Device;
@@ -9,7 +9,7 @@ public class DeviceAppList implements IDatabaseObject{
 	public String Description;
 	public int Version;
 	
-	public DeviceAppList(){
+	public DeviceApp(){
 		DeviceAppId = -1;
 		Description = "";
 	}

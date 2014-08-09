@@ -2,6 +2,7 @@ package kr.poturns.blink.internal;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -80,6 +81,13 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 				e.printStackTrace();
 				return null;
 			}
+		}
+
+		@Override
+		public List<SystemDatabaseObject> obtainSystemDatabaseAll()
+				throws RemoteException {
+			// TODO Auto-generated method stub
+			return mSqliteManager.obtainSystemDatabase();
 		}
 
 		
