@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import kr.poturns.blink.db.SqliteManager;
+import kr.poturns.blink.db.archive.DeviceAppMeasurement;
+import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import android.content.Context;
 import android.content.Intent;
@@ -35,8 +37,10 @@ public class BlinkServiceManager {
 		intent = new Intent(SERVICE_NAME); 
 		mBlinkServiceConnection = new BlinkServiceConnection(this);
 		gson = new GsonBuilder().setPrettyPrinting().create();
-		device = Build.MODEL;
-		app = mContext.getPackageName();
+//		device = Build.MODEL;
+//		app = mContext.getPackageName();
+		device = "Device3";
+		app = "App6";
 	}
 	
 	public void connectService(){
@@ -62,6 +66,10 @@ public class BlinkServiceManager {
 	}
 	
 	public SystemDatabaseObject obtainSystemDatabase(){
+		return obtainSystemDatabase(device,app);
+	}
+	
+	public SystemDatabaseObject obtainSystemDatabase(String device,String app){
 		try {
 			return mBlinkServiceBinder.obtainSystemDatabase(device, app);
 		} catch (RemoteException e) {
@@ -112,6 +120,15 @@ public class BlinkServiceManager {
 		}
 	}
 
+	public List<MeasurementData> obtainMeasurementData(List<DeviceAppMeasurement> mDeviceAppMeasurementList,String DateTimeFrom,String DateTimeTo){
+		try{
+			return mBlinkServiceBinder.obtainMeasurementDataById(mDeviceAppMeasurementList, DateTimeFrom, DateTimeTo);
+		}catch(Exception e){
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 	public int removeMeasurementData(Class<?> obj, String DateTimeFrom, String DateTimeTo){
 		int ret = 0;
 		return ret;

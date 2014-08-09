@@ -57,11 +57,13 @@ public class BlinkDatabase {
 
 		Log.i(tag, "createMeasurementDatabase ok");
 		
-		sql = "create table 'DeviceAppLog' ("
-				+ "'DeviceAppId' INTEGER NOT NULL,"
+		sql = "create table 'Log' ("
+				+ "'LogId' INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ "'Device' TEXT NOT NULL,"
+				+ "'App' TEXT NOT NULL,"
+				+ "'Type' INTEGER NOT NULL,"
 				+ "'Content' TEXT NOT NULL,"
-				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime')),"
-				+ "FOREIGN KEY('DeviceAppId') REFERENCES DeviceAppList('DeviceAppId')"
+				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime'))"
 				+ ");";
 		db.execSQL(sql);
 

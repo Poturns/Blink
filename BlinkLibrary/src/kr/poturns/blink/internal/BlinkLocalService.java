@@ -9,6 +9,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import kr.poturns.blink.db.SqliteManager;
+import kr.poturns.blink.db.archive.DeviceAppMeasurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import kr.poturns.blink.service.IBlinkServiceBinder;
@@ -35,7 +36,8 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 		mSqliteManager = SqliteManager.getSqliteManager(this);
 	}
 	
-	protected IBlinkServiceBinder.Stub mBindingStub = new IBlinkServiceBinder.Stub() {
+	class BlinkServiceBinder extends IBlinkServiceBinder.Stub {
+		String device, app;
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		@Override
 		public SystemDatabaseObject obtainSystemDatabase(String device,
@@ -90,18 +92,30 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 			return mSqliteManager.obtainSystemDatabase();
 		}
 
-		
-	};
+		@Override
+		public List<MeasurementData> obtainMeasurementDataById(
+				List<DeviceAppMeasurement> mDeviceAppMeasurementList,
+				String DateTimeFrom, String DateTimeTo) throws RemoteException {
+			// TODO Auto-generated method stub
+			return mSqliteManager.obtainMeasurementData(mDeviceAppMeasurementList, DateTimeFrom, DateTimeTo);
+		}
+
+		@Override
+		public void registerApplicationInfo(String device, String app)
+				throws RemoteException {
+			// TODO Auto-generated method stub
+			this.device = device;
+			this.app = app;
+		}
+	}
 	
 	
 	@Override
 	public IBinder onBind(Intent intent) {
-		
 		if (InterDeviceManager.ACTION_NAME.equals(intent.getAction())) {
 			return LinkStatusHandler.getInstance(mInterDeviceManager).getBinder();
 		}
-		
-		return mBindingStub.asBinder();
+		return new BlinkServiceBinder().asBinder();
 	}
 
 }

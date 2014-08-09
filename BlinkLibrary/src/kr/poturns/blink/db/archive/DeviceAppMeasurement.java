@@ -1,7 +1,13 @@
 package kr.poturns.blink.db.archive;
 
+import java.util.ArrayList;
 
-public class DeviceAppMeasurement implements IDatabaseObject{
+import kr.poturns.blink.db.JsonManager;
+import android.os.Parcel;
+import android.os.Parcelable;
+
+
+public class DeviceAppMeasurement implements IDatabaseObject, Parcelable{
 	
 	public int DeviceAppId;
 	public int MeasurementId;
@@ -45,5 +51,43 @@ public class DeviceAppMeasurement implements IDatabaseObject{
 		// TODO Auto-generated method stub
 		if(Measurement!=null&&Type!=null&&Measurement.length()>0&&Type.length()>0)return true;
 		return false;
+	}
+	
+	@Override
+	public int describeContents() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public static final Parcelable.Creator<DeviceAppMeasurement> CREATOR = new Parcelable.Creator<DeviceAppMeasurement>() {
+		 public DeviceAppMeasurement createFromParcel(Parcel in) {
+		 	return new DeviceAppMeasurement(in);
+		 }
+	        
+		 public DeviceAppMeasurement[] newArray( int size ) {
+			 return new DeviceAppMeasurement[size];
+		 }
+	};
+	
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		// TODO Auto-generated method stub
+		ArrayList<DeviceAppMeasurement> mDeviceAppMeasurementList = new ArrayList<DeviceAppMeasurement>();
+		mDeviceAppMeasurementList.add(this);
+		dest.writeString(JsonManager.obtainJsonDeviceAppMeasurement(mDeviceAppMeasurementList));
+	}
+	public DeviceAppMeasurement(Parcel in){
+		readFromParcel(in);
+	}
+	public void readFromParcel(Parcel in){
+		ArrayList<DeviceAppMeasurement> mDeviceAppMeasurementList = JsonManager.obtainJsonDeviceAppMeasurement(in.readString());
+		CopyFromOtherObject(mDeviceAppMeasurementList.get(0));
+	}
+	public void CopyFromOtherObject(DeviceAppMeasurement mDeviceAppMeasurement){
+		this.DeviceAppId = mDeviceAppMeasurement.DeviceAppId;
+		this.MeasurementId = mDeviceAppMeasurement.MeasurementId;
+		this.Measurement = mDeviceAppMeasurement.Measurement;
+		this.Type = mDeviceAppMeasurement.Type;
+		this.Description = mDeviceAppMeasurement.Description;
 	}
 }
