@@ -36,7 +36,6 @@ class FunctionOperator implements Runnable {
 	}
 	
 	public void acceptJsonData(String json, BluetoothDeviceExtended deviceX) {
-		
 		ArrayList<SystemDatabaseObject> mObjectList = mJsonManager.obtainJsonSystemDatabaseObject(json);
 		
 		for (SystemDatabaseObject object : mObjectList) {

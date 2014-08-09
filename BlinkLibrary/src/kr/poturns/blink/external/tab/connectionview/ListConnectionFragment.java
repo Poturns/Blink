@@ -75,8 +75,9 @@ public class ListConnectionFragment extends Fragment {
 
 			item.setChecked(check);
 			return true;
+		} else {
+			return super.onOptionsItemSelected(item);
 		}
-		return super.onOptionsItemSelected(item);
 	}
 
 	private void fillterDevice() {

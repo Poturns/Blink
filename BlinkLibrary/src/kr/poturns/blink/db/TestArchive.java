@@ -135,30 +135,30 @@ public class TestArchive {
 	 * 위의 경우 해당 함수는 ArrayList<Eye>로 반환해준다.
 	 */
 	public void exampleObtainMeasurementDatabase(){
-		Log.i(tag, "exampleObtainMeasurementDatabase");
-		try {
-			ArrayList<Eye> mEyeList = mSqliteManager.obtainMeasurementData(Eye.class);
-			for(int i=0;i<mEyeList.size();i++){
-				Log.i(tag, "Eye - left_sight : "+mEyeList.get(i).left_sight+" right_sight : "+mEyeList.get(i).right_sight+ " DateTime : "+mEyeList.get(i).DateTime);
-			}
-			ArrayList<Body> mBodyList = mSqliteManager.obtainMeasurementData(Body.class);
-			for(int i=0;i<mBodyList.size();i++){
-				Log.i(tag, "Body - height : "+mBodyList.get(i).height+" weight : "+mBodyList.get(i).weight+ " DateTime : "+mBodyList.get(i).DateTime);
-			}
-			ArrayList<Heart> mHeartList = mSqliteManager.obtainMeasurementData(Heart.class);
-			for(int i=0;i<mHeartList.size();i++){
-				Log.i(tag, "Heart - beatrate : "+mHeartList.get(i).beatrate+" DateTime : "+mHeartList.get(i).DateTime);
-			}
-		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		Log.i(tag, "exampleObtainMeasurementDatabase");
+//		try {
+//			ArrayList<Eye> mEyeList = mSqliteManager.obtainMeasurementData(Eye.class);
+//			for(int i=0;i<mEyeList.size();i++){
+//				Log.i(tag, "Eye - left_sight : "+mEyeList.get(i).left_sight+" right_sight : "+mEyeList.get(i).right_sight+ " DateTime : "+mEyeList.get(i).DateTime);
+//			}
+//			ArrayList<Body> mBodyList = mSqliteManager.obtainMeasurementData(Body.class);
+//			for(int i=0;i<mBodyList.size();i++){
+//				Log.i(tag, "Body - height : "+mBodyList.get(i).height+" weight : "+mBodyList.get(i).weight+ " DateTime : "+mBodyList.get(i).DateTime);
+//			}
+//			ArrayList<Heart> mHeartList = mSqliteManager.obtainMeasurementData(Heart.class);
+//			for(int i=0;i<mHeartList.size();i++){
+//				Log.i(tag, "Heart - beatrate : "+mHeartList.get(i).beatrate+" DateTime : "+mHeartList.get(i).DateTime);
+//			}
+//		} catch (InstantiationException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (IllegalAccessException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (ClassNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 	
 	public void exampleObtainJson(){

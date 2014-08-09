@@ -124,7 +124,8 @@ public class SampleGraphSqlFragment extends Fragment {
 	/** SystemDatabase에 등록된 Meaurement의 값들을 얻어온다 */
 	private List<Eye> obtainMeasurementDatabase() {
 		try {
-			return mSqliteManager.obtainMeasurementData(Eye.class);
+//			return mSqliteManager.obtainMeasurementData(Eye.class);
+			return null;
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

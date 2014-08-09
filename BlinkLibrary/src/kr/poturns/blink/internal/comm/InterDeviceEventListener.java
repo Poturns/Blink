@@ -15,6 +15,4 @@ public interface InterDeviceEventListener {
 	public void onDeviceConnected(BluetoothDeviceExtended deviceX);
 	
 	public void onDeviceDisconnected(BluetoothDeviceExtended deviceX);
-	
-	public void onMessageReceivedFrom(String json, BluetoothDeviceExtended deviceX);
 }

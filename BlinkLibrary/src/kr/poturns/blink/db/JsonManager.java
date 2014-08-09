@@ -19,54 +19,40 @@ import com.google.gson.reflect.TypeToken;
  *
  */
 public class JsonManager {
-	Gson gson;
 	private final String tag = "JsonManager";
 	public JsonManager(){
-		gson = new GsonBuilder().setPrettyPrinting().create();
 	}
-	public String obtainJsonSystemDatabaseObject(ArrayList<SystemDatabaseObject> mSystemDatabaseObjectList){
+	public static String obtainJsonSystemDatabaseObject(ArrayList<SystemDatabaseObject> mSystemDatabaseObjectList){
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		String ret = gson.toJson(mSystemDatabaseObjectList);
-		Log.i(tag,"obtainJsonSystemDatabaseObject : Object->String");
-		Log.i(tag,ret);
 		return ret;
 	}
-	public ArrayList<SystemDatabaseObject> obtainJsonSystemDatabaseObject(String json){
+	public static ArrayList<SystemDatabaseObject> obtainJsonSystemDatabaseObject(String json){
 		Type SystemDatabaseObjectType = new TypeToken<ArrayList<SystemDatabaseObject>>(){}.getType();
 		ArrayList<SystemDatabaseObject> ret = new Gson().fromJson(json, SystemDatabaseObjectType);
-		
-//		new Gson().fromJson(json, SystemDatabaseObjectType);
-		Log.i(tag,"obtainJsonSystemDatabaseObject : String->Object");
-		Log.i(tag,ret.toString());
 		return ret;
 	}
-	
-	public String obtainJsonDeviceAppMeasurement(ArrayList<DeviceAppMeasurement> mDeviceAppMeasurement){
+	public static String obtainJsonDeviceAppMeasurement(ArrayList<DeviceAppMeasurement> mDeviceAppMeasurement){
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		String ret = gson.toJson(mDeviceAppMeasurement);
-		Log.i(tag,"obtainJsonDeviceAppMeasurement : Object->String");
-		Log.i(tag,ret);
 		return ret;
 	}
 	
-	public ArrayList<DeviceAppMeasurement> obtainJsonDeviceAppMeasurement(String Json){
+	public static ArrayList<DeviceAppMeasurement> obtainJsonDeviceAppMeasurement(String Json){
 		Type DeviceAppMeasurementType = new TypeToken<ArrayList<DeviceAppMeasurement>>(){}.getType();
 		ArrayList<DeviceAppMeasurement> ret = new Gson().fromJson(Json, DeviceAppMeasurementType);
-		Log.i(tag,"obtainJsonDeviceAppMeasurement : String->Object");
-		Log.i(tag,ret.toString());
 		return ret;
 	}
 	
-	public String obtainJsonMeasurementData(ArrayList<MeasurementData> mMeasurementData){
+	public static String obtainJsonMeasurementData(ArrayList<MeasurementData> mMeasurementData){
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		String ret = gson.toJson(mMeasurementData);
-		Log.i(tag,"obtainJsonMeasurementData : Object->String");
-		Log.i(tag,ret);
 		return ret;
 	}
 	
-	public ArrayList<MeasurementData> obtainJsonMeasurementData(String json){
+	public static ArrayList<MeasurementData> obtainJsonMeasurementData(String json){
 		Type MeasurementDataType = new TypeToken<ArrayList<MeasurementData>>(){}.getType();
 		ArrayList<MeasurementData> ret = new Gson().fromJson(json, MeasurementDataType);
-		Log.i(tag,"obtainJsonMeasurementData : String->Object");
-		Log.i(tag,ret.toString());
 		return ret;
 	}
 }

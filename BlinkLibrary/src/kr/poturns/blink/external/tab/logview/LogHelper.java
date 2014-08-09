@@ -5,7 +5,7 @@ import java.util.List;
 
 import android.content.Context;
 import kr.poturns.blink.db.SqliteManager;
-import kr.poturns.blink.db.archive.DeviceAppList;
+import kr.poturns.blink.db.archive.DeviceApp;
 import kr.poturns.blink.db.archive.DeviceAppLog;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
 

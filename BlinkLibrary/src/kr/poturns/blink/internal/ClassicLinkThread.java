@@ -72,11 +72,7 @@ public class ClassicLinkThread extends Thread {
 			try {
 				String json = (String) mInputStream.readObject();
 				
-				InterDeviceEventListener mListener = INTER_DEV_MANAGER.getInterDeviceListener();
-				if (mListener != null) {
-					mListener.onMessageReceivedFrom(json, DEVICE_X);
-				}
-				
+				ASSISTANT.onMessageReceivedFrom(json, DEVICE_X);
 				
 			} catch (IOException e) {
 				e.printStackTrace();

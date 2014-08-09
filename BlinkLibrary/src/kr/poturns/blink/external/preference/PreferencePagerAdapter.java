@@ -39,10 +39,11 @@ public class PreferencePagerAdapter extends FragmentPagerAdapter {
 		final int id = fragmentId.intValue();
 		if (id == R.string.title_preference_global)
 			return GlobalPreferenceFragment.class;
-		else if (id == R.string.title_preference_app)
+		else if (id == R.string.title_preference_app) {
 			return AppPreferenceFragment.class;
-		else
+		} else {
 			return AppPreferenceFragment.class;
+		}
 	}
 
 }

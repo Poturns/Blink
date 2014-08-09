@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import kr.poturns.blink.R;
-import kr.poturns.blink.db.archive.DeviceAppList;
+import kr.poturns.blink.db.archive.DeviceApp;
 import kr.poturns.blink.external.IServiceContolActivity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -25,7 +25,7 @@ import android.widget.Toast;
 
 public class ContentSelectFragment extends Fragment {
 	BaseExpandableListAdapter mAdapter;
-	Map<String, ? extends List<DeviceAppList>> mDeviceMap;
+	Map<String, ? extends List<DeviceApp>> mDeviceMap;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -46,9 +46,9 @@ public class ContentSelectFragment extends Fragment {
 		} else {
 			if (savedInstanceState != null) {
 				// mDeviceMap = savedInstanceState.
-				mDeviceMap = new Hashtable<String, List<DeviceAppList>>();
+				mDeviceMap = new Hashtable<String, List<DeviceApp>>();
 			} else {
-				mDeviceMap = new Hashtable<String, List<DeviceAppList>>();
+				mDeviceMap = new Hashtable<String, List<DeviceApp>>();
 			}
 			mAdapter = new ContentAdapter(getActivity(),
 					android.R.layout.simple_expandable_list_item_1,
@@ -95,14 +95,14 @@ public class ContentSelectFragment extends Fragment {
 	}
 
 	class ContentAdapter extends BaseExpandableListAdapter {
-		private Map<String, ? extends List<DeviceAppList>> mDataMap;
+		private Map<String, ? extends List<DeviceApp>> mDataMap;
 		private String[] mKeyArray;
 		// private Context mContext;
 		private int mGroupResId, mChildResId;
 		private LayoutInflater mInflater;
 
 		public ContentAdapter(Context context, int groupResId, int childResId,
-				Map<String, ? extends List<DeviceAppList>> map) {
+				Map<String, ? extends List<DeviceApp>> map) {
 			Set<String> keySet = map.keySet();
 			mKeyArray = keySet.toArray(mKeyArray);
 			this.mChildResId = childResId;
@@ -177,7 +177,7 @@ public class ContentSelectFragment extends Fragment {
 				textView = (TextView) convertView.getTag(android.R.id.text1);
 			}
 
-			textView.setText(((DeviceAppList) getChild(groupPosition,
+			textView.setText(((DeviceApp) getChild(groupPosition,
 					childPosition)).App);
 			return convertView;
 		}
