@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Random;
 
 import kr.poturns.blink.db.JsonManager;
+import kr.poturns.blink.db.archive.DeviceAppLog;
+import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import kr.poturns.blink.schema.Body;
 import kr.poturns.blink.schema.Eye;
@@ -21,6 +23,7 @@ public class TestArchive {
 	
 	JsonManager mJsonManager;
 	SystemDatabaseObject mSystemDatabaseObject;
+	List<SystemDatabaseObject> mSystemDatabaseObjectList;
 	BlinkServiceManager mBlinkServiceManager = null;
 	
 	public TestArchive(BlinkServiceManager mBlinkServiceManager){
@@ -28,12 +31,13 @@ public class TestArchive {
 	}
 	public void run(){
 //		exampleRegisterSystemDatabase();
-		exampleObtainSystemDatabaseAll();
+//		exampleObtainSystemDatabaseAll();
+//		exampleObtainMeasurementDataById();
 //		exampleObtainSystemDatabase();
 //		exampleRegisterMeasurementDatabase();
 //		exampleObtainMeasurementDatabase();
 //		exampleRemoveMeasurementDatabase();
-//		exampleObtainJson();
+		exampleLogAll();
 	}
 	
 	/**
@@ -84,13 +88,30 @@ public class TestArchive {
 		}
 	}
 	
+	/**
+	 * 등록되어있는 모든 mSystemDatabaseObject를 얻어오는 예제
+	 */
 	public void exampleObtainSystemDatabaseAll(){
 		Log.i(tag, "exampleObtainSystemDatabaseAll");
-		List<SystemDatabaseObject> mSystemDatabaseObjectList = mBlinkServiceManager.obtainSystemDatabaseAll();
+		mSystemDatabaseObjectList = mBlinkServiceManager.obtainSystemDatabaseAll();
 		SystemDatabaseObject systemDatabaseObject = null;
 		for(int i=0;i<mSystemDatabaseObjectList.size();i++){
 			systemDatabaseObject = mSystemDatabaseObjectList.get(i);
 			Log.i(tag, i+" sdo :"+systemDatabaseObject.toString());
+		}
+	}
+	
+	/**
+	 * mSystemDatabaseObject의 ID로 얻어오는 예제
+	 */
+	public void exampleObtainMeasurementDataById(){
+		Log.i(tag, "exampleObtainMeasurementDataById");
+		mSystemDatabaseObjectList = mBlinkServiceManager.obtainSystemDatabaseAll();
+		for(int i=0;i<mSystemDatabaseObjectList.size();i++){
+			List<MeasurementData> mMeasurementDataList = mBlinkServiceManager.obtainMeasurementData(mSystemDatabaseObjectList.get(i).mDeviceAppMeasurementList, null, null);
+			for(int j=0;j<mMeasurementDataList.size();j++){
+				Log.i(tag, "MeasurementData "+j+" \n"+mMeasurementDataList.get(j).toString());
+			}
 		}
 	}
 	
@@ -110,20 +131,20 @@ public class TestArchive {
 				Body mBody;
 				Heart mHeart;
 				Random random = new Random();
-				for(int i=0;i<100;i++){
+				for(int i=0;i<10;i++){
 					mEye = new Eye();
 					mEye.left_sight = Math.round(random.nextDouble()*10d)/10d;
 					mEye.right_sight = Math.round(random.nextDouble()*10d)/10d;
 					mBlinkServiceManager.registerMeasurementData(mSystemDatabaseObject,mEye);
 				}
-				for(int i=0;i<100;i++){
+				for(int i=0;i<10;i++){
 					mBody = new Body();
 					mBody.height = Math.round(random.nextFloat()*10f)/10f+random.nextInt(50)+140;
 					mBody.weight = Math.round(random.nextFloat()*10f)/10f+random.nextInt(50)+40;
 					mBlinkServiceManager.registerMeasurementData(mSystemDatabaseObject,mBody);
 				}
 				
-				for(int i=0;i<100;i++){
+				for(int i=0;i<10;i++){
 					mHeart = new Heart();
 					mHeart.beatrate = random.nextInt(20)+60;
 					mBlinkServiceManager.registerMeasurementData(mSystemDatabaseObject,mHeart);
@@ -163,13 +184,16 @@ public class TestArchive {
 		}
 	}
 	
-	public void exampleObtainJson(){
-		Log.i(tag, "exampleObtainJson");
-		ArrayList<SystemDatabaseObject> mSystemDatabaseObjectList = new ArrayList<SystemDatabaseObject>();
-		exampleObtainSystemDatabase();
-		mSystemDatabaseObjectList.add(mSystemDatabaseObject);
-		mSystemDatabaseObjectList.add(mSystemDatabaseObject);
-		String gson = mJsonManager.obtainJsonSystemDatabaseObject(mSystemDatabaseObjectList);
-		mSystemDatabaseObjectList = mJsonManager.obtainJsonSystemDatabaseObject(gson);
+	
+	public void exampleLogAll(){
+		Log.i(tag, "exampleLogAll");
+		for(int i=0;i<100;i++){
+			mBlinkServiceManager.registerLog("Device"+i, "App"+i, i, "test"+i);
+		}
+		
+		List<DeviceAppLog> mDeviceAppLogList = mBlinkServiceManager.obtainLog();
+		for(int i=0;i<mDeviceAppLogList.size();i++){
+			Log.i(tag, mDeviceAppLogList.get(i).toString());
+		}
 	}
 }

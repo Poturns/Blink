@@ -3,11 +3,12 @@ package kr.poturns.blink.external.tab.dataview;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import kr.poturns.blink.R;
-import kr.poturns.blink.db.archive.DeviceApp;
+import kr.poturns.blink.db.archive.SystemDatabaseObject;
+import kr.poturns.blink.external.DBHelper;
 import kr.poturns.blink.external.IServiceContolActivity;
+import kr.poturns.blink.external.ViewTagExpandableAdapter;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
@@ -21,44 +22,46 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class ContentSelectFragment extends Fragment {
 	BaseExpandableListAdapter mAdapter;
-	Map<String, ? extends List<DeviceApp>> mDeviceMap;
+	Map<String, List<SystemDatabaseObject>> mDeviceMap;
+	DBHelper mHelper;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Bundle arg = getArguments();
-		if (arg != null
-				&& arg.getString(IServiceContolActivity.EXTRA_DEVICE) != null) {
-
-			Fragment f = Fragment.instantiate(getActivity(),
-					DataViewFragment.class.getName(), arg);
-			getFragmentManager()
-					.beginTransaction()
-					.add(R.id.activity_main_fragment_content, f,
-							DataViewFragment.class.getSimpleName())
-					.addToBackStack(ContentSelectFragment.class.getSimpleName())
-					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-					.commit();
-		} else {
-			if (savedInstanceState != null) {
-				// mDeviceMap = savedInstanceState.
-				mDeviceMap = new Hashtable<String, List<DeviceApp>>();
-			} else {
-				mDeviceMap = new Hashtable<String, List<DeviceApp>>();
-			}
-			mAdapter = new ContentAdapter(getActivity(),
-					android.R.layout.simple_expandable_list_item_1,
-					android.R.layout.simple_expandable_list_item_1, mDeviceMap);
+		mHelper = DBHelper.getInstance(getActivity());
+		if (arg != null) {
+			changeFragment(arg);
 		}
+		if (savedInstanceState != null) {
+			// mDeviceMap = savedInstanceState.
+			mDeviceMap = new Hashtable<String, List<SystemDatabaseObject>>();
+		} else {
+			mDeviceMap = mHelper.getDeviceMap();
+		}
+		mAdapter = new ContentAdapter(getActivity(),
+				android.R.layout.simple_expandable_list_item_1,
+				android.R.layout.simple_expandable_list_item_1, mDeviceMap);
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
+	}
+
+	protected void changeFragment(Bundle arg) {
+		Fragment f = Fragment.instantiate(getActivity(),
+				DataViewFragment.class.getName(), arg);
+		getFragmentManager()
+				.beginTransaction()
+				.add(R.id.activity_main_fragment_content, f,
+						DataViewFragment.class.getSimpleName())
+				.addToBackStack(ContentSelectFragment.class.getSimpleName())
+				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+				.commit();
 	}
 
 	@Override
@@ -90,108 +93,58 @@ public class ContentSelectFragment extends Fragment {
 	}
 
 	void refreshDeviceList() {
-		Toast.makeText(getActivity(), "새로고침된 리스트를 보여줄 예정", Toast.LENGTH_SHORT)
-				.show();
+		mHelper.refresh(getActivity());
+		mDeviceMap.clear();
+		mDeviceMap.putAll(mHelper.getDeviceMap());
+		mAdapter.notifyDataSetChanged();
 	}
 
-	class ContentAdapter extends BaseExpandableListAdapter {
-		private Map<String, ? extends List<DeviceApp>> mDataMap;
-		private String[] mKeyArray;
-		// private Context mContext;
-		private int mGroupResId, mChildResId;
-		private LayoutInflater mInflater;
+	class ContentAdapter extends
+			ViewTagExpandableAdapter<String, SystemDatabaseObject> {
 
 		public ContentAdapter(Context context, int groupResId, int childResId,
-				Map<String, ? extends List<DeviceApp>> map) {
-			Set<String> keySet = map.keySet();
-			mKeyArray = keySet.toArray(mKeyArray);
-			this.mChildResId = childResId;
-			this.mGroupResId = groupResId;
-			// this.mContext = context;
-			mInflater = (LayoutInflater) context
-					.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+				Map<String, ? extends List<SystemDatabaseObject>> map) {
+			super(context, groupResId, childResId, map);
 		}
 
 		@Override
-		public int getGroupCount() {
-			return mDataMap.size();
+		protected void createGroupView(int groupPosition, boolean isEcpanded,
+				ViewHolder h) {
+			((Holder) h).tv.setText(getGroup(groupPosition).toString());
 		}
 
 		@Override
-		public int getChildrenCount(int groupPosition) {
-			return mDataMap.get(mKeyArray[groupPosition]).size();
+		protected ViewHolder getViewHolder(View v, boolean isGroup) {
+			return new Holder(v);
 		}
 
 		@Override
-		public Object getGroup(int groupPosition) {
-			return mKeyArray[groupPosition];
+		protected void createChildView(int groupPosition, int childPosition,
+				boolean isLastChild, ViewHolder h) {
+			Holder holder = (Holder) h;
+			final SystemDatabaseObject item = (SystemDatabaseObject) getChild(
+					groupPosition, childPosition);
+			holder.tv.setText(item.mDeviceApp.App);
+			holder.tv.setOnClickListener(new View.OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					Bundle b = new Bundle();
+					b.putString(IServiceContolActivity.EXTRA_DEVICE,
+							item.mDeviceApp.Device);
+					b.putString(IServiceContolActivity.EXTRA_DEVICE_APP,
+							item.mDeviceApp.App);
+					changeFragment(b);
+				}
+			});
 		}
 
-		@Override
-		public Object getChild(int groupPosition, int childPosition) {
-			return mDataMap.get(mKeyArray[groupPosition]).get(childPosition);
-		}
+		private class Holder implements ViewHolder {
+			TextView tv;
 
-		@Override
-		public long getGroupId(int groupPosition) {
-			return groupPosition;
-		}
-
-		@Override
-		public long getChildId(int groupPosition, int childPosition) {
-			return groupPosition * 1000 + childPosition;
-		}
-
-		@Override
-		public boolean hasStableIds() {
-			return false;
-		}
-
-		@Override
-		public View getGroupView(int groupPosition, boolean isExpanded,
-				View convertView, ViewGroup parent) {
-			TextView textView;
-			if (convertView == null) {
-				convertView = mInflater.inflate(mGroupResId, parent, false);
-				textView = (TextView) convertView
-						.findViewById(android.R.id.text1);
-				convertView.setTag(android.R.id.text1, textView);
-			} else {
-				textView = (TextView) convertView.getTag(android.R.id.text1);
+			public Holder(View v) {
+				tv = (TextView) v.findViewById(android.R.id.text1);
 			}
-			textView.setText(getGroup(groupPosition).toString());
-
-			return convertView;
 		}
-
-		@Override
-		public View getChildView(int groupPosition, int childPosition,
-				boolean isLastChild, View convertView, ViewGroup parent) {
-			TextView textView;
-			if (convertView == null) {
-				convertView = mInflater.inflate(mChildResId, parent, false);
-				textView = (TextView) convertView
-						.findViewById(android.R.id.text1);
-				convertView.setTag(android.R.id.text1, textView);
-			} else {
-				textView = (TextView) convertView.getTag(android.R.id.text1);
-			}
-
-			textView.setText(((DeviceApp) getChild(groupPosition,
-					childPosition)).App);
-			return convertView;
-		}
-
-		@Override
-		public boolean isChildSelectable(int groupPosition, int childPosition) {
-			return true;
-		}
-
-		@Override
-		public void notifyDataSetChanged() {
-			mKeyArray = mDataMap.keySet().toArray(mKeyArray);
-			super.notifyDataSetChanged();
-		}
-
 	}
 }

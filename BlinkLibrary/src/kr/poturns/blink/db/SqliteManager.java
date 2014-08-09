@@ -44,7 +44,6 @@ public class SqliteManager extends SQLiteOpenHelper {
 	private final String SQL_SELECT_GROUPID =  "SELECT max(GroupId) FROM MeasurementData ";
 	private final String SQL_DELETE_MEASUREMENTDATA = "delete from MeasurementData ";
 	private final String SQL_SELECT_LOG =  "SELECT * FROM Log ";
-	private final String SQL_SELECT_LOG_DEVICE =  "SELECT Device,App FROM  ";
 	public static final String EXTERNAL_DB_FILE_PATH = Environment.getExternalStorageDirectory() + "/Blink/archive/";
 	public static final String EXTERNAL_DB_FILE_NAME = "BlinkDatabase.db";
 	
@@ -533,6 +532,14 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mSQLiteDatabase.delete("MeasurementData", where, null);
 	}
 	
+	
+	/**
+	 * Register log to Log table. 
+	 * @param Device
+	 * @param App
+	 * @param Type
+	 * @param Content
+	 */
 	public void registerLog(String Device,String App,int Type,String Content){
 		ContentValues values = new ContentValues();
 		values.put("Device", Device);  
@@ -543,37 +550,57 @@ public class SqliteManager extends SQLiteOpenHelper {
 	    Log.i(tag, "Log OK");
 	}
 	
-	public ArrayList<DeviceAppLog> obtainLog(String Device, String DateTimeFrom,String DateTimeTo){
-		String where = "where ";
-//		ArrayList<String> condition = new ArrayList<String>();
-//		String DeviceAppIdcondition = "";
-//		for(int i=0;i<mDeviceAppIdList.size();i++){
-//			DeviceAppIdcondition += mDeviceAppIdList.get(i);
-//			if(i!=mDeviceAppIdList.size()-1){
-//				DeviceAppIdcondition += ",";
-//			}
-//		}
-//		
-//		if(DateTimeFrom!=null)condition.add("DateTime >= '"+DateTimeFrom+"'");
-//		if(DateTimeTo!=null)condition.add("DateTime <= '"+DateTimeTo+"'");
-//		if(DeviceAppIdcondition.length()>0)condition.add("DeviceAppId in (" + DeviceAppIdcondition + ")");
-//		
-//		for(int i=0;i<condition.size();i++){
-//			where += condition.get(i);
-//			if(i+1<condition.size())where += " and ";
-//		}
-//		
-//		ArrayList<DeviceAppLog> mDeviceAppLogList = new ArrayList<DeviceAppLog>();
-//		DeviceAppLog mDeviceAppLog = null;
-//		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_LOG+where, null);
-//		while(mCursor.moveToNext()){
-//			mDeviceAppLog = new DeviceAppLog();
-//			mDeviceAppLog.DeviceAppId = mCursor.getInt(mCursor.getColumnIndex("DeviceAppId"));
-//			mDeviceAppLog.Content = mCursor.getString(mCursor.getColumnIndex("Content"));
-//			mDeviceAppLog.DateTime = mCursor.getString(mCursor.getColumnIndex("DateTime"));
-//			mDeviceAppLogList.add(mDeviceAppLog);
-//		}
-//		return mDeviceAppLogList;
-		return null;
+	/**
+	 * Search log from Log table
+	 * @param Device
+	 * @param App
+	 * @param Type
+	 * @param DateTimeFrom
+	 * @param DateTimeTo
+	 * @return
+	 */
+	public List<DeviceAppLog> obtainLog(String Device,String App,int Type,String DateTimeFrom,String DateTimeTo){
+		String where = "";
+		ArrayList<String> condition = new ArrayList<String>();
+		
+		if(Device!=null)condition.add("Device='"+Device+"'");
+		if(App!=null)condition.add("App='"+App+"'");
+		if(Type!=-1)condition.add("Type="+Type);
+		if(DateTimeFrom!=null)condition.add("DateTime >= '"+DateTimeFrom+"'");
+		if(DateTimeTo!=null)condition.add("DateTime <= '"+DateTimeTo+"'");
+		
+		if(condition.size()>0)where+="where ";
+		for(int i=0;i<condition.size();i++){
+			where += condition.get(i);
+			if(i+1<condition.size())where += " and ";
+		}
+		
+		ArrayList<DeviceAppLog> mDeviceAppLogList = new ArrayList<DeviceAppLog>();
+		DeviceAppLog mDeviceAppLog = null;
+		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_LOG+where, null);
+		while(mCursor.moveToNext()){
+			mDeviceAppLog = new DeviceAppLog();
+			mDeviceAppLog.LogId = mCursor.getInt(mCursor.getColumnIndex("LogId"));
+			mDeviceAppLog.Device = mCursor.getString(mCursor.getColumnIndex("Device"));
+			mDeviceAppLog.App = mCursor.getString(mCursor.getColumnIndex("App"));
+			mDeviceAppLog.Type = mCursor.getInt(mCursor.getColumnIndex("Type"));
+			mDeviceAppLog.Content = mCursor.getString(mCursor.getColumnIndex("Content"));
+			mDeviceAppLog.DateTime = mCursor.getString(mCursor.getColumnIndex("DateTime"));
+			mDeviceAppLogList.add(mDeviceAppLog);
+		}
+		return mDeviceAppLogList;
+	}
+	
+	public List<DeviceAppLog> obtainLog(String Device,String App,String DateTimeFrom,String DateTimeTo){
+		return obtainLog(Device,App,-1,DateTimeFrom,DateTimeTo);
+	}
+	public List<DeviceAppLog> obtainLog(String Device,String DateTimeFrom,String DateTimeTo){
+		return obtainLog(Device,null,-1,DateTimeFrom,DateTimeTo);
+	}
+	public List<DeviceAppLog> obtainLog(String DateTimeFrom,String DateTimeTo){
+		return obtainLog(null,null,-1,DateTimeFrom,DateTimeTo);
+	}
+	public List<DeviceAppLog> obtainLog(){
+		return obtainLog(null,null,-1,null,null);
 	}
 }

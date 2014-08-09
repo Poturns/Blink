@@ -57,7 +57,7 @@ public class CircularViewHelper {
 	private View mCenterView;
 	private Context mContext;
 	private int mCenterViewId;
-	private static final String CENTER_VIEW_NAME = "Host";
+	private static final int CENTER_VIEW_POSITION = -2;
 
 	/**
 	 * CircularViewHelper instance를 생성한다.
@@ -159,7 +159,7 @@ public class CircularViewHelper {
 		final int distance = (screenWidth - viewSize - 20) / 2;
 		ViewInfoTag tag = new ViewInfoTag();
 		tag.mIsDrag = false;
-		tag.mViewName = CENTER_VIEW_NAME;
+		tag.mViewPosition = CENTER_VIEW_POSITION;
 		tag.mViewId = mCenterViewId;
 		mCenterView.setTag(tag);
 		mCenterView.setOnDragListener(mOnDragListener);
@@ -173,11 +173,11 @@ public class CircularViewHelper {
 
 		for (int i = 0; i < size; i++) {
 			View child = mChildViewList.get(i);
-			String data = "View " + i;
 			tag = new ViewInfoTag();
 			tag.mIsDrag = false;
-			tag.mViewName = data;
 			tag.mViewId = i;
+			tag.mViewPosition = i;
+			tag.mTag = child.getTag();
 			child.setTag(tag);
 			child.setLayoutParams(lp);
 			float angleDeg = i * 360.0f / size - 90.0f;
@@ -246,7 +246,7 @@ public class CircularViewHelper {
 					mHandler.sendMessageDelayed(m, 100);
 					return false;
 				}
-				if (tag.mViewName.equals(CENTER_VIEW_NAME)) {
+				if (tag.mViewPosition == CENTER_VIEW_POSITION) {
 					ViewInfoTag draggerTag = (ViewInfoTag) ((View) event
 							.getLocalState()).getTag();
 					draggerTag.mDropViewId = tag.mViewId;
@@ -274,14 +274,10 @@ public class CircularViewHelper {
 
 	public static class ViewInfoTag {
 		public boolean mIsDrag;
-		public String mViewName;
 		public int mViewId;
 		public int mDropViewId = View.NO_ID;
-
-		@Override
-		public String toString() {
-			return mViewName;
-		}
+		public int mViewPosition;
+		public Object mTag;
 	}
 
 	private OnDragAndDropListener mDragAndDropListener;

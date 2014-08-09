@@ -20,8 +20,8 @@ import com.google.gson.reflect.TypeToken;
  */
 public class JsonManager {
 	private final String tag = "JsonManager";
-	public JsonManager(){
-	}
+	public static Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	
 	public static String obtainJsonSystemDatabaseObject(ArrayList<SystemDatabaseObject> mSystemDatabaseObjectList){
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		String ret = gson.toJson(mSystemDatabaseObjectList);

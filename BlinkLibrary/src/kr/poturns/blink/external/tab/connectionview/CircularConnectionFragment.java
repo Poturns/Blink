@@ -2,22 +2,16 @@ package kr.poturns.blink.external.tab.connectionview;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import kr.poturns.blink.R;
-import kr.poturns.blink.external.IServiceContolActivity;
 import kr.poturns.blink.external.tab.connectionview.CircularViewHelper.OnDragAndDropListener;
-import android.app.Activity;
-import android.app.AlertDialog;
+import kr.poturns.blink.external.tab.connectionview.CircularViewHelper.ViewInfoTag;
 import android.app.Fragment;
-import android.app.FragmentTransaction;
-import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
@@ -26,43 +20,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 @SuppressWarnings("deprecation")
-public final class CircularConnectionFragment extends Fragment {
+public final class CircularConnectionFragment extends ConnectionFragment {
 	/** 원형으로 배치되는 View들의 parent View */
 	private ViewGroup mViewGroup;
 	/** 가운데에 배치되는 View */
 	private TextView mHostView;
-	/** 각 Device의 간략한 정보를 나타내는 Dialog */
-	private AlertDialog mSimpleInfoDialog;
-	/** mSimpleInfoDialog의 구체적인 내용이 표현되는 View */
-	private TextView mDialogContentTextView;
 	/** layout 하단의 submenu 역할을 하는 SlidingDrawer */
 	private SlidingDrawer mSlidingDrawer;
 	private SeekBar mSeekBar;
 	protected CircularViewHelper mCircularHelper;
-	private int random;
-	protected IServiceContolActivity mActivityInterface;
-
-	@Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
-		if (activity instanceof IServiceContolActivity) {
-			mActivityInterface = (IServiceContolActivity) activity;
-		}
-	}
-
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setHasOptionsMenu(true);
-		mDialogContentTextView = new TextView(getActivity());
-		mDialogContentTextView.setGravity(Gravity.CENTER);
-		mDialogContentTextView.setPadding(20, 20, 20, 20);
-		mSimpleInfoDialog = new AlertDialog.Builder(getActivity())
-				.setView(mDialogContentTextView)
-				.setPositiveButton(android.R.string.ok, null).create();
-		random = new Random(System.currentTimeMillis()).nextInt(5) + 1;
-	}
-
+	protected static final String HOST_DEVICE = Build.DEVICE;
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -70,16 +37,16 @@ public final class CircularConnectionFragment extends Fragment {
 				R.layout.fragment_circular_connection, null);
 		mCircularHelper = new CircularViewHelper(mViewGroup, android.R.id.text1);
 		mHostView = (TextView) mCircularHelper.getCenterView();
-		mHostView.setText("Host");
+		mHostView.setText(HOST_DEVICE);
 		mHostView.setOnLongClickListener(new View.OnLongClickListener() {
 
 			@Override
 			public boolean onLongClick(View v) {
+				fetchDeviceListFromDB();
 				mCircularHelper.addChildViews(generateViews());
 				mCircularHelper.drawCircularView();
 				Toast.makeText(getActivity(), "connection refresh!",
 						Toast.LENGTH_SHORT).show();
-				random = new Random(System.currentTimeMillis()).nextInt(5) + 1;
 				mSeekBar.setProgress(0);
 				return true;
 			}
@@ -124,37 +91,28 @@ public final class CircularConnectionFragment extends Fragment {
 	}
 
 	private boolean checkDeviceFilteringCondition(int i) {
-		return i % random == 0;
+		return i % 5 == 0;
 	}
 
 	protected ArrayList<View> generateViews() {
 		ArrayList<View> list = new ArrayList<View>();
-		int size = new Random(System.currentTimeMillis()).nextInt(11) + 3;
+		int size = mDeviceList.size();
 		for (int i = 0; i < size; i++) {
 			TextView view = (TextView) View.inflate(getActivity(),
 					R.layout.view_textview, null);
-			view.setText("Device " + i);
+			String device = mDeviceList.get(i);
+			view.setText(device);
 			view.setOnClickListener(mOnClickListener);
+			view.setTag(device);
 			list.add(view);
 		}
 		return list;
 	}
 
 	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		final int id = item.getItemId();
-		if(id==R.id.action_connection_view_change){
-			getFragmentManager()
-					.beginTransaction()
-					.add(R.id.activity_main_fragment_content,
-							Fragment.instantiate(getActivity(),
-									ListConnectionFragment.class.getName()))
-					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-					.commit();
-			return true;
-		}else {
-			return super.onOptionsItemSelected(item);
-		}
+	protected Fragment getChangeFragment() {
+		return Fragment.instantiate(getActivity(),
+				ListConnectionFragment.class.getName());
 	}
 
 	@Override
@@ -183,64 +141,15 @@ public final class CircularConnectionFragment extends Fragment {
 		public void onDropEnd(View view, View center) {
 			center.setBackgroundResource(R.drawable.drawable_rounded_circle);
 			view.setBackgroundResource(R.drawable.drawable_rounded_circle);
-			((TextView) center).setText("Host");
+			((TextView) center).setText(HOST_DEVICE);
 		}
 	};
 	private View.OnClickListener mOnClickListener = new View.OnClickListener() {
 
 		@Override
 		public void onClick(final View v) {
-			final String info = v.getTag().toString();
-			final String[] titles = getResources().getStringArray(
-					R.array.activity_sercive_control_menu_array);
-			final DialogInterface.OnClickListener onClickListener = new DialogInterface.OnClickListener() {
-
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					switch (which) {
-					case DialogInterface.BUTTON_NEGATIVE: {
-						Toast.makeText(getActivity(),
-								info + " 의 자세한 데이터를 보여 줄 예정",
-								Toast.LENGTH_SHORT).show();
-						final Bundle bundle = new Bundle();
-						bundle.putString(IServiceContolActivity.EXTRA_DEVICE,
-								info);
-						v.postDelayed(new Runnable() {
-
-							@Override
-							public void run() {
-								mActivityInterface.transitFragment(1, bundle);
-							}
-						}, 500);
-						break;
-					}
-					case DialogInterface.BUTTON_NEUTRAL: {
-						Toast.makeText(getActivity(), info + " 의 로그를 보여 줄 예정",
-								Toast.LENGTH_SHORT).show();
-						final Bundle bundle = new Bundle();
-						bundle.putString(IServiceContolActivity.EXTRA_DEVICE,
-								info);
-						v.postDelayed(new Runnable() {
-
-							@Override
-							public void run() {
-								mActivityInterface.transitFragment(2, bundle);
-							}
-						}, 500);
-						break;
-					}
-					default:
-						break;
-					}
-				}
-			};
-			mDialogContentTextView.setText(info);
-			mSimpleInfoDialog.setTitle(info);
-			mSimpleInfoDialog.setButton(DialogInterface.BUTTON_NEGATIVE,
-					titles[1], onClickListener);
-			mSimpleInfoDialog.setButton(DialogInterface.BUTTON_NEUTRAL,
-					titles[2], onClickListener);
-			mSimpleInfoDialog.show();
+			final String device = ((ViewInfoTag) v.getTag()).mTag.toString();
+			showDialog(device);
 		}
 	};
 

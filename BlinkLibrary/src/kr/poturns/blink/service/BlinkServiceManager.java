@@ -5,13 +5,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import kr.poturns.blink.db.SqliteManager;
+import kr.poturns.blink.db.archive.DeviceAppLog;
 import kr.poturns.blink.db.archive.DeviceAppMeasurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Build;
 import android.os.RemoteException;
+import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -37,10 +41,10 @@ public class BlinkServiceManager {
 		intent = new Intent(SERVICE_NAME); 
 		mBlinkServiceConnection = new BlinkServiceConnection(this);
 		gson = new GsonBuilder().setPrettyPrinting().create();
-//		device = Build.MODEL;
-//		app = mContext.getPackageName();
-		device = "Device3";
-		app = "App6";
+		device = Build.MODEL;
+		app = mContext.getPackageName();
+//		device = "Device3";
+//		app = "App6";
 	}
 	
 	public void connectService(){
@@ -132,5 +136,40 @@ public class BlinkServiceManager {
 	public int removeMeasurementData(Class<?> obj, String DateTimeFrom, String DateTimeTo){
 		int ret = 0;
 		return ret;
+	}
+	
+	/**
+	 * Log Methods
+	 */
+	public void registerLog(String Device,String App,int Type,String Content){
+		try {
+			mBlinkServiceBinder.registerLog(Device, App, Type, Content);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}	
+	
+	public List<DeviceAppLog> obtainLog(String Device,String App,int Type,String DateTimeFrom,String DateTimeTo){
+		try {
+			return mBlinkServiceBinder.obtainLog(Device, App, Type, DateTimeFrom, DateTimeTo);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public List<DeviceAppLog> obtainLog(String Device,String App,String DateTimeFrom,String DateTimeTo){
+		return obtainLog(Device,App,-1,DateTimeFrom,DateTimeTo);
+	}
+	public List<DeviceAppLog> obtainLog(String Device,String DateTimeFrom,String DateTimeTo){
+		return obtainLog(Device,null,-1,DateTimeFrom,DateTimeTo);
+	}
+	public List<DeviceAppLog> obtainLog(String DateTimeFrom,String DateTimeTo){
+		return obtainLog(null,null,-1,DateTimeFrom,DateTimeTo);
+	}
+	public List<DeviceAppLog> obtainLog(){
+		return obtainLog(null,null,-1,null,null);
 	}
 }

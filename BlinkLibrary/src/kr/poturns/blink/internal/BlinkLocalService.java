@@ -9,6 +9,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import kr.poturns.blink.db.SqliteManager;
+import kr.poturns.blink.db.archive.DeviceAppLog;
 import kr.poturns.blink.db.archive.DeviceAppMeasurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
@@ -106,6 +107,21 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 			// TODO Auto-generated method stub
 			this.device = device;
 			this.app = app;
+		}
+
+		@Override
+		public List<DeviceAppLog> obtainLog(String Device, String App,
+				int Type, String DateTimeFrom, String DateTimeTo)
+				throws RemoteException {
+			// TODO Auto-generated method stub
+			return mSqliteManager.obtainLog(Device, App, Type, DateTimeFrom, DateTimeTo);
+		}
+
+		@Override
+		public void registerLog(String Device, String App, int Type,
+				String Content) throws RemoteException {
+			// TODO Auto-generated method stub
+			mSqliteManager.registerLog(Device, App, Type, Content);
 		}
 	}
 	

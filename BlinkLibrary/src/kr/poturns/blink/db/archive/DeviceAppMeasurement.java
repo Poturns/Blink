@@ -1,7 +1,5 @@
 package kr.poturns.blink.db.archive;
 
-import java.util.ArrayList;
-
 import kr.poturns.blink.db.JsonManager;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -72,16 +70,14 @@ public class DeviceAppMeasurement implements IDatabaseObject, Parcelable{
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
 		// TODO Auto-generated method stub
-		ArrayList<DeviceAppMeasurement> mDeviceAppMeasurementList = new ArrayList<DeviceAppMeasurement>();
-		mDeviceAppMeasurementList.add(this);
-		dest.writeString(JsonManager.obtainJsonDeviceAppMeasurement(mDeviceAppMeasurementList));
+		dest.writeString(JsonManager.gson.toJson(this));
 	}
 	public DeviceAppMeasurement(Parcel in){
 		readFromParcel(in);
 	}
 	public void readFromParcel(Parcel in){
-		ArrayList<DeviceAppMeasurement> mDeviceAppMeasurementList = JsonManager.obtainJsonDeviceAppMeasurement(in.readString());
-		CopyFromOtherObject(mDeviceAppMeasurementList.get(0));
+		DeviceAppMeasurement mDeviceAppMeasurement = JsonManager.gson.fromJson(in.readString(), DeviceAppMeasurement.class);
+		CopyFromOtherObject(mDeviceAppMeasurement);
 	}
 	public void CopyFromOtherObject(DeviceAppMeasurement mDeviceAppMeasurement){
 		this.DeviceAppId = mDeviceAppMeasurement.DeviceAppId;

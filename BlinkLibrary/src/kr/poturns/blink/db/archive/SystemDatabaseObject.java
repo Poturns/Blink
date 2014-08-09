@@ -76,9 +76,7 @@ public class SystemDatabaseObject implements Parcelable {
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
 		// TODO Auto-generated method stub
-		ArrayList<SystemDatabaseObject> mSystemDatabaseObjectList = new ArrayList<SystemDatabaseObject>();
-		mSystemDatabaseObjectList.add(this);
-		dest.writeString(JsonManager.obtainJsonSystemDatabaseObject(mSystemDatabaseObjectList));
+		dest.writeString(JsonManager.gson.toJson(this));
 	}
 	public static final Parcelable.Creator<SystemDatabaseObject> CREATOR = new Parcelable.Creator<SystemDatabaseObject>() {
 		 public SystemDatabaseObject createFromParcel(Parcel in) {
@@ -93,8 +91,8 @@ public class SystemDatabaseObject implements Parcelable {
 		readFromParcel(in);
 	}
 	public void readFromParcel(Parcel in){
-		ArrayList<SystemDatabaseObject> mSystemDatabaseObjectList = JsonManager.obtainJsonSystemDatabaseObject(in.readString());
-		CopyFromOtherObject(mSystemDatabaseObjectList.get(0));
+		SystemDatabaseObject mSystemDatabaseObject = JsonManager.gson.fromJson(in.readString(),SystemDatabaseObject.class);
+		CopyFromOtherObject(mSystemDatabaseObject);
 	}
 	public void CopyFromOtherObject(SystemDatabaseObject mSystemDatabaseObject){
 		this.isExist = mSystemDatabaseObject.isExist;

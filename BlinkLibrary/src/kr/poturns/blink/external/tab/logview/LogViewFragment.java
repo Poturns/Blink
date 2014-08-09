@@ -5,6 +5,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import kr.poturns.blink.R;
+import kr.poturns.blink.external.DBHelper;
+import kr.poturns.blink.external.ExternalDeviceAppLog;
 import kr.poturns.blink.external.IServiceContolActivity;
 import android.app.Fragment;
 import android.content.AsyncTaskLoader;
@@ -19,10 +21,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
+import android.widget.ListView;
 import android.widget.SearchView;
-import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.SearchView.OnQueryTextListener;
+import android.widget.TextView;
 
 /** Blink Database에 기록된 Log를 보여주는 Fragment */
 public class LogViewFragment extends Fragment {
@@ -34,7 +36,7 @@ public class LogViewFragment extends Fragment {
 	ArrayList<ExternalDeviceAppLog> mLogList;
 	/** 현재 정렬 기준이 되는 Device, App */
 	String mCurrentDevice, mCurrentApp;
-	LogHelper mLogHelper;
+	DBHelper mLogHelper;
 	int mPrevTitleViewSelectionId;
 	int[] mTitleViewsIdArray = new int[] { R.id.fragment_logview_text_device,
 			R.id.fragment_logview_text_app, R.id.fragment_logview_text_content,
@@ -43,7 +45,7 @@ public class LogViewFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mLogHelper = new LogHelper(getActivity());
+		mLogHelper = DBHelper.getInstance(getActivity());
 		if (savedInstanceState != null) {
 			mLogList = savedInstanceState.getParcelableArrayList("list");
 		} else {
@@ -63,6 +65,10 @@ public class LogViewFragment extends Fragment {
 			mCurrentDevice = arg.getString(IServiceContolActivity.EXTRA_DEVICE);
 			mCurrentApp = arg
 					.getString(IServiceContolActivity.EXTRA_DEVICE_APP);
+			StringBuilder subTitle = new StringBuilder(mCurrentDevice);
+			if (mCurrentApp != null)
+				subTitle.append(" / ").append(mCurrentApp);
+			getActivity().getActionBar().setSubtitle(subTitle.toString());
 		}
 		if (mLogList.isEmpty()) {
 			getLoader(
@@ -76,7 +82,7 @@ public class LogViewFragment extends Fragment {
 							mArrayAdapter.notifyDataSetChanged();
 							loader.abandon();
 						}
-					}).startLoading();
+					}).forceLoad();
 		}
 	}
 
@@ -92,7 +98,9 @@ public class LogViewFragment extends Fragment {
 		final View view = inflater.inflate(R.layout.fragment_logview,
 				container, false);
 		View titleLayout = view.findViewById(R.id.fragment_logview_table_title);
-
+		ListView listView = (ListView) view.findViewById(android.R.id.list);
+		listView.setAdapter(mArrayAdapter);
+		listView.setEmptyView(view.findViewById(android.R.id.empty));
 		for (int id : mTitleViewsIdArray) {
 			titleLayout.findViewById(id).setOnClickListener(
 					mTitleViewOnClickListener);
@@ -112,8 +120,6 @@ public class LogViewFragment extends Fragment {
 			public boolean onQueryTextSubmit(String query) {
 				mArrayAdapter.getFilter().filter(query);
 				searchMenu.collapseActionView();
-				Toast.makeText(getActivity(), "검색 : " + query,
-						Toast.LENGTH_SHORT).show();
 				return true;
 			}
 
@@ -126,6 +132,12 @@ public class LogViewFragment extends Fragment {
 		searchView.setQueryHint(getText(R.string.hint));
 		searchMenu.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM
 				| MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
+	}
+
+	@Override
+	public void onDetach() {
+		super.onDetach();
+		getActivity().getActionBar().setSubtitle(null);
 	}
 
 	@Override
@@ -144,7 +156,7 @@ public class LogViewFragment extends Fragment {
 							mArrayAdapter.notifyDataSetChanged();
 							loader.abandon();
 						}
-					}).startLoading();
+					}).forceLoad();
 			return true;
 		} else
 			return super.onOptionsItemSelected(item);
@@ -163,12 +175,12 @@ public class LogViewFragment extends Fragment {
 					// 현재 정렬 순서의 역순으로 정렬시킨다.
 					// (정렬을 처음으로 시도하는 경우, mComparatorField 값이 0이므로 무조건 오름차순으로
 					// 정렬한다.)
-					if (mLogComparator.mComparatorField == ExternalDeviceAppLog
-							.getComparatorFieldNumberByOrder(i))
-						mLogComparator.mIsAsendingOrder = !mLogComparator.mIsAsendingOrder;
+					if (mLogComparator.getComparatorField() == ExternalDeviceAppLog
+							.getFieldConstantByOrder(i))
+						mLogComparator.setOrder(!mLogComparator.getOrder());
 					else
-						mLogComparator.mIsAsendingOrder = true;
-					mLogComparator.mComparatorField = i;
+						mLogComparator.setOrder(true);
+					mLogComparator.setComparatorField(i);
 					break;
 				}
 			}
@@ -196,7 +208,7 @@ public class LogViewFragment extends Fragment {
 					int id = mTitleViewsIdArray[i];
 					textViewArray[i] = (TextView) convertView.findViewById(id);
 					textViewArray[i].setText(item.getField(ExternalDeviceAppLog
-							.getComparatorFieldNumberByOrder(i)));
+							.getFieldConstantByOrder(i)));
 					convertView.setTag(id, textViewArray[i]);
 				}
 			} else {
@@ -204,7 +216,7 @@ public class LogViewFragment extends Fragment {
 					textViewArray[i] = (TextView) convertView
 							.getTag(mTitleViewsIdArray[i]);
 					textViewArray[i].setText(item.getField(ExternalDeviceAppLog
-							.getComparatorFieldNumberByOrder(i)));
+							.getFieldConstantByOrder(i)));
 				}
 			}
 
@@ -273,9 +285,9 @@ public class LogViewFragment extends Fragment {
 
 	class LogLoader extends AsyncTaskLoader<List<ExternalDeviceAppLog>> {
 		String device, app;
-		LogHelper helper;
+		DBHelper helper;
 
-		public LogLoader(Context context, LogHelper converter, String device,
+		public LogLoader(Context context, DBHelper converter, String device,
 				String app) {
 			super(context);
 			this.device = device;

@@ -1,24 +1,28 @@
-package kr.poturns.blink.external.tab.logview;
+package kr.poturns.blink.external;
 
 import java.util.Comparator;
 
+import kr.poturns.blink.db.archive.DeviceAppLog;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
  * <li>
- * device -> {@link ExternalDeviceAppLog#FIELD_DEVICE}</li><li>app ->
- * {@link ExternalDeviceAppLog#FIELD_APP}</li><li>
- * content -> {@link ExternalDeviceAppLog#FIELD_CONTENT}</li><li>dateTime ->
- * {@link ExternalDeviceAppLog#FIELD_DATETIME}</li>
+ * device -> {@link ExternalDeviceAppLog#FIELD_DEVICE}</li><br>
+ * <li>app -> {@link ExternalDeviceAppLog#FIELD_APP}</li><br>
+ * <li>type -> {@link ExternalDeviceAppLog#FIELD_TYPE}</li><br>
+ * <li>content -> {@link ExternalDeviceAppLog#FIELD_CONTENT}</li><br>
+ * <li>dateTime -> {@link ExternalDeviceAppLog#FIELD_DATETIME}</li>
  * 
  */
 public class ExternalDeviceAppLog implements Parcelable {
-	static final int FIELD_SIZE = 4;
+	public static final int FIELD_SIZE = 5;
 	public static final int FIELD_DEVICE = 0;
 	public static final int FIELD_APP = 1;
-	public static final int FIELD_CONTENT = 2;
-	public static final int FIELD_DATETIME = 3;
+	public static final int FIELD_TYPE = 2;
+	public static final int FIELD_CONTENT = 3;
+	public static final int FIELD_DATETIME = 4;
+	public static final int FIELD_NOT = -1;
 	public String[] fieldArray = new String[FIELD_SIZE];
 
 	public ExternalDeviceAppLog() {
@@ -26,10 +30,19 @@ public class ExternalDeviceAppLog implements Parcelable {
 			fieldArray[i] = "";
 	}
 
-	public ExternalDeviceAppLog(String device, String app, String content,
-			String dateTime) {
+	public ExternalDeviceAppLog(DeviceAppLog log) {
+		fieldArray[FIELD_DEVICE] = log.Device;
+		fieldArray[FIELD_TYPE] = String.valueOf(log.Type);
+		fieldArray[FIELD_APP] = log.App;
+		fieldArray[FIELD_CONTENT] = log.Content;
+		fieldArray[FIELD_DATETIME] = log.DateTime;
+	}
+
+	public ExternalDeviceAppLog(String device, String app, String type,
+			String content, String dateTime) {
 		fieldArray[FIELD_DEVICE] = device;
 		fieldArray[FIELD_APP] = app;
+		fieldArray[FIELD_TYPE] = type;
 		fieldArray[FIELD_CONTENT] = content;
 		fieldArray[FIELD_DATETIME] = dateTime;
 	}
@@ -52,10 +65,11 @@ public class ExternalDeviceAppLog implements Parcelable {
 	 * 
 	 * @param fieldConstant
 	 *            <li>
-	 *            device -> {@link ExternalDeviceAppLog#FIELD_DEVICE}</li><li>
-	 *            app -> {@link ExternalDeviceAppLog#FIELD_APP}</li><li>
-	 *            content -> {@link ExternalDeviceAppLog#FIELD_CONTENT}</li><li>
-	 *            dateTime -> {@link ExternalDeviceAppLog#FIELD_DATETIME}</li> <br>
+	 *            device -> {@link ExternalDeviceAppLog#FIELD_DEVICE}</li><br>
+	 *            <li>app -> {@link ExternalDeviceAppLog#FIELD_APP}</li><br>
+	 *            <li>type -> {@link ExternalDeviceAppLog#FIELD_TYPE}</li><br>
+	 *            <li>content -> {@link ExternalDeviceAppLog#FIELD_CONTENT}</li><br>
+	 *            <li>dateTime -> {@link ExternalDeviceAppLog#FIELD_DATETIME}</li>
 	 *            중 하나
 	 * @return fieldConstant에 알맞는 멤버
 	 * @throws RuntimeException
@@ -70,8 +84,16 @@ public class ExternalDeviceAppLog implements Parcelable {
 
 	/**
 	 * 정수 순서에 맞는 ExternalDeviceAppLog의 Field를 가리키는 Field 상수를 얻는다.
+	 * 
+	 * @return <b>order</b>에 적절한 <li>{@link ExternalDeviceAppLog#FIELD_DEVICE}</li>
+	 * <br>
+	 *         <li>{@link ExternalDeviceAppLog#FIELD_APP}</li><br>
+	 *         <li>{@link ExternalDeviceAppLog#FIELD_TYPE}</li><br>
+	 *         <li>{@link ExternalDeviceAppLog#FIELD_CONTENT}</li><br>
+	 *         <li>{@link ExternalDeviceAppLog#FIELD_DATETIME}</li> 중 하나,<br>
+	 *         또는 {@link ExternalDeviceAppLog#FIELD_NOT}
 	 */
-	public static int getComparatorFieldNumberByOrder(int order) {
+	public static int getFieldConstantByOrder(int order) {
 		if (order < 0 || order > FIELD_SIZE) {
 			return -1;
 		}
@@ -81,19 +103,21 @@ public class ExternalDeviceAppLog implements Parcelable {
 		case 1:
 			return FIELD_APP;
 		case 2:
-			return FIELD_CONTENT;
+			return FIELD_TYPE;
 		case 3:
+			return FIELD_CONTENT;
+		case 4:
 			return FIELD_DATETIME;
 		default:
-			return -1;
+			return FIELD_NOT;
 		}
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		String[] array = new String[] { "Device : ", "App : ", "Content : ",
-				"DateTime : " };
+		String[] array = new String[] { "Device : ", "App : ", "Type : ",
+				"Content : ", "DateTime : " };
 		for (int i = 0; i < FIELD_SIZE; i++) {
 			sb.append(array[i] + fieldArray[i] + "\n");
 		}
