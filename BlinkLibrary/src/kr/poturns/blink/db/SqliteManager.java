@@ -4,6 +4,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import kr.poturns.blink.db.archive.DeviceApp;
 import kr.poturns.blink.db.archive.DeviceAppFunction;
@@ -42,7 +43,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	private final String SQL_SELECT_MEASUREMENTDATA =  "SELECT * FROM MeasurementData ";
 	private final String SQL_SELECT_GROUPID =  "SELECT max(GroupId) FROM MeasurementData ";
 	private final String SQL_DELETE_MEASUREMENTDATA = "delete from MeasurementData ";
-	private final String SQL_SELECT_LOG =  "SELECT * FROM DeviceAppLog ";
+	private final String SQL_SELECT_LOG =  "SELECT * FROM Log ";
 	public static final String EXTERNAL_DB_FILE_PATH = Environment.getExternalStorageDirectory() + "/Blink/archive/";
 	public static final String EXTERNAL_DB_FILE_NAME = "BlinkDatabase.db";
 	
@@ -160,7 +161,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		ArrayList<DeviceApp> mDeviceAppList = new ArrayList<DeviceApp>();
 		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_DEVICEAPPLIST, null);
 		DeviceApp mDeviceApp = null;
-		if(mCursor.moveToNext()){
+		while(mCursor.moveToNext()){
 			mDeviceApp = new DeviceApp();
 			mDeviceApp.DeviceAppId = mCursor.getInt(mCursor.getColumnIndex("DeviceAppId"));
 			mDeviceApp.Device = mCursor.getString(mCursor.getColumnIndex("Device"));
@@ -294,7 +295,11 @@ public class SqliteManager extends SQLiteOpenHelper {
 	 * @param DateTimeTo
 	 * @return
 	 */
-	private ArrayList<MeasurementData> obtainMeasurementData(ArrayList<DeviceAppMeasurement> mDeviceAppMeasurementList,String DateTimeFrom,String DateTimeTo){
+	public List<MeasurementData> obtainMeasurementData(DeviceAppMeasurement mDeviceAppMeasurement,String DateTimeFrom,String DateTimeTo){
+		ArrayList<DeviceAppMeasurement> mDeviceAppMeasurementList = new ArrayList<DeviceAppMeasurement>();
+		return obtainMeasurementData(mDeviceAppMeasurementList,DateTimeFrom,DateTimeTo);
+	}
+	public List<MeasurementData> obtainMeasurementData(List<DeviceAppMeasurement> mDeviceAppMeasurementList,String DateTimeFrom,String DateTimeTo){
 		String where = "where ";
 		ArrayList<String> condition = new ArrayList<String>();
 		String MeasurementIdcondition = "";
@@ -427,7 +432,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		}
 		
 		//mDeviceAppMeasurementList에 저장한 ID로 mMeasurementDataList를 가져온다.
-		ArrayList<MeasurementData> mMeasurementDataList = obtainMeasurementData(mDeviceAppMeasurementList,DateTimeFrom,DateTimeTo);
+		List<MeasurementData> mMeasurementDataList = obtainMeasurementData(mDeviceAppMeasurementList,DateTimeFrom,DateTimeTo);
 		MeasurementData mMeasurementData;
 		
 		//reflect를 이용하여 obj과 같은 클래스의 인스턴스를 만들어 각각의 필드에 해당 값을 셋팅해준다.
@@ -531,29 +536,44 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mSQLiteDatabase.delete("MeasurementData", where, null);
 	}
 	
-	public void registerLog(int mDeviceAppId,String Content){
+	
+	/**
+	 * Register log to Log table. 
+	 * @param Device
+	 * @param App
+	 * @param Type
+	 * @param Content
+	 */
+	public void registerLog(String Device,String App,int Type,String Content){
 		ContentValues values = new ContentValues();
-		values.put("DeviceAppId", ""+mDeviceAppId);  
+		values.put("Device", Device);  
+	    values.put("App", App);
+	    values.put("Type", Type);
 	    values.put("Content", Content);
-	    mSQLiteDatabase.insert("DeviceAppLog", null, values);
+	    mSQLiteDatabase.insert("Log", null, values);
 	    Log.i(tag, "Log OK");
 	}
 	
-	public ArrayList<DeviceAppLog> obtainLog(ArrayList<Integer> mDeviceAppIdList, String DateTimeFrom,String DateTimeTo){
-		String where = "where ";
+	/**
+	 * Search log from Log table
+	 * @param Device
+	 * @param App
+	 * @param Type
+	 * @param DateTimeFrom
+	 * @param DateTimeTo
+	 * @return
+	 */
+	public List<DeviceAppLog> obtainLog(String Device,String App,int Type,String DateTimeFrom,String DateTimeTo){
+		String where = "";
 		ArrayList<String> condition = new ArrayList<String>();
-		String DeviceAppIdcondition = "";
-		for(int i=0;i<mDeviceAppIdList.size();i++){
-			DeviceAppIdcondition += mDeviceAppIdList.get(i);
-			if(i!=mDeviceAppIdList.size()-1){
-				DeviceAppIdcondition += ",";
-			}
-		}
 		
+		if(Device!=null)condition.add("Device='"+Device+"'");
+		if(App!=null)condition.add("App='"+App+"'");
+		if(Type!=-1)condition.add("Type="+Type);
 		if(DateTimeFrom!=null)condition.add("DateTime >= '"+DateTimeFrom+"'");
 		if(DateTimeTo!=null)condition.add("DateTime <= '"+DateTimeTo+"'");
-		if(DeviceAppIdcondition.length()>0)condition.add("DeviceAppId in (" + DeviceAppIdcondition + ")");
 		
+		if(condition.size()>0)where+="where ";
 		for(int i=0;i<condition.size();i++){
 			where += condition.get(i);
 			if(i+1<condition.size())where += " and ";
@@ -564,11 +584,27 @@ public class SqliteManager extends SQLiteOpenHelper {
 		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_LOG+where, null);
 		while(mCursor.moveToNext()){
 			mDeviceAppLog = new DeviceAppLog();
-			mDeviceAppLog.DeviceAppId = mCursor.getInt(mCursor.getColumnIndex("DeviceAppId"));
+			mDeviceAppLog.LogId = mCursor.getInt(mCursor.getColumnIndex("LogId"));
+			mDeviceAppLog.Device = mCursor.getString(mCursor.getColumnIndex("Device"));
+			mDeviceAppLog.App = mCursor.getString(mCursor.getColumnIndex("App"));
+			mDeviceAppLog.Type = mCursor.getInt(mCursor.getColumnIndex("Type"));
 			mDeviceAppLog.Content = mCursor.getString(mCursor.getColumnIndex("Content"));
 			mDeviceAppLog.DateTime = mCursor.getString(mCursor.getColumnIndex("DateTime"));
 			mDeviceAppLogList.add(mDeviceAppLog);
 		}
 		return mDeviceAppLogList;
+	}
+	
+	public List<DeviceAppLog> obtainLog(String Device,String App,String DateTimeFrom,String DateTimeTo){
+		return obtainLog(Device,App,-1,DateTimeFrom,DateTimeTo);
+	}
+	public List<DeviceAppLog> obtainLog(String Device,String DateTimeFrom,String DateTimeTo){
+		return obtainLog(Device,null,-1,DateTimeFrom,DateTimeTo);
+	}
+	public List<DeviceAppLog> obtainLog(String DateTimeFrom,String DateTimeTo){
+		return obtainLog(null,null,-1,DateTimeFrom,DateTimeTo);
+	}
+	public List<DeviceAppLog> obtainLog(){
+		return obtainLog(null,null,-1,null,null);
 	}
 }

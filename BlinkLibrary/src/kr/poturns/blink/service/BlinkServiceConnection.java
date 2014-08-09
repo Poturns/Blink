@@ -3,11 +3,13 @@ package kr.poturns.blink.service;
 import android.content.ComponentName;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+import android.os.RemoteException;
 
 public class BlinkServiceConnection implements ServiceConnection {
 	BlinkServiceManager mBlinkServiceManager;
 	
 	public BlinkServiceConnection(BlinkServiceManager mBlinkServiceManager){
+		
 		this.mBlinkServiceManager = mBlinkServiceManager;
 	}
 	
@@ -15,6 +17,12 @@ public class BlinkServiceConnection implements ServiceConnection {
 	public void onServiceConnected(ComponentName arg0, IBinder arg1) {
 		// TODO Auto-generated method stub
 		mBlinkServiceManager.mBlinkServiceBinder = IBlinkServiceBinder.Stub.asInterface(arg1);
+		try {
+			mBlinkServiceManager.mBlinkServiceBinder.registerApplicationInfo(mBlinkServiceManager.device, mBlinkServiceManager.app);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		mBlinkServiceManager.mBlinkServiceListener.onServiceConnected();
 	}
 
