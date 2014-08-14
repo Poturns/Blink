@@ -3,15 +3,19 @@ package kr.poturns.blink.internal.comm;
 import java.io.Serializable;
 
 import kr.poturns.blink.internal.DeviceAnalyzer;
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 /**
+ * BluetoothDevice
  * 
  * @author Yeonho.Kim
  * @since 2014.07.26
  *
  */
-public class BluetoothDeviceExtended implements Serializable {
+public class BluetoothDeviceExtended implements Parcelable, Serializable {
 
 	// *** CONSTANT DECLARATION *** //
 	/**
@@ -21,15 +25,24 @@ public class BluetoothDeviceExtended implements Serializable {
 	
 	
 	// *** FIELD DECLARATION *** //
-	private final BluetoothDevice DEVICE;
+	private BluetoothDevice Device;
+	public String DeviceAddress;
 	private boolean AutoConnect;
 	private boolean Secure;
 	
 	private DeviceAnalyzer.Identity Identity;
 	private int IdentityPoint;
 	
+	public BluetoothDeviceExtended(Parcel parcel) {
+		readFromParcel(parcel);
+		
+		Identity = DeviceAnalyzer.Identity.UNKNOWN;
+		IdentityPoint = 0;
+	}
+
 	public BluetoothDeviceExtended(BluetoothDevice device) {
-		this.DEVICE = device;
+		this.Device = device;
+		this.DeviceAddress = device.getAddress();
 
 		// - Default Setting
 		DeviceAnalyzer mAnalyzer = DeviceAnalyzer.getInstance(null);
@@ -43,15 +56,10 @@ public class BluetoothDeviceExtended implements Serializable {
 			//mAutoConnect = mAnalyzer.getAnalysis(key)
 		}
 	}
-
-	@Override
-	public int hashCode() {
-		// TODO Auto-generated method stub
-		return super.hashCode();
-	}
+	
 	
 	public BluetoothDevice getDevice() {
-		return DEVICE;
+		return Device;
 	}
 	
 	public void setAutoConnect(boolean auto) {
@@ -71,6 +79,61 @@ public class BluetoothDeviceExtended implements Serializable {
 	}
 	
 	public boolean isLESupported() {
-		return (DEVICE.getType() & BluetoothDevice.DEVICE_TYPE_LE) == BluetoothDevice.DEVICE_TYPE_LE;
+		return (Device.getType() & BluetoothDevice.DEVICE_TYPE_LE) == BluetoothDevice.DEVICE_TYPE_LE;
 	}
+	
+	public void recover(BluetoothAdapter adapter) {
+		if (Device == null && DeviceAddress != null) {
+			try {
+				Device = adapter.getRemoteDevice(DeviceAddress);
+			} catch (IllegalArgumentException e) {
+				Device = null;
+			}
+		}
+	}
+
+	 public static final Parcelable.Creator<BluetoothDeviceExtended> CREATOR = new Parcelable.Creator<BluetoothDeviceExtended>() {
+	        public BluetoothDeviceExtended createFromParcel(Parcel in) {
+	            return new BluetoothDeviceExtended(in);
+	        }
+	        
+	        public BluetoothDeviceExtended[] newArray( int size ) {
+	            return new BluetoothDeviceExtended[size];
+	        }
+	};
+	    
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		if (dest != null) {
+			dest.writeString(DeviceAddress);
+			dest.writeBooleanArray(new boolean[]{AutoConnect, Secure});
+			dest.writeInt((Identity == null)? 0 : Identity.ordinal());
+			dest.writeInt(IdentityPoint);
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+		return DeviceAddress.hashCode();
+	}
+
+	public void readFromParcel(Parcel parcel) {
+		this.DeviceAddress = parcel.readString();
+		
+		boolean[] booleanPool = new boolean[2]; 
+		parcel.readBooleanArray(booleanPool);
+		
+		AutoConnect = booleanPool[0];
+		Secure = booleanPool[1];
+		
+		int identity = Math.max(0, Math.min(3, parcel.readInt()));
+		Identity = DeviceAnalyzer.Identity.values()[identity];
+		IdentityPoint = parcel.readInt();
+	}
+	
 }

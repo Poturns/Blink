@@ -5,8 +5,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import kr.poturns.blink.internal.comm.BluetoothDeviceExtended;
-import kr.poturns.blink.internal.comm.InterDeviceEventListener;
 import android.bluetooth.BluetoothSocket;
+import android.util.Log;
 
 /**
  * 
@@ -54,12 +54,13 @@ public class ClassicLinkThread extends Thread {
 	}
 	
 	private void init() {
+		Log.d("ClassicLinkThread_init()", "");
 		try {
 			mInputStream = new ObjectInputStream(mBluetoothSocket.getInputStream());
 			mOutputStream = new ObjectOutputStream(mBluetoothSocket.getOutputStream());
 			
 		} catch (IOException e) {
-			
+			e.printStackTrace();
 		}
 		
 		isRunning = false;
@@ -68,10 +69,12 @@ public class ClassicLinkThread extends Thread {
 	
 	@Override
 	public void run() {
+		Log.d("ClassicLinkThread_run()", "");
 		while (isRunning) {
 			try {
 				String json = (String) mInputStream.readObject();
-				
+
+				Log.d("ClassicLinkThread_run()", "Read : " + json);
 				ASSISTANT.onMessageReceivedFrom(json, DEVICE_X);
 				
 			} catch (IOException e) {
@@ -93,6 +96,8 @@ public class ClassicLinkThread extends Thread {
 	}
 	
 	public synchronized void startListening() {
+		Log.d("ClassicLinkThread_startListening()", "");
+		
 		if (!isRunning || (isRunning = true)) 
 			super.start();
 		

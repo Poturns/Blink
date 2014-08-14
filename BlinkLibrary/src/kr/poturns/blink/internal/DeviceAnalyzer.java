@@ -17,6 +17,7 @@ public class DeviceAnalyzer {
 	// *** CONSTANT DECLARATION *** //
 	public enum Identity {
 		UNKNOWN,
+		MAIN,
 		CORE,
 		PERIPHERALS
 	}
@@ -72,7 +73,7 @@ public class DeviceAnalyzer {
 		hasUserSelection = false;
 		
 		analyze();
-		apply(false);
+		apply(true);
 	}
 	
 	/**

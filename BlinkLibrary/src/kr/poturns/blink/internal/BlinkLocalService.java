@@ -131,9 +131,6 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 	
 	@Override
 	public IBinder onBind(Intent intent) {
-		if (InterDeviceManager.ACTION_NAME.equals(intent.getAction())) {
-			return LinkStatusHandler.getInstance(mInterDeviceManager).getBinder();
-		}
 		return new BlinkServiceBinder().asBinder();
 	}
 
