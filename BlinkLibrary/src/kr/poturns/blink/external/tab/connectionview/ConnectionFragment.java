@@ -89,6 +89,10 @@ public abstract class ConnectionFragment extends Fragment {
 		mDeviceList.addAll(mHelper.getDeviceSet());
 	}
 
+	protected final void fetchDeviceListFromBluetooth() {
+
+	}
+
 	protected final List<SystemDatabaseObject> getSystemDatabaseObjectByDevice(
 			String device) {
 		return mHelper.getSystemDatabaseObjectByDevice(device);
@@ -171,5 +175,15 @@ public abstract class ConnectionFragment extends Fragment {
 	/** 연결되지 않은 Device를 Host기기와 연결을 시도한다. */
 	protected final boolean conectDevice(String device) {
 		return false;
+	}
+
+	@Override
+	public void onDestroy() {
+		cancelCurrentRefreshOperation();
+		super.onDestroy();
+	}
+
+	protected final void cancelCurrentRefreshOperation() {
+
 	}
 }

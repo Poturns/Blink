@@ -74,8 +74,10 @@ public class DBHelper {
 	}
 
 	public synchronized static void close() {
-		sInstance.mManager.close();
-		sInstance = null;
+		if (sInstance != null) {
+			sInstance.mManager.close();
+			sInstance = null;
+		}
 	}
 
 	public List<SystemDatabaseObject> getAllDB() {

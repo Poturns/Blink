@@ -1,12 +1,6 @@
 package kr.poturns.blink.internal;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 
 import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.archive.DeviceAppLog;
@@ -18,6 +12,9 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * 
@@ -45,6 +42,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 				String app) throws RemoteException {
 			// TODO Auto-generated method stub
 			Log.i(tag, "obtainSystemDatabase");
+			mSqliteManager.registerLog(device, app, mSqliteManager.LOG_OBTAIN_SYSTEMDATABASE, "");
 			return mSqliteManager.obtainSystemDatabase(device, app);
 		}
 
@@ -54,6 +52,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 				throws RemoteException {
 			// TODO Auto-generated method stub
 			Log.i(tag, "registerSystemDatabase");
+			mSqliteManager.registerLog(device, app, mSqliteManager.LOG_REGISTER_SYSTEMDATABASE, "");
 			mSqliteManager.registerSystemDatabase(mSystemDatabaseObject);
 		}
 
@@ -62,6 +61,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 				SystemDatabaseObject mSystemDatabaseObject, String ClassName,
 				String JsonObj) throws RemoteException {
 			// TODO Auto-generated method stub
+			mSqliteManager.registerLog(device, app, mSqliteManager.LOG_REGISTER_MEASRUEMENT, "");
 			try{
 				Class<?> mClass = Class.forName(ClassName);
 				Object obj = new Gson().fromJson(JsonObj, mClass);
@@ -76,6 +76,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 				String DateTimeFrom, String DateTimeTo, int ContainType)
 				throws RemoteException {
 			// TODO Auto-generated method stub
+			mSqliteManager.registerLog(device, app, mSqliteManager.LOG_OBTAIN_MEASUREMENT, ClassName);
 			try{
 				Class<?> mClass = Class.forName(ClassName);
 				Log.i(tag, "class name : "+mClass.getName());
@@ -90,6 +91,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 		public List<SystemDatabaseObject> obtainSystemDatabaseAll()
 				throws RemoteException {
 			// TODO Auto-generated method stub
+			mSqliteManager.registerLog(device, app, mSqliteManager.LOG_OBTAIN_SYSTEMDATABASE, "ALL");
 			return mSqliteManager.obtainSystemDatabase();
 		}
 
@@ -98,6 +100,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 				List<DeviceAppMeasurement> mDeviceAppMeasurementList,
 				String DateTimeFrom, String DateTimeTo) throws RemoteException {
 			// TODO Auto-generated method stub
+			mSqliteManager.registerLog(device, app, mSqliteManager.LOG_OBTAIN_MEASUREMENT, "By Id");
 			return mSqliteManager.obtainMeasurementData(mDeviceAppMeasurementList, DateTimeFrom, DateTimeTo);
 		}
 

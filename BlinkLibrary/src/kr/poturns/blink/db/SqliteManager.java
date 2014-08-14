@@ -37,6 +37,15 @@ public class SqliteManager extends SQLiteOpenHelper {
 	public final static int CONTAIN_PARENT = 1;
 	public final static int CONTAIN_FIELD = 2;
 	
+	public final static int LOG_REGISTER_SYSTEMDATABASE = 1;
+	public final static int LOG_OBTAIN_SYSTEMDATABASE = 2;
+	public final static int LOG_REGISTER_DEVICEAPPMEASUREMENT = 3;
+	public final static int LOG_OBTAIN_DEVICEAPPMEASUREMENT = 4;
+	public final static int LOG_REGISTER_DEVICEAPPFUNCTION = 5;
+	public final static int LOG_OBTAIN_DEVICEAPPFUNCTION = 6;
+	public final static int LOG_REGISTER_MEASRUEMENT = 7;
+	public final static int LOG_OBTAIN_MEASUREMENT = 8;
+	
 	private final String SQL_SELECT_DEVICEAPPLIST = "SELECT * FROM DeviceAppList ";
 	private final String SQL_SELECT_DEVICEAPPFUNCTION = "SELECT * FROM DeviceAppFunction where DeviceAppId=?";
 	private final String SQL_SELECT_DEVICEAPPMEASUREMENT = "SELECT * FROM DeviceAppMeasurement ";
@@ -540,12 +549,13 @@ public class SqliteManager extends SQLiteOpenHelper {
 	 * @param Type
 	 * @param Content
 	 */
-	public void registerLog(String Device,String App,int Type,String Content){
+	public void registerLog(String device,String app,int type,String content){
+		if(device==null||app==null)return;
 		ContentValues values = new ContentValues();
-		values.put("Device", Device);  
-	    values.put("App", App);
-	    values.put("Type", Type);
-	    values.put("Content", Content);
+		values.put("Device", device);  
+	    values.put("App", app);
+	    values.put("Type", type);
+	    values.put("Content", content);
 	    mSQLiteDatabase.insert("Log", null, values);
 	    Log.i(tag, "Log OK");
 	}
