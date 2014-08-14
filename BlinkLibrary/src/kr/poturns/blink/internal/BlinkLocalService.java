@@ -7,6 +7,7 @@ import kr.poturns.blink.db.archive.DeviceAppLog;
 import kr.poturns.blink.db.archive.DeviceAppMeasurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
+import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import kr.poturns.blink.service.IBlinkServiceBinder;
 import android.content.Intent;
 import android.os.IBinder;
@@ -24,7 +25,7 @@ import com.google.gson.GsonBuilder;
 public final class BlinkLocalService extends BlinkLocalBaseService {
 	private final String tag = "BlinkLocalService";
 	public SqliteManager mSqliteManager = null;
-	public static final String INTENT_ACTION_NAME = "";
+	public static final String INTENT_ACTION_NAME = "kr.poturns.blink.internal.BlinkLocalService";
 	
 	@Override
 	public void onCreate() {
@@ -128,13 +129,10 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 		}
 	}
 	
-	
 	@Override
 	public IBinder onBind(Intent intent) {
-		if (InterDeviceManager.ACTION_NAME.equals(intent.getAction())) {
-			return LinkStatusHandler.getInstance(mInterDeviceManager).getBinder();
-		}
-		return new BlinkServiceBinder().asBinder();
+		//return new BlinkServiceBinder().asBinder();
+		return InterDeviceManager.getInstance(this).mInternalOperationSupporter.asBinder();
 	}
 
 }

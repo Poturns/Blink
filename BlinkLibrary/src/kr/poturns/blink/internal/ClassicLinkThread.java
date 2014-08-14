@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import kr.poturns.blink.internal.comm.BluetoothDeviceExtended;
-import kr.poturns.blink.internal.comm.InterDeviceEventListener;
+import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.bluetooth.BluetoothSocket;
+import android.util.Log;
 
 /**
  * 
@@ -21,7 +21,7 @@ public class ClassicLinkThread extends Thread {
 
 	private final InterDeviceManager INTER_DEV_MANAGER;
 	private final BluetoothAssistant ASSISTANT;
-	private final BluetoothDeviceExtended DEVICE_X;
+	private final BlinkDevice DEVICE_X;
 	
 	private boolean isClient;
 	private BluetoothSocket mBluetoothSocket;
@@ -33,10 +33,10 @@ public class ClassicLinkThread extends Thread {
 	private boolean isStopped;
 	
 	public ClassicLinkThread(BluetoothAssistant assistant, BluetoothSocket socket, boolean client) {
-		this(assistant, new BluetoothDeviceExtended(socket.getRemoteDevice()), socket, client);
+		this(assistant, BlinkDevice.load(socket.getRemoteDevice()), socket, client);
 	}
 	
-	public ClassicLinkThread(BluetoothAssistant assistant, BluetoothDeviceExtended deviceX, BluetoothSocket socket, boolean client) {
+	public ClassicLinkThread(BluetoothAssistant assistant, BlinkDevice deviceX, BluetoothSocket socket, boolean client) {
 		this(assistant, deviceX);
 		
 		isClient =  client;
@@ -45,8 +45,8 @@ public class ClassicLinkThread extends Thread {
 		init();
 	}
 	
-	private ClassicLinkThread(BluetoothAssistant assistant, BluetoothDeviceExtended deviceX) {
-		super(assistant.CONNECTION_GROUP, deviceX.getDevice().getName());
+	private ClassicLinkThread(BluetoothAssistant assistant, BlinkDevice deviceX) {
+		super(assistant.CONNECTION_GROUP, deviceX.getName());
 
 		INTER_DEV_MANAGER = assistant.INTER_DEV_MANAGER;
 		ASSISTANT = assistant;
@@ -54,12 +54,13 @@ public class ClassicLinkThread extends Thread {
 	}
 	
 	private void init() {
+		Log.d("ClassicLinkThread_init()", "");
 		try {
 			mInputStream = new ObjectInputStream(mBluetoothSocket.getInputStream());
 			mOutputStream = new ObjectOutputStream(mBluetoothSocket.getOutputStream());
 			
 		} catch (IOException e) {
-			
+			e.printStackTrace();
 		}
 		
 		isRunning = false;
@@ -68,10 +69,12 @@ public class ClassicLinkThread extends Thread {
 	
 	@Override
 	public void run() {
+		Log.d("ClassicLinkThread_run()", "");
 		while (isRunning) {
 			try {
 				String json = (String) mInputStream.readObject();
-				
+
+				Log.d("ClassicLinkThread_run()", "Read : " + json);
 				ASSISTANT.onMessageReceivedFrom(json, DEVICE_X);
 				
 			} catch (IOException e) {
@@ -93,6 +96,8 @@ public class ClassicLinkThread extends Thread {
 	}
 	
 	public synchronized void startListening() {
+		Log.d("ClassicLinkThread_startListening()", "");
+		
 		if (!isRunning || (isRunning = true)) 
 			super.start();
 		

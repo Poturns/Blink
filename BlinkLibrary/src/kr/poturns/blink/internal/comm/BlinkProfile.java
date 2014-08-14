@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.UUID;
 
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothHealth;
 import android.bluetooth.BluetoothProfile;
 
 public class BlinkProfile implements BluetoothProfile {

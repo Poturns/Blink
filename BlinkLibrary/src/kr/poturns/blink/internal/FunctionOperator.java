@@ -2,10 +2,10 @@ package kr.poturns.blink.internal;
 
 import java.util.ArrayList;
 
-import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import kr.poturns.blink.db.JsonManager;
 import kr.poturns.blink.db.SqliteManager;
-import kr.poturns.blink.internal.comm.BluetoothDeviceExtended;
+import kr.poturns.blink.db.archive.SystemDatabaseObject;
+import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.content.Context;
 
 /**
@@ -25,7 +25,7 @@ class FunctionOperator implements Runnable {
 		this.OPERATOR_CONTEXT = context;
 		
 		mJsonManager = new JsonManager();
-		mSqliteManager = new SqliteManager(context);
+		//mSqliteManager = new SqliteManager(context);
 	}
 
 	
@@ -35,7 +35,7 @@ class FunctionOperator implements Runnable {
 		
 	}
 	
-	public void acceptJsonData(String json, BluetoothDeviceExtended deviceX) {
+	public void acceptJsonData(String json, BlinkDevice deviceX) {
 		ArrayList<SystemDatabaseObject> mObjectList = mJsonManager.obtainJsonSystemDatabaseObject(json);
 		
 		for (SystemDatabaseObject object : mObjectList) {
