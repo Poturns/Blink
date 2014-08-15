@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import kr.poturns.blink.db.JsonManager;
-import kr.poturns.blink.db.archive.DeviceAppLog;
+import kr.poturns.blink.db.archive.BlinkLog;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import kr.poturns.blink.schema.Body;
@@ -30,12 +30,12 @@ public class TestArchive {
 		this.mBlinkServiceManager = mBlinkServiceManager;
 	}
 	public void run(){
-//		exampleRegisterSystemDatabase();
+		exampleRegisterSystemDatabase();
 //		exampleObtainSystemDatabaseAll();
 //		exampleObtainMeasurementDataById();
 //		exampleObtainSystemDatabase();
-//		exampleRegisterMeasurementDatabase();
-		exampleObtainMeasurementDatabase();
+		exampleRegisterMeasurementDatabase();
+//		exampleObtainMeasurementDatabase();
 //		exampleRemoveMeasurementDatabase();
 //		exampleLogAll();
 	}
@@ -64,12 +64,12 @@ public class TestArchive {
 		mSystemDatabaseObject = mBlinkServiceManager.obtainSystemDatabase();
 		if(!mSystemDatabaseObject.isExist){
 			//등록되어있지 않으면 추가적으로 등록할 함수, 측정값을 추가하고 등록한다.
-			mSystemDatabaseObject.addDeviceAppFunction("flash", "light light");
-			mSystemDatabaseObject.addDeviceAppFunction("flash2", "light light");
-			mSystemDatabaseObject.addDeviceAppFunction("flash3", "light light");
-			mSystemDatabaseObject.addDeviceAppMeasurement(Eye.class);
-			mSystemDatabaseObject.addDeviceAppMeasurement(Body.class);
-			mSystemDatabaseObject.addDeviceAppMeasurement(Heart.class);
+			mSystemDatabaseObject.addFunction("flash", "light light");
+			mSystemDatabaseObject.addFunction("flash2", "light light");
+			mSystemDatabaseObject.addFunction("flash3", "light light");
+			mSystemDatabaseObject.addMeasurement(Eye.class);
+			mSystemDatabaseObject.addMeasurement(Body.class);
+			mSystemDatabaseObject.addMeasurement(Heart.class);
 			//sqlite에 등록하는 함수
 			mBlinkServiceManager.registerSystemDatabase(mSystemDatabaseObject);
 		}
@@ -108,7 +108,7 @@ public class TestArchive {
 		Log.i(tag, "exampleObtainMeasurementDataById");
 		mSystemDatabaseObjectList = mBlinkServiceManager.obtainSystemDatabaseAll();
 		for(int i=0;i<mSystemDatabaseObjectList.size();i++){
-			List<MeasurementData> mMeasurementDataList = mBlinkServiceManager.obtainMeasurementData(mSystemDatabaseObjectList.get(i).mDeviceAppMeasurementList, null, null);
+			List<MeasurementData> mMeasurementDataList = mBlinkServiceManager.obtainMeasurementData(mSystemDatabaseObjectList.get(i).mMeasurementList, null, null);
 			for(int j=0;j<mMeasurementDataList.size();j++){
 				Log.i(tag, "MeasurementData "+j+" \n"+mMeasurementDataList.get(j).toString());
 			}
@@ -191,7 +191,7 @@ public class TestArchive {
 			mBlinkServiceManager.registerLog("Device"+i, "App"+i, i, "test"+i);
 		}
 		
-		List<DeviceAppLog> mDeviceAppLogList = mBlinkServiceManager.obtainLog();
+		List<BlinkLog> mDeviceAppLogList = mBlinkServiceManager.obtainLog();
 		for(int i=0;i<mDeviceAppLogList.size();i++){
 			Log.i(tag, mDeviceAppLogList.get(i).toString());
 		}

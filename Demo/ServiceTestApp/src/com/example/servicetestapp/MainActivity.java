@@ -48,7 +48,7 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
-//		mBlinkServiceManager.closeService();
+		mBlinkServiceManager.closeService();
 		super.onDestroy();
 	}
 }

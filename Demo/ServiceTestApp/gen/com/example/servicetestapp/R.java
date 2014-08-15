@@ -44,10 +44,10 @@ public final class R {
         public static final int ic_navigation_drawer=0x7f02000a;
     }
     public static final class id {
-        public static final int action_connection_view_change=0x7f0b0014;
-        public static final int action_list_fillter=0x7f0b0016;
-        public static final int action_refresh=0x7f0b0015;
-        public static final int action_search=0x7f0b0017;
+        public static final int action_connection_view_change=0x7f0b0013;
+        public static final int action_list_fillter=0x7f0b0015;
+        public static final int action_refresh=0x7f0b0014;
+        public static final int action_search=0x7f0b0016;
         public static final int activity_main_fragment_content=0x7f0b0004;
         public static final int activity_main_left_drawer=0x7f0b0003;
         public static final int activity_preference_horizontalscrollview=0x7f0b0000;
@@ -60,13 +60,12 @@ public final class R {
         public static final int fragment_circular_seekbar=0x7f0b000a;
         public static final int fragment_circular_sliding_drawer=0x7f0b0006;
         public static final int fragment_content_select_list=0x7f0b000b;
-        public static final int fragment_logview_listview=0x7f0b0012;
         public static final int fragment_logview_table_title=0x7f0b000d;
         public static final int fragment_logview_text_app=0x7f0b000f;
         public static final int fragment_logview_text_content=0x7f0b0010;
         public static final int fragment_logview_text_datetime=0x7f0b0011;
         public static final int fragment_logview_text_device=0x7f0b000e;
-        public static final int fragment_sample_GraphView=0x7f0b0013;
+        public static final int fragment_sample_GraphView=0x7f0b0012;
         public static final int swipe_container=0x7f0b000c;
     }
     public static final class integer {
@@ -76,15 +75,16 @@ public final class R {
         public static final int activity_main=0x7f030000;
         public static final int activity_preference=0x7f030001;
         public static final int activity_service_control=0x7f030002;
-        public static final int fragment_circular_connection=0x7f030003;
-        public static final int fragment_content_select=0x7f030004;
-        public static final int fragment_dataview=0x7f030005;
-        public static final int fragment_list_connection=0x7f030006;
-        public static final int fragment_logview=0x7f030007;
-        public static final int fragment_sample=0x7f030008;
-        public static final int fragment_sample_graph=0x7f030009;
-        public static final int list_fragment_logview=0x7f03000a;
-        public static final int view_textview=0x7f03000b;
+        public static final int dialog_fragment_connection=0x7f030003;
+        public static final int fragment_circular_connection=0x7f030004;
+        public static final int fragment_content_select=0x7f030005;
+        public static final int fragment_dataview=0x7f030006;
+        public static final int fragment_list_connection=0x7f030007;
+        public static final int fragment_logview=0x7f030008;
+        public static final int fragment_sample=0x7f030009;
+        public static final int fragment_sample_graph=0x7f03000a;
+        public static final int list_fragment_logview=0x7f03000b;
+        public static final int view_textview=0x7f03000c;
     }
     public static final class menu {
         public static final int fragment_circular_connection=0x7f0a0000;

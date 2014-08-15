@@ -1,23 +1,24 @@
 package kr.poturns.blink.db.archive;
 
 
-public class DeviceAppFunction implements IDatabaseObject{
+public class Function implements IDatabaseObject{
 	
-	public int DeviceAppId;
+	public int AppId;
 	public String Function;
 	public String Description;
 	
-	public DeviceAppFunction(){
+	public Function(){
+		this.AppId = -1;
 		this.Description = "";
 	}
-	public DeviceAppFunction(String Function,String Description){
+	public Function(String Function,String Description){
 		this.Function = Function;
 		this.Description = Description;
 	}
 	
 	public String toString(){
 		String ret = "";
-		ret += "DeviceAppId : "+DeviceAppId+"\r\n";
+		ret += "AppId : "+AppId+"\r\n";
 		ret += "Function : "+Function+"\r\n";
 		ret += "Description : "+Description+"\r\n";
 		return ret;

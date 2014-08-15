@@ -43,30 +43,31 @@ abstract class BlinkLocalBaseService extends Service {
 		FileUtil.createExternalDirectory();
 		
 		// Blink 서비스의 본 디바이스 정보 파악.
-		mDeviceAnalyzer = DeviceAnalyzer.getInstance(this);
-		
-		DeviceAnalyzer.Identity mIdentity = mDeviceAnalyzer.getCurrentIdentity();
-		if (DeviceAnalyzer.Identity.UNKNOWN.equals(mIdentity)) {
-			// Identity를 확인하고, 서비스가 정상적으로 동작할 수 없는 환경이면 종료한다.
-			Toast.makeText(this, R.string.internal_baseservice_unable_alert, Toast.LENGTH_LONG).show();
-			stopSelf();
-			return;
-		}
-		
-		// Device간 통신 모듈을 연결한다. 
-		mInterDeviceManager = InterDeviceManager.getInstance(this);
-		if (mInterDeviceManager == null) {
-			
-		}
+//		mDeviceAnalyzer = DeviceAnalyzer.getInstance(this);
+//		
+//		DeviceAnalyzer.Identity mIdentity = mDeviceAnalyzer.getCurrentIdentity();
+//		if (DeviceAnalyzer.Identity.UNKNOWN.equals(mIdentity)) {
+//			// Identity를 확인하고, 서비스가 정상적으로 동작할 수 없는 환경이면 종료한다.
+//			Toast.makeText(this, R.string.internal_baseservice_unable_alert, Toast.LENGTH_LONG).show();
+//			stopSelf();
+//			return;
+//		}
+//		
+//		// Device간 통신 모듈을 연결한다. 
+//		mInterDeviceManager = InterDeviceManager.getInstance(this);
+//		if (mInterDeviceManager == null) {
+//			
+//		}
 
 	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		DeviceAnalyzer.Identity identity = mDeviceAnalyzer.getCurrentIdentity();
+//		DeviceAnalyzer.Identity identity = mDeviceAnalyzer.getCurrentIdentity();
 		
-		return (DeviceAnalyzer.Identity.UNKNOWN.equals(identity))? 
-				START_NOT_STICKY : START_STICKY;
+//		return (DeviceAnalyzer.Identity.UNKNOWN.equals(identity))? 
+//				START_NOT_STICKY : START_STICKY;
+		return START_STICKY; 
 	}
 	
 	@Override

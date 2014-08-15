@@ -3,8 +3,8 @@ package kr.poturns.blink.internal;
 import java.util.List;
 
 import kr.poturns.blink.db.SqliteManager;
-import kr.poturns.blink.db.archive.DeviceAppLog;
-import kr.poturns.blink.db.archive.DeviceAppMeasurement;
+import kr.poturns.blink.db.archive.BlinkLog;
+import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import kr.poturns.blink.service.IBlinkServiceBinder;
@@ -97,11 +97,11 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 
 		@Override
 		public List<MeasurementData> obtainMeasurementDataById(
-				List<DeviceAppMeasurement> mDeviceAppMeasurementList,
+				List<Measurement> mMeasurementList,
 				String DateTimeFrom, String DateTimeTo) throws RemoteException {
 			// TODO Auto-generated method stub
 			mSqliteManager.registerLog(device, app, mSqliteManager.LOG_OBTAIN_MEASUREMENT, "By Id");
-			return mSqliteManager.obtainMeasurementData(mDeviceAppMeasurementList, DateTimeFrom, DateTimeTo);
+			return mSqliteManager.obtainMeasurementData(mMeasurementList, DateTimeFrom, DateTimeTo);
 		}
 
 		@Override
@@ -113,7 +113,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 		}
 
 		@Override
-		public List<DeviceAppLog> obtainLog(String Device, String App,
+		public List<BlinkLog> obtainLog(String Device, String App,
 				int Type, String DateTimeFrom, String DateTimeTo)
 				throws RemoteException {
 			// TODO Auto-generated method stub

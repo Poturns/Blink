@@ -3,7 +3,7 @@ package kr.poturns.blink.db;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
-import kr.poturns.blink.db.archive.DeviceAppMeasurement;
+import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import android.util.Log;
@@ -32,15 +32,15 @@ public class JsonManager {
 		ArrayList<SystemDatabaseObject> ret = new Gson().fromJson(json, SystemDatabaseObjectType);
 		return ret;
 	}
-	public static String obtainJsonDeviceAppMeasurement(ArrayList<DeviceAppMeasurement> mDeviceAppMeasurement){
+	public static String obtainJsonMeasurement(ArrayList<Measurement> mMeasurement){
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		String ret = gson.toJson(mDeviceAppMeasurement);
+		String ret = gson.toJson(mMeasurement);
 		return ret;
 	}
 	
-	public static ArrayList<DeviceAppMeasurement> obtainJsonDeviceAppMeasurement(String Json){
-		Type DeviceAppMeasurementType = new TypeToken<ArrayList<DeviceAppMeasurement>>(){}.getType();
-		ArrayList<DeviceAppMeasurement> ret = new Gson().fromJson(Json, DeviceAppMeasurementType);
+	public static ArrayList<Measurement> obtainJsonMeasurement(String Json){
+		Type MeasurementType = new TypeToken<ArrayList<Measurement>>(){}.getType();
+		ArrayList<Measurement> ret = new Gson().fromJson(Json, MeasurementType);
 		return ret;
 	}
 	

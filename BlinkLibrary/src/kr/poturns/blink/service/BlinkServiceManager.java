@@ -1,21 +1,17 @@
 package kr.poturns.blink.service;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 
 import kr.poturns.blink.db.SqliteManager;
-import kr.poturns.blink.db.archive.DeviceAppLog;
-import kr.poturns.blink.db.archive.DeviceAppMeasurement;
+import kr.poturns.blink.db.archive.BlinkLog;
+import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Build;
 import android.os.RemoteException;
-import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -57,8 +53,8 @@ public class BlinkServiceManager {
 	}
 	
 	public boolean registerSystemDatabase(SystemDatabaseObject mSystemDatabaseObject){
-		mSystemDatabaseObject.mDeviceApp.App = app;
-		mSystemDatabaseObject.mDeviceApp.Device = device;
+		mSystemDatabaseObject.mApp.PackageName = app;
+		mSystemDatabaseObject.mDevice.Device = device;
 		try {
 				mBlinkServiceBinder.registerSystemDatabase(mSystemDatabaseObject);
 				return true;
@@ -124,7 +120,7 @@ public class BlinkServiceManager {
 		}
 	}
 
-	public List<MeasurementData> obtainMeasurementData(List<DeviceAppMeasurement> mDeviceAppMeasurementList,String DateTimeFrom,String DateTimeTo){
+	public List<MeasurementData> obtainMeasurementData(List<Measurement> mDeviceAppMeasurementList,String DateTimeFrom,String DateTimeTo){
 		try{
 			return mBlinkServiceBinder.obtainMeasurementDataById(mDeviceAppMeasurementList, DateTimeFrom, DateTimeTo);
 		}catch(Exception e){
@@ -150,7 +146,7 @@ public class BlinkServiceManager {
 		}
 	}	
 	
-	public List<DeviceAppLog> obtainLog(String Device,String App,int Type,String DateTimeFrom,String DateTimeTo){
+	public List<BlinkLog> obtainLog(String Device,String App,int Type,String DateTimeFrom,String DateTimeTo){
 		try {
 			return mBlinkServiceBinder.obtainLog(Device, App, Type, DateTimeFrom, DateTimeTo);
 		} catch (RemoteException e) {
@@ -160,16 +156,16 @@ public class BlinkServiceManager {
 		return null;
 	}
 	
-	public List<DeviceAppLog> obtainLog(String Device,String App,String DateTimeFrom,String DateTimeTo){
+	public List<BlinkLog> obtainLog(String Device,String App,String DateTimeFrom,String DateTimeTo){
 		return obtainLog(Device,App,-1,DateTimeFrom,DateTimeTo);
 	}
-	public List<DeviceAppLog> obtainLog(String Device,String DateTimeFrom,String DateTimeTo){
+	public List<BlinkLog> obtainLog(String Device,String DateTimeFrom,String DateTimeTo){
 		return obtainLog(Device,null,-1,DateTimeFrom,DateTimeTo);
 	}
-	public List<DeviceAppLog> obtainLog(String DateTimeFrom,String DateTimeTo){
+	public List<BlinkLog> obtainLog(String DateTimeFrom,String DateTimeTo){
 		return obtainLog(null,null,-1,DateTimeFrom,DateTimeTo);
 	}
-	public List<DeviceAppLog> obtainLog(){
+	public List<BlinkLog> obtainLog(){
 		return obtainLog(null,null,-1,null,null);
 	}
 }

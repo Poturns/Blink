@@ -1,25 +1,29 @@
 package kr.poturns.blink.db.archive;
 
 
-public class DeviceApp implements IDatabaseObject{
+public class App implements IDatabaseObject{
 
-	public int DeviceAppId;
-	public String Device;
-	public String App;
-	public String Description;
+	public int AppId;
+	public int DeviceId;
+	public String PackageName;
+	public String AppName;
 	public int Version;
+	public String DateTime;
 	
-	public DeviceApp(){
-		DeviceAppId = -1;
-		Description = "";
+	public App(){
+		AppId = -1;
+		DeviceId = -1;
+		PackageName = "";
+		AppName = "";
+		Version = -1;
 	}
 	
 	public String toString(){
 		String ret = "";
-		ret += "DeviceAppId : "+DeviceAppId+"\r\n";
-		ret += "Device : "+Device+"\r\n";
-		ret += "App : "+App+"\r\n";
-		ret += "Description : "+Description+"\r\n";
+		ret += "AppId : "+AppId+"\r\n";
+		ret += "DeviceId : "+DeviceId+"\r\n";
+		ret += "PackageName : "+PackageName+"\r\n";
+		ret += "AppName : "+AppName+"\r\n";
 		ret += "Version : "+Version+"\r\n";
 		return ret;
 	}

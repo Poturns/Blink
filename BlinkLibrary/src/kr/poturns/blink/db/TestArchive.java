@@ -54,12 +54,12 @@ public class TestArchive {
 		mSystemDatabaseObject = mSqliteManager.obtainSystemDatabase("optimus g pro","com.example.blinkdb1");
 		if(!mSystemDatabaseObject.isExist){
 			//등록되어있지 않으면 추가적으로 등록할 함수, 측정값을 추가하고 등록한다.
-			mSystemDatabaseObject.addDeviceAppFunction("flash", "light light");
-			mSystemDatabaseObject.addDeviceAppFunction("flash2", "light light");
-			mSystemDatabaseObject.addDeviceAppFunction("flash3", "light light");
-			mSystemDatabaseObject.addDeviceAppMeasurement(Eye.class);
-			mSystemDatabaseObject.addDeviceAppMeasurement(Body.class);
-			mSystemDatabaseObject.addDeviceAppMeasurement(Heart.class);
+			mSystemDatabaseObject.addFunction("flash", "light light");
+			mSystemDatabaseObject.addFunction("flash2", "light light");
+			mSystemDatabaseObject.addFunction("flash3", "light light");
+			mSystemDatabaseObject.addMeasurement(Eye.class);
+			mSystemDatabaseObject.addMeasurement(Body.class);
+			mSystemDatabaseObject.addMeasurement(Heart.class);
 			//sqlite에 등록하는 함수
 			mSqliteManager.registerSystemDatabase(mSystemDatabaseObject);
 		}
