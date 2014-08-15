@@ -122,14 +122,13 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 		} else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 			if (onLog)
 				Log.d("InterDeviceManager", intent.getStringExtra(BluetoothDevice.EXTRA_NAME) + " : " );
-			
+
 			// 블루투스 Discovery, 디바이스 발견
 			BluetoothDevice mOrigin = (BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			BlinkDevice deviceX = BlinkDevice.load(mOrigin);
 			
 			if (onLog)
 				Log.d("InterDeviceManager", " Address = " + deviceX.getAddress());
-			
 			
 			mAssistant.onDeviceDiscovered(deviceX);
 			
@@ -159,6 +158,7 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			
 		} else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
 			// 해당 디바이스와 블루투스 연결 성립
+
 			BluetoothDevice mOrigin = (BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			BlinkDevice deviceX = BlinkDevice.load(mOrigin);
 			
@@ -172,14 +172,14 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			}
 			EVENT_CALLBACK_LIST.finishBroadcast();
 			
-			
 		} else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
 			// 해당 디바이스와 블루투스 연결 해제
+
 			BluetoothDevice mOrigin = (BluetoothDevice) intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			BlinkDevice deviceX = BlinkDevice.load(mOrigin);
 			
 			mAssistant.onDeviceDisconnected(deviceX);
-			
+
 			// 등록된 Callback을 통해 전달.
 			int size = EVENT_CALLBACK_LIST.beginBroadcast();
 			for (int i = 0; i < size; i++) {	
@@ -345,6 +345,7 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 
 		@Override
 		public void sendBlinkMessages(BlinkDevice target, String jsonMsg) throws RemoteException {
+
 			mAssistant.onMessageSentTo(jsonMsg, target);
 		}
 		

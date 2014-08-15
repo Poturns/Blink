@@ -17,4 +17,5 @@ interface IInternalEventCallback {
 	oneway void onDeviceDisconnected(inout BlinkDevice device);
 
 	oneway void onDeviceConnectionFailed(inout BlinkDevice device);
+
 }

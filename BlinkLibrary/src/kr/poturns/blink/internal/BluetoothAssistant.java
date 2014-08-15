@@ -3,12 +3,10 @@ package kr.poturns.blink.internal;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.UUID;
 
-import kr.poturns.blink.internal.comm.BlinkProfile;
 import kr.poturns.blink.internal.comm.BlinkDevice;
+import kr.poturns.blink.internal.comm.BlinkProfile;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -97,7 +95,7 @@ class BluetoothAssistant extends Handler{
 	private final HashMap<BlinkDevice, BluetoothGatt> LE_CONN_MAP;
 	private final HashMap<BlinkDevice, ClassicLinkThread> CLASSIC_CONN_MAP;
 	private final ArrayList<BlinkDevice> DISCOVERY_DEV_LIST;
-
+	
 	public BluetoothAssistant(InterDeviceManager manager) {
 		INTER_DEV_MANAGER = manager;
 		CONNECTION_GROUP = new ThreadGroup(TAG);
@@ -106,7 +104,6 @@ class BluetoothAssistant extends Handler{
 		CLASSIC_CONN_MAP = new HashMap<BlinkDevice, ClassicLinkThread>();
 		DISCOVERY_DEV_LIST = new ArrayList<BlinkDevice>();
 	}
-
 	
 	private BluetoothManager mBluetoothManager;
 	private FunctionOperator mFunctionOperator;
@@ -370,10 +367,10 @@ class BluetoothAssistant extends Handler{
 	 */
 	public void connectToDeviceAsClient(BlinkDevice deviceX, UUID uuid) {
 		BluetoothDevice device = deviceX.obtainBluetoothDevice();
-		
+
 		if (deviceX.isLESupported()) {
 			device.connectGatt(INTER_DEV_MANAGER.MANAGER_CONTEXT, deviceX.isAutoConnect(), mBluetoothGattCallback);
-			 
+
 		} else {
 			BluetoothSocket mBluetoothSocket;
 			try {
@@ -419,7 +416,6 @@ class BluetoothAssistant extends Handler{
 	}
 	
 	
-	
 	/**
 	 * 
 	 * @param deviceX
@@ -439,10 +435,8 @@ class BluetoothAssistant extends Handler{
 			CLASSIC_CONN_MAP.remove(deviceX);
 	}
 
-	
 	/**
 	 * 
-	 * @param json
 	 * @param deviceX
 	 */
 	synchronized void onMessageReceivedFrom(String json, BlinkDevice deviceX) {
@@ -464,9 +458,9 @@ class BluetoothAssistant extends Handler{
 			CLASSIC_CONN_MAP.get(deviceX).sendMessageToDevice(json);
 			
 		}
+
 	}
 
-	
 	
 	// *** CALLBACK FIELD DECLARATION *** //
 	/**
@@ -497,6 +491,7 @@ class BluetoothAssistant extends Handler{
 		
 		@Override 
 		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+
 			BlinkDevice deviceX = BlinkDevice.load(gatt.getDevice());
 			
 			int size = INTER_DEV_MANAGER.EVENT_CALLBACK_LIST.beginBroadcast();
