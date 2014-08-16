@@ -1,10 +1,13 @@
 package kr.poturns.blink.service;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 import kr.poturns.blink.db.SqliteManager;
+import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.BlinkLog;
+import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
@@ -26,6 +29,10 @@ public class BlinkServiceManager {
 	BlinkServiceListener mBlinkServiceListener = null;
 	IBlinkServiceBinder mBlinkServiceBinder = null;
 	BlinkServiceConnection mBlinkServiceConnection = null;
+	
+	ArrayList<Device> mDeviceList = new ArrayList<Device>();
+	ArrayList<App> mAppList = new ArrayList<App>();
+	
 	String device = "";
 	String app = "";
 	

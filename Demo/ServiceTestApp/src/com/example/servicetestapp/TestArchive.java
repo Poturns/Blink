@@ -30,12 +30,12 @@ public class TestArchive {
 		this.mBlinkServiceManager = mBlinkServiceManager;
 	}
 	public void run(){
-		exampleRegisterSystemDatabase();
+//		exampleRegisterSystemDatabase();
 //		exampleObtainSystemDatabaseAll();
 //		exampleObtainMeasurementDataById();
 //		exampleObtainSystemDatabase();
-		exampleRegisterMeasurementDatabase();
-//		exampleObtainMeasurementDatabase();
+//		exampleRegisterMeasurementDatabase();
+		exampleObtainMeasurementDatabase();
 //		exampleRemoveMeasurementDatabase();
 //		exampleLogAll();
 	}

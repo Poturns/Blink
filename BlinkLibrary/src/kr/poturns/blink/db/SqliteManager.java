@@ -49,7 +49,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	
 	private final String SQL_SELECT_DEVICE = "SELECT * FROM Device ";
 	private final String SQL_SELECT_APP = "SELECT * FROM App ";
-	private final String SQL_SELECT_FUNCTION = "SELECT * FROM Function where AppId=?";
+	private final String SQL_SELECT_FUNCTION = "SELECT * FROM Function ";
 	private final String SQL_SELECT_MEASUREMENT = "SELECT * FROM Measurement ";
 	private final String SQL_SELECT_MEASUREMENTDATA =  "SELECT * FROM MeasurementData ";
 	private final String SQL_SELECT_GROUPID =  "SELECT max(GroupId) FROM MeasurementData ";
@@ -108,33 +108,36 @@ public class SqliteManager extends SQLiteOpenHelper {
 
 	//-------------------------------SystemDatabase---------------------------------------
 	public void registerSystemDatabase(SystemDatabaseObject mSystemDatabaseObject){
-		registerDeviceList(mSystemDatabaseObject);
-		if(!obtainDeviceList(mSystemDatabaseObject)){
-			return;
-		}
+		registerDevice(mSystemDatabaseObject);
+		obtainDeviceList(mSystemDatabaseObject);
+		registerApp(mSystemDatabaseObject);
+		obtainAppList(mSystemDatabaseObject);
 		registerFunction(mSystemDatabaseObject);
 		registerMeasurement(mSystemDatabaseObject);
 		Log.i(tag, "registerSystemDatabase OK");
 	}
 	public SystemDatabaseObject obtainSystemDatabase(String device,String app){
-		SystemDatabaseObject mServiceDatabaseObject = new SystemDatabaseObject();
-		Device mDevice = mServiceDatabaseObject.mDevice;
-		App mApp = mServiceDatabaseObject.mApp;
+		SystemDatabaseObject mSystemDatabaseObject = new SystemDatabaseObject();
+		Device mDevice = mSystemDatabaseObject.mDevice;
+		App mApp = mSystemDatabaseObject.mApp;
 		mDevice.Device = device;
 		mApp.PackageName = app;
 		//기존에 등록된 값이 없으면
-		if(!obtainDeviceList(mServiceDatabaseObject) && !obtainAppList(mServiceDatabaseObject)){
+		if(!obtainDeviceList(mSystemDatabaseObject) && !obtainAppList(mSystemDatabaseObject)){
 			mApp.Version = 1;
-			mServiceDatabaseObject.isExist = false;
-			return mServiceDatabaseObject;
+			mApp.PackageName = app;
+			mApp.DeviceId = mDevice.DeviceId;
+			mApp.AppName = app;
+			mSystemDatabaseObject.isExist = false;
+			return mSystemDatabaseObject;
 		}
 		//기존에 등록된 값이 있으면 해당 값을 찾아서 리턴
 		else {
-			mServiceDatabaseObject.isExist = true;
-			obtainFunction(mServiceDatabaseObject);
-			obtainMeasurement(mServiceDatabaseObject);
+			mSystemDatabaseObject.isExist = true;
+			obtainFunction(mSystemDatabaseObject);
+			obtainMeasurement(mSystemDatabaseObject);
 		}
-		return mServiceDatabaseObject;
+		return mSystemDatabaseObject;
 	}
 	
 	public ArrayList<SystemDatabaseObject> obtainSystemDatabase(){
@@ -226,15 +229,24 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mDeviceList;
 	}
 	
-	private void registerDeviceList(SystemDatabaseObject mSystemDatabaseObject){
+	private void registerDevice(SystemDatabaseObject mSystemDatabaseObject){
 		Device mDevice = mSystemDatabaseObject.mDevice;
 		ContentValues values = new ContentValues();
-		values.put("DeviceId", mDevice.DeviceId);
 		values.put("Device", mDevice.Device);
 		values.put("UUID", mDevice.UUID);
 		values.put("MacAddress", mDevice.MacAddress);
-		values.put("DateTime", mDevice.DateTime);
-        mSQLiteDatabase.insert("DeviceList", null, values);
+        mSQLiteDatabase.insert("Device", null, values);
+	}
+	
+	private void registerApp(SystemDatabaseObject mSystemDatabaseObject){
+		Device mDevice = mSystemDatabaseObject.mDevice;
+		App mApp = mSystemDatabaseObject.mApp;
+		ContentValues values = new ContentValues();
+		values.put("DeviceId", mDevice.DeviceId);
+		values.put("PackageName", mApp.PackageName);
+		values.put("AppName", mApp.AppName);
+		values.put("Version", mApp.Version);
+        mSQLiteDatabase.insert("App", null, values);
 	}
 	
 	private void registerFunction(SystemDatabaseObject mSystemDatabaseObject){
