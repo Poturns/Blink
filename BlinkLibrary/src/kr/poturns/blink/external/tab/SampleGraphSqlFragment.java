@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import kr.poturns.blink.db.archive.SystemDatabaseObject;
-import kr.poturns.blink.db.SqliteManager;
-import kr.poturns.blink.schema.Eye;
 import kr.poturns.blink.R;
+import kr.poturns.blink.db.SqliteManager;
+import kr.poturns.blink.db.archive.SystemDatabaseObject;
+import kr.poturns.blink.schema.Eye;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;

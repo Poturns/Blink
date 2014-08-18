@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import kr.poturns.blink.R;
-
 import android.app.Fragment;
 import android.graphics.Color;
 import android.os.Bundle;

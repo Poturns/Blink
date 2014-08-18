@@ -3,6 +3,7 @@ package kr.poturns.blink.external.tab.connectionview;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.Context;

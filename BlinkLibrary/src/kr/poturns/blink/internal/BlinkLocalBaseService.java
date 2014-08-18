@@ -5,6 +5,7 @@ import kr.poturns.blink.util.FileUtil;
 import android.app.Service;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.IBinder;
 import android.os.RemoteCallbackList;
 import android.util.Log;
 import android.widget.Toast;
@@ -23,6 +24,10 @@ abstract class BlinkLocalBaseService extends Service {
 	// *** CONSTANT DECLARATION *** //
 	public static final String PRIVATE_PROCESS_NAME = "kr.poturns.blink.internal.BlinkService";
 	
+	/**
+	 * Service의 수행을 요청하는 패키지 정보 Intent Extra Key.
+	 */
+	public static final String INTENT_EXTRA_SOURCE_PACKAGE = "Intent.Extra.Source.Package";
 	
 	
 	// *** LIFE CYCLE DECLARATION *** //
@@ -37,12 +42,12 @@ abstract class BlinkLocalBaseService extends Service {
 		super.onCreate();
 		
 		// For Service Debugging... 
-		//android.os.Debug.waitForDebugger();
+		android.os.Debug.waitForDebugger();
 		
 		// Blink 서비스에 필요한 기본 디렉토리 생성.
 		FileUtil.createExternalDirectory();
 		
-		// Blink 서비스의 본 디바이스 정보 파악.
+		// Blink 서비스를 위한 본 디바이스 정보 파악.
 		mDeviceAnalyzer = DeviceAnalyzer.getInstance(this);
 		
 		DeviceAnalyzer.Identity mIdentity = mDeviceAnalyzer.getCurrentIdentity();
@@ -67,6 +72,27 @@ abstract class BlinkLocalBaseService extends Service {
 		
 		return (DeviceAnalyzer.Identity.UNKNOWN.equals(identity))? 
 				START_NOT_STICKY : START_STICKY;
+	}
+	
+	@Override
+	public IBinder onBind(Intent intent) {
+		Log.e("BlinkLocalBaseService", "onBind() : " + intent.getStringExtra("FROM"));
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	@Override
+	public void onRebind(Intent intent) {
+		Log.e("BlinkLocalBaseService", "onRebind() : " + intent.getStringExtra("FROM"));
+		// TODO Auto-generated method stub
+		super.onRebind(intent);
+	}
+	
+	@Override
+	public boolean onUnbind(Intent intent) {
+		Log.e("BlinkLocalBaseService", "onUnbind() : " + intent.getStringExtra("FROM"));
+		// TODO Auto-generated method stub
+		return super.onUnbind(intent);
 	}
 	
 	@Override

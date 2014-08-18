@@ -5,6 +5,12 @@ import java.io.File;
 import android.os.Environment;
 import android.util.Log;
 
+/**
+ * 
+ * @author Myoungjin.Kim
+ * @author Yeonho.Kim
+ *
+ */
 public final class FileUtil {
 	/** Blink Application의 외부 파일이 저장되는 디렉토리의 이름 */
 	public static final String EXTERNAL_DIRECTORY_NAME = "Blink";
@@ -43,11 +49,17 @@ public final class FileUtil {
 			+ EXTERNAL_ARCHIVE_DIRECTORY_NAME;
 
 	/** Blink의 시스템 서비스와 관련된 파일들이 기록되는 디렉토리의 이름 */
-	public static final String EXTERNAL_SYSTEM_DIRECTORY_NAME = "System";
+	public static final String EXTERNAL_SYSTEM_DIRECTORY_NAME = "system";
 	/** Blink의 시스템 서비스와 관련된 파일들이 기록되는 디렉토리의 경로 */
 	public static final String EXTERNAL_SYSTEM_DIRECTORY_PATH = EXTERNAL_DIRECTORY_PATH
-			+ EXTERNAL_SYSTEM_DIRECTORY_NAME;
-
+			+ EXTERNAL_SYSTEM_DIRECTORY_NAME + "/";
+	
+	/** 탐색한 디바이스에 관한 정보를 남겨두는 디렉토리 이름 */
+	public static final String EXTERNAL_SYSTEM_DEVICE_REPOSITORY_NAME = "dev";
+	/** 탐색한 디바이스에 관한 정보를 남겨두는 디렉토리 경로 */
+	public static final String EXTERNAL_SYSTEM_DEVICE_REPOSITORY_PATH = EXTERNAL_SYSTEM_DIRECTORY_PATH 
+			+ EXTERNAL_SYSTEM_DEVICE_REPOSITORY_NAME;
+	
 	/**
 	 * Blink Library에 필요한 디렉토리들을 <b>sdcard0</b>에 생성한다.
 	 * 
@@ -60,6 +72,9 @@ public final class FileUtil {
 		final File externalFile = new File(
 				Environment.getExternalStorageDirectory(),
 				EXTERNAL_DIRECTORY_NAME);
+		
+		Log.d(TAG, "external dir : " + externalFile.getAbsolutePath());
+		
 		if (externalFile.mkdir() || externalFile.isDirectory()) {
 			Log.d(TAG, "external dir created, : " + externalFile);
 
@@ -75,6 +90,21 @@ public final class FileUtil {
 					Log.d(TAG, name + "could not create");
 				}
 			}
+			
+			// 하위 디렉토리들을 생성한다.
+			final String[] detailPaths = new String[] {
+					EXTERNAL_SYSTEM_DEVICE_REPOSITORY_PATH
+			};
+			
+			for (final String path : detailPaths) {
+				File externalSubFile = new File(path);
+				if (externalSubFile.mkdirs() || externalSubFile.isDirectory()) {
+					Log.d(TAG, path + " created, : " + externalSubFile);
+				} else {
+					Log.d(TAG, path + "could not create");
+				}
+			}
+			
 		} else {
 			Log.d(TAG, "external dir could not create : " + externalFile);
 		}
@@ -95,12 +125,19 @@ public final class FileUtil {
 	public static final File obtainExternalDirectory(final String name) {
 		if (EXTERNAL_DIRECTORY_NAME.equals(name)) {
 			return new File(EXTERNAL_DIRECTORY_PATH);
+			
 		} else if (EXTERNAL_SYSTEM_DIRECTORY_NAME.equals(name)) {
 			return new File(EXTERNAL_SYSTEM_DIRECTORY_PATH);
+			
+		} else if (EXTERNAL_SYSTEM_DEVICE_REPOSITORY_NAME.equals(name)) {
+			return new File(EXTERNAL_SYSTEM_DEVICE_REPOSITORY_PATH);
+			
 		} else if (EXTERNAL_ARCHIVE_DIRECTORY_NAME.equals(name)) {
 			return new File(EXTERNAL_ARCHIVE_DIRECTORY_PATH);
+			
 		} else if (EXTERNAL_PREF_DIRECTORY_NAME.equals(name)) {
 			return new File(EXTERNAL_PREF_DIRECTORY_PATH);
+			
 		} else
 			return null;
 	}

@@ -40,6 +40,9 @@ class BluetoothAssistant extends Handler{
 
 	// *** CONSTANT DECLARATION *** //
 	public final static String TAG = "BluetoothAssistant";
+	
+	private final static int SERVER_ACCEPT_TIMEOUT = 60000;
+	
 	final static int MESSAGE_READ_STREAM = 0x1;
 
 	
@@ -73,14 +76,14 @@ class BluetoothAssistant extends Handler{
 		mIntentFilter.addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);			// 블루투스 탐색 모드 변화
 		mIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);			// 블루투스 탐색 시작
 		mIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);		// 블루투스 탐색 종료
-		mIntentFilter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);	// 블루투스 연결 상태 변화
-
 		mIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);						// 블루투스 탐색시 디바이스 발견
-		mIntentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);				// 블루투스 디바이스 연결
-		mIntentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);			// 블루투스 디바이스 해제
+		mIntentFilter.addAction(BluetoothDevice.ACTION_UUID);						// 블루투스 UUID 발견
+
+		mIntentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);				// 블루투스 ACL 연결
+		mIntentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);			// 블루투스 ACL 해제
+		mIntentFilter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);	// 블루투스 LE 연결 상태 변화
 
 		mIntentFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-		//mIntentFilter.addAction(BluetoothDevice.ACTION_UUID);	
 		
 		return mIntentFilter;
 	}
@@ -92,28 +95,34 @@ class BluetoothAssistant extends Handler{
 	final ThreadGroup CONNECTION_GROUP;
 	
 	//TODO : HashMap, ArrayList는 Thread-Safe하지 않으므로, Thread에 따른 데이터 정합성을 체크해야함!
-	private final HashMap<BlinkDevice, BluetoothGatt> LE_CONN_MAP;
-	private final HashMap<BlinkDevice, ClassicLinkThread> CLASSIC_CONN_MAP;
+	private final HashMap<String, BluetoothGatt> LE_CONN_MAP;
+	private final HashMap<String, ClassicLinkThread> CLASSIC_CONN_MAP;
 	private final ArrayList<BlinkDevice> DISCOVERY_DEV_LIST;
 	
 	public BluetoothAssistant(InterDeviceManager manager) {
 		INTER_DEV_MANAGER = manager;
 		CONNECTION_GROUP = new ThreadGroup(TAG);
 		
-		LE_CONN_MAP = new HashMap<BlinkDevice, BluetoothGatt>();
-		CLASSIC_CONN_MAP = new HashMap<BlinkDevice, ClassicLinkThread>();
+		LE_CONN_MAP = new HashMap<String, BluetoothGatt>();
+		CLASSIC_CONN_MAP = new HashMap<String, ClassicLinkThread>();
 		DISCOVERY_DEV_LIST = new ArrayList<BlinkDevice>();
 	}
 	
 	private BluetoothManager mBluetoothManager;
 	private FunctionOperator mFunctionOperator;
+	private DeviceAnalyzer.Identity mIdentity;
 	private boolean isLeSupported;
 	
+	/**
+	 * 현 객체를 초기화한다.
+	 */
 	void inititiate() {
-		Context mContext = INTER_DEV_MANAGER.MANAGER_CONTEXT;
+		BlinkLocalBaseService mContext = INTER_DEV_MANAGER.MANAGER_CONTEXT;
 		
 		mBluetoothManager = (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
 		mFunctionOperator = new FunctionOperator(mContext);
+		mIdentity = DeviceAnalyzer.getInstance(mContext).getCurrentIdentity();
+		
 		isLeSupported = DeviceAnalyzer.getInstance(mContext).hasBluetoothLE;
 		
 		int state = BluetoothAdapter.getDefaultAdapter().getState();
@@ -126,44 +135,74 @@ class BluetoothAssistant extends Handler{
 			onBluetoothStateOn();
 			break;
 		}
-
+		
 		LE_CONN_MAP.clear();
 		CLASSIC_CONN_MAP.clear();
 		DISCOVERY_DEV_LIST.clear();
 	}
 	
+	/**
+	 * 현 객체를 파괴한다.
+	 */
 	void destroy() {
 		BlinkDevice.clearCache();
 	}
 
+	/**
+	 * 블루투스가 Off상태로 전환 중일 때, 수행할 기능을 정의한다.
+	 */
 	void onBluetoothStateTurningOff() {
-		stopClassicServer();
-		stopLeServer();
+		stopListeningServer();
 	}
 	
+	/**
+	 * 블루투스가 Off상태가 되었을 때, 수행할 기능을 정의한다.
+	 */
 	void onBluetoothStateOff() {
-		Intent mEnableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-		mEnableIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		INTER_DEV_MANAGER.MANAGER_CONTEXT.startActivity(mEnableIntent);
-		
-		Intent mDiscoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-		mDiscoverableIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		INTER_DEV_MANAGER.MANAGER_CONTEXT.startActivity(mDiscoverableIntent);
+		Intent mIntent = (DeviceAnalyzer.Identity.CORE.equals(mIdentity))? 
+				new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE) : 
+					new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE) ;
+					
+		mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		INTER_DEV_MANAGER.MANAGER_CONTEXT.startActivity(mIntent);
 	}
 	
+	/**
+	 * 블루투스가 On상태가 되었을 떄, 수행할 기능을 정의한다.
+	 */
 	void onBluetoothStateOn() {
 		mBluetoothManager = (BluetoothManager) INTER_DEV_MANAGER.MANAGER_CONTEXT.getSystemService(Context.BLUETOOTH_SERVICE);
-		
-		startClassicServer(BlinkProfile.UUID_BLINK, false);
-		if (isLeSupported)
-			startLeServer(new BluetoothGattService(
-					BlinkProfile.UUID_BLINK, BluetoothGattService.SERVICE_TYPE_PRIMARY));
+		startListeningServer(true);
 	}
 	
 	
 	private boolean isServerActivated = false;
 	private Thread mServerThread = null;
 	private BluetoothGattServer mGattServer;
+	
+	/**
+	 * 
+	 * @param secure
+	 */
+	public void startListeningServer(boolean secure) {
+		startClassicServer(BlinkProfile.UUID_BLINK, secure);
+		
+		// TODO : BLE 
+//		if (isLeSupported)
+//			startLeServer(new BluetoothGattService(
+//					BlinkProfile.UUID_BLINK, BluetoothGattService.SERVICE_TYPE_PRIMARY));
+	}
+	
+	/**
+	 * 
+	 */
+	public void stopListeningServer() {
+		stopClassicServer();
+		
+		// TODO : BLE
+//		if (isLeSupported) 
+//			stopLeServer();
+	}
 	
 	/**
 	 * 
@@ -180,7 +219,7 @@ class BluetoothAssistant extends Handler{
 		mServerThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				String name = "";
+				String name = BlinkProfile.SERVICE_NAME;
 				BluetoothAdapter adapter = mBluetoothManager.getAdapter();
 				
 				BluetoothServerSocket mServerSocket;
@@ -191,19 +230,19 @@ class BluetoothAssistant extends Handler{
 							
 					while (isServerActivated) {
 						try {
-							BluetoothSocket mBluetoothSocket = mServerSocket.accept(60000);
-							BlinkDevice deviceX = BlinkDevice.load(mBluetoothSocket.getRemoteDevice());
+							BluetoothSocket mBluetoothSocket = mServerSocket.accept(SERVER_ACCEPT_TIMEOUT);
+							BlinkDevice device  = BlinkDevice.load(mBluetoothSocket.getRemoteDevice());
 							
-							ClassicLinkThread thread = new ClassicLinkThread(sInstance, mBluetoothSocket, false);
+							ClassicLinkThread thread = new ClassicLinkThread(sInstance, device, mBluetoothSocket, false);
 							thread.startListening();
 							
-							CLASSIC_CONN_MAP.put(deviceX, thread);
+							CLASSIC_CONN_MAP.put(device.getAddress(), thread);
 							
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
 					}
-
+					Log.d("BluetoothAssistant_ServerThread", "OUT!!");
 					mServerSocket.close();
 					
 				} catch (IOException e) {
@@ -223,8 +262,10 @@ class BluetoothAssistant extends Handler{
 	public synchronized void stopClassicServer() {
 		isServerActivated = false;
 
+		Log.d("BluetoothAssistant_ServerThread", "STOP!!");
 		if (mServerThread != null) {
 			try {
+				//mServerThread.interrupt();
 				mServerThread.join(3000);
 					
 			} catch (InterruptedException e) {
@@ -241,6 +282,8 @@ class BluetoothAssistant extends Handler{
 	public void startLeServer(BluetoothGattService service) {
 		if (!isLeSupported)
 			return;
+		
+		Log.d("BluetoothAssistant", "StartLEServer");
 		
 		if (mGattServer == null) {
 			mGattServer = mBluetoothManager.openGattServer(INTER_DEV_MANAGER.MANAGER_CONTEXT, mBluetoothGattServerCallback);
@@ -352,6 +395,20 @@ class BluetoothAssistant extends Handler{
 	
 	/**
 	 * 
+	 * @return
+	 */
+	public BlinkDevice[] obtainConnectedDeviceList() {
+		BlinkDevice[] lists = new BlinkDevice[LE_CONN_MAP.size() + CLASSIC_CONN_MAP.size()];
+		
+		for (int i=0; i<lists.length; i++) {
+			
+		}
+		
+		return lists;
+	}
+	
+	/**
+	 * 
 	 * @param deviceX
 	 */
 	public void connectToDeviceAsClient(BlinkDevice deviceX) {
@@ -367,23 +424,23 @@ class BluetoothAssistant extends Handler{
 	 */
 	public void connectToDeviceAsClient(BlinkDevice deviceX, UUID uuid) {
 		BluetoothDevice device = deviceX.obtainBluetoothDevice();
-
+		
 		if (deviceX.isLESupported()) {
 			device.connectGatt(INTER_DEV_MANAGER.MANAGER_CONTEXT, deviceX.isAutoConnect(), mBluetoothGattCallback);
 
 		} else {
 			BluetoothSocket mBluetoothSocket;
 			try {
-				if (deviceX.isSecure()) 
+				if (deviceX.isSecureConnect()) 
 					mBluetoothSocket = device.createRfcommSocketToServiceRecord(uuid);
 				else
 					mBluetoothSocket = device.createInsecureRfcommSocketToServiceRecord(uuid);
 				mBluetoothSocket.connect();
 				
-				ClassicLinkThread thread = new ClassicLinkThread(this, mBluetoothSocket, true);
+				ClassicLinkThread thread = new ClassicLinkThread(this, deviceX, mBluetoothSocket, true);
 				thread.startListening();
 		
-				CLASSIC_CONN_MAP.put(deviceX, thread);
+				CLASSIC_CONN_MAP.put(deviceX.getAddress(), thread);
 				
 			} catch (IOException e) {
 				// TODO : 연결 요청했던 경우엔, 해당 요청 어플리케이션에게만 호출하는게 나을듯.
@@ -404,13 +461,20 @@ class BluetoothAssistant extends Handler{
 	 * @param deviceX
 	 */
 	public void disconnectFromDeviceAsClient(BlinkDevice deviceX) {
+		Log.d("InterDeviceManager_disconnectFromDeviceAsClient()", "Disconnect");
 		if (deviceX.isLESupported()) {
-			BluetoothGatt mGatt = LE_CONN_MAP.get(deviceX);
+			BluetoothGatt mGatt = LE_CONN_MAP.get(deviceX.getAddress());
 			mGatt.close();
 			
 		} else {
-			ClassicLinkThread mThread = CLASSIC_CONN_MAP.get(deviceX);
-			mThread.destroy();
+			try {
+				ClassicLinkThread mThread = CLASSIC_CONN_MAP.get(deviceX.getAddress());
+				mThread.destroy();
+				mThread.join(1000);
+				
+			} catch (InterruptedException e) {
+				
+			}
 		}
 		
 	}
@@ -428,11 +492,19 @@ class BluetoothAssistant extends Handler{
 	 * 
 	 * @param deviceX
 	 */
+	void onDeviceConnected(BlinkDevice deviceX) {
+		
+	}
+	
+	/**
+	 * 
+	 * @param deviceX
+	 */
 	void onDeviceDisconnected(BlinkDevice deviceX) {
 		if (deviceX.isLESupported())
-			LE_CONN_MAP.remove(deviceX);
+			LE_CONN_MAP.remove(deviceX.getAddress());
 		else
-			CLASSIC_CONN_MAP.remove(deviceX);
+			CLASSIC_CONN_MAP.remove(deviceX.getAddress());
 	}
 
 	/**
@@ -455,7 +527,7 @@ class BluetoothAssistant extends Handler{
 			
 			
 		} else {
-			CLASSIC_CONN_MAP.get(deviceX).sendMessageToDevice(json);
+			CLASSIC_CONN_MAP.get(deviceX.getAddress()).sendMessageToDevice(json);
 			
 		}
 
@@ -498,7 +570,7 @@ class BluetoothAssistant extends Handler{
 			if (status == BluetoothGatt.GATT_SUCCESS) {
 				switch (newState) {
 					case BluetoothGatt.STATE_CONNECTED:
-						LE_CONN_MAP.put(deviceX, gatt);
+						LE_CONN_MAP.put(deviceX.getAddress(), gatt);
 						
 						for (int i = 0; i < size; i++) {
 							try {
@@ -509,7 +581,7 @@ class BluetoothAssistant extends Handler{
 						break;
 						
 					case BluetoothGatt.STATE_DISCONNECTED:
-						LE_CONN_MAP.remove(deviceX);
+						LE_CONN_MAP.remove(deviceX.getAddress());
 						
 						for (int i = 0; i < size; i++) {
 							try {
@@ -601,7 +673,7 @@ class BluetoothAssistant extends Handler{
 				switch (newState) {
 					case BluetoothGatt.STATE_CONNECTED:
 						// TODO : LE Server Callback에서는 Gatt를 받지 않는다!??
-						LE_CONN_MAP.put(deviceX, null);
+						LE_CONN_MAP.put(deviceX.getAddress(), null);
 						
 						for (int i = 0; i < size; i++) {
 							try {
@@ -612,7 +684,7 @@ class BluetoothAssistant extends Handler{
 						break;
 						
 					case BluetoothGatt.STATE_DISCONNECTED:
-						LE_CONN_MAP.remove(deviceX);
+						LE_CONN_MAP.remove(deviceX.getAddress());
 						
 						for (int i = 0; i < size; i++) {
 							try {

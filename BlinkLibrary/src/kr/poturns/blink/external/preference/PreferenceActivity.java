@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import kr.poturns.blink.R;
-
 import android.app.Activity;
 import android.graphics.Point;
 import android.os.Bundle;

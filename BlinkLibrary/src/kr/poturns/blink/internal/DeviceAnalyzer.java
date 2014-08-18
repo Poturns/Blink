@@ -2,7 +2,6 @@ package kr.poturns.blink.internal;
 
 import java.util.ArrayList;
 
-import android.content.Context;
 import android.content.pm.FeatureInfo;
 import android.content.pm.PackageManager;
 
@@ -44,7 +43,7 @@ public class DeviceAnalyzer {
 	 * @param context
 	 * @return
 	 */
-	public static DeviceAnalyzer getInstance(Context context) {
+	public static DeviceAnalyzer getInstance(BlinkLocalBaseService context) {
 		if (sInstance == null && context != null)
 			sInstance = new DeviceAnalyzer(context);
 		return sInstance;
@@ -56,7 +55,7 @@ public class DeviceAnalyzer {
 	
 	
 	// *** FIELD DECLARATION *** //
-	private final Context ANALYZER_CONTEXT;
+	private final BlinkLocalBaseService ANALYZER_CONTEXT;
 	private final ArrayList<String> ANALYSIS_ARRAY;
 	
 	private Identity mIdentity;
@@ -65,7 +64,7 @@ public class DeviceAnalyzer {
 	private boolean hasUserSelection;
 	public boolean hasBluetoothLE;
 	
-	public DeviceAnalyzer(Context context) {
+	public DeviceAnalyzer(BlinkLocalBaseService context) {
 		this.ANALYZER_CONTEXT = context;
 		this.ANALYSIS_ARRAY = new ArrayList<String>();
 		

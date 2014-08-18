@@ -3,7 +3,16 @@
     package="kr.poturns.blink"
     android:versionCode="1"
     android:versionName="1.0" >
-
+    
+	<!-- BLINK CUSTOMIZED PERMISSIONs -->
+	<permission
+	    android:name="kr.poturns.blink.permission.LISTEN_STATE_MESSAGE"
+	    android:description="@string/app_name"
+	    android:label="Listen state callback message _ label">
+	</permission>
+	
+	
+	
     <uses-sdk
         android:minSdkVersion="18"
         android:targetSdkVersion="19" />
@@ -14,6 +23,7 @@
     
     <uses-permission android:name="android.permission.BLUETOOTH"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="kr.poturns.blink.permission.LISTEN_STATE_MESSAGE"/>
 
     <application
         android:allowBackup="true"
@@ -37,7 +47,7 @@
             android:name="kr.poturns.blink.external.preference.PreferenceActivity"
             android:label="@string/preference" />
         
-        <activity android:name="kr.poturns.blink.test.ServiceTestActivity">
+        <activity android:name="kr.poturns.blink.test.ServiceTestActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

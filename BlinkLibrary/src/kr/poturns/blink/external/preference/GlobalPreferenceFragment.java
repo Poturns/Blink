@@ -3,9 +3,9 @@ package kr.poturns.blink.external.preference;
 import java.io.File;
 import java.lang.reflect.Field;
 
+import kr.poturns.blink.R;
 import kr.poturns.blink.external.IServiceContolActivity;
 import kr.poturns.blink.util.FileUtil;
-import kr.poturns.blink.R;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;

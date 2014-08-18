@@ -8,7 +8,10 @@ import android.bluetooth.BluetoothProfile;
 
 public class BlinkProfile implements BluetoothProfile {
 
+	public static final String SERVICE_NAME = "BLINK_PLATFORM_SERVICE";
+	
 	public static final UUID UUID_BLINK = UUID.fromString("b7121e00-cc1d-1704-c825-0002a5d5c51b");
+	
 	
 	
 	/*

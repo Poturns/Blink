@@ -4,7 +4,6 @@ import java.lang.ref.WeakReference;
 import java.util.List;
 
 import kr.poturns.blink.R;
-
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;

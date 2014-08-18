@@ -9,7 +9,6 @@ import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -42,13 +41,14 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 		setContentView(R.layout.service_test);
 		
 		Intent intent = new Intent(BlinkLocalService.INTENT_ACTION_NAME);
+		intent.putExtra("FROM", getPackageName());
+		
 		startService(intent);
 		bindService(intent, new ServiceConnection() {
 			
 			@Override
 			public void onServiceDisconnected(ComponentName name) {
-				// TODO Auto-generated method stub
-				
+				iSupport = null;
 			}
 			
 			@Override
@@ -72,7 +72,8 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 		button5.setOnClickListener(this);
 		button6 = (Button) findViewById(R.id.button6);
 		button6.setOnClickListener(this);
-		
+		button7 = (Button) findViewById(R.id.button7);
+		button7.setOnClickListener(this);
 	}
 
 	@Override
@@ -135,6 +136,10 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 				.setPositiveButton("Close", null)
 				.show();
 				
+				break;
+				
+			case R.id.button7:
+				iSupport.sendBlinkMessages(Xdevice, "Hello " + Xdevice.getName());
 				break;
 			}
 		} catch (Exception e) {

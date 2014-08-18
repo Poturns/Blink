@@ -32,10 +32,6 @@ public class ClassicLinkThread extends Thread {
 	private boolean isRunning;
 	private boolean isStopped;
 	
-	public ClassicLinkThread(BluetoothAssistant assistant, BluetoothSocket socket, boolean client) {
-		this(assistant, BlinkDevice.load(socket.getRemoteDevice()), socket, client);
-	}
-	
 	public ClassicLinkThread(BluetoothAssistant assistant, BlinkDevice deviceX, BluetoothSocket socket, boolean client) {
 		this(assistant, deviceX);
 		
@@ -56,8 +52,14 @@ public class ClassicLinkThread extends Thread {
 	private void init() {
 		Log.d("ClassicLinkThread_init()", "");
 		try {
-			mInputStream = new ObjectInputStream(mBluetoothSocket.getInputStream());
-			mOutputStream = new ObjectOutputStream(mBluetoothSocket.getOutputStream());
+			if (isClient) {
+				mOutputStream = new ObjectOutputStream(mBluetoothSocket.getOutputStream());
+				mInputStream = new ObjectInputStream(mBluetoothSocket.getInputStream());
+				
+			} else {
+				mInputStream = new ObjectInputStream(mBluetoothSocket.getInputStream());
+				mOutputStream = new ObjectOutputStream(mBluetoothSocket.getOutputStream());
+			}
 			
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -69,7 +71,7 @@ public class ClassicLinkThread extends Thread {
 	
 	@Override
 	public void run() {
-		Log.d("ClassicLinkThread_run()", "");
+		Log.d("ClassicLinkThread_run()", "START");
 		while (isRunning) {
 			try {
 				String json = (String) mInputStream.readObject();
@@ -87,6 +89,7 @@ public class ClassicLinkThread extends Thread {
 				e.printStackTrace();
 			}
 		}
+		Log.d("ClassicLinkThread_run()", "END");
 	}
 	
 	@Override
@@ -98,7 +101,7 @@ public class ClassicLinkThread extends Thread {
 	public synchronized void startListening() {
 		Log.d("ClassicLinkThread_startListening()", "");
 		
-		if (!isRunning || (isRunning = true)) 
+		if (!isRunning && (isRunning = true)) 
 			super.start();
 		
 		if (isStopped && (isStopped = false))
@@ -116,9 +119,10 @@ public class ClassicLinkThread extends Thread {
 		}
 	}
 	
-	public synchronized void destroy() {
-		
+	public void destroy() {
+		Log.d("ClassicLinkThread_destroy()", "DESTROY");
 		isRunning = false;
+		interrupt();
 		
 		try {
 			if (mInputStream != null)
@@ -152,6 +156,7 @@ public class ClassicLinkThread extends Thread {
 		
 		if ((mOutputStream != null) && (obj != null)) {
 			try {
+				Log.d("InterDeviceManager_sendBlinkMessage()", DEVICE_X.getName() + " : " + (String)obj);
 				mOutputStream.writeObject(obj);
 				mOutputStream.flush();
 				
