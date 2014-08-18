@@ -35,7 +35,7 @@ public class TestArchive {
 //		exampleObtainMeasurementDataById();
 //		exampleObtainSystemDatabase();
 //		exampleRegisterMeasurementDatabase();
-		exampleObtainMeasurementDatabase();
+//		exampleObtainMeasurementDatabase();
 //		exampleRemoveMeasurementDatabase();
 //		exampleLogAll();
 	}

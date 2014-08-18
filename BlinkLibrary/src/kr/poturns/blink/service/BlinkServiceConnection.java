@@ -18,7 +18,7 @@ public class BlinkServiceConnection implements ServiceConnection {
 		// TODO Auto-generated method stub
 		mBlinkServiceManager.mBlinkServiceBinder = IBlinkServiceBinder.Stub.asInterface(arg1);
 		try {
-			mBlinkServiceManager.mBlinkServiceBinder.registerApplicationInfo(mBlinkServiceManager.device, mBlinkServiceManager.app);
+			mBlinkServiceManager.mBlinkServiceBinder.registerApplicationInfo(mBlinkServiceManager.mDeviceName, mBlinkServiceManager.mPackageName,mBlinkServiceManager.mAppName);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

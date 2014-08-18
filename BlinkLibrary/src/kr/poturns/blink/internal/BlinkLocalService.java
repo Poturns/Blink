@@ -35,15 +35,15 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 	}
 	
 	class BlinkServiceBinder extends IBlinkServiceBinder.Stub {
-		String device, app;
+		String mDeviceName, mPackageName, mAppName;
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		@Override
-		public SystemDatabaseObject obtainSystemDatabase(String device,
-				String app) throws RemoteException {
+		public SystemDatabaseObject obtainSystemDatabase(String DeviceName,
+				String PackageName) throws RemoteException {
 			// TODO Auto-generated method stub
 			Log.i(tag, "obtainSystemDatabase");
-			mSqliteManager.registerLog(device, app, mSqliteManager.LOG_OBTAIN_SYSTEMDATABASE, "");
-			return mSqliteManager.obtainSystemDatabase(device, app);
+			mSqliteManager.registerLog(DeviceName, PackageName, mSqliteManager.LOG_OBTAIN_SYSTEMDATABASE, "");
+			return mSqliteManager.obtainSystemDatabase(DeviceName, PackageName);
 		}
 
 		@Override
@@ -52,7 +52,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 				throws RemoteException {
 			// TODO Auto-generated method stub
 			Log.i(tag, "registerSystemDatabase");
-			mSqliteManager.registerLog(device, app, mSqliteManager.LOG_REGISTER_SYSTEMDATABASE, "");
+			mSqliteManager.registerLog(mDeviceName, mPackageName, mSqliteManager.LOG_REGISTER_SYSTEMDATABASE, "");
 			mSqliteManager.registerSystemDatabase(mSystemDatabaseObject);
 		}
 
@@ -61,7 +61,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 				SystemDatabaseObject mSystemDatabaseObject, String ClassName,
 				String JsonObj) throws RemoteException {
 			// TODO Auto-generated method stub
-			mSqliteManager.registerLog(device, app, mSqliteManager.LOG_REGISTER_MEASRUEMENT, "");
+			mSqliteManager.registerLog(mDeviceName, mPackageName, mSqliteManager.LOG_REGISTER_MEASRUEMENT, "");
 			try{
 				Class<?> mClass = Class.forName(ClassName);
 				Object obj = new Gson().fromJson(JsonObj, mClass);
@@ -76,7 +76,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 				String DateTimeFrom, String DateTimeTo, int ContainType)
 				throws RemoteException {
 			// TODO Auto-generated method stub
-			mSqliteManager.registerLog(device, app, mSqliteManager.LOG_OBTAIN_MEASUREMENT, ClassName);
+			mSqliteManager.registerLog(mDeviceName, mPackageName, mSqliteManager.LOG_OBTAIN_MEASUREMENT, ClassName);
 			try{
 				Class<?> mClass = Class.forName(ClassName);
 				Log.i(tag, "class name : "+mClass.getName());
@@ -91,7 +91,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 		public List<SystemDatabaseObject> obtainSystemDatabaseAll()
 				throws RemoteException {
 			// TODO Auto-generated method stub
-			mSqliteManager.registerLog(device, app, mSqliteManager.LOG_OBTAIN_SYSTEMDATABASE, "ALL");
+			mSqliteManager.registerLog(mDeviceName, mPackageName, mSqliteManager.LOG_OBTAIN_SYSTEMDATABASE, "ALL");
 			return mSqliteManager.obtainSystemDatabase();
 		}
 
@@ -100,31 +100,32 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 				List<Measurement> mMeasurementList,
 				String DateTimeFrom, String DateTimeTo) throws RemoteException {
 			// TODO Auto-generated method stub
-			mSqliteManager.registerLog(device, app, mSqliteManager.LOG_OBTAIN_MEASUREMENT, "By Id");
+			mSqliteManager.registerLog(mDeviceName, mPackageName, mSqliteManager.LOG_OBTAIN_MEASUREMENT, "By Id");
 			return mSqliteManager.obtainMeasurementData(mMeasurementList, DateTimeFrom, DateTimeTo);
 		}
 
 		@Override
-		public void registerApplicationInfo(String device, String app)
+		public void registerApplicationInfo(String DeviceName, String PackageName, String AppName)
 				throws RemoteException {
 			// TODO Auto-generated method stub
-			this.device = device;
-			this.app = app;
+			this.mDeviceName = DeviceName;
+			this.mPackageName = PackageName;
+			this.mAppName = AppName;
 		}
 
 		@Override
-		public List<BlinkLog> obtainLog(String Device, String App,
+		public List<BlinkLog> obtainLog(String DeviceName, String PackageName,
 				int Type, String DateTimeFrom, String DateTimeTo)
 				throws RemoteException {
 			// TODO Auto-generated method stub
-			return mSqliteManager.obtainLog(Device, App, Type, DateTimeFrom, DateTimeTo);
+			return mSqliteManager.obtainLog(DeviceName, PackageName, Type, DateTimeFrom, DateTimeTo);
 		}
 
 		@Override
-		public void registerLog(String Device, String App, int Type,
+		public void registerLog(String DeviceName, String PackageName, int Type,
 				String Content) throws RemoteException {
 			// TODO Auto-generated method stub
-			mSqliteManager.registerLog(Device, App, Type, Content);
+			mSqliteManager.registerLog(DeviceName, PackageName, Type, Content);
 		}
 	}
 	

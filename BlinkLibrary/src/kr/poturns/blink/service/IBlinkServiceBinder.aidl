@@ -6,8 +6,8 @@ import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.BlinkLog;
 
 interface IBlinkServiceBinder {
-	void registerApplicationInfo(String device,String app);
-	SystemDatabaseObject obtainSystemDatabase(String device,String app);
+	void registerApplicationInfo(String DeviceName,String PackageName,String AppName);
+	SystemDatabaseObject obtainSystemDatabase(String DeviceName,String PackageName);
 	List<SystemDatabaseObject> obtainSystemDatabaseAll();
 	void registerSystemDatabase(inout SystemDatabaseObject mSystemDatabaseObject);
 	void registerMeasurementData(inout SystemDatabaseObject mSystemDatabaseObject,String ClassName,String JsonObj);

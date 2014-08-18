@@ -43,6 +43,8 @@ public class MainActivity extends Activity {
 		mTestArchive = new TestArchive(mBlinkServiceManager);
 		mBlinkServiceManager.connectService();
 		
+		Log.i(tag,"name : "+this.getApplicationInfo().loadLabel(this.getPackageManager()));
+		
 	}
 	
 	@Override

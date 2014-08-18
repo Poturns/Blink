@@ -48,7 +48,7 @@ public class BlinkDatabase {
 		// Create DeviceAppFunction table sql statement
 		sql = "create table 'Function' ("
 				+ "'AppId' INTEGER NOT NULL,"
-				+ "'Function' TEXT NOT NULL," + "'Description' TEXT,"
+				+ "'Function' TEXT NOT NULL," + "'Description' TEXT," + "'Intent' TEXT NOT NULL,"
 				+ "PRIMARY KEY ('AppId','Function'),"
 				+ "FOREIGN KEY('AppId') REFERENCES App('AppId')"
 				+ ");";

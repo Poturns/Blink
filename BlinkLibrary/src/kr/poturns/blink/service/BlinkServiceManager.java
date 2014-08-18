@@ -15,6 +15,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.RemoteException;
+import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -33,8 +34,9 @@ public class BlinkServiceManager {
 	ArrayList<Device> mDeviceList = new ArrayList<Device>();
 	ArrayList<App> mAppList = new ArrayList<App>();
 	
-	String device = "";
-	String app = "";
+	String mDeviceName = "";
+	String mPackageName = "";
+	String mAppName = "";
 	
 	public static final String SERVICE_NAME = "kr.poturns.blink.internal.BlinkLocalService";
 	
@@ -44,8 +46,9 @@ public class BlinkServiceManager {
 		intent = new Intent(SERVICE_NAME); 
 		mBlinkServiceConnection = new BlinkServiceConnection(this);
 		gson = new GsonBuilder().setPrettyPrinting().create();
-		device = Build.MODEL;
-		app = mContext.getPackageName();
+		mDeviceName = Build.MODEL;
+		mPackageName = mContext.getPackageName();
+		mAppName = mContext.getApplicationInfo().loadLabel(mContext.getPackageManager()).toString();
 //		device = "Device3";
 //		app = "App6";
 	}
@@ -60,8 +63,9 @@ public class BlinkServiceManager {
 	}
 	
 	public boolean registerSystemDatabase(SystemDatabaseObject mSystemDatabaseObject){
-		mSystemDatabaseObject.mApp.PackageName = app;
-		mSystemDatabaseObject.mDevice.Device = device;
+		mSystemDatabaseObject.mApp.PackageName = mPackageName;
+		mSystemDatabaseObject.mApp.AppName = mAppName;
+		mSystemDatabaseObject.mDevice.Device = mDeviceName;
 		try {
 				mBlinkServiceBinder.registerSystemDatabase(mSystemDatabaseObject);
 				return true;
@@ -73,12 +77,12 @@ public class BlinkServiceManager {
 	}
 	
 	public SystemDatabaseObject obtainSystemDatabase(){
-		return obtainSystemDatabase(device,app);
+		return obtainSystemDatabase(mDeviceName,mPackageName);
 	}
 	
-	public SystemDatabaseObject obtainSystemDatabase(String device,String app){
+	public SystemDatabaseObject obtainSystemDatabase(String DeviceName,String PackageName){
 		try {
-			return mBlinkServiceBinder.obtainSystemDatabase(device, app);
+			return mBlinkServiceBinder.obtainSystemDatabase(DeviceName, PackageName);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
