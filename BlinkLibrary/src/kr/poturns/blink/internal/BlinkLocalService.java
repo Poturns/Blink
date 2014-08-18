@@ -1,9 +1,13 @@
 package kr.poturns.blink.internal;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import kr.poturns.blink.db.SqliteManager;
+import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.BlinkLog;
+import kr.poturns.blink.db.archive.Device;
+import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
@@ -37,6 +41,15 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 	class BlinkServiceBinder extends IBlinkServiceBinder.Stub {
 		String mDeviceName, mPackageName, mAppName;
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		
+		ArrayList<SystemDatabaseObject> mSystemDatabaseObjectList = new ArrayList<SystemDatabaseObject>();
+		ArrayList<Device> mDeviceList = new ArrayList<Device>();
+		ArrayList<App> mAppList = new ArrayList<App>();
+		ArrayList<Function> mFunctionList = new ArrayList<Function>();
+		ArrayList<Measurement> mMeasurementList = new ArrayList<Measurement>();
+		ArrayList<MeasurementData> mMeasurementDataList = new ArrayList<MeasurementData>();
+		ArrayList<BlinkLog> mBlinkLogList = new ArrayList<BlinkLog>();
+		
 		@Override
 		public SystemDatabaseObject obtainSystemDatabase(String DeviceName,
 				String PackageName) throws RemoteException {
