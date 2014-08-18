@@ -1,5 +1,6 @@
 package com.example.servicetestapp;
 
+import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.service.BlinkDatabaseServiceListener;
 import kr.poturns.blink.service.BlinkDatabaseServiceManager;
 import android.app.Activity;
@@ -51,10 +52,7 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
 	public void onClick(View v){
 		switch (v.getId()) {
 		case R.id.btn_test:
-			//Intent intent = new Intent(MainActivity.this,TestActivity.class);
-			Intent intent = new Intent("com.example.servicetestapp.TestActivity");
-			//startActivity(intent);
-			sendBroadcast(intent);
+			mBlinkDatabaseServiceManager.startFuntion(new Function("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY));
 			break;
 
 		default:

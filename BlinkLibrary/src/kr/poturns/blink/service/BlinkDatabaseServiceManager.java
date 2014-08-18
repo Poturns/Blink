@@ -8,6 +8,7 @@ import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.BlinkLog;
 import kr.poturns.blink.db.archive.Device;
+import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
@@ -15,7 +16,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.RemoteException;
-import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -180,5 +180,13 @@ public class BlinkDatabaseServiceManager {
 		return obtainLog(null,null,-1,null,null);
 	}
 	
+	public void startFuntion(Function mFunction){
+		try {
+			mBlinkDatabaseServiceBinder.startFunction(mFunction);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	
 }

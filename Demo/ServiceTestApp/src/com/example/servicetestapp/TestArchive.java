@@ -42,14 +42,21 @@ public class TestArchive {
 		exampleStartFuntion();
 	}
 	
+	/**
+	 * Function의 인텐트를 실행하는 예제
+	 * Function 클래스를 startFunction 매서드에 매개변수로 넘겨주면 서비스에서 Intent를 날려준다.
+	 */
 	private void exampleStartFuntion() {
 		// TODO Auto-generated method stub
+		Log.i(tag, "exampleStartFuntion");
 		mSystemDatabaseObject = mBlinkDatabaseServiceManager.obtainSystemDatabase();
 		ArrayList<Function> mFunctionList;
 		if(mSystemDatabaseObject.isExist){
 			mFunctionList = mSystemDatabaseObject.mFunctionList;
+			Log.i(tag, "mFunctionList size : "+mFunctionList.size());
 			for(int i=0;i<mFunctionList.size();i++){
-				
+				Log.i(tag, mFunctionList.get(i).toString());
+				mBlinkDatabaseServiceManager.startFuntion(mFunctionList.get(i));
 			}
 		}
 	}

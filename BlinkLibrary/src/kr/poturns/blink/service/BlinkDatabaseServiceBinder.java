@@ -34,6 +34,8 @@ public class BlinkDatabaseServiceBinder extends IBlinkDatabaseServiceBinder.Stub
 		// TODO Auto-generated method stub
 		Log.i(tag, "obtainSystemDatabase");
 		mSqliteManager.registerLog(DeviceName, PackageName, mSqliteManager.LOG_OBTAIN_SYSTEMDATABASE, "");
+		SystemDatabaseObject sdo = mSqliteManager.obtainSystemDatabase(DeviceName, PackageName);
+		Log.i(tag, sdo.toString());
 		return mSqliteManager.obtainSystemDatabase(DeviceName, PackageName);
 	}
 
@@ -123,7 +125,7 @@ public class BlinkDatabaseServiceBinder extends IBlinkDatabaseServiceBinder.Stub
 	public void startFunction(Function mFunction) throws RemoteException {
 		// TODO Auto-generated method stub
 		if(mFunction.Type==Function.TYPE_ACTIVITY)
-			context.startActivity(new Intent(mFunction.Action));
+			context.startActivity(new Intent(mFunction.Action).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 		else if(mFunction.Type==Function.TYPE_SERIVCE)
 			context.startService(new Intent(mFunction.Action));
 		else if(mFunction.Type==Function.TYPE_BROADCAST)

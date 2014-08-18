@@ -24,26 +24,66 @@ public class BlinkDatabaseManager {
 		this.mSqliteManager = mSqliteManager;
 	}
 	
-	public void queryDevice(){
-		
+	public BlinkDatabaseManager queryDevice(String where){
+		this.mDeviceList = this.mSqliteManager.obtainDeviceList(where);
+		return this;
 	}
-	public void queryApp(){
-		
+	public BlinkDatabaseManager queryApp(String where){
+		String NewWhere = "DeviceId in (";
+		for(int i=0;i<mDeviceList.size();i++){
+			NewWhere += String.valueOf(mDeviceList.get(i).DeviceId);
+			if(i<mDeviceList.size()-1)NewWhere+=",";
+		}
+		if(mDeviceList.size()>0)NewWhere+=") and " + where;
+		else NewWhere = where;
+				
+		this.mAppList = this.mSqliteManager.obtainAppList(NewWhere);
+		return this;
 	}
-	public void queryFunction(){
+	public BlinkDatabaseManager queryFunction(String where){
+		String NewWhere = "AppId in (";
+		for(int i=0;i<mAppList.size();i++){
+			NewWhere += String.valueOf(mAppList.get(i).AppId);
+			if(i<mAppList.size()-1)NewWhere+=",";
+		}
+		if(mAppList.size()>0)NewWhere+=") and " + where;
+		else NewWhere = where;
+				
+		this.mFunctionList = this.mSqliteManager.obtainFunctionList(NewWhere);
 		
+		return this;
 	}
-	public void queryMeasurement(){
+	public BlinkDatabaseManager queryMeasurement(String where){
+		String NewWhere = "AppId in (";
+		for(int i=0;i<mAppList.size();i++){
+			NewWhere += String.valueOf(mAppList.get(i).AppId);
+			if(i<mAppList.size()-1)NewWhere+=",";
+		}
+		if(mAppList.size()>0)NewWhere+=") and " + where;
+		else NewWhere = where;
+				
+		this.mMeasurementList = this.mSqliteManager.obtainMeasurementList(NewWhere);
 		
+		return this;
 	}
-	public void queryMeasurementData(){
+	public BlinkDatabaseManager queryMeasurementData(String where){
+		String NewWhere = "MeasurementId in (";
+		for(int i=0;i<mMeasurementList.size();i++){
+			NewWhere += String.valueOf(mMeasurementList.get(i).MeasurementId);
+			if(i<mMeasurementList.size()-1)NewWhere+=",";
+		}
+		if(mMeasurementList.size()>0)NewWhere+=") and " + where;
+		else NewWhere = where;
+				
+		this.mMeasurementDataList = this.mSqliteManager.obtainMeasurementDataList(NewWhere);
 		
+		return this;
 	}
-	public void queryBlinkLog(){
-		
+	public BlinkDatabaseManager queryBlinkLog(){
+		return this;
 	}
-	public void querySystemDatabaseObject(){
-		
+	public BlinkDatabaseManager querySystemDatabaseObject(){
+		return this;
 	}
 	
 	

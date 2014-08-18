@@ -123,7 +123,13 @@ public class SqliteManager extends SQLiteOpenHelper {
 		mDevice.Device = device;
 		mApp.PackageName = app;
 		//기존에 등록된 값이 없으면
-		if(!obtainDeviceList(mSystemDatabaseObject) && !obtainAppList(mSystemDatabaseObject)){
+		if(obtainDeviceList(mSystemDatabaseObject) && obtainAppList(mSystemDatabaseObject)){
+			mSystemDatabaseObject.isExist = true;
+			obtainFunction(mSystemDatabaseObject);
+			obtainMeasurement(mSystemDatabaseObject);
+		}
+		//기존에 등록된 값이 있으면 해당 값을 찾아서 리턴
+		else {
 			mApp.Version = 1;
 			mApp.PackageName = app;
 			mApp.DeviceId = mDevice.DeviceId;
@@ -131,19 +137,13 @@ public class SqliteManager extends SQLiteOpenHelper {
 			mSystemDatabaseObject.isExist = false;
 			return mSystemDatabaseObject;
 		}
-		//기존에 등록된 값이 있으면 해당 값을 찾아서 리턴
-		else {
-			mSystemDatabaseObject.isExist = true;
-			obtainFunction(mSystemDatabaseObject);
-			obtainMeasurement(mSystemDatabaseObject);
-		}
 		return mSystemDatabaseObject;
 	}
 	
 	public ArrayList<SystemDatabaseObject> obtainSystemDatabase(){
 		ArrayList<SystemDatabaseObject> mSystemDatabaseObjectList = new ArrayList<SystemDatabaseObject>();
-		ArrayList<Device> mDeviceList = obtainDeviceList();
-		ArrayList<App> mAppList = obtainAppList();
+		ArrayList<Device> mDeviceList = obtainDeviceList("");
+		ArrayList<App> mAppList = obtainAppList("");
 		SystemDatabaseObject mServiceDatabaseObject = null;
 		for(int i=0;i<mDeviceList.size();i++){
 			for(int j=0;j<mAppList.size();j++){
@@ -166,7 +166,6 @@ public class SqliteManager extends SQLiteOpenHelper {
 		String query = SQL_SELECT_DEVICE+"where Device=?";
 		String[] args = {mDevice.Device};
 		Cursor mCursor = mSQLiteDatabase.rawQuery(query, args);
-		Log.i(tag, "Device : "+mDevice);
 		if(mCursor.moveToNext()){
 			mDevice.DeviceId = mCursor.getInt(mCursor.getColumnIndex("DeviceId"));
 			mDevice.Device = mCursor.getString(mCursor.getColumnIndex("Device"));
@@ -178,12 +177,29 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return false;
 	}
 	
+	public ArrayList<Device> obtainDeviceList(String where){
+		if(where==null)where="";
+		else where = "where " + where;
+		ArrayList<Device> mDeviceList = new ArrayList<Device>();
+		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_DEVICE+where, null);
+		Device mDevice = null;
+		while(mCursor.moveToNext()){
+			mDevice = new Device();
+			mDevice.DeviceId = mCursor.getInt(mCursor.getColumnIndex("DeviceId"));
+			mDevice.Device = mCursor.getString(mCursor.getColumnIndex("Device"));
+			mDevice.UUID = mCursor.getString(mCursor.getColumnIndex("UUID"));
+			mDevice.MacAddress = mCursor.getString(mCursor.getColumnIndex("MacAddress"));
+			mDevice.DateTime = mCursor.getString(mCursor.getColumnIndex("DateTime"));
+			mDeviceList.add(mDevice);
+		}
+		return mDeviceList;
+	}
+	
 	private boolean obtainAppList(SystemDatabaseObject mSystemDatabaseObject){
 		App mApp = mSystemDatabaseObject.mApp;
 		String query = SQL_SELECT_APP+"where DeviceId=? and PackageName=?";
 		String[] args = {String.valueOf(mSystemDatabaseObject.mDevice.DeviceId),mSystemDatabaseObject.mApp.PackageName};
 		Cursor mCursor = mSQLiteDatabase.rawQuery(query, args);
-		Log.i(tag, "App : "+mApp);
 		if(mCursor.moveToNext()){
 			mApp.AppId = mCursor.getInt(mCursor.getColumnIndex("AppId"));
 			mApp.DeviceId = mCursor.getInt(mCursor.getColumnIndex("DeviceId"));
@@ -196,9 +212,11 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return false;
 	}
 	
-	private ArrayList<App> obtainAppList(){
+	public ArrayList<App> obtainAppList(String where){
+		if(where==null)where="";
+		else where = "where " + where;
 		ArrayList<App> mAppList = new ArrayList<App>();
-		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_APP, null);
+		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_APP+where, null);
 		App mApp = null;
 		while(mCursor.moveToNext()){
 			mApp = new App();
@@ -213,21 +231,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mAppList;
 	}
 	
-	private ArrayList<Device> obtainDeviceList(){
-		ArrayList<Device> mDeviceList = new ArrayList<Device>();
-		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_DEVICE, null);
-		Device mDevice = null;
-		while(mCursor.moveToNext()){
-			mDevice = new Device();
-			mDevice.DeviceId = mCursor.getInt(mCursor.getColumnIndex("DeviceId"));
-			mDevice.Device = mCursor.getString(mCursor.getColumnIndex("Device"));
-			mDevice.UUID = mCursor.getString(mCursor.getColumnIndex("UUID"));
-			mDevice.MacAddress = mCursor.getString(mCursor.getColumnIndex("MacAddress"));
-			mDevice.DateTime = mCursor.getString(mCursor.getColumnIndex("DateTime"));
-			mDeviceList.add(mDevice);
-		}
-		return mDeviceList;
-	}
+	
 	
 	private void registerDevice(SystemDatabaseObject mSystemDatabaseObject){
 		Device mDevice = mSystemDatabaseObject.mDevice;
@@ -260,6 +264,8 @@ public class SqliteManager extends SQLiteOpenHelper {
 			values.put("AppId", ""+mFunction.AppId);  
 	        values.put("Function", mFunction.Function); 
 	        values.put("Description", mFunction.Description);
+	        values.put("Action", mFunction.Action);
+	        values.put("Type", mFunction.Type);
 	        mSQLiteDatabase.insert("Function", null, values);
 	        Log.i(tag, "registerFunction OK");
 		}
@@ -294,13 +300,33 @@ public class SqliteManager extends SQLiteOpenHelper {
 			mFunction.AppId = mCursor.getInt(mCursor.getColumnIndex("AppId"));
 			mFunction.Function = mCursor.getString(mCursor.getColumnIndex("Function"));
 			mFunction.Description = mCursor.getString(mCursor.getColumnIndex("Description"));
+			mFunction.Action = mCursor.getString(mCursor.getColumnIndex("Action"));
+			mFunction.Type = mCursor.getInt(mCursor.getColumnIndex("Type"));
 			mServiceDatabaseObject.mFunctionList.add(mFunction);
 		}
 	}
 	
+	public ArrayList<Function> obtainFunctionList(String where){
+		if(where==null)where="";
+		else where = "where " + where;
+		ArrayList<Function> mFunctionList = new ArrayList<Function>();
+		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_FUNCTION+where, null);
+		Function mFunction = null;
+		while(mCursor.moveToNext()){
+			mFunction = new Function();
+			mFunction.AppId = mCursor.getInt(mCursor.getColumnIndex("AppId"));
+			mFunction.Function = mCursor.getString(mCursor.getColumnIndex("Function"));
+			mFunction.Description = mCursor.getString(mCursor.getColumnIndex("Description"));
+			mFunction.Action = mCursor.getString(mCursor.getColumnIndex("Action"));
+			mFunction.Type = mCursor.getInt(mCursor.getColumnIndex("Type"));
+			mFunctionList.add(mFunction);
+		}
+		return mFunctionList;
+	}
+	
 	private void obtainMeasurement(SystemDatabaseObject mServiceDatabaseObject){
-		Device mDeviceList = mServiceDatabaseObject.mDevice;
-		String[] args = {String.valueOf(mDeviceList.DeviceId)};
+		App mApp = mServiceDatabaseObject.mApp;
+		String[] args = {String.valueOf(mApp.AppId)};
 		String sql = SQL_SELECT_MEASUREMENT + "where AppId=?";
 		Cursor mCursor = mSQLiteDatabase.rawQuery(sql, args);
 		Measurement mMeasurement;
@@ -349,10 +375,45 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mMeasurementList;
 	}
 	
+	public ArrayList<Measurement> obtainMeasurementList(String where){
+		if(where==null)where="";
+		else where = "where " + where;
+		ArrayList<Measurement> mMeasurementList = new ArrayList<Measurement>();
+		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_MEASUREMENT+where, null);
+		Measurement mMeasurement = null;
+		while(mCursor.moveToNext()){
+			mMeasurement = new Measurement();
+			mMeasurement.AppId = mCursor.getInt(mCursor.getColumnIndex("AppId"));
+			mMeasurement.Description = mCursor.getString(mCursor.getColumnIndex("Description"));
+			mMeasurement.Measurement = mCursor.getString(mCursor.getColumnIndex("Measurement"));
+			mMeasurement.MeasurementId = mCursor.getInt(mCursor.getColumnIndex("MeasurementId"));
+			mMeasurement.Type = mCursor.getString(mCursor.getColumnIndex("Type"));
+			mMeasurementList.add(mMeasurement);
+		}
+		return mMeasurementList;
+	}
+	
 	//-------------------------------SystemDatabase---------------------------------------
 	
 	
 	//-------------------------------MeasurementDatabase----------------------------------
+	
+	public ArrayList<MeasurementData> obtainMeasurementDataList(String where){
+		if(where==null)where="";
+		else where = "where " + where;
+		ArrayList<MeasurementData> mMeasurementDataList = new ArrayList<MeasurementData>();
+		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_MEASUREMENTDATA+where, null);
+		MeasurementData mMeasurementData = null;
+		while(mCursor.moveToNext()){
+			mMeasurementData = new MeasurementData();
+			mMeasurementData.MeasurementId = mCursor.getInt(mCursor.getColumnIndex("MeasurementId"));
+			mMeasurementData.GroupId = mCursor.getInt(mCursor.getColumnIndex("GroupId"));
+			mMeasurementData.Data = mCursor.getString(mCursor.getColumnIndex("Data"));
+			mMeasurementData.DateTime = mCursor.getString(mCursor.getColumnIndex("DateTime"));
+			mMeasurementDataList.add(mMeasurementData);
+		}
+		return mMeasurementDataList;
+	}
 	
 	/**
 	 * mMeasurementList에 속한 MeasurementData의 리스트를 반환한다.

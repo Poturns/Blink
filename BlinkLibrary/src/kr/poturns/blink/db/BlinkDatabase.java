@@ -52,7 +52,7 @@ public class BlinkDatabase {
 				+ "'Description' TEXT,"
 				+ "'Action' TEXT NOT NULL,"
 				+ "'Type' INTEGER NOT NULL DEFAULT (1),"
-				+ "PRIMARY KEY ('AppId','Function'),"
+				+ "PRIMARY KEY ('AppId','Action','Type'),"
 				+ "FOREIGN KEY('AppId') REFERENCES App('AppId')"
 				+ ");";
 		db.execSQL(sql);
