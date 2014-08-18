@@ -31,8 +31,8 @@ public class SystemDatabaseObject implements Parcelable {
 		mMeasurementList = new ArrayList<Measurement>();
 	}
 	
-	public void addFunction(String Function,String Description){
-		mFunctionList.add(new Function(Function,Description));
+	public void addFunction(String Function,String Description,String Action,int Type){
+		mFunctionList.add(new Function(Function,Description, Action, Type));
 	}
 	public void addMeasurement(String Measurement,String Type,String Description){
 		mMeasurementList.add(new Measurement(Measurement,Type,Description));

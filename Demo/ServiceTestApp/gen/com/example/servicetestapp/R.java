@@ -44,29 +44,30 @@ public final class R {
         public static final int ic_navigation_drawer=0x7f02000a;
     }
     public static final class id {
-        public static final int action_connection_view_change=0x7f0b0013;
-        public static final int action_list_fillter=0x7f0b0015;
-        public static final int action_refresh=0x7f0b0014;
-        public static final int action_search=0x7f0b0016;
-        public static final int activity_main_fragment_content=0x7f0b0004;
-        public static final int activity_main_left_drawer=0x7f0b0003;
-        public static final int activity_preference_horizontalscrollview=0x7f0b0000;
-        public static final int activity_preference_viewpager=0x7f0b0001;
-        public static final int activity_sliding_layout=0x7f0b0002;
-        public static final int content_frame=0x7f0b0005;
-        public static final int drawer_text1=0x7f0b0008;
-        public static final int drawer_text2=0x7f0b0009;
-        public static final int fragment_circular_drawer_button=0x7f0b0007;
-        public static final int fragment_circular_seekbar=0x7f0b000a;
-        public static final int fragment_circular_sliding_drawer=0x7f0b0006;
-        public static final int fragment_content_select_list=0x7f0b000b;
-        public static final int fragment_logview_table_title=0x7f0b000d;
-        public static final int fragment_logview_text_app=0x7f0b000f;
-        public static final int fragment_logview_text_content=0x7f0b0010;
-        public static final int fragment_logview_text_datetime=0x7f0b0011;
-        public static final int fragment_logview_text_device=0x7f0b000e;
-        public static final int fragment_sample_GraphView=0x7f0b0012;
-        public static final int swipe_container=0x7f0b000c;
+        public static final int action_connection_view_change=0x7f0b0014;
+        public static final int action_list_fillter=0x7f0b0016;
+        public static final int action_refresh=0x7f0b0015;
+        public static final int action_search=0x7f0b0017;
+        public static final int activity_main_fragment_content=0x7f0b0005;
+        public static final int activity_main_left_drawer=0x7f0b0004;
+        public static final int activity_preference_horizontalscrollview=0x7f0b0001;
+        public static final int activity_preference_viewpager=0x7f0b0002;
+        public static final int activity_sliding_layout=0x7f0b0003;
+        public static final int btn_test=0x7f0b0000;
+        public static final int content_frame=0x7f0b0006;
+        public static final int drawer_text1=0x7f0b0009;
+        public static final int drawer_text2=0x7f0b000a;
+        public static final int fragment_circular_drawer_button=0x7f0b0008;
+        public static final int fragment_circular_seekbar=0x7f0b000b;
+        public static final int fragment_circular_sliding_drawer=0x7f0b0007;
+        public static final int fragment_content_select_list=0x7f0b000c;
+        public static final int fragment_logview_table_title=0x7f0b000e;
+        public static final int fragment_logview_text_app=0x7f0b0010;
+        public static final int fragment_logview_text_content=0x7f0b0011;
+        public static final int fragment_logview_text_datetime=0x7f0b0012;
+        public static final int fragment_logview_text_device=0x7f0b000f;
+        public static final int fragment_sample_GraphView=0x7f0b0013;
+        public static final int swipe_container=0x7f0b000d;
     }
     public static final class integer {
         public static final int preference_fragment_scrollbarStyle=0x7f060000;

@@ -5,10 +5,10 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
 
-public class BlinkServiceConnection implements ServiceConnection {
-	BlinkServiceManager mBlinkServiceManager;
+public class BlinkDatabaseServiceConnection implements ServiceConnection {
+	BlinkDatabaseServiceManager mBlinkServiceManager;
 	
-	public BlinkServiceConnection(BlinkServiceManager mBlinkServiceManager){
+	public BlinkDatabaseServiceConnection(BlinkDatabaseServiceManager mBlinkServiceManager){
 		
 		this.mBlinkServiceManager = mBlinkServiceManager;
 	}
@@ -16,9 +16,9 @@ public class BlinkServiceConnection implements ServiceConnection {
 	@Override
 	public void onServiceConnected(ComponentName arg0, IBinder arg1) {
 		// TODO Auto-generated method stub
-		mBlinkServiceManager.mBlinkServiceBinder = IBlinkServiceBinder.Stub.asInterface(arg1);
+		mBlinkServiceManager.mBlinkDatabaseServiceBinder = IBlinkDatabaseServiceBinder.Stub.asInterface(arg1);
 		try {
-			mBlinkServiceManager.mBlinkServiceBinder.registerApplicationInfo(mBlinkServiceManager.mDeviceName, mBlinkServiceManager.mPackageName,mBlinkServiceManager.mAppName);
+			mBlinkServiceManager.mBlinkDatabaseServiceBinder.registerApplicationInfo(mBlinkServiceManager.mDeviceName, mBlinkServiceManager.mPackageName,mBlinkServiceManager.mAppName);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

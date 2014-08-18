@@ -68,7 +68,7 @@ public class SampleGraphSqlFragment extends Fragment {
 	private void registerMetaDataToSystemDatabase() {
 		if (!mSystemDatabaseObject.isExist) {
 			mSystemDatabaseObject.addFunction("doFlash",
-					"lights on/off");
+					"lights on/off","",1);
 			mSystemDatabaseObject.addMeasurement(Eye.class);
 			mSqliteManager.registerSystemDatabase(mSystemDatabaseObject);
 		}
