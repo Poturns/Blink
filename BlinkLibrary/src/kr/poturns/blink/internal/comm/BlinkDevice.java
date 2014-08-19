@@ -90,6 +90,8 @@ public class BlinkDevice implements Parcelable, Serializable {
 			for (File file : repo.listFiles()) {
 				if (hashed.equals(file.getName())) {
 					device = readFromRepository(hashed);
+					device.setConnected(false);
+					device.setDiscovered(false);
 					break;
 				}
 			}
@@ -246,6 +248,7 @@ public class BlinkDevice implements Parcelable, Serializable {
 			}
 		}
 		
+		
 		Timestamp = System.currentTimeMillis();
 		
 		return this;
@@ -271,6 +274,9 @@ public class BlinkDevice implements Parcelable, Serializable {
 			
 			if (!devFile.exists())
 				devFile.createNewFile();
+			
+			else if (devFile.lastModified() > Timestamp)
+				return;
 			
 			FileOutputStream fos = new FileOutputStream(devFile);
 			ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -320,21 +326,28 @@ public class BlinkDevice implements Parcelable, Serializable {
 	}
 
 	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("[").append(Name).append(",");
+		builder.append(Type).append("]");
+		builder.append(Address);
+		builder.append("@").append(Timestamp);
+		
+		return builder.toString();
+	}
+
+	@Override
 	public int hashCode() {
 		return Address.hashCode();
 	}
 	
 	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("[ ").append(Name).append(", ");
-		builder.append(Type).append(" ] ");
-		builder.append(Address);
-		builder.append(" @").append(Timestamp);
-		
-		return builder.toString();
+	public boolean equals(Object o) {
+		if (o == null)
+			return false;
+		return hashCode() == o.hashCode();
 	}
-
+	
 	
 	
 	// *** Getter & Setter *** //

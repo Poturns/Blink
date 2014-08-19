@@ -64,6 +64,16 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 			public void onDeviceDiscovered(BlinkDevice device) {
 				resultView.append("DISCOVERED : " + device.getAddress() + " >> " + device.getName() + "\n"); 
 			}
+			
+			@Override
+			public void onDeviceConnected(BlinkDevice device) {
+				resultView.append("CONNECTED!! " + device.getAddress() + " >> " + device.getName() + "\n");
+			}
+			
+			@Override
+			public void onDeviceDisconnected(BlinkDevice device) {
+				resultView.append("DISCONNECTED!! " + device.getAddress() + " >> " + device.getName() + "\n");
+			}
 		};
 		interaction.startService();
 		
@@ -87,6 +97,12 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 		button8.setOnClickListener(this);
 		button9 = (Button) findViewById(R.id.button9);
 		button9.setOnClickListener(this);
+		button10 = (Button) findViewById(R.id.button10);
+		button10.setOnClickListener(this);
+		button11 = (Button) findViewById(R.id.button11);
+		button11.setOnClickListener(this);
+		button12 = (Button) findViewById(R.id.button12);
+		button12.setOnClickListener(this);
 	}
 	
 	@Override
@@ -126,7 +142,7 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 				iSupport.stopDiscovery();
 				break;
 				
-			case R.id.button6:
+			case R.id.button6: {
 				final BlinkDevice[] devices = iSupport.obtainCurrentDiscoveryList();
 				
 				final ArrayList<String> addresses = new ArrayList<String>();
@@ -157,17 +173,43 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 				.setPositiveButton("Close", null)
 				.show();
 				
-				break;
+			} break;
 				
 			case R.id.button7:
 				iSupport.sendBlinkMessages(Xdevice, "Hello " + Xdevice.getName());
 				break;
 				
 			case R.id.button8:
+				iSupport.disconnectDevice(Xdevice);
 				break;
 				
-			case R.id.button9:
-				iSupport.disconnectDevice(Xdevice);
+			case R.id.button9: {
+				final BlinkDevice[] devices = iSupport.obtainConnectedDeviceList();
+				
+				final ArrayList<String> addresses = new ArrayList<String>();
+				for (BlinkDevice device : devices)
+					addresses.add(device.getAddress());
+				
+				ListView listView = new ListView(this);
+				listView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, addresses));
+				
+				new AlertDialog.Builder(this)
+				.setTitle("Connected Device :")
+				.setView(listView)
+				.setPositiveButton("Close", null)
+				.show();
+				
+			} break;
+				
+			case R.id.button10:
+				iSupport.startListeningAsServer();
+				break;
+				
+			case R.id.button11:
+				iSupport.stopListeningAsServer();
+				break;
+				
+			case R.id.button12:
 				break;
 			}
 		} catch (Exception e) {

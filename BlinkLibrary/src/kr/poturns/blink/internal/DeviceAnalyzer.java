@@ -16,9 +16,9 @@ public class DeviceAnalyzer {
 	// *** CONSTANT DECLARATION *** //
 	public enum Identity {
 		UNKNOWN,
-		MAIN,
+		PERIPHERALS,
 		CORE,
-		PERIPHERALS
+		MAIN
 	}
 	
 	private static final int IDENTITY_POINTLINE_USER = 1024 * 1024 * 2;
@@ -177,5 +177,9 @@ public class DeviceAnalyzer {
 	
 	public Identity getCurrentIdentity() {
 		return mIdentity;
+	}
+	
+	public boolean isAvailableAsCore() {
+		return (mIdentity == Identity.CORE || mIdentity == Identity.MAIN);
 	}
 }

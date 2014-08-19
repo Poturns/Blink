@@ -3,18 +3,13 @@ package kr.poturns.blink.internal;
 import java.io.Serializable;
 
 import kr.poturns.blink.internal.comm.BlinkDevice;
-import kr.poturns.blink.internal.comm.BlinkProfile;
 import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
-import kr.poturns.blink.internal.comm.IInternalEventCallback;
-import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.RemoteCallbackList;
-import android.os.RemoteException;
 import android.util.Log;
 
 /**
@@ -60,6 +55,7 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 	final BlinkLocalBaseService MANAGER_CONTEXT;
 
 	private BluetoothAssistant mAssistant;
+	private ServiceKeeper mServiceKeeper;
 	
 	private boolean isInitiated = false;
 	private boolean isDestroyed = false;
@@ -74,6 +70,7 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 		if (!isInitiated && (isInitiated = true)) {
 			MANAGER_CONTEXT.registerReceiver(this, BluetoothAssistant.obtainIntentFilter());
 			
+			mServiceKeeper = ServiceKeeper.getInstance(MANAGER_CONTEXT);
 			mAssistant = BluetoothAssistant.getInstance(this);
 			mAssistant.inititiate();
 		}
@@ -122,32 +119,15 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			
 			
 		} else if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-			Log.d("InterDeviceManager", intent.getStringExtra(BluetoothDevice.EXTRA_NAME) + " : " );
-
 			// 블루투스 Discovery, 디바이스 발견
 			
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			origin.fetchUuidsWithSdp();
+
+			BlinkDevice.load(origin).setDiscovered(true);
 			
-			BlinkDevice device = BlinkDevice.load(origin);
-			mAssistant.onDeviceDiscovered(device);
-			
-			// Broadcasting...
-			Intent mActionFound = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCOVERED);
-			mActionFound.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
-			MANAGER_CONTEXT.sendBroadcast(mActionFound, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
-			
-			Log.d("InterDeviceManager", " Address = " + device.getAddress() + " / Type: " + origin.getType());
-			
-			// 등록된 Callback을 통해 전달.
-//			int size = EVENT_CALLBACK_LIST.beginBroadcast();
-//			for (int i = 0; i < size; i++) {	
-//				try {
-//					EVENT_CALLBACK_LIST.getBroadcastItem(i).onDeviceDiscovered(deviceX);
-//					
-//				} catch (RemoteException e) { ; }
-//			}
-//			EVENT_CALLBACK_LIST.finishBroadcast();
+			Log.d("InterDeviceManager", intent.getStringExtra(BluetoothDevice.EXTRA_NAME) + " : " );
+			Log.d("InterDeviceManager", " Address = " + origin.getAddress() + " / Type: " + origin.getType());
 
 			
 		} else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
@@ -165,7 +145,23 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			// 블루투스 UUID 탐색 >> 결과 UUID 값을 BlinkDevice Cache에 갱신한다.
 			
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-			BlinkDevice.load(origin);
+			BlinkDevice device = BlinkDevice.load(origin);
+			
+			mServiceKeeper.addDiscovery(device);
+			
+			// Broadcasting...
+			Intent mActionFound = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCOVERED);
+			mActionFound.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
+			MANAGER_CONTEXT.sendBroadcast(mActionFound, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
+			
+			
+		} else if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
+			// 블루투스 Pairing 상태 변화 감지
+			
+			int state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, 0);
+			if (BluetoothDevice.BOND_BONDED == state) {
+				
+			}
 			
 			
 		} else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
@@ -188,6 +184,7 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			BlinkDevice device = BlinkDevice.load(origin);
 
+			
 			// Broadcasting...
 			Intent mActionConnected = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCONNECTED);
 			mActionConnected.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
@@ -255,14 +252,12 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 		case BluetoothAdapter.STATE_CONNECTED:
 			Log.d("InterDeviceManager_handleConnectionChanged()", "STATE_CONNECTED");
 			
-			mAssistant.onDeviceConnected(device);
 			mActionIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);
 			break;
 	
 		case BluetoothAdapter.STATE_DISCONNECTED:
 			Log.d("InterDeviceManager_handleConnectionChanged()", "STATE_DISCONNECTED");
 			
-			mAssistant.onDeviceDisconnected(device);
 			mActionIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCONNECTED);
 			break;
 
@@ -273,20 +268,6 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 		// Broadcasting...
 		mActionIntent.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
 		MANAGER_CONTEXT.sendBroadcast(mActionIntent, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
-		
-		// 등록된 Callback을 통해 전달.
-//		int size = EVENT_CALLBACK_LIST.beginBroadcast();
-//		for (int i = 0; i < size; i++) {	
-//			try {
-//				if (BluetoothAdapter.STATE_CONNECTED == curr_state)
-//					EVENT_CALLBACK_LIST.getBroadcastItem(i).onDeviceConnected(deviceX);
-//				
-//				else
-//					EVENT_CALLBACK_LIST.getBroadcastItem(i).onDeviceDisconnected(deviceX);
-//							
-//			} catch (RemoteException e) { ; }
-//		}
-//		EVENT_CALLBACK_LIST.finishBroadcast();
 	}
 
 	@Override
@@ -294,21 +275,16 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 		Log.d("InterDeviceManager", "[LE] " + origin.getName() + " : " + origin.getUuids()[0]);
 		
 		BlinkDevice device = BlinkDevice.load(origin);
+		if (scanRecord != null) {
+			
+		}
+		
+		mServiceKeeper.addDiscovery(device);
 
 		// Broadcasting...
 		Intent mActionDiscovered = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCOVERED);
 		mActionDiscovered.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
 		MANAGER_CONTEXT.sendBroadcast(mActionDiscovered, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
-		
-		// 등록된 Callback을 통해 전달.
-//		int size = EVENT_CALLBACK_LIST.beginBroadcast();
-//		for (int i = 0; i < size; i++) {	
-//			try {
-//				EVENT_CALLBACK_LIST.getBroadcastItem(i).onDeviceDiscovered(deviceX);
-//							
-//			} catch (RemoteException e) { ; }
-//		}
-//		EVENT_CALLBACK_LIST.finishBroadcast();
 	}
 	
 	
@@ -318,96 +294,5 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 	 * 
 	 */
 	int mStartDiscoveryType = BluetoothDevice.DEVICE_TYPE_UNKNOWN;
-/*	
-	final IInternalOperationSupport.Stub InternalOperationSupporter = new IInternalOperationSupport.Stub() {
 
-		@Override
-		public boolean registerCallback(IInternalEventCallback callback) throws RemoteException {
-			if (callback != null)
-				return EVENT_CALLBACK_LIST.register(callback);
-			return false;
-		}
-		
-		@Override
-		public boolean unregisterCallback(IInternalEventCallback callback) throws RemoteException {
-			if (callback != null) 
-				return EVENT_CALLBACK_LIST.unregister(callback);
-			return false;
-		}
-
-		@Override
-		public void startDiscovery(int type) throws RemoteException {
-			if (mAssistant == null) {
-				return;
-			}
-			
-			switch (mStartDiscoveryType = type) {
-			case BluetoothDevice.DEVICE_TYPE_CLASSIC:
-			case BluetoothDevice.DEVICE_TYPE_DUAL:
-			case BluetoothDevice.DEVICE_TYPE_UNKNOWN:
-					mAssistant.startDiscovery(BluetoothDevice.DEVICE_TYPE_CLASSIC);
-				break;
-				
-			case BluetoothDevice.DEVICE_TYPE_LE:
-				mAssistant.startDiscovery(BluetoothDevice.DEVICE_TYPE_LE);
-				break;
-			}
-		}
-		
-		@Override
-		public void stopDiscovery() throws RemoteException {
-			if (mAssistant != null)
-				mAssistant.stopDiscovery();
-		}
-
-		@Override
-		public BlinkDevice[] obtainCurrentDiscoveryList() throws RemoteException {
-			if (mAssistant != null)
-				return mAssistant.obtainCurrentDiscoveryList();
-			return null;
-		}
-
-		@Override
-		public void startListeningAsServer() throws RemoteException {
-			if (mAssistant != null)
-				mAssistant.startListeningServer(false);
-		}
-		
-		@Override
-		public void stopListeningAsServer() throws RemoteException {
-			if (mAssistant != null)
-				mAssistant.stopListeningServer();
-		}
-
-		@Override
-		public void connectDevice(BlinkDevice device) throws RemoteException {
-			BluetoothDevice origin = device.obtainBluetoothDevice();
-			
-			if (origin.getBondState() == BluetoothDevice.BOND_NONE)
-				origin.createBond();
-				
-			if (mAssistant != null)
-				mAssistant.connectToDeviceAsClient(device, BlinkProfile.UUID_BLINK);
-		}
-
-		@Override
-		public void disconnectDevice(BlinkDevice deviceX) throws RemoteException {
-			if (mAssistant != null)
-				mAssistant.disconnectFromDeviceAsClient(deviceX);
-		}
-
-		@Override
-		public BlinkDevice[] obtainConnectedDeviceList() throws RemoteException {
-			if (mAssistant != null)
-				mAssistant.obtainConnectedDeviceList();
-			return null;
-		}
-
-		@Override
-		public void sendBlinkMessages(BlinkDevice target, String jsonMsg) throws RemoteException {
-			if (mAssistant != null)
-				mAssistant.onMessageSentTo(jsonMsg, target);
-		}
-		
-	};*/
 }

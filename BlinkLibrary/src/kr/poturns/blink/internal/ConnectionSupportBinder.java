@@ -71,9 +71,10 @@ public abstract class ConnectionSupportBinder extends IInternalOperationSupport.
 
 	@Override
 	public BlinkDevice[] obtainCurrentDiscoveryList() throws RemoteException {
-		if (mAssistant != null)
-			return mAssistant.obtainCurrentDiscoveryList();
-		return null;
+//		if (mAssistant != null)
+//			return mAssistant.obtainCurrentDiscoveryList();
+//		return null;
+		return ServiceKeeper.getInstance(CONTEXT).obtainDiscoveryArray();
 	}
 
 	@Override
@@ -96,20 +97,21 @@ public abstract class ConnectionSupportBinder extends IInternalOperationSupport.
 			origin.createBond();
 			
 		if (mAssistant != null)
-			mAssistant.connectToDeviceAsClient(device, BlinkProfile.UUID_BLINK);
+			mAssistant.connectToDeviceFromClient(device, BlinkProfile.UUID_BLINK);
 	}
 
 	@Override
 	public void disconnectDevice(BlinkDevice deviceX) throws RemoteException {
 		if (mAssistant != null)
-			mAssistant.disconnectFromDeviceAsClient(deviceX);
+			mAssistant.disconnectDevice(deviceX);
 	}
 
 	@Override
 	public BlinkDevice[] obtainConnectedDeviceList() throws RemoteException {
-		if (mAssistant != null)
-			mAssistant.obtainConnectedDeviceList();
-		return null;
+//		if (mAssistant != null)
+//			mAssistant.obtainConnectedDeviceList();
+//		return null;
+		return ServiceKeeper.getInstance(CONTEXT).obtainConnectedArray();
 	}
 
 	@Override
