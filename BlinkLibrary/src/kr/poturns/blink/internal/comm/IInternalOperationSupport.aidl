@@ -3,6 +3,12 @@ package kr.poturns.blink.internal.comm;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 
+import kr.poturns.blink.db.archive.SystemDatabaseObject;
+import kr.poturns.blink.db.archive.MeasurementData;
+import kr.poturns.blink.db.archive.Measurement;
+import kr.poturns.blink.db.archive.BlinkLog;
+import kr.poturns.blink.db.archive.Function;
+
 /**
  *
  * @author Yeonho.Kim
@@ -79,4 +85,20 @@ interface IInternalOperationSupport {
 	 *
 	 */
 	void sendBlinkMessages(inout BlinkDevice target, String jsonMsg);
+	
+	
+	
+	
+	void registerApplicationInfo(String DeviceName,String PackageName,String AppName);
+	SystemDatabaseObject obtainSystemDatabase(String DeviceName,String PackageName);
+	List<SystemDatabaseObject> obtainSystemDatabaseAll();
+	void registerSystemDatabase(inout SystemDatabaseObject mSystemDatabaseObject);
+	void registerMeasurementData(inout SystemDatabaseObject mSystemDatabaseObject,String ClassName,String JsonObj);
+	String obtainMeasurementData(String ClassName,String DateTimeFrom,String DateTimeTo,int ContainType);
+	List<MeasurementData> obtainMeasurementDataById(inout List<Measurement> mMeasurementList,String DateTimeFrom,String DateTimeTo);
+	void registerLog(String Device,String App,int Type,String Content);
+	List<BlinkLog> obtainLog(String Device,String App,int Type,String DateTimeFrom,String DateTimeTo);
+	void startFunction(inout Function mFunction);
+	
+	
 }

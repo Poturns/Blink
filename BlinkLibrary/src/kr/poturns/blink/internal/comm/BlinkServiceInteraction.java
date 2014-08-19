@@ -1,5 +1,6 @@
 package kr.poturns.blink.internal.comm;
 
+import kr.poturns.blink.internal.BlinkLocalService;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -20,7 +21,9 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	private final EventBroadcastReceiver EVENT_BR;
 	private final IntentFilter FILTER;
 	
-	public BlinkServiceInteraction(Context context) {
+	private IBlinkEventBroadcast mBlinkEventBroadcast;
+	
+	public BlinkServiceInteraction(Context context, IBlinkEventBroadcast iBlinkEventBroadcast) {
 		CONTEXT = context;
 		EVENT_BR = new EventBroadcastReceiver();
 		FILTER = new IntentFilter();
@@ -28,6 +31,12 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		FILTER.addAction(BROADCAST_DEVICE_DISCOVERED);
 		FILTER.addAction(BROADCAST_DEVICE_CONNECTED);
 		FILTER.addAction(BROADCAST_DEVICE_DISCONNECTED);
+		
+		mBlinkEventBroadcast = iBlinkEventBroadcast;
+	}
+	
+	public BlinkServiceInteraction(Context context) {
+		this(context, null);
 	}
 	
 	@Override
@@ -35,6 +44,9 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		CONTEXT.registerReceiver(EVENT_BR, FILTER);
 		
 		// TODO Auto-generated method stub
+		
+		
+		onServiceConnected(BlinkSupportBinder.asInterface(service));
 	}
 
 	@Override
@@ -42,6 +54,23 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		CONTEXT.unregisterReceiver(EVENT_BR);
 		
 		// TODO Auto-generated method stub
+		onServiceDisconnected();
+	}
+	
+	public void startService() {
+		Intent intent = new Intent(BlinkLocalService.INTENT_ACTION_NAME);
+		intent.putExtra(BlinkLocalService.INTENT_EXTRA_SOURCE_PACKAGE, CONTEXT.getPackageName());
+		
+		CONTEXT.startService(intent);
+		CONTEXT.bindService(intent, this, Context.BIND_AUTO_CREATE);
+	}
+	
+	public void stopService() {
+		Intent intent = new Intent(BlinkLocalService.INTENT_ACTION_NAME);
+		intent.putExtra(BlinkLocalService.INTENT_EXTRA_SOURCE_PACKAGE, CONTEXT.getPackageName());
+		
+		CONTEXT.unbindService(this);
+		CONTEXT.stopService(intent);
 	}
 	
 	public final void startBroadcastReceiver() {
@@ -50,6 +79,10 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 
 	public final void stopBroadcastReceiver() {
 		CONTEXT.unregisterReceiver(EVENT_BR);
+	}
+	
+	public final void setOnBlinkEventBroadcast(IBlinkEventBroadcast iBlinkEventBroadcast) {
+		mBlinkEventBroadcast = iBlinkEventBroadcast;
 	}
 	
 	private class EventBroadcastReceiver extends BroadcastReceiver {
@@ -77,26 +110,50 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	 * [ <b>OVERRIDE IT</b>, if you want to complement some operations. ]
 	 * 
 	 * <p>블루투스 탐색 수행시, 디바이스가 발견되었을 때 호출된다.
+	 * <br>Override할 경우, 등록한 {@link IBlinkEventBroadcast}은 동작하지 않는다.
 	 * <hr>
 	 * @param device
 	 */
-	public void onDeviceDiscovered(BlinkDevice device) {}
+	public void onDeviceDiscovered(BlinkDevice device) {
+		if (mBlinkEventBroadcast != null)
+			mBlinkEventBroadcast.onDeviceDiscovered(device);
+	}	
 
 	/**
 	 * [ <b>OVERRIDE IT</b>, if you want to complement some operations. ]
 	 * 
 	 * <p>블루투스 디바이스가 연결되었을 때 호출된다.
+	 * <br>Override할 경우, 등록한 {@link IBlinkEventBroadcast}은 동작하지 않는다.
 	 * <hr>
 	 * @param device
 	 */
-	public void onDeviceConnected(BlinkDevice device) {}
+	public void onDeviceConnected(BlinkDevice device) {
+		if (mBlinkEventBroadcast != null)
+			mBlinkEventBroadcast.onDeviceConnected(device);
+	}
 
 	/**
 	 * [ <b>OVERRIDE IT</b>, if you want to complement some operations. ]
 	 * 
 	 * <p>블루투스 디바이스가 해제되었을 때 호출된다.
+	 * <br>Override할 경우, 등록한 {@link IBlinkEventBroadcast}은 동작하지 않는다.
 	 * <hr>
 	 * @param device
 	 */
-	public void onDeviceDisconnected(BlinkDevice device) {}
+	public void onDeviceDisconnected(BlinkDevice device) {
+		if (mBlinkEventBroadcast != null)
+			mBlinkEventBroadcast.onDeviceDisconnected(device);
+	}
+	
+	/**
+	 * Service에 Binding 되었을 때 호출된다.
+	 * 
+	 * @param iSupport
+	 */
+	public abstract void onServiceConnected(IInternalOperationSupport iSupport);
+	
+	/**
+	 * Service에서 Unbinding 되었을 때 호출된다.
+	 */
+	public abstract void onServiceDisconnected();
 }
