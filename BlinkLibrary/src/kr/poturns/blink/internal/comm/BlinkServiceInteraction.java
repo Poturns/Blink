@@ -20,7 +20,9 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	private final EventBroadcastReceiver EVENT_BR;
 	private final IntentFilter FILTER;
 	
-	public BlinkServiceInteraction(Context context) {
+	private IBlinkEventBroadcast mBlinkEventBroadcast;
+	
+	public BlinkServiceInteraction(Context context, IBlinkEventBroadcast iBlinkEventBroadcast) {
 		CONTEXT = context;
 		EVENT_BR = new EventBroadcastReceiver();
 		FILTER = new IntentFilter();
@@ -28,6 +30,12 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		FILTER.addAction(BROADCAST_DEVICE_DISCOVERED);
 		FILTER.addAction(BROADCAST_DEVICE_CONNECTED);
 		FILTER.addAction(BROADCAST_DEVICE_DISCONNECTED);
+		
+		mBlinkEventBroadcast = iBlinkEventBroadcast;
+	}
+	
+	public BlinkServiceInteraction(Context context) {
+		this(context, null);
 	}
 	
 	@Override
@@ -50,6 +58,10 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 
 	public final void stopBroadcastReceiver() {
 		CONTEXT.unregisterReceiver(EVENT_BR);
+	}
+	
+	public final void setOnBlinkEventBroadcast(IBlinkEventBroadcast iBlinkEventBroadcast) {
+		mBlinkEventBroadcast = iBlinkEventBroadcast;
 	}
 	
 	private class EventBroadcastReceiver extends BroadcastReceiver {
@@ -80,7 +92,10 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	 * <hr>
 	 * @param device
 	 */
-	public void onDeviceDiscovered(BlinkDevice device) {}
+	public void onDeviceDiscovered(BlinkDevice device) {
+		if (mBlinkEventBroadcast != null)
+			mBlinkEventBroadcast.onDeviceDiscovered(device);
+	}	
 
 	/**
 	 * [ <b>OVERRIDE IT</b>, if you want to complement some operations. ]
@@ -89,7 +104,10 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	 * <hr>
 	 * @param device
 	 */
-	public void onDeviceConnected(BlinkDevice device) {}
+	public void onDeviceConnected(BlinkDevice device) {
+		if (mBlinkEventBroadcast != null)
+			mBlinkEventBroadcast.onDeviceConnected(device);
+	}
 
 	/**
 	 * [ <b>OVERRIDE IT</b>, if you want to complement some operations. ]
@@ -98,5 +116,8 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	 * <hr>
 	 * @param device
 	 */
-	public void onDeviceDisconnected(BlinkDevice device) {}
+	public void onDeviceDisconnected(BlinkDevice device) {
+		if (mBlinkEventBroadcast != null)
+			mBlinkEventBroadcast.onDeviceDisconnected(device);
+	}
 }

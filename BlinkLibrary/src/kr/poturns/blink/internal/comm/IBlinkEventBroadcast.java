@@ -44,4 +44,31 @@ public interface IBlinkEventBroadcast {
 	 */
 	public static final String PERMISSION_LISTEN_STATE_MESSAGE = "kr.poturns.blink.permission.LISTEN_STATE_MESSAGE";
 	
+
+	/**
+	 * [ <b>OVERRIDE IT</b>, if you want to complement some operations. ]
+	 * 
+	 * <p>블루투스 탐색 수행시, 디바이스가 발견되었을 때 호출된다.
+	 * <hr>
+	 * @param device
+	 */
+	public void onDeviceDiscovered(BlinkDevice device);
+
+	/**
+	 * [ <b>OVERRIDE IT</b>, if you want to complement some operations. ]
+	 * 
+	 * <p>블루투스 디바이스가 연결되었을 때 호출된다.
+	 * <hr>
+	 * @param device
+	 */
+	public void onDeviceConnected(BlinkDevice device);
+
+	/**
+	 * [ <b>OVERRIDE IT</b>, if you want to complement some operations. ]
+	 * 
+	 * <p>블루투스 디바이스가 해제되었을 때 호출된다.
+	 * <hr>
+	 * @param device
+	 */
+	public void onDeviceDisconnected(BlinkDevice device);
 }

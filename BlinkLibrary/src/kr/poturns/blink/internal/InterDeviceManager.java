@@ -26,7 +26,7 @@ import android.util.Log;
  * @since 2014.07.12
  *
  */
-public class InterDeviceManager extends BroadcastReceiver implements LeScanCallback, IBlinkEventBroadcast {
+public class InterDeviceManager extends BroadcastReceiver implements LeScanCallback {
 	
 	// *** CONSTANT DECLARATION *** //
 	/**
@@ -135,9 +135,9 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			mAssistant.onDeviceDiscovered(device);
 			
 			// Broadcasting...
-			Intent mActionFound = new Intent(BROADCAST_DEVICE_DISCOVERED);
-			mActionFound.putExtra(EXTRA_DEVICE, (Serializable) device);
-			MANAGER_CONTEXT.sendBroadcast(mActionFound, PERMISSION_LISTEN_STATE_MESSAGE);
+			Intent mActionFound = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCOVERED);
+			mActionFound.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
+			MANAGER_CONTEXT.sendBroadcast(mActionFound, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
 			
 			Log.d("InterDeviceManager", " Address = " + device.getAddress() + " / Type: " + origin.getType());
 			
@@ -177,9 +177,9 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			BlinkDevice device = BlinkDevice.load(origin);
 
 			// Broadcasting...
-			Intent mActionConnected = new Intent(BROADCAST_DEVICE_CONNECTED);
-			mActionConnected.putExtra(EXTRA_DEVICE, (Serializable) device);
-			MANAGER_CONTEXT.sendBroadcast(mActionConnected, PERMISSION_LISTEN_STATE_MESSAGE);
+			Intent mActionConnected = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);
+			mActionConnected.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
+			MANAGER_CONTEXT.sendBroadcast(mActionConnected, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
 			
 			Log.d("InterDeviceManager", "ACTION_ACL_CONNECTED : " + origin.getAddress());
 			
@@ -191,9 +191,9 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			BlinkDevice device = BlinkDevice.load(origin);
 
 			// Broadcasting...
-			Intent mActionConnected = new Intent(BROADCAST_DEVICE_DISCONNECTED);
-			mActionConnected.putExtra(EXTRA_DEVICE, (Serializable) device);
-			MANAGER_CONTEXT.sendBroadcast(mActionConnected, PERMISSION_LISTEN_STATE_MESSAGE);
+			Intent mActionConnected = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCONNECTED);
+			mActionConnected.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
+			MANAGER_CONTEXT.sendBroadcast(mActionConnected, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
 			
 			Log.d("InterDeviceManager", "ACTION_ACL_DISCONNECTED : " + origin.getAddress());
 			
@@ -258,14 +258,14 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			Log.d("InterDeviceManager_handleConnectionChanged()", "STATE_CONNECTED");
 			
 			mAssistant.onDeviceConnected(device);
-			mActionIntent = new Intent(BROADCAST_DEVICE_CONNECTED);
+			mActionIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);
 			break;
 	
 		case BluetoothAdapter.STATE_DISCONNECTED:
 			Log.d("InterDeviceManager_handleConnectionChanged()", "STATE_DISCONNECTED");
 			
 			mAssistant.onDeviceDisconnected(device);
-			mActionIntent = new Intent(BROADCAST_DEVICE_DISCONNECTED);
+			mActionIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCONNECTED);
 			break;
 
 		default:
@@ -273,8 +273,8 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 		}
 
 		// Broadcasting...
-		mActionIntent.putExtra(EXTRA_DEVICE, (Serializable) device);
-		MANAGER_CONTEXT.sendBroadcast(mActionIntent, PERMISSION_LISTEN_STATE_MESSAGE);
+		mActionIntent.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
+		MANAGER_CONTEXT.sendBroadcast(mActionIntent, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
 		
 		// 등록된 Callback을 통해 전달.
 //		int size = EVENT_CALLBACK_LIST.beginBroadcast();
@@ -298,9 +298,9 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 		BlinkDevice device = BlinkDevice.load(origin);
 
 		// Broadcasting...
-		Intent mActionDiscovered = new Intent(BROADCAST_DEVICE_DISCOVERED);
-		mActionDiscovered.putExtra(EXTRA_DEVICE, (Serializable) device);
-		MANAGER_CONTEXT.sendBroadcast(mActionDiscovered, PERMISSION_LISTEN_STATE_MESSAGE);
+		Intent mActionDiscovered = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCOVERED);
+		mActionDiscovered.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
+		MANAGER_CONTEXT.sendBroadcast(mActionDiscovered, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
 		
 		// 등록된 Callback을 통해 전달.
 //		int size = EVENT_CALLBACK_LIST.beginBroadcast();
