@@ -28,15 +28,27 @@ public final class R {
 		public static final int ic_navigation_drawer = 0x7f02000a;
 	}
 	public static final class id {
-		public static final int action_connection_view_change = 0x7f0b0014;
-		public static final int action_list_fillter = 0x7f0b0016;
-		public static final int action_refresh = 0x7f0b0015;
-		public static final int action_search = 0x7f0b0017;
+		public static final int action_connection_view_change = 0x7f0b0025;
+		public static final int action_list_fillter = 0x7f0b0027;
+		public static final int action_refresh = 0x7f0b0026;
+		public static final int action_search = 0x7f0b0028;
 		public static final int activity_main_fragment_content = 0x7f0b0005;
 		public static final int activity_main_left_drawer = 0x7f0b0004;
 		public static final int activity_preference_horizontalscrollview = 0x7f0b0001;
 		public static final int activity_preference_viewpager = 0x7f0b0002;
 		public static final int activity_sliding_layout = 0x7f0b0003;
+		public static final int button1 = 0x7f0b0016;
+		public static final int button10 = 0x7f0b0022;
+		public static final int button11 = 0x7f0b0023;
+		public static final int button12 = 0x7f0b0024;
+		public static final int button2 = 0x7f0b0017;
+		public static final int button3 = 0x7f0b0018;
+		public static final int button4 = 0x7f0b001a;
+		public static final int button5 = 0x7f0b001b;
+		public static final int button6 = 0x7f0b001c;
+		public static final int button7 = 0x7f0b001e;
+		public static final int button8 = 0x7f0b001f;
+		public static final int button9 = 0x7f0b0020;
 		public static final int content_frame = 0x7f0b0006;
 		public static final int drawer_text1 = 0x7f0b0009;
 		public static final int drawer_text2 = 0x7f0b000a;
@@ -50,7 +62,12 @@ public final class R {
 		public static final int fragment_logview_text_datetime = 0x7f0b0012;
 		public static final int fragment_logview_text_device = 0x7f0b000f;
 		public static final int fragment_sample_GraphView = 0x7f0b0013;
+		public static final int result_textView = 0x7f0b0014;
 		public static final int swipe_container = 0x7f0b000d;
+		public static final int tableRow1 = 0x7f0b0015;
+		public static final int tableRow2 = 0x7f0b0019;
+		public static final int tableRow3 = 0x7f0b001d;
+		public static final int tableRow4 = 0x7f0b0021;
 	}
 	public static final class integer {
 		public static final int preference_fragment_scrollbarStyle = 0x7f060000;
@@ -67,7 +84,8 @@ public final class R {
 		public static final int fragment_sample = 0x7f030009;
 		public static final int fragment_sample_graph = 0x7f03000a;
 		public static final int list_fragment_logview = 0x7f03000b;
-		public static final int view_textview = 0x7f03000c;
+		public static final int service_test = 0x7f03000c;
+		public static final int view_textview = 0x7f03000d;
 	}
 	public static final class menu {
 		public static final int fragment_circular_connection = 0x7f0a0000;

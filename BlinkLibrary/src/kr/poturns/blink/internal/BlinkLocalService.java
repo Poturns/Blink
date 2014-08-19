@@ -2,8 +2,6 @@ package kr.poturns.blink.internal;
 
 import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.internal.comm.BlinkSupportBinder;
-import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
-import kr.poturns.blink.service.BlinkDatabaseServiceBinder;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;

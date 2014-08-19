@@ -1,5 +1,14 @@
 package kr.poturns.blink.internal.comm;
 
+import java.lang.reflect.Type;
+import java.util.List;
+
+import kr.poturns.blink.db.SqliteManager;
+import kr.poturns.blink.db.archive.BlinkLog;
+import kr.poturns.blink.db.archive.Function;
+import kr.poturns.blink.db.archive.Measurement;
+import kr.poturns.blink.db.archive.MeasurementData;
+import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import kr.poturns.blink.internal.BlinkLocalService;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -7,7 +16,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.IBinder;
+import android.os.RemoteException;
+import android.util.Log;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * 
@@ -16,14 +31,24 @@ import android.os.IBinder;
  *
  */
 public abstract class BlinkServiceInteraction implements ServiceConnection, IBlinkEventBroadcast {
-
+	private final String tag = "BlinkServiceInteraction";
 	private final Context CONTEXT;
 	private final EventBroadcastReceiver EVENT_BR;
 	private final IntentFilter FILTER;
 	
 	private IBlinkEventBroadcast mBlinkEventBroadcast;
+	private IInternalOperationSupport mInternalOperationSupport;
 	
-	public BlinkServiceInteraction(Context context, IBlinkEventBroadcast iBlinkEventBroadcast) {
+	/**
+	 * Application Info
+	 */
+	String mDeviceName = "";
+	String mPackageName = "";
+	String mAppName = "";
+
+	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	
+	public BlinkServiceInteraction(Context context, IBlinkEventBroadcast iBlinkEventBroadcast,IInternalEventCallback iInternalEventCallback) {
 		CONTEXT = context;
 		EVENT_BR = new EventBroadcastReceiver();
 		FILTER = new IntentFilter();
@@ -33,20 +58,35 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		FILTER.addAction(BROADCAST_DEVICE_DISCONNECTED);
 		
 		mBlinkEventBroadcast = iBlinkEventBroadcast;
+		try {
+			if(iInternalEventCallback!=null)mInternalOperationSupport.registerCallback(iInternalEventCallback);
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+		/**
+		 * Setting Application Info
+		 */
+		mDeviceName = Build.MODEL;
+		mPackageName = context.getPackageName();
+		mAppName = context.getApplicationInfo().loadLabel(context.getPackageManager()).toString();
 	}
 	
 	public BlinkServiceInteraction(Context context) {
-		this(context, null);
+		this(context, null,null);
 	}
 	
 	@Override
 	public final void onServiceConnected(ComponentName name, IBinder service) {
 		CONTEXT.registerReceiver(EVENT_BR, FILTER);
-		
 		// TODO Auto-generated method stub
+		mInternalOperationSupport = BlinkSupportBinder.asInterface(service);
 		
-		
-		onServiceConnected(BlinkSupportBinder.asInterface(service));
+		if(mInternalOperationSupport==null){
+			Log.i(tag, "binder is null");
+		}else Log.i(tag, "binder is not null");
+			
+		onServiceConnected(mInternalOperationSupport);
 	}
 
 	@Override
@@ -158,4 +198,135 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	 */
 	public abstract void onServiceDisconnected();
 
+	
+	/**
+	 * Database Interaction
+	 */
+	
+	public boolean registerSystemDatabase(SystemDatabaseObject mSystemDatabaseObject){
+		mSystemDatabaseObject.mApp.PackageName = mPackageName;
+		mSystemDatabaseObject.mApp.AppName = mAppName;
+		mSystemDatabaseObject.mDevice.Device = mDeviceName;
+		try {
+			mInternalOperationSupport.registerSystemDatabase(mSystemDatabaseObject);
+				return true;
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public SystemDatabaseObject obtainSystemDatabase(){
+		return obtainSystemDatabase(mDeviceName,mPackageName);
+	}
+	
+	public SystemDatabaseObject obtainSystemDatabase(String DeviceName,String PackageName){
+		try {
+			return mInternalOperationSupport.obtainSystemDatabase(DeviceName, PackageName);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public List<SystemDatabaseObject> obtainSystemDatabaseAll(){
+		try {
+			return mInternalOperationSupport.obtainSystemDatabaseAll();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public boolean registerMeasurementData(SystemDatabaseObject mSystemDatabaseObject,Object obj){
+		String ClassName = obj.getClass().getName();
+		String jsonObj = gson.toJson(obj);
+		try {
+			mInternalOperationSupport.registerMeasurementData(mSystemDatabaseObject, ClassName,jsonObj);
+			return true;
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public <Object> Object obtainMeasurementData(Class<?> obj,Type type){
+		return obtainMeasurementData(obj,null,null,SqliteManager.CONTAIN_DEFAULT,type);
+	}
+	
+	public <Object> Object obtainMeasurementData(Class<?> obj,int ContainType,Type type){
+		return obtainMeasurementData(obj,null,null,ContainType,type);
+	}
+ 	public <Object> Object obtainMeasurementData(Class<?> obj,String DateTimeFrom,String DateTimeTo,int ContainType,Type type){
+		String ClassName = obj.getName();
+		try{
+			String json = mInternalOperationSupport.obtainMeasurementData(ClassName, DateTimeFrom, DateTimeTo, ContainType);
+			return gson.fromJson(json,type);
+		}catch(Exception e){
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public List<MeasurementData> obtainMeasurementData(List<Measurement> mDeviceAppMeasurementList,String DateTimeFrom,String DateTimeTo){
+		try{
+			return mInternalOperationSupport.obtainMeasurementDataById(mDeviceAppMeasurementList, DateTimeFrom, DateTimeTo);
+		}catch(Exception e){
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public int removeMeasurementData(Class<?> obj, String DateTimeFrom, String DateTimeTo){
+		int ret = 0;
+		return ret;
+	}
+	
+	/**
+	 * Log Methods
+	 */
+	public void registerLog(String Device,String App,int Type,String Content){
+		try {
+			mInternalOperationSupport.registerLog(Device, App, Type, Content);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}	
+	
+	public List<BlinkLog> obtainLog(String Device,String App,int Type,String DateTimeFrom,String DateTimeTo){
+		try {
+			return mInternalOperationSupport.obtainLog(Device, App, Type, DateTimeFrom, DateTimeTo);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public List<BlinkLog> obtainLog(String Device,String App,String DateTimeFrom,String DateTimeTo){
+		return obtainLog(Device,App,-1,DateTimeFrom,DateTimeTo);
+	}
+	public List<BlinkLog> obtainLog(String Device,String DateTimeFrom,String DateTimeTo){
+		return obtainLog(Device,null,-1,DateTimeFrom,DateTimeTo);
+	}
+	public List<BlinkLog> obtainLog(String DateTimeFrom,String DateTimeTo){
+		return obtainLog(null,null,-1,DateTimeFrom,DateTimeTo);
+	}
+	public List<BlinkLog> obtainLog(){
+		return obtainLog(null,null,-1,null,null);
+	}
+	
+	public void startFuntion(Function mFunction){
+		try {
+			mInternalOperationSupport.startFunction(mFunction);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }

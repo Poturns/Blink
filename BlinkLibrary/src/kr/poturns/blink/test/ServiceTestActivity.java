@@ -84,28 +84,17 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 		
 		Log.d("ServiceTestAcitivity", "onClick() : ");
 		try {
-			switch (v.getId()) {
-			case R.id.button1:
+			if(v.getId()==R.id.button1){
 				iSupport.registerCallback(IInternalEventCallback.Stub.asInterface(eventCallback));
-				break;
-	
-			case R.id.button2:
+			}else if(v.getId()==R.id.button2){
 				iSupport.unregisterCallback(eventCallback);
-				break;
-				
-			case R.id.button3:
+			}else if(v.getId()==R.id.button3){
 				iSupport.disconnectDevice(Xdevice);
-				break;
-				
-			case R.id.button4:
+			}else if(v.getId()==R.id.button4){
 				iSupport.startDiscovery(BluetoothDevice.DEVICE_TYPE_CLASSIC);
-				break;
-				
-			case R.id.button5:
+			}else if(v.getId()==R.id.button5){
 				iSupport.stopDiscovery();
-				break;
-				
-			case R.id.button6:
+			}else if(v.getId()==R.id.button6){
 				final BlinkDevice[] devices = iSupport.obtainCurrentDiscoveryList();
 				
 				final ArrayList<String> addresses = new ArrayList<String>();
@@ -135,13 +124,11 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 				.setView(listView)
 				.setPositiveButton("Close", null)
 				.show();
-				
-				break;
-				
-			case R.id.button7:
+			}else if(v.getId()==R.id.button7){
 				iSupport.sendBlinkMessages(Xdevice, "Hello " + Xdevice.getName());
-				break;
 			}
+			
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
