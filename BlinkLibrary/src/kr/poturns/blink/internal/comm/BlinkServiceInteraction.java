@@ -69,7 +69,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		intent.putExtra(BlinkLocalService.INTENT_EXTRA_SOURCE_PACKAGE, CONTEXT.getPackageName());
 		
 		CONTEXT.unbindService(this);
-		CONTEXT.stopService(intent);
+		//CONTEXT.stopService(intent);
 	}
 	
 	public final void startBroadcastReceiver() {
