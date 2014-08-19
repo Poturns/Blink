@@ -2,7 +2,7 @@ package kr.poturns.blink.external;
 
 import java.util.Comparator;
 
-import kr.poturns.blink.db.archive.DeviceAppLog;
+import kr.poturns.blink.db.archive.BlinkLog;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -30,7 +30,7 @@ public class ExternalDeviceAppLog implements Parcelable {
 			fieldArray[i] = "";
 	}
 
-	public ExternalDeviceAppLog(DeviceAppLog log) {
+	public ExternalDeviceAppLog(BlinkLog log) {
 		fieldArray[FIELD_DEVICE] = log.Device;
 		fieldArray[FIELD_TYPE] = String.valueOf(log.Type);
 		fieldArray[FIELD_APP] = log.App;

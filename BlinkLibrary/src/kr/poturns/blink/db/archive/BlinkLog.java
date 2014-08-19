@@ -4,7 +4,7 @@ import kr.poturns.blink.db.JsonManager;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class DeviceAppLog implements IDatabaseObject, Parcelable{
+public class BlinkLog implements IDatabaseObject, Parcelable{
 	public int LogId;
 	public String Device;
 	public String App;
@@ -12,7 +12,7 @@ public class DeviceAppLog implements IDatabaseObject, Parcelable{
 	public String Content;
 	public String DateTime;
 	
-	public DeviceAppLog() {
+	public BlinkLog() {
 		this.LogId = -1;
 		this.Device = "";
 		this.App = "";
@@ -23,7 +23,7 @@ public class DeviceAppLog implements IDatabaseObject, Parcelable{
 
 	public String toString() {
 		String ret = "";
-		ret += "LogId : " + LogId + "\r\n";
+		ret += "BlinkLogId : " + LogId + "\r\n";
 		ret += "Device : " + Device + "\r\n";
 		ret += "App : " + App + "\r\n";
 		ret += "Type : " + Type + "\r\n";
@@ -47,13 +47,13 @@ public class DeviceAppLog implements IDatabaseObject, Parcelable{
 		return 0;
 	}
 
-	public static final Parcelable.Creator<DeviceAppLog> CREATOR = new Parcelable.Creator<DeviceAppLog>() {
-		 public DeviceAppLog createFromParcel(Parcel in) {
-		 	return new DeviceAppLog(in);
+	public static final Parcelable.Creator<BlinkLog> CREATOR = new Parcelable.Creator<BlinkLog>() {
+		 public BlinkLog createFromParcel(Parcel in) {
+		 	return new BlinkLog(in);
 		 }
 	        
-		 public DeviceAppLog[] newArray( int size ) {
-			 return new DeviceAppLog[size];
+		 public BlinkLog[] newArray( int size ) {
+			 return new BlinkLog[size];
 		 }
 	};
 	
@@ -62,19 +62,19 @@ public class DeviceAppLog implements IDatabaseObject, Parcelable{
 		// TODO Auto-generated method stub
 		dest.writeString(JsonManager.gson.toJson(this));
 	}
-	public DeviceAppLog(Parcel in){
+	public BlinkLog(Parcel in){
 		readFromParcel(in);
 	}
 	public void readFromParcel(Parcel in){
-		DeviceAppLog mDeviceAppLog = JsonManager.gson.fromJson(in.readString(), DeviceAppLog.class);
-		CopyFromOtherObject(mDeviceAppLog);
+		BlinkLog mBlinkLog = JsonManager.gson.fromJson(in.readString(), BlinkLog.class);
+		CopyFromOtherObject(mBlinkLog);
 	}
-	public void CopyFromOtherObject(DeviceAppLog mDeviceAppLog){
-		this.LogId = mDeviceAppLog.LogId;
-		this.Device = mDeviceAppLog.Device;
-		this.App = mDeviceAppLog.App;
-		this.Type = mDeviceAppLog.Type;
-		this.Content = mDeviceAppLog.Content;
-		this.DateTime = mDeviceAppLog.DateTime;
+	public void CopyFromOtherObject(BlinkLog mBlinkLog){
+		this.LogId = mBlinkLog.LogId;
+		this.Device = mBlinkLog.Device;
+		this.App = mBlinkLog.App;
+		this.Type = mBlinkLog.Type;
+		this.Content = mBlinkLog.Content;
+		this.DateTime = mBlinkLog.DateTime;
 	}
 }

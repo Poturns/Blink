@@ -102,7 +102,7 @@ public abstract class ConnectionFragment extends Fragment {
 		ArrayList<String> deviceAppList = new ArrayList<String>();
 		for (SystemDatabaseObject obj : mHelper
 				.getSystemDatabaseObjectByDevice(device)) {
-			deviceAppList.add(obj.mDeviceApp.App);
+			deviceAppList.add(obj.mApp.PackageName);
 		}
 		return deviceAppList;
 	}

@@ -68,10 +68,11 @@ abstract class BlinkLocalBaseService extends Service {
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		DeviceAnalyzer.Identity identity = mDeviceAnalyzer.getCurrentIdentity();
+//		DeviceAnalyzer.Identity identity = mDeviceAnalyzer.getCurrentIdentity();
 		
-		return (DeviceAnalyzer.Identity.UNKNOWN.equals(identity))? 
-				START_NOT_STICKY : START_STICKY;
+//		return (DeviceAnalyzer.Identity.UNKNOWN.equals(identity))? 
+//				START_NOT_STICKY : START_STICKY;
+		return START_STICKY; 
 	}
 	
 	@Override

@@ -1,31 +1,26 @@
 package com.example.servicetestapp;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-
-import kr.poturns.blink.db.archive.MeasurementData;
-import kr.poturns.blink.schema.Eye;
-import kr.poturns.blink.service.BlinkServiceListener;
-import kr.poturns.blink.service.BlinkServiceManager;
+import kr.poturns.blink.db.archive.Function;
+import kr.poturns.blink.service.BlinkDatabaseServiceListener;
+import kr.poturns.blink.service.BlinkDatabaseServiceManager;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements android.view.View.OnClickListener{
 	private final String tag = "MainActivity";
-	BlinkServiceManager mBlinkServiceManager = null;
+	BlinkDatabaseServiceManager mBlinkDatabaseServiceManager = null;
 	TestArchive mTestArchive = null;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
-		mBlinkServiceManager = new BlinkServiceManager(this,new BlinkServiceListener(){
+		
+		
+		mBlinkDatabaseServiceManager = new BlinkDatabaseServiceManager(this,new BlinkDatabaseServiceListener(){
 
 			@Override
 			public void onServiceConnected() {
@@ -40,15 +35,29 @@ public class MainActivity extends Activity {
 			
 		});
 		
-		mTestArchive = new TestArchive(mBlinkServiceManager);
-		mBlinkServiceManager.connectService();
+		mTestArchive = new TestArchive(mBlinkDatabaseServiceManager);
+		mBlinkDatabaseServiceManager.connectService();
+		
+		Log.i(tag,"name : "+this.getApplicationInfo().loadLabel(this.getPackageManager()));
 		
 	}
 	
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
-//		mBlinkServiceManager.closeService();
+		mBlinkDatabaseServiceManager.closeService();
 		super.onDestroy();
 	}
+	
+	public void onClick(View v){
+		switch (v.getId()) {
+		case R.id.btn_test:
+			mBlinkDatabaseServiceManager.startFuntion(new Function("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY));
+			break;
+
+		default:
+			break;
+		}
+	}
+
 }

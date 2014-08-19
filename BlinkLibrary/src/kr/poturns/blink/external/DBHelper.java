@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import kr.poturns.blink.db.SqliteManager;
-import kr.poturns.blink.db.archive.DeviceAppLog;
+import kr.poturns.blink.db.archive.BlinkLog;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import android.content.Context;
 
@@ -37,7 +37,7 @@ public class DBHelper {
 		mDatabaseObjectList = mManager.obtainSystemDatabase();
 		mDeviceMap = new Hashtable<String, List<SystemDatabaseObject>>();
 		for (SystemDatabaseObject obj : mDatabaseObjectList) {
-			String deviceName = obj.mDeviceApp.Device;
+			String deviceName = obj.mDevice.Device;
 			if (mDeviceMap.containsKey(deviceName)) {
 				mDeviceMap.get(deviceName).add(obj);
 			} else {
@@ -67,7 +67,7 @@ public class DBHelper {
 	public SystemDatabaseObject getSystemDatabaseObjectByApp(String device,
 			String app) {
 		for (SystemDatabaseObject obj : mDeviceMap.get(device)) {
-			if (obj.mDeviceApp.App.equals(app))
+			if (obj.mApp.PackageName.equals(app))
 				return obj;
 		}
 		return null;
@@ -124,9 +124,9 @@ public class DBHelper {
 				dateTimeTo));
 	}
 
-	private List<ExternalDeviceAppLog> convertLog(List<DeviceAppLog> logs) {
+	private List<ExternalDeviceAppLog> convertLog(List<BlinkLog> logs) {
 		ArrayList<ExternalDeviceAppLog> list = new ArrayList<ExternalDeviceAppLog>();
-		for (DeviceAppLog log : logs) {
+		for (BlinkLog log : logs) {
 			list.add(new ExternalDeviceAppLog(log));
 		}
 		return list;

@@ -11,36 +11,49 @@ public class BlinkDatabase {
 		String sql = "";
 
 		// Create DeviceAppList table sql statement
-		sql = "create table 'DeviceAppList' ("
-				+ "'DeviceAppId' INTEGER PRIMARY KEY AUTOINCREMENT,"
-				+ "'Device' TEXT NOT NULL," + "'App' TEXT NOT NULL,"
-				+ "'Description' TEXT NOT NULL,"
+		sql = "create table 'Device' ("
+				+ "'DeviceId' INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ "'Device' TEXT NOT NULL,"
 				+ "'UUID' TEXT,"
 				+ "'MacAddress' TEXT,"
-				+ "'Version' INTEGER NOT NULL,"
 				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime')),"
-				+ "UNIQUE ('Device','App','Version')"
+				+ "UNIQUE ('Device')"
 				+ "); ";
 		db.execSQL(sql);
 
+		sql = "create table 'App' ("
+				+ "'AppId' INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ "'DeviceId' INTEGER NOT NULL,"
+				+ "'PackageName' TEXT NOT NULL,"
+				+ "'AppName' TEXT NOT NULL,"
+				+ "'Version' INTEGER NOT NULL DEFAULT (1),"
+				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime')),"
+				+ "UNIQUE ('PackageName'),"
+				+ "FOREIGN KEY('DeviceId') REFERENCES Device('DeviceId')"
+				+ "); ";
+		db.execSQL(sql);
+		
 		// Create DeviceAppMeasurement table sql statement
-		sql = "create table 'DeviceAppMeasurement' ("
-				+ "'DeviceAppId' INTEGER NOT NULL,"
+		sql = "create table 'Measurement' ("
+				+ "'AppId' INTEGER NOT NULL,"
 				+ "'MeasurementId' INTEGER PRIMARY KEY AUTOINCREMENT,"
 				+ "'Measurement' TEXT NOT NULL," + "'Type' TEXT NOT NULL,"
 				+ "'Description' TEXT NOT NULL,"
-				+ "UNIQUE ('DeviceAppId','Measurement'),"
-				+ "FOREIGN KEY('DeviceAppId') REFERENCES DeviceAppList('DeviceAppId')"
+				+ "UNIQUE ('AppId','Measurement'),"
+				+ "FOREIGN KEY('AppId') REFERENCES App('AppId')"
 				+ ");";
 		// sql문 실행하기
 		db.execSQL(sql);
 
 		// Create DeviceAppFunction table sql statement
-		sql = "create table 'DeviceAppFunction' ("
-				+ "'DeviceAppId' INTEGER NOT NULL,"
-				+ "'Function' TEXT NOT NULL," + "'Description' TEXT,"
-				+ "PRIMARY KEY ('DeviceAppId','Function'),"
-				+ "FOREIGN KEY('DeviceAppId') REFERENCES DeviceAppList('DeviceAppId')"
+		sql = "create table 'Function' ("
+				+ "'AppId' INTEGER NOT NULL,"
+				+ "'Function' TEXT NOT NULL,"
+				+ "'Description' TEXT,"
+				+ "'Action' TEXT NOT NULL,"
+				+ "'Type' INTEGER NOT NULL DEFAULT (1),"
+				+ "PRIMARY KEY ('AppId','Action','Type'),"
+				+ "FOREIGN KEY('AppId') REFERENCES App('AppId')"
 				+ ");";
 		db.execSQL(sql);
 
@@ -57,7 +70,7 @@ public class BlinkDatabase {
 
 		Log.i(tag, "createMeasurementDatabase ok");
 		
-		sql = "create table 'Log' ("
+		sql = "create table 'BlinkLog' ("
 				+ "'LogId' INTEGER PRIMARY KEY AUTOINCREMENT,"
 				+ "'Device' TEXT NOT NULL,"
 				+ "'App' TEXT NOT NULL,"
@@ -72,10 +85,13 @@ public class BlinkDatabase {
 
 	public static void updateBlinkDatabase(SQLiteDatabase db) {
 		// TODO Auto-generated method stub
-		db.execSQL("DROP TABLE IF EXSITS DeviceAppList");
-		db.execSQL("DROP TABLE IF EXSITS DeviceAppMeasurement");
-		db.execSQL("DROP TABLE IF EXSITS DeviceAppFunction");
+		db.execSQL("DROP TABLE IF EXSITS Device");
+		db.execSQL("DROP TABLE IF EXSITS App");
+		db.execSQL("DROP TABLE IF EXSITS Measurement");
+		db.execSQL("DROP TABLE IF EXSITS Function");
+		db.execSQL("DROP TABLE IF EXSITS Data");
 		db.execSQL("DROP TABLE IF EXSITS MeasurementData");
+		db.execSQL("DROP TABLE IF EXSITS Log");
 		// 새로 생성될 수 있도록 onCreate() 메소드를 생성한다.
 		createBlinkDatabase(db);
 	}

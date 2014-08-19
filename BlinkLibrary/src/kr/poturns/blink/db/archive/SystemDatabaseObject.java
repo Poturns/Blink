@@ -14,9 +14,10 @@ public class SystemDatabaseObject implements Parcelable {
 	private final String tag = "SystemDatabaseObject";
 	
 	public boolean isExist;
-	public DeviceApp mDeviceApp;
-	public ArrayList<DeviceAppFunction> mDeviceAppFunctionList;
-	public ArrayList<DeviceAppMeasurement> mDeviceAppMeasurementList;
+	public Device mDevice;
+	public App mApp;
+	public ArrayList<Function> mFunctionList;
+	public ArrayList<Measurement> mMeasurementList;
 
 	public SystemDatabaseObject() {
 		onCreate();
@@ -24,45 +25,47 @@ public class SystemDatabaseObject implements Parcelable {
 	
 	public void onCreate(){
 		isExist = false;
-		mDeviceApp = new DeviceApp();
-		mDeviceAppFunctionList = new ArrayList<DeviceAppFunction>();
-		mDeviceAppMeasurementList = new ArrayList<DeviceAppMeasurement>();
+		mDevice = new Device();
+		mApp = new App();
+		mFunctionList = new ArrayList<Function>();
+		mMeasurementList = new ArrayList<Measurement>();
 	}
 	
-	public void addDeviceAppFunction(String Function,String Description){
-		mDeviceAppFunctionList.add(new DeviceAppFunction(Function,Description));
+	public void addFunction(String Function,String Description,String Action,int Type){
+		mFunctionList.add(new Function(Function,Description, Action, Type));
 	}
-	public void addDeviceAppMeasurement(String Measurement,String Type,String Description){
-		mDeviceAppMeasurementList.add(new DeviceAppMeasurement(Measurement,Type,Description));
+	public void addMeasurement(String Measurement,String Type,String Description){
+		mMeasurementList.add(new Measurement(Measurement,Type,Description));
 	}
 	
 	public MeasurementData obtainMeasurementData(String Measurement){
-		for(int i=0;i<mDeviceAppMeasurementList.size();i++){
-			if(mDeviceAppMeasurementList.get(i).Measurement.contentEquals(Measurement)){
-				return mDeviceAppMeasurementList.get(i).obtainMeasurement();
+		for(int i=0;i<mMeasurementList.size();i++){
+			if(mMeasurementList.get(i).Measurement.contentEquals(Measurement)){
+				return mMeasurementList.get(i).obtainMeasurement();
 			}
 		}
 		return null;
 	}
 	
 	//Java reflect을 이용한 Measurement 추가 
-	public void addDeviceAppMeasurement(Class<?> obj){
+	public void addMeasurement(Class<?> obj){
 		Log.i(tag, "addDeviceAppMeasurement(Object obj)");
 		Field[] mFields = obj.getFields();
 		for(int i=0;i<mFields.length;i++){
-			mDeviceAppMeasurementList.add(new DeviceAppMeasurement(ClassUtil.obtainFieldSchema(mFields[i]),mFields[i].getType().getName(),""));
+			mMeasurementList.add(new Measurement(ClassUtil.obtainFieldSchema(mFields[i]),mFields[i].getType().getName(),""));
 		}
 	}
 	
 	
 	public String toString(){
 		String ret = "";
-		ret += mDeviceApp.toString();
-		for(int i=0;i<mDeviceAppFunctionList.size();i++){
-			ret += mDeviceAppFunctionList.get(i).toString();
+		ret += mDevice.toString();
+		ret += mApp.toString();
+		for(int i=0;i<mFunctionList.size();i++){
+			ret += mFunctionList.get(i).toString();
 		}
-		for(int i=0;i<mDeviceAppMeasurementList.size();i++){
-			ret += mDeviceAppMeasurementList.get(i).toString();
+		for(int i=0;i<mMeasurementList.size();i++){
+			ret += mMeasurementList.get(i).toString();
 		}
 		return ret;
 	}
@@ -96,8 +99,9 @@ public class SystemDatabaseObject implements Parcelable {
 	}
 	public void CopyFromOtherObject(SystemDatabaseObject mSystemDatabaseObject){
 		this.isExist = mSystemDatabaseObject.isExist;
-		this.mDeviceApp = mSystemDatabaseObject.mDeviceApp;
-		this.mDeviceAppFunctionList = mSystemDatabaseObject.mDeviceAppFunctionList;
-		this.mDeviceAppMeasurementList = mSystemDatabaseObject.mDeviceAppMeasurementList;
+		this.mDevice = mSystemDatabaseObject.mDevice;
+		this.mApp = mSystemDatabaseObject.mApp;
+		this.mFunctionList = mSystemDatabaseObject.mFunctionList;
+		this.mMeasurementList = mSystemDatabaseObject.mMeasurementList;
 	}
 }

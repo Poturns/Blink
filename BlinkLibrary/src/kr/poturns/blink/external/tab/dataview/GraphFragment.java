@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import kr.poturns.blink.R;
-import kr.poturns.blink.db.archive.DeviceAppMeasurement;
+import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import kr.poturns.blink.external.DBHelper;
@@ -55,9 +55,9 @@ public class GraphFragment extends Fragment {
 		return new BubbleGraphView(getActivity(), createBubbleGraphVO());
 	}
 
-	private BubbleGraph makeBubbleGraph(DeviceAppMeasurement mesurement,
+	private BubbleGraph makeBubbleGraph(Measurement mesurement,
 			int color) {
-		ArrayList<DeviceAppMeasurement> list = new ArrayList<DeviceAppMeasurement>();
+		ArrayList<Measurement> list = new ArrayList<Measurement>();
 		list.add(mesurement);
 		List<MeasurementData> dataList = mHelper.getManager()
 				.obtainMeasurementData(list, null, null);
@@ -78,8 +78,8 @@ public class GraphFragment extends Fragment {
 	}
 
 	private BubbleGraphVO createBubbleGraphVO() {
-		ArrayList<DeviceAppMeasurement> list = new ArrayList<DeviceAppMeasurement>();
-		list.add(mDBObject.mDeviceAppMeasurementList.get(0));
+		ArrayList<Measurement> list = new ArrayList<Measurement>();
+		list.add(mDBObject.mMeasurementList.get(0));
 		BubbleGraphVO ret = null;
 		List<MeasurementData> dataList = mHelper.getManager()
 				.obtainMeasurementData(list, null, null);
@@ -95,7 +95,7 @@ public class GraphFragment extends Fragment {
 		ret.setIsAnimaionShow(true);
 		Random random = new Random(System.currentTimeMillis());
 		int graphCount = 0;
-		for (DeviceAppMeasurement measurement : mDBObject.mDeviceAppMeasurementList) {
+		for (Measurement measurement : mDBObject.mMeasurementList) {
 			int r = random.nextInt(256);
 			int g = random.nextInt(256);
 			int b = random.nextInt(256);

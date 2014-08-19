@@ -3,6 +3,7 @@ package kr.poturns.blink.db;
 import java.util.ArrayList;
 import java.util.Random;
 
+import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import kr.poturns.blink.schema.Body;
 import kr.poturns.blink.schema.Eye;
@@ -54,12 +55,12 @@ public class TestArchive {
 		mSystemDatabaseObject = mSqliteManager.obtainSystemDatabase("optimus g pro","com.example.blinkdb1");
 		if(!mSystemDatabaseObject.isExist){
 			//등록되어있지 않으면 추가적으로 등록할 함수, 측정값을 추가하고 등록한다.
-			mSystemDatabaseObject.addDeviceAppFunction("flash", "light light");
-			mSystemDatabaseObject.addDeviceAppFunction("flash2", "light light");
-			mSystemDatabaseObject.addDeviceAppFunction("flash3", "light light");
-			mSystemDatabaseObject.addDeviceAppMeasurement(Eye.class);
-			mSystemDatabaseObject.addDeviceAppMeasurement(Body.class);
-			mSystemDatabaseObject.addDeviceAppMeasurement(Heart.class);
+			mSystemDatabaseObject.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY);
+			mSystemDatabaseObject.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_SERIVCE);
+			mSystemDatabaseObject.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_BROADCAST);
+			mSystemDatabaseObject.addMeasurement(Eye.class);
+			mSystemDatabaseObject.addMeasurement(Body.class);
+			mSystemDatabaseObject.addMeasurement(Heart.class);
 			//sqlite에 등록하는 함수
 			mSqliteManager.registerSystemDatabase(mSystemDatabaseObject);
 		}

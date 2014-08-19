@@ -1,11 +1,15 @@
 package kr.poturns.blink.service;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 import kr.poturns.blink.db.SqliteManager;
-import kr.poturns.blink.db.archive.DeviceAppLog;
-import kr.poturns.blink.db.archive.DeviceAppMeasurement;
+import kr.poturns.blink.db.archive.App;
+import kr.poturns.blink.db.archive.BlinkLog;
+import kr.poturns.blink.db.archive.Device;
+import kr.poturns.blink.db.archive.Function;
+import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import android.content.Context;
@@ -17,28 +21,34 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 
-public class BlinkServiceManager {
+public class BlinkDatabaseServiceManager {
 	private final static String tag = "BlinkServiceManager";
 	Context mContext = null;
 	Intent intent = null;
 	Gson gson = null;
 	
-	BlinkServiceListener mBlinkServiceListener = null;
-	IBlinkServiceBinder mBlinkServiceBinder = null;
-	BlinkServiceConnection mBlinkServiceConnection = null;
-	String device = "";
-	String app = "";
+	BlinkDatabaseServiceListener mBlinkServiceListener = null;
+	IBlinkDatabaseServiceBinder mBlinkDatabaseServiceBinder = null;
+	BlinkDatabaseServiceConnection mBlinkServiceConnection = null;
+	
+	ArrayList<Device> mDeviceList = new ArrayList<Device>();
+	ArrayList<App> mAppList = new ArrayList<App>();
+	
+	String mDeviceName = "";
+	String mPackageName = "";
+	String mAppName = "";
 	
 	public static final String SERVICE_NAME = "kr.poturns.blink.internal.BlinkLocalService";
 	
-	public BlinkServiceManager(Context context,BlinkServiceListener listener){
+	public BlinkDatabaseServiceManager(Context context,BlinkDatabaseServiceListener listener){
 		mContext = context;
 		mBlinkServiceListener = listener;
 		intent = new Intent(SERVICE_NAME); 
-		mBlinkServiceConnection = new BlinkServiceConnection(this);
+		mBlinkServiceConnection = new BlinkDatabaseServiceConnection(this);
 		gson = new GsonBuilder().setPrettyPrinting().create();
-		device = Build.MODEL;
-		app = mContext.getPackageName();
+		mDeviceName = Build.MODEL;
+		mPackageName = mContext.getPackageName();
+		mAppName = mContext.getApplicationInfo().loadLabel(mContext.getPackageManager()).toString();
 //		device = "Device3";
 //		app = "App6";
 	}
@@ -53,10 +63,11 @@ public class BlinkServiceManager {
 	}
 	
 	public boolean registerSystemDatabase(SystemDatabaseObject mSystemDatabaseObject){
-		mSystemDatabaseObject.mDeviceApp.App = app;
-		mSystemDatabaseObject.mDeviceApp.Device = device;
+		mSystemDatabaseObject.mApp.PackageName = mPackageName;
+		mSystemDatabaseObject.mApp.AppName = mAppName;
+		mSystemDatabaseObject.mDevice.Device = mDeviceName;
 		try {
-				mBlinkServiceBinder.registerSystemDatabase(mSystemDatabaseObject);
+				mBlinkDatabaseServiceBinder.registerSystemDatabase(mSystemDatabaseObject);
 				return true;
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
@@ -66,12 +77,12 @@ public class BlinkServiceManager {
 	}
 	
 	public SystemDatabaseObject obtainSystemDatabase(){
-		return obtainSystemDatabase(device,app);
+		return obtainSystemDatabase(mDeviceName,mPackageName);
 	}
 	
-	public SystemDatabaseObject obtainSystemDatabase(String device,String app){
+	public SystemDatabaseObject obtainSystemDatabase(String DeviceName,String PackageName){
 		try {
-			return mBlinkServiceBinder.obtainSystemDatabase(device, app);
+			return mBlinkDatabaseServiceBinder.obtainSystemDatabase(DeviceName, PackageName);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -81,7 +92,7 @@ public class BlinkServiceManager {
 	
 	public List<SystemDatabaseObject> obtainSystemDatabaseAll(){
 		try {
-			return mBlinkServiceBinder.obtainSystemDatabaseAll();
+			return mBlinkDatabaseServiceBinder.obtainSystemDatabaseAll();
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -93,7 +104,7 @@ public class BlinkServiceManager {
 		String ClassName = obj.getClass().getName();
 		String jsonObj = gson.toJson(obj);
 		try {
-			mBlinkServiceBinder.registerMeasurementData(mSystemDatabaseObject, ClassName,jsonObj);
+			mBlinkDatabaseServiceBinder.registerMeasurementData(mSystemDatabaseObject, ClassName,jsonObj);
 			return true;
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
@@ -112,7 +123,7 @@ public class BlinkServiceManager {
  	public <Object> Object obtainMeasurementData(Class<?> obj,String DateTimeFrom,String DateTimeTo,int ContainType,Type type){
 		String ClassName = obj.getName();
 		try{
-			String json = mBlinkServiceBinder.obtainMeasurementData(ClassName, DateTimeFrom, DateTimeTo, ContainType);
+			String json = mBlinkDatabaseServiceBinder.obtainMeasurementData(ClassName, DateTimeFrom, DateTimeTo, ContainType);
 			return gson.fromJson(json,type);
 		}catch(Exception e){
 			e.printStackTrace();
@@ -120,9 +131,9 @@ public class BlinkServiceManager {
 		}
 	}
 
-	public List<MeasurementData> obtainMeasurementData(List<DeviceAppMeasurement> mDeviceAppMeasurementList,String DateTimeFrom,String DateTimeTo){
+	public List<MeasurementData> obtainMeasurementData(List<Measurement> mDeviceAppMeasurementList,String DateTimeFrom,String DateTimeTo){
 		try{
-			return mBlinkServiceBinder.obtainMeasurementDataById(mDeviceAppMeasurementList, DateTimeFrom, DateTimeTo);
+			return mBlinkDatabaseServiceBinder.obtainMeasurementDataById(mDeviceAppMeasurementList, DateTimeFrom, DateTimeTo);
 		}catch(Exception e){
 			e.printStackTrace();
 			return null;
@@ -139,16 +150,16 @@ public class BlinkServiceManager {
 	 */
 	public void registerLog(String Device,String App,int Type,String Content){
 		try {
-			mBlinkServiceBinder.registerLog(Device, App, Type, Content);
+			mBlinkDatabaseServiceBinder.registerLog(Device, App, Type, Content);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}	
 	
-	public List<DeviceAppLog> obtainLog(String Device,String App,int Type,String DateTimeFrom,String DateTimeTo){
+	public List<BlinkLog> obtainLog(String Device,String App,int Type,String DateTimeFrom,String DateTimeTo){
 		try {
-			return mBlinkServiceBinder.obtainLog(Device, App, Type, DateTimeFrom, DateTimeTo);
+			return mBlinkDatabaseServiceBinder.obtainLog(Device, App, Type, DateTimeFrom, DateTimeTo);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -156,16 +167,26 @@ public class BlinkServiceManager {
 		return null;
 	}
 	
-	public List<DeviceAppLog> obtainLog(String Device,String App,String DateTimeFrom,String DateTimeTo){
+	public List<BlinkLog> obtainLog(String Device,String App,String DateTimeFrom,String DateTimeTo){
 		return obtainLog(Device,App,-1,DateTimeFrom,DateTimeTo);
 	}
-	public List<DeviceAppLog> obtainLog(String Device,String DateTimeFrom,String DateTimeTo){
+	public List<BlinkLog> obtainLog(String Device,String DateTimeFrom,String DateTimeTo){
 		return obtainLog(Device,null,-1,DateTimeFrom,DateTimeTo);
 	}
-	public List<DeviceAppLog> obtainLog(String DateTimeFrom,String DateTimeTo){
+	public List<BlinkLog> obtainLog(String DateTimeFrom,String DateTimeTo){
 		return obtainLog(null,null,-1,DateTimeFrom,DateTimeTo);
 	}
-	public List<DeviceAppLog> obtainLog(){
+	public List<BlinkLog> obtainLog(){
 		return obtainLog(null,null,-1,null,null);
 	}
+	
+	public void startFuntion(Function mFunction){
+		try {
+			mBlinkDatabaseServiceBinder.startFunction(mFunction);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 }

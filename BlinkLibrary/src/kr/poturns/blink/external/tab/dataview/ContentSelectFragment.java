@@ -124,16 +124,16 @@ public class ContentSelectFragment extends Fragment {
 			Holder holder = (Holder) h;
 			final SystemDatabaseObject item = (SystemDatabaseObject) getChild(
 					groupPosition, childPosition);
-			holder.tv.setText(item.mDeviceApp.App);
+			holder.tv.setText(item.mApp.PackageName);
 			holder.tv.setOnClickListener(new View.OnClickListener() {
 
 				@Override
 				public void onClick(View v) {
 					Bundle b = new Bundle();
 					b.putString(IServiceContolActivity.EXTRA_DEVICE,
-							item.mDeviceApp.Device);
+							item.mDevice.Device);
 					b.putString(IServiceContolActivity.EXTRA_DEVICE_APP,
-							item.mDeviceApp.App);
+							item.mApp.PackageName);
 					changeFragment(b);
 				}
 			});
