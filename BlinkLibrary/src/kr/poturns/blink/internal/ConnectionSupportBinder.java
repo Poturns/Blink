@@ -1,20 +1,32 @@
 package kr.poturns.blink.internal;
 
+import kr.poturns.blink.external.ServiceControlActivity;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkProfile;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.bluetooth.BluetoothDevice;
+import android.content.Intent;
 import android.os.RemoteException;
 
+/**
+ * 
+ * @author Yeonho.Kim
+ * @since 2014.08.19
+ *
+ */
 public abstract class ConnectionSupportBinder extends IInternalOperationSupport.Stub {
 
 	protected final BlinkLocalService CONTEXT;
 	
 	private BluetoothAssistant mAssistant;
 	
-	protected ConnectionSupportBinder(BlinkLocalService context) {
+	protected ConnectionSupportBinder(BlinkLocalService context) throws Exception {
 		CONTEXT = context;
+		
+		if (context == null)
+			throw new Exception();
+		
 		mAssistant = BluetoothAssistant.getInstance(InterDeviceManager.getInstance(context));
 	}
 
@@ -100,6 +112,13 @@ public abstract class ConnectionSupportBinder extends IInternalOperationSupport.
 		return null;
 	}
 
+	@Override
+	public void openControlActivity() throws RemoteException {
+		Intent intent = new Intent(CONTEXT, ServiceControlActivity.class);
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		CONTEXT.startActivity(intent);
+	}
+	
 	@Override
 	public void sendBlinkMessages(BlinkDevice target, String jsonMsg) throws RemoteException {
 		if (mAssistant != null)

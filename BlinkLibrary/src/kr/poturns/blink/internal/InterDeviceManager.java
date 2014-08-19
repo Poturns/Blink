@@ -58,7 +58,6 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 
 	// *** FIELD DECLARATION *** //
 	final BlinkLocalBaseService MANAGER_CONTEXT;
-	final RemoteCallbackList<IInternalEventCallback> EVENT_CALLBACK_LIST;
 
 	private BluetoothAssistant mAssistant;
 	
@@ -67,7 +66,6 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 	
 	private InterDeviceManager(BlinkLocalBaseService context) {
 		this.MANAGER_CONTEXT = context;
-		this.EVENT_CALLBACK_LIST = context.EVENT_CALLBACK_LIST;
 		
 		initiate();
 	}

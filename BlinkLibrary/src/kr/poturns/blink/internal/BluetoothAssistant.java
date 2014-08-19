@@ -1,12 +1,14 @@
 package kr.poturns.blink.internal;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkProfile;
+import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -23,7 +25,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
-import android.os.RemoteException;
 import android.util.Log;
 
 /**
@@ -419,39 +420,33 @@ class BluetoothAssistant extends Handler{
 	
 	/**
 	 * 
-	 * @param deviceX
+	 * @param device
 	 * @param uuid
 	 */
-	public void connectToDeviceAsClient(BlinkDevice deviceX, UUID uuid) {
-		BluetoothDevice device = deviceX.obtainBluetoothDevice();
+	public void connectToDeviceAsClient(BlinkDevice device, UUID uuid) {
+		BluetoothDevice origin = device.obtainBluetoothDevice();
 		
-		if (deviceX.isLESupported()) {
-			device.connectGatt(INTER_DEV_MANAGER.MANAGER_CONTEXT, deviceX.isAutoConnect(), mBluetoothGattCallback);
+		if (device.isLESupported()) {
+			origin.connectGatt(INTER_DEV_MANAGER.MANAGER_CONTEXT, device.isAutoConnect(), mBluetoothGattCallback);
 
 		} else {
 			BluetoothSocket mBluetoothSocket;
 			try {
-				if (deviceX.isSecureConnect()) 
-					mBluetoothSocket = device.createRfcommSocketToServiceRecord(uuid);
+				if (device.isSecureConnect()) 
+					mBluetoothSocket = origin.createRfcommSocketToServiceRecord(uuid);
 				else
-					mBluetoothSocket = device.createInsecureRfcommSocketToServiceRecord(uuid);
+					mBluetoothSocket = origin.createInsecureRfcommSocketToServiceRecord(uuid);
 				mBluetoothSocket.connect();
 				
-				ClassicLinkThread thread = new ClassicLinkThread(this, deviceX, mBluetoothSocket, true);
+				ClassicLinkThread thread = new ClassicLinkThread(this, device, mBluetoothSocket, true);
 				thread.startListening();
 		
-				CLASSIC_CONN_MAP.put(deviceX.getAddress(), thread);
+				CLASSIC_CONN_MAP.put(device.getAddress(), thread);
 				
 			} catch (IOException e) {
-				// TODO : 연결 요청했던 경우엔, 해당 요청 어플리케이션에게만 호출하는게 나을듯.
-				int size = INTER_DEV_MANAGER.EVENT_CALLBACK_LIST.beginBroadcast();
-				for (int i = 0; i < size; i++) {
-					try {
-						INTER_DEV_MANAGER.EVENT_CALLBACK_LIST.getBroadcastItem(i).onDeviceConnectionFailed(deviceX);
-						
-					} catch (RemoteException ee) { ; }
-				}
-				INTER_DEV_MANAGER.EVENT_CALLBACK_LIST.finishBroadcast();
+				Intent mIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECT_FAILED);
+				mIntent.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
+				INTER_DEV_MANAGER.MANAGER_CONTEXT.sendBroadcast(mIntent, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
 			}
 		}
 	}
@@ -566,46 +561,39 @@ class BluetoothAssistant extends Handler{
 
 			BlinkDevice deviceX = BlinkDevice.load(gatt.getDevice());
 			
-			int size = INTER_DEV_MANAGER.EVENT_CALLBACK_LIST.beginBroadcast();
 			if (status == BluetoothGatt.GATT_SUCCESS) {
+				
+				Intent mIntent; 
 				switch (newState) {
-					case BluetoothGatt.STATE_CONNECTED:
-						LE_CONN_MAP.put(deviceX.getAddress(), gatt);
+				case BluetoothGatt.STATE_CONNECTED:
+					LE_CONN_MAP.put(deviceX.getAddress(), gatt);
+
+					mIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);
+					break;
 						
-						for (int i = 0; i < size; i++) {
-							try {
-								INTER_DEV_MANAGER.EVENT_CALLBACK_LIST.getBroadcastItem(i).onDeviceConnected(deviceX);
-								
-							} catch (RemoteException e) { ; }
-						}
-						break;
-						
-					case BluetoothGatt.STATE_DISCONNECTED:
-						LE_CONN_MAP.remove(deviceX.getAddress());
-						
-						for (int i = 0; i < size; i++) {
-							try {
-								INTER_DEV_MANAGER.EVENT_CALLBACK_LIST.getBroadcastItem(i).onDeviceDisconnected(deviceX);
-									
-							} catch (RemoteException e) { ; }
-						}
-						break;
-					}
+				case BluetoothGatt.STATE_DISCONNECTED:
+					LE_CONN_MAP.remove(deviceX.getAddress());
+
+					mIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCONNECTED);
+					break;
+					
+				default:
+					return;
+				}
+				
+				mIntent.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) deviceX);
+				INTER_DEV_MANAGER.MANAGER_CONTEXT.sendBroadcast(mIntent, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
 					
 			} else {
 				switch (newState) {
 				//case BluetoothGatt.STATE_CONNECTED:
 				case BluetoothGatt.STATE_CONNECTING:
-					for (int i = 0; i < size; i++) {
-						try {
-							INTER_DEV_MANAGER.EVENT_CALLBACK_LIST.getBroadcastItem(i).onDeviceConnectionFailed(deviceX);
-								
-						} catch (RemoteException e) { ; }
-					}
+					Intent mIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECT_FAILED);
+					mIntent.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) deviceX);
+					INTER_DEV_MANAGER.MANAGER_CONTEXT.sendBroadcast(mIntent, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
 					break;
 				}
 			}
-			INTER_DEV_MANAGER.EVENT_CALLBACK_LIST.finishBroadcast();
 		}
 		
 		@Override
@@ -667,48 +655,41 @@ class BluetoothAssistant extends Handler{
 		@Override
 		public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
 			BlinkDevice deviceX = BlinkDevice.load(device);
-			
-			int size = INTER_DEV_MANAGER.EVENT_CALLBACK_LIST.beginBroadcast();
+
 			if (status == BluetoothGatt.GATT_SUCCESS) {
+				
+				Intent mIntent; 
 				switch (newState) {
-					case BluetoothGatt.STATE_CONNECTED:
-						// TODO : LE Server Callback에서는 Gatt를 받지 않는다!??
-						LE_CONN_MAP.put(deviceX.getAddress(), null);
+				case BluetoothGatt.STATE_CONNECTED:
+					// TODO : Gatt == null??
+					LE_CONN_MAP.put(deviceX.getAddress(), null);
+
+					mIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);
+					break;
 						
-						for (int i = 0; i < size; i++) {
-							try {
-								INTER_DEV_MANAGER.EVENT_CALLBACK_LIST.getBroadcastItem(i).onDeviceConnected(deviceX);
-								
-							} catch (RemoteException e) { ; }
-						}
-						break;
-						
-					case BluetoothGatt.STATE_DISCONNECTED:
-						LE_CONN_MAP.remove(deviceX.getAddress());
-						
-						for (int i = 0; i < size; i++) {
-							try {
-								INTER_DEV_MANAGER.EVENT_CALLBACK_LIST.getBroadcastItem(i).onDeviceDisconnected(deviceX);
-									
-							} catch (RemoteException e) { ; }
-						}
-						break;
-					}
+				case BluetoothGatt.STATE_DISCONNECTED:
+					LE_CONN_MAP.remove(deviceX.getAddress());
+
+					mIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCONNECTED);
+					break;
+					
+				default:
+					return;
+				}
+				
+				mIntent.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) deviceX);
+				INTER_DEV_MANAGER.MANAGER_CONTEXT.sendBroadcast(mIntent, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
 					
 			} else {
 				switch (newState) {
 				//case BluetoothGatt.STATE_CONNECTED:
 				case BluetoothGatt.STATE_CONNECTING:
-					for (int i = 0; i < size; i++) {
-						try {
-							INTER_DEV_MANAGER.EVENT_CALLBACK_LIST.getBroadcastItem(i).onDeviceConnectionFailed(deviceX);
-								
-						} catch (RemoteException e) { ; }
-					}
+					Intent mIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECT_FAILED);
+					mIntent.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) deviceX);
+					INTER_DEV_MANAGER.MANAGER_CONTEXT.sendBroadcast(mIntent, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
 					break;
 				}
 			}
-			INTER_DEV_MANAGER.EVENT_CALLBACK_LIST.finishBroadcast();
 		}
 		
 		@Override
