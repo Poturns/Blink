@@ -5,6 +5,7 @@ import kr.poturns.blink.external.preference.PreferenceActivity;
 import kr.poturns.blink.external.tab.connectionview.CircularConnectionFragment;
 import kr.poturns.blink.external.tab.dataview.ContentSelectFragment;
 import kr.poturns.blink.external.tab.logview.LogViewFragment;
+import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.util.FileUtil;
 import android.app.Activity;
 import android.app.Fragment;
@@ -29,6 +30,7 @@ public final class ServiceControlActivity extends Activity implements
 	SlidingPaneLayout mSlidingPaneLayout;
 	ListView mLeftListView;
 	int mCurrentPageSelection = 0;
+	BlinkServiceInteraction mInteraction;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +82,11 @@ public final class ServiceControlActivity extends Activity implements
 		mCurrentPageSelection = position;
 		getActionBar().setTitle(
 				mLeftListView.getItemAtPosition(position).toString());
+	}
+
+	@Override
+	public BlinkServiceInteraction getServiceInteration() {
+		return mInteraction;
 	}
 
 	protected void closePane() {
@@ -141,6 +148,19 @@ public final class ServiceControlActivity extends Activity implements
 			mSlidingPaneLayout.closePane();
 		else
 			super.onBackPressed();
+	}
+
+	@Override
+	protected void onDestroy() {
+		if (mInteraction != null) {
+			try {
+				mInteraction.stopService();
+				mInteraction.stopBroadcastReceiver();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		super.onDestroy();
 	}
 
 	private AdapterView.OnItemClickListener mLeftListViewOnItemClickListener = new AdapterView.OnItemClickListener() {

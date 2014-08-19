@@ -1,29 +1,37 @@
 package kr.poturns.blink.external.tab.connectionview;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import kr.poturns.blink.R;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import kr.poturns.blink.external.DBHelper;
 import kr.poturns.blink.external.IServiceContolActivity;
+import kr.poturns.blink.internal.comm.BlinkDevice;
+import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
+import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
+import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 /**
  * 연결 정보를 보여주는 Abstract Frament<br>
  * */
-public abstract class ConnectionFragment extends Fragment {
-	protected ArrayList<String> mDeviceList = new ArrayList<String>();
+public abstract class ConnectionFragment extends Fragment implements
+		IBlinkEventBroadcast {
+	protected ArrayList<BlinkDevice> mDeviceList = new ArrayList<BlinkDevice>();
 	protected IServiceContolActivity mActivityInterface;
 	private DBHelper mHelper;
 	/** 각 Device의 간략한 정보를 나타내는 Dialog */
@@ -31,25 +39,65 @@ public abstract class ConnectionFragment extends Fragment {
 	protected ArrayAdapter<String> mDialogListAdapter;
 	protected static final int NO_SELECTION = -1;
 	protected int mCurrentListViewSelection = NO_SELECTION;
+	static IInternalOperationSupport mBlinkOperation;
+	BlinkServiceInteraction mInteraction;
 
 	@Override
-	public void onAttach(Activity activity) {
+	public void onAttach(final Activity activity) {
 		super.onAttach(activity);
 		if (activity instanceof IServiceContolActivity) {
 			mActivityInterface = (IServiceContolActivity) activity;
 		}
+		mInteraction = mActivityInterface.getServiceInteration();
+		// mBlinkOperation = mActivityInterface.getOperationSupport();
+		if (mInteraction != null) {
+			mInteraction.setOnBlinkEventBroadcast(this);
+
+		} else {
+			mInteraction = new BlinkServiceInteraction(activity, this) {
+				@Override
+				public void onServiceConnected(
+						IInternalOperationSupport iSupport) {
+					mBlinkOperation = iSupport;
+					if (mDeviceList != null && !mDeviceList.isEmpty()) {
+						mDeviceList.clear();
+					}
+					try {
+						fetchDeviceListFromBluetooth();
+					} catch (RemoteException e) {
+						e.printStackTrace();
+						Toast.makeText(activity,
+								"Blink Service connection failed!!",
+								Toast.LENGTH_SHORT).show();
+					}
+				}
+
+				@Override
+				public void onServiceDisconnected() {
+					Toast.makeText(activity,
+							"Blink Service connection failed!!",
+							Toast.LENGTH_SHORT).show();
+					mBlinkOperation = null;
+					activity.finish();
+				}
+			};
+			mInteraction.startService();
+		}
 	}
 
+	/** Device 리스트가 변경되었을 때 호출된다. */
+	protected abstract void onDeviceListChanged();
+
+	@SuppressWarnings("unchecked")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
-		mDeviceList = new ArrayList<String>();
-		mHelper = DBHelper.getInstance(getActivity());
+
 		if (savedInstanceState != null) {
-			mDeviceList.addAll(savedInstanceState.getStringArrayList("list"));
-		} else {
-			fetchDeviceListFromDB();
+			mDeviceList
+					.addAll((Collection<? extends BlinkDevice>) savedInstanceState
+							.getParcelableArrayList("list"));
 		}
 
 		View mDialogContentView = View.inflate(getActivity(),
@@ -83,14 +131,19 @@ public abstract class ConnectionFragment extends Fragment {
 				}).create();
 	}
 
-	protected final void fetchDeviceListFromDB() {
+	protected final void refreshDB() {
 		mHelper.refresh(getActivity());
-		mDeviceList.clear();
-		mDeviceList.addAll(mHelper.getDeviceSet());
 	}
 
-	protected final void fetchDeviceListFromBluetooth() {
-
+	protected final void fetchDeviceListFromBluetooth() throws RemoteException {
+		BlinkDevice[] devices = mBlinkOperation.obtainCurrentDiscoveryList();
+		// 만약 devices를 얻어오는 과정에서 Exception이 발생한다면
+		// mDeviceList는 초기화 되지 않는다.
+		mDeviceList.clear();
+		for (BlinkDevice device : devices) {
+			mDeviceList.add(device);
+		}
+		onDeviceListChanged();
 	}
 
 	protected final List<SystemDatabaseObject> getSystemDatabaseObjectByDevice(
@@ -127,11 +180,11 @@ public abstract class ConnectionFragment extends Fragment {
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putStringArrayList("list", mDeviceList);
+		outState.putParcelableArrayList("list", mDeviceList);
 	}
 
 	/** 해당 Device에 대한 정보를 Dialog형식으로 보여준다. */
-	protected final void showDialog(final String device) {
+	protected final void showDialog(final BlinkDevice device) {
 		final String[] titles = getResources().getStringArray(
 				R.array.activity_sercive_control_menu_array);
 		final DialogInterface.OnClickListener onClickListener = new DialogInterface.OnClickListener() {
@@ -142,18 +195,19 @@ public abstract class ConnectionFragment extends Fragment {
 
 				switch (which) {
 				case DialogInterface.BUTTON_NEGATIVE: {
-					position = 1;
+					position = 1; // data fragment
 					break;
 				}
 				case DialogInterface.BUTTON_NEUTRAL: {
-					position = 2;
+					position = 2; // log fragment
 					break;
 				}
 				default:
 					return;
 				}
 				final Bundle bundle = new Bundle();
-				bundle.putString(IServiceContolActivity.EXTRA_DEVICE, device);
+				bundle.putString(IServiceContolActivity.EXTRA_DEVICE,
+						device.getName());
 				if (mCurrentListViewSelection != NO_SELECTION) {
 					bundle.putString(IServiceContolActivity.EXTRA_DEVICE_APP,
 							mDialogListAdapter
@@ -163,8 +217,9 @@ public abstract class ConnectionFragment extends Fragment {
 			}
 		};
 		mDialogListAdapter.clear();
-		mDialogListAdapter.addAll(getDeviceAppList(device));
-		mSimpleInfoDialog.setTitle(device);
+		// TODO get app List of device
+		// mDialogListAdapter.addAll(getDeviceAppList(device));
+		mSimpleInfoDialog.setTitle(device.getName());
 		mSimpleInfoDialog.setButton(DialogInterface.BUTTON_NEGATIVE, titles[1],
 				onClickListener);
 		mSimpleInfoDialog.setButton(DialogInterface.BUTTON_NEUTRAL, titles[2],
@@ -173,8 +228,14 @@ public abstract class ConnectionFragment extends Fragment {
 	}
 
 	/** 연결되지 않은 Device를 Host기기와 연결을 시도한다. */
-	protected final boolean conectDevice(String device) {
-		return false;
+	protected final boolean conectDevice(BlinkDevice device) {
+		try {
+			mBlinkOperation.connectDevice(device);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
 	}
 
 	@Override
@@ -183,7 +244,28 @@ public abstract class ConnectionFragment extends Fragment {
 		super.onDestroy();
 	}
 
+	/** 현재 device 리스트에서 연결된 device만 남긴다. */
+	protected final void retainConnectedDevicesFromList() {
+		for (BlinkDevice device : mDeviceList) {
+			if (!device.isConnected()) {
+				mDeviceList.remove(device);
+			}
+		}
+	}
+
 	protected final void cancelCurrentRefreshOperation() {
 
+	}
+
+	@Override
+	public void onDeviceConnected(BlinkDevice device) {
+	}
+
+	@Override
+	public void onDeviceDisconnected(BlinkDevice device) {
+	}
+
+	@Override
+	public void onDeviceDiscovered(BlinkDevice device) {
 	}
 }

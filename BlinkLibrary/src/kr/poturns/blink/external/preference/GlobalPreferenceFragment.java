@@ -6,15 +6,19 @@ import java.lang.reflect.Field;
 import kr.poturns.blink.R;
 import kr.poturns.blink.external.IServiceContolActivity;
 import kr.poturns.blink.util.FileUtil;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.util.Log;
+import android.widget.Toast;
 
 public class GlobalPreferenceFragment extends PreferenceFragment implements
 		OnSharedPreferenceChangeListener {
@@ -87,6 +91,34 @@ public class GlobalPreferenceFragment extends PreferenceFragment implements
 		SharedPreferences pref = getPreferenceScreen().getSharedPreferences();
 		pref.registerOnSharedPreferenceChangeListener(this);
 		// onSharedPreferenceChanged(pref, "sample");
+	}
+
+	@Override
+	public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen,
+			Preference preference) {
+		int titleRes = preference.getTitleRes();
+		if (titleRes == R.string.preference_global_title_delete_database) {
+			new AlertDialog.Builder(getActivity())
+					.setMessage(R.string.confirm_delete)
+					.setNegativeButton(android.R.string.no, null)
+					.setPositiveButton(android.R.string.yes,
+							new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
+									File dbDirectory = FileUtil
+											.obtainExternalDirectory(FileUtil.EXTERNAL_ARCHIVE_DIRECTORY_NAME);
+									for (File file : dbDirectory.listFiles()) {
+										file.delete();
+									}
+									Toast.makeText(getActivity(),
+											R.string.deleted,
+											Toast.LENGTH_SHORT).show();
+								}
+							}).create().show();
+			return true;
+		} else
+			return super.onPreferenceTreeClick(preferenceScreen, preference);
 	}
 
 	@Override

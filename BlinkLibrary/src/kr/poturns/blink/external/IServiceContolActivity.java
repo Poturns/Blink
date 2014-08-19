@@ -1,5 +1,6 @@
 package kr.poturns.blink.external;
 
+import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import android.os.Bundle;
 
 public interface IServiceContolActivity {
@@ -32,8 +33,10 @@ public interface IServiceContolActivity {
 	 * 
 	 * @param message
 	 *            전달할 Message정보가 담긴 {@link Bundle}
-	 *          
+	 * 
 	 * @return 성공 여부
 	 */
 	public boolean sendMessageToService(Bundle message);
+
+	public BlinkServiceInteraction getServiceInteration();
 }

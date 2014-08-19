@@ -6,9 +6,11 @@ import java.util.List;
 import kr.poturns.blink.R;
 import kr.poturns.blink.external.tab.connectionview.CircularViewHelper.OnDragAndDropListener;
 import kr.poturns.blink.external.tab.connectionview.CircularViewHelper.ViewInfoTag;
+import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.app.Fragment;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,6 +32,7 @@ public final class CircularConnectionFragment extends ConnectionFragment {
 	private SeekBar mSeekBar;
 	protected CircularViewHelper mCircularHelper;
 	protected static final String HOST_DEVICE = Build.DEVICE;
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -42,12 +45,16 @@ public final class CircularConnectionFragment extends ConnectionFragment {
 
 			@Override
 			public boolean onLongClick(View v) {
-				fetchDeviceListFromDB();
-				mCircularHelper.addChildViews(generateViews());
-				mCircularHelper.drawCircularView();
-				Toast.makeText(getActivity(), "connection refresh!",
-						Toast.LENGTH_SHORT).show();
-				mSeekBar.setProgress(0);
+				try {
+					fetchDeviceListFromBluetooth();
+					mCircularHelper.addChildViews(generateViews());
+					mCircularHelper.drawCircularView();
+					Toast.makeText(getActivity(), "connection refresh!",
+							Toast.LENGTH_SHORT).show();
+					mSeekBar.setProgress(0);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
 				return true;
 			}
 		});
@@ -63,6 +70,16 @@ public final class CircularConnectionFragment extends ConnectionFragment {
 
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {
+				int progress = seekBar.getProgress();
+				if (progress > 50) { // connected device
+					retainConnectedDevicesFromList();
+				} else {
+					try {
+						fetchDeviceListFromBluetooth();
+					} catch (RemoteException e) {
+						e.printStackTrace();
+					}
+				}
 			}
 
 			@Override
@@ -91,7 +108,7 @@ public final class CircularConnectionFragment extends ConnectionFragment {
 	}
 
 	private boolean checkDeviceFilteringCondition(int i) {
-		return i % 5 == 0;
+		return !mDeviceList.get(i).isConnected();
 	}
 
 	protected ArrayList<View> generateViews() {
@@ -100,8 +117,8 @@ public final class CircularConnectionFragment extends ConnectionFragment {
 		for (int i = 0; i < size; i++) {
 			TextView view = (TextView) View.inflate(getActivity(),
 					R.layout.view_textview, null);
-			String device = mDeviceList.get(i);
-			view.setText(device);
+			BlinkDevice device = mDeviceList.get(i);
+			view.setText(device.getName());
 			view.setOnClickListener(mOnClickListener);
 			view.setTag(device);
 			list.add(view);
@@ -148,9 +165,30 @@ public final class CircularConnectionFragment extends ConnectionFragment {
 
 		@Override
 		public void onClick(final View v) {
-			final String device = ((ViewInfoTag) v.getTag()).mTag.toString();
+			final BlinkDevice device = (BlinkDevice) ((ViewInfoTag) v.getTag()).mTag;
 			showDialog(device);
 		}
 	};
+
+	@Override
+	public void onDeviceDiscovered(BlinkDevice device) {
+		super.onDeviceDiscovered(device);
+	}
+
+	@Override
+	public void onDeviceConnected(BlinkDevice device) {
+		super.onDeviceConnected(device);
+	}
+
+	@Override
+	public void onDeviceDisconnected(BlinkDevice device) {
+		super.onDeviceDisconnected(device);
+	}
+
+	@Override
+	protected void onDeviceListChanged() {
+		mCircularHelper.addChildViews(generateViews());
+		mCircularHelper.drawCircularView();
+	}
 
 }
