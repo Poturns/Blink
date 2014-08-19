@@ -1,12 +1,17 @@
 package kr.poturns.blink.external.preference;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
 import kr.poturns.blink.R;
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.content.Context;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
@@ -125,5 +130,42 @@ public class PreferenceActivity extends Activity {
 			mTabHost.setTag(horizontalScrollView);
 		}
 		horizontalScrollView.scrollTo(newX, 0);
+	}
+
+	static class PreferencePagerAdapter extends FragmentPagerAdapter {
+		private List<Integer> mFragmentIdList;
+		private WeakReference<Context> mContextRef;
+
+		public PreferencePagerAdapter(FragmentManager supportManager,
+				Context context, List<Integer> fragmentIdList) {
+			super(supportManager);
+			mFragmentIdList = fragmentIdList;
+			mContextRef = new WeakReference<Context>(context);
+		}
+
+		@Override
+		public Fragment getItem(int position) {
+			return Fragment.instantiate(mContextRef.get(),
+					retrieveFragmentFromId(mFragmentIdList.get(position))
+							.getName());
+		}
+
+		@Override
+		public int getCount() {
+			return mFragmentIdList.size();
+		}
+
+		private static Class<? extends Fragment> retrieveFragmentFromId(
+				Integer fragmentId) {
+			final int id = fragmentId.intValue();
+			if (id == R.string.title_preference_global)
+				return ExternalPreferenceFragment.class;
+			else if (id == R.string.title_preference_app) {
+				return InternalPreferenceFragment.class;
+			} else {
+				return InternalPreferenceFragment.class;
+			}
+		}
+
 	}
 }

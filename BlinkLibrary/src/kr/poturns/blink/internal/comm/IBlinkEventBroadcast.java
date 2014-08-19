@@ -24,6 +24,10 @@ public interface IBlinkEventBroadcast {
 	 */
 	public static final String BROADCAST_DEVICE_DISCONNECTED = "kr.poturns.blink.internal.event.device_disconnected";
 	
+	/**
+	 * 
+	 */
+	public static final String BROADCAST_DEVICE_CONNECT_FAILED = "kr.poturns.blink.internal.event.device_connectfailed";
 	
 	
 	
@@ -45,6 +49,9 @@ public interface IBlinkEventBroadcast {
 	public static final String PERMISSION_LISTEN_STATE_MESSAGE = "kr.poturns.blink.permission.LISTEN_STATE_MESSAGE";
 	
 
+	
+	
+	// *** CALLBACKs *** //
 	/**
 	 * [ <b>OVERRIDE IT</b>, if you want to complement some operations. ]
 	 * 

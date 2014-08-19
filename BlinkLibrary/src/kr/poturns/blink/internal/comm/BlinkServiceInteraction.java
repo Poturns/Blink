@@ -44,21 +44,20 @@ public abstract class BlinkServiceInteraction implements ServiceConnection,
 	@Override
 	public final void onServiceConnected(ComponentName name, IBinder service) {
 		CONTEXT.registerReceiver(EVENT_BR, FILTER);
-
-		// TODO Auto-generated method stub
-
-		onServiceConnected(BlinkSupportBinder.asInterface(service));
+		
+		if (service == null || !(service instanceof BlinkSupportBinder))
+			onServiceFailed();
+		else
+			onServiceConnected(BlinkSupportBinder.asInterface(service));
 	}
 
 	@Override
 	public final void onServiceDisconnected(ComponentName name) {
 		CONTEXT.unregisterReceiver(EVENT_BR);
-
-		// TODO Auto-generated method stub
 		onServiceDisconnected();
 	}
 
-	public void startService() {
+	public final void startService() {
 		Intent intent = new Intent(BlinkLocalService.INTENT_ACTION_NAME);
 		intent.putExtra(BlinkLocalService.INTENT_EXTRA_SOURCE_PACKAGE,
 				CONTEXT.getPackageName());
@@ -66,8 +65,8 @@ public abstract class BlinkServiceInteraction implements ServiceConnection,
 		CONTEXT.startService(intent);
 		CONTEXT.bindService(intent, this, Context.BIND_AUTO_CREATE);
 	}
-
-	public void stopService() {
+	
+	public final void stopService() {
 		Intent intent = new Intent(BlinkLocalService.INTENT_ACTION_NAME);
 		intent.putExtra(BlinkLocalService.INTENT_EXTRA_SOURCE_PACKAGE,
 				CONTEXT.getPackageName());
@@ -169,4 +168,8 @@ public abstract class BlinkServiceInteraction implements ServiceConnection,
 	 */
 	public abstract void onServiceDisconnected();
 
+	/**
+	 * Service에서 Binding이 실패하였을 때 호출된다.
+	 */
+	public abstract void onServiceFailed();
 }

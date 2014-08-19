@@ -4,11 +4,14 @@
     <string name="title_preference_app">앱 설정</string>
     <string name="title_preference_global">전체 설정</string>
     <string name="preference">설정</string>
-    <string name="preference_global_title_set_this_device_to_host">이 기기를 센터로 설정</string>
-    <string name="preference_global_key_set_this_device_to_host">KEY_SET_THIS_DEVICE_TO_HOST</string>
-    <string name="preference_global_summary_set_this_device_to_host">현재 기기를 Blink Library의 연결의 중심으로 설정하여 모든 데이터 및 연결의 관리를 수행합니다.</string>
-    <string name="preference_global_title_delete_database">Blink Database 삭제</string>
-    <string name="preference_global_key_delete_database">KEY_DELETE_DATABASE</string>
-    <string name="preference_global_summary_delete_database">현재 기기에 저장되어있는 Blink Database를 삭제합니다.</string>
-	
+    <string name="preference_external_title_set_this_device_to_host">이 기기를 센터로 설정</string>
+    <string name="preference_external_key_set_this_device_to_host">KEY_SET_THIS_DEVICE_TO_HOST</string>
+    <string name="preference_external_summary_set_this_device_to_host">현재 기기를 Blink Library의 연결의 중심으로 설정하여 모든 데이터 및 연결의 관리를 수행합니다.</string>
+    <string name="preference_external_title_delete_database">Blink Database 삭제</string>
+    <string name="preference_external_key_delete_database">KEY_DELETE_DATABASE</string>
+    <string name="preference_external_summary_delete_database">현재 기기에 저장되어있는 Blink Database를 삭제합니다.</string>
+    <string name="preference_internal_title_delete_database">기기 정보 삭제</string>
+    <string name="preference_internal_key_delete_database">KEY_DELETE_DATABASE_INTERNAL</string>
+    <string name="preference_internal_summary_delete_database">Blink Database에 저장되어있는 현재 기기에 관한 정보를 삭제합니다.</string>
+
 </resources>

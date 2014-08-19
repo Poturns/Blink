@@ -26,7 +26,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	SqliteManager mSqliteManager;
 	BlinkDatabaseManager mBlinkDatabaseManager = new BlinkDatabaseManager(mSqliteManager);
 	
-	public BlinkSupportBinder(BlinkLocalService context) {
+	public BlinkSupportBinder(BlinkLocalService context) throws Exception {
 		super(context);
 		this.mSqliteManager = SqliteManager.getSqliteManager(context);
 	}

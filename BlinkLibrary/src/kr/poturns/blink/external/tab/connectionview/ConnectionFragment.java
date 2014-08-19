@@ -74,6 +74,11 @@ public abstract class ConnectionFragment extends Fragment implements
 
 				@Override
 				public void onServiceDisconnected() {
+
+				}
+
+				@Override
+				public void onServiceFailed() {
 					Toast.makeText(activity,
 							"Blink Service connection failed!!",
 							Toast.LENGTH_SHORT).show();
