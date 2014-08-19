@@ -319,8 +319,8 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 	/**
 	 * 
 	 */
-	private int mStartDiscoveryType = BluetoothDevice.DEVICE_TYPE_UNKNOWN;
-	
+	int mStartDiscoveryType = BluetoothDevice.DEVICE_TYPE_UNKNOWN;
+/*	
 	final IInternalOperationSupport.Stub InternalOperationSupporter = new IInternalOperationSupport.Stub() {
 
 		@Override
@@ -411,5 +411,5 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 				mAssistant.onMessageSentTo(jsonMsg, target);
 		}
 		
-	};
+	};*/
 }

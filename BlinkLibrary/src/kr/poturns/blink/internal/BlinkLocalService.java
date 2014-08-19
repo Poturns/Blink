@@ -1,6 +1,8 @@
 package kr.poturns.blink.internal;
 
 import kr.poturns.blink.db.SqliteManager;
+import kr.poturns.blink.internal.comm.BlinkSupportBinder;
+import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
 import kr.poturns.blink.service.BlinkDatabaseServiceBinder;
 import android.content.Intent;
 import android.os.IBinder;
@@ -18,6 +20,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 	private final String tag = "BlinkLocalService";
 	public SqliteManager mSqliteManager = null;
 	
+	
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -29,8 +32,9 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 	public IBinder onBind(Intent intent) {
 		super.onBind(intent);
 		
-		//return new BlinkDatabaseServiceBinder(this,mSqliteManager).asBinder();
-		return InterDeviceManager.getInstance(this).InternalOperationSupporter.asBinder();
+		BlinkSupportBinder binder = new BlinkSupportBinder(this);
+		BINDER_MAP.put(intent.getStringExtra(INTENT_EXTRA_SOURCE_PACKAGE), binder);
+		return binder.asBinder();
 	}
 
 }

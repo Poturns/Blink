@@ -1,5 +1,8 @@
 package kr.poturns.blink.internal;
+import java.util.HashMap;
+
 import kr.poturns.blink.R;
+import kr.poturns.blink.internal.comm.BlinkSupportBinder;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.util.FileUtil;
 import android.app.Service;
@@ -31,7 +34,8 @@ abstract class BlinkLocalBaseService extends Service {
 	
 	
 	// *** LIFE CYCLE DECLARATION *** //
-	protected final RemoteCallbackList<IInternalEventCallback> EVENT_CALLBACK_LIST = new RemoteCallbackList<IInternalEventCallback>();
+	final RemoteCallbackList<IInternalEventCallback> EVENT_CALLBACK_LIST = new RemoteCallbackList<IInternalEventCallback>();
+	final HashMap<String, BlinkSupportBinder> BINDER_MAP = new HashMap<String, BlinkSupportBinder>();
 
 	protected DeviceAnalyzer mDeviceAnalyzer;
 	protected InterDeviceManager mInterDeviceManager;
