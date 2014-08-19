@@ -7,14 +7,24 @@ import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.bluetooth.BluetoothDevice;
 import android.os.RemoteException;
 
+/**
+ * 
+ * @author Yeonho.Kim
+ * @since 2014.08.19
+ *
+ */
 public abstract class ConnectionSupportBinder extends IInternalOperationSupport.Stub {
 
 	protected final BlinkLocalService CONTEXT;
 	
 	private BluetoothAssistant mAssistant;
 	
-	protected ConnectionSupportBinder(BlinkLocalService context) {
+	protected ConnectionSupportBinder(BlinkLocalService context) throws Exception {
 		CONTEXT = context;
+		
+		if (context == null)
+			throw new Exception();
+		
 		mAssistant = BluetoothAssistant.getInstance(InterDeviceManager.getInstance(context));
 	}
 

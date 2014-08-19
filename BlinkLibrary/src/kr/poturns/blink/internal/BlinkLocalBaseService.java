@@ -34,7 +34,6 @@ abstract class BlinkLocalBaseService extends Service {
 	
 	
 	// *** LIFE CYCLE DECLARATION *** //
-	final RemoteCallbackList<IInternalEventCallback> EVENT_CALLBACK_LIST = new RemoteCallbackList<IInternalEventCallback>();
 	final HashMap<String, BlinkSupportBinder> BINDER_MAP = new HashMap<String, BlinkSupportBinder>();
 
 	protected DeviceAnalyzer mDeviceAnalyzer;
@@ -77,27 +76,6 @@ abstract class BlinkLocalBaseService extends Service {
 //		return (DeviceAnalyzer.Identity.UNKNOWN.equals(identity))? 
 //				START_NOT_STICKY : START_STICKY;
 		return START_STICKY; 
-	}
-	
-	@Override
-	public IBinder onBind(Intent intent) {
-		Log.e("BlinkLocalBaseService", "onBind() : " + intent.getStringExtra("FROM"));
-		// TODO Auto-generated method stub
-		return null;
-	}
-	
-	@Override
-	public void onRebind(Intent intent) {
-		Log.e("BlinkLocalBaseService", "onRebind() : " + intent.getStringExtra("FROM"));
-		// TODO Auto-generated method stub
-		super.onRebind(intent);
-	}
-	
-	@Override
-	public boolean onUnbind(Intent intent) {
-		Log.e("BlinkLocalBaseService", "onUnbind() : " + intent.getStringExtra("FROM"));
-		// TODO Auto-generated method stub
-		return super.onUnbind(intent);
 	}
 	
 	@Override
