@@ -143,6 +143,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	public void onDeviceDisconnected(BlinkDevice device) {
 		if (mBlinkEventBroadcast != null)
 			mBlinkEventBroadcast.onDeviceDisconnected(device);
+
 	}
 	
 	/**
@@ -156,4 +157,5 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	 * Service에서 Unbinding 되었을 때 호출된다.
 	 */
 	public abstract void onServiceDisconnected();
+
 }
