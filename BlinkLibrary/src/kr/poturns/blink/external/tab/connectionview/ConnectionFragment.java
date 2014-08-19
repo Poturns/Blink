@@ -86,6 +86,7 @@ public abstract class ConnectionFragment extends Fragment implements
 					activity.finish();
 				}
 			};
+			mActivityInterface.setServiceInteration(mInteraction);
 			mInteraction.startService();
 		}
 	}
@@ -246,6 +247,7 @@ public abstract class ConnectionFragment extends Fragment implements
 	@Override
 	public void onDestroy() {
 		cancelCurrentRefreshOperation();
+		mInteraction.setOnBlinkEventBroadcast(null);
 		super.onDestroy();
 	}
 

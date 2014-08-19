@@ -84,11 +84,6 @@ public final class ServiceControlActivity extends Activity implements
 				mLeftListView.getItemAtPosition(position).toString());
 	}
 
-	@Override
-	public BlinkServiceInteraction getServiceInteration() {
-		return mInteraction;
-	}
-
 	protected void closePane() {
 		mSlidingPaneLayout.closePane();
 	}
@@ -144,14 +139,26 @@ public final class ServiceControlActivity extends Activity implements
 
 	@Override
 	public void onBackPressed() {
-		if (mSlidingPaneLayout.isOpen())
+		if (!isScreenSizeBig() && mSlidingPaneLayout.isOpen())
 			mSlidingPaneLayout.closePane();
 		else
 			super.onBackPressed();
 	}
 
+	boolean isScreenSizeBig() {
+		int sizeInfoMasked = getResources().getConfiguration().screenLayout
+				& Configuration.SCREENLAYOUT_SIZE_MASK;
+		switch (sizeInfoMasked) {
+		case Configuration.SCREENLAYOUT_SIZE_NORMAL:
+		case Configuration.SCREENLAYOUT_SIZE_SMALL:
+			return false;
+		default:
+			return true;
+		}
+	}
+
 	@Override
-	protected void onDestroy() {
+	public void finish() {
 		if (mInteraction != null) {
 			try {
 				mInteraction.stopService();
@@ -160,7 +167,7 @@ public final class ServiceControlActivity extends Activity implements
 				e.printStackTrace();
 			}
 		}
-		super.onDestroy();
+		super.finish();
 	}
 
 	private AdapterView.OnItemClickListener mLeftListViewOnItemClickListener = new AdapterView.OnItemClickListener() {
@@ -199,6 +206,16 @@ public final class ServiceControlActivity extends Activity implements
 			Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
 		}
 		return false;
+	}
+
+	@Override
+	public BlinkServiceInteraction getServiceInteration() {
+		return mInteraction;
+	}
+
+	@Override
+	public void setServiceInteration(BlinkServiceInteraction interaction) {
+		mInteraction = interaction;
 	}
 
 }

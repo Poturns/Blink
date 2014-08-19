@@ -6,7 +6,7 @@
 
     <ListView
         android:id="@+id/activity_main_left_drawer"
-        android:layout_width="240dp"
+        android:layout_width="120dip"
         android:layout_height="match_parent"
         android:background="#15010101"
         android:choiceMode="singleChoice"
@@ -15,7 +15,7 @@
 
     <FrameLayout
         android:id="@+id/activity_main_fragment_content"
-        android:layout_width="300dp"
+        android:layout_width="300dip"
         android:layout_height="fill_parent"
         android:layout_weight="1" />
 

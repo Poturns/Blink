@@ -39,4 +39,6 @@ public interface IServiceContolActivity {
 	public boolean sendMessageToService(Bundle message);
 
 	public BlinkServiceInteraction getServiceInteration();
+
+	public void setServiceInteration(BlinkServiceInteraction interaction);
 }

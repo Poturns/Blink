@@ -43,9 +43,13 @@ public abstract class BlinkServiceInteraction implements ServiceConnection,
 
 	@Override
 	public final void onServiceConnected(ComponentName name, IBinder service) {
+		try {
+			CONTEXT.unregisterReceiver(EVENT_BR);
+		} catch (Exception e) {
+		}
 		CONTEXT.registerReceiver(EVENT_BR, FILTER);
-		
-		if (service == null || !(service instanceof BlinkSupportBinder))
+
+		if (service == null)
 			onServiceFailed();
 		else
 			onServiceConnected(BlinkSupportBinder.asInterface(service));
@@ -65,7 +69,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection,
 		CONTEXT.startService(intent);
 		CONTEXT.bindService(intent, this, Context.BIND_AUTO_CREATE);
 	}
-	
+
 	public final void stopService() {
 		Intent intent = new Intent(BlinkLocalService.INTENT_ACTION_NAME);
 		intent.putExtra(BlinkLocalService.INTENT_EXTRA_SOURCE_PACKAGE,
