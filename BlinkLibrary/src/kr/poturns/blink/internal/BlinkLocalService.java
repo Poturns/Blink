@@ -59,5 +59,4 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 		
 		return super.onUnbind(intent);
 	}
-	
 }
