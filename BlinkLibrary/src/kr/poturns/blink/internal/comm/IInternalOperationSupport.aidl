@@ -86,6 +86,12 @@ interface IInternalOperationSupport {
 	 */
 	void sendBlinkMessages(inout BlinkDevice target, String jsonMsg);
 	
+	/**
+	 * ControlActivity를 호출한다.
+	 * <br>이 때, 해당 애플리케이션의 AndroidManifest.xml에 ControlActivity에 대한 Component가 명시되어 있어야 한다.
+	 *
+	 */
+	void openControlActivity(); 
 	
 	
 	

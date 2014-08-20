@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import kr.poturns.blink.R;
 import kr.poturns.blink.internal.BlinkLocalService;
 import kr.poturns.blink.internal.comm.BlinkDevice;
+import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.app.Activity;
@@ -25,6 +26,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class ServiceTestActivity extends Activity implements OnClickListener {
 
@@ -32,6 +34,7 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 	Button button1, button2, button3, button4, button5, button6;
 	Button button7, button8, button9, button10, button11, button12;
 	
+	BlinkServiceInteraction interaction;
 	IInternalOperationSupport iSupport;
 	BlinkDevice Xdevice;
 	
@@ -40,23 +43,39 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.service_test);
 		
-		Intent intent = new Intent(BlinkLocalService.INTENT_ACTION_NAME);
-		intent.putExtra("FROM", getPackageName());
-		
-		startService(intent);
-		bindService(intent, new ServiceConnection() {
+		interaction = new BlinkServiceInteraction(this) {
 			
 			@Override
-			public void onServiceDisconnected(ComponentName name) {
-				iSupport = null;
+			public void onServiceFailed() {
+				
 			}
 			
 			@Override
-			public void onServiceConnected(ComponentName name, IBinder service) {
-				iSupport = IInternalOperationSupport.Stub.asInterface(service);
+			public void onServiceDisconnected() {
+				
 			}
-		}, 0);
-		
+			
+			@Override
+			public void onServiceConnected(IInternalOperationSupport support) {
+				iSupport = support;
+			}
+			
+			@Override
+			public void onDeviceDiscovered(BlinkDevice device) {
+				resultView.append("DISCOVERED : " + device.getAddress() + " >> " + device.getName() + "\n"); 
+			}
+			
+			@Override
+			public void onDeviceConnected(BlinkDevice device) {
+				resultView.append("CONNECTED!! " + device.getAddress() + " >> " + device.getName() + "\n");
+			}
+			
+			@Override
+			public void onDeviceDisconnected(BlinkDevice device) {
+				resultView.append("DISCONNECTED!! " + device.getAddress() + " >> " + device.getName() + "\n");
+			}
+		};
+		interaction.startService();
 		
 		resultView = (TextView) findViewById(R.id.result_textView);
 		
@@ -74,6 +93,22 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 		button6.setOnClickListener(this);
 		button7 = (Button) findViewById(R.id.button7);
 		button7.setOnClickListener(this);
+		button8 = (Button) findViewById(R.id.button8);
+		button8.setOnClickListener(this);
+		button9 = (Button) findViewById(R.id.button9);
+		button9.setOnClickListener(this);
+		button10 = (Button) findViewById(R.id.button10);
+		button10.setOnClickListener(this);
+		button11 = (Button) findViewById(R.id.button11);
+		button11.setOnClickListener(this);
+		button12 = (Button) findViewById(R.id.button12);
+		button12.setOnClickListener(this);
+	}
+	
+	@Override
+	protected void onDestroy() {
+		interaction.stopService();
+		super.onDestroy();
 	}
 
 	@Override
@@ -86,15 +121,17 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 		try {
 			switch (v.getId()) {
 			case R.id.button1:
-				iSupport.registerCallback(IInternalEventCallback.Stub.asInterface(eventCallback));
+				//iSupport.registerCallback(IInternalEventCallback.Stub.asInterface(eventCallback));
+				Toast.makeText(this, "Unimplemented RegisterCallback", Toast.LENGTH_SHORT).show();
 				break;
 	
 			case R.id.button2:
-				iSupport.unregisterCallback(eventCallback);
+				//iSupport.unregisterCallback(eventCallback);
+				Toast.makeText(this, "Unimplemented RegisterCallback", Toast.LENGTH_SHORT).show();
 				break;
 				
 			case R.id.button3:
-				iSupport.disconnectDevice(Xdevice);
+				iSupport.openControlActivity();
 				break;
 				
 			case R.id.button4:
@@ -105,7 +142,7 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 				iSupport.stopDiscovery();
 				break;
 				
-			case R.id.button6:
+			case R.id.button6: {
 				final BlinkDevice[] devices = iSupport.obtainCurrentDiscoveryList();
 				
 				final ArrayList<String> addresses = new ArrayList<String>();
@@ -136,53 +173,48 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 				.setPositiveButton("Close", null)
 				.show();
 				
-				break;
+			} break;
 				
 			case R.id.button7:
 				iSupport.sendBlinkMessages(Xdevice, "Hello " + Xdevice.getName());
+				break;
+				
+			case R.id.button8:
+				iSupport.disconnectDevice(Xdevice);
+				break;
+				
+			case R.id.button9: {
+				final BlinkDevice[] devices = iSupport.obtainConnectedDeviceList();
+				
+				final ArrayList<String> addresses = new ArrayList<String>();
+				for (BlinkDevice device : devices)
+					addresses.add(device.getAddress());
+				
+				ListView listView = new ListView(this);
+				listView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, addresses));
+				
+				new AlertDialog.Builder(this)
+				.setTitle("Connected Device :")
+				.setView(listView)
+				.setPositiveButton("Close", null)
+				.show();
+				
+			} break;
+				
+			case R.id.button10:
+				iSupport.startListeningAsServer();
+				break;
+				
+			case R.id.button11:
+				iSupport.stopListeningAsServer();
+				break;
+				
+			case R.id.button12:
 				break;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
-	IInternalEventCallback.Stub eventCallback = new IInternalEventCallback.Stub() {
-
-		@Override
-		public void onDeviceDiscovered(final BlinkDevice deviceX)
-				throws RemoteException {
-			runOnUiThread(new Runnable() {
-
-				@Override
-				public void run() {
-					resultView.append("DISCOVERED : " + deviceX.getAddress() + "\n"); 
-				}
-				
-			});
-		}
-
-		@Override
-		public void onDeviceConnected(BlinkDevice deviceX)
-				throws RemoteException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void onDeviceDisconnected(BlinkDevice deviceX)
-				throws RemoteException {
-			// TODO Auto-generated method stub
-			
-		}
-
-		@Override
-		public void onDeviceConnectionFailed(BlinkDevice deviceX)
-				throws RemoteException {
-			Xdevice = null;
-			
-		}
-		
-	};
 
 }

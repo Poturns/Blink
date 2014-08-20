@@ -76,7 +76,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection,
 				CONTEXT.getPackageName());
 
 		CONTEXT.unbindService(this);
-		CONTEXT.stopService(intent);
+		//CONTEXT.stopService(intent);
 	}
 
 	public final void startBroadcastReceiver() {

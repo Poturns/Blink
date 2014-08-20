@@ -2,14 +2,12 @@ package kr.poturns.blink.internal;
 import java.util.HashMap;
 
 import kr.poturns.blink.R;
+import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkSupportBinder;
-import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.util.FileUtil;
 import android.app.Service;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.os.IBinder;
-import android.os.RemoteCallbackList;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -45,7 +43,7 @@ abstract class BlinkLocalBaseService extends Service {
 		super.onCreate();
 		
 		// For Service Debugging... 
-		android.os.Debug.waitForDebugger();
+		//android.os.Debug.waitForDebugger();
 		
 		// Blink 서비스에 필요한 기본 디렉토리 생성.
 		FileUtil.createExternalDirectory();
@@ -88,18 +86,14 @@ abstract class BlinkLocalBaseService extends Service {
 	
 	@Override
 	public void onTrimMemory(int level) {
-		Log.e("BlinkLocalBaseService", "onTrimMemory()");
-		// TODO Auto-generated method stub
-
-		super.onTrimMemory(level);
-	}
-	
-	@Override
-	public void onLowMemory() {
-		Log.e("BlinkLocalBaseService", "onLowMemory()");
-		// TODO Auto-generated method stub
-
-		super.onLowMemory();
+		switch (level) {
+		case TRIM_MEMORY_COMPLETE:
+		case TRIM_MEMORY_RUNNING_LOW:
+		case TRIM_MEMORY_RUNNING_CRITICAL:
+			Log.e("BlinkLocalBaseService", "onTrimMemory() : CLEAR CACHE");
+			BlinkDevice.clearCache();
+			break;
+		}
 	}
 	
 	@Override

@@ -178,7 +178,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	}
 	
 	public ArrayList<Device> obtainDeviceList(String where){
-		if(where==null||where.equals(""))where="";
+		if(where==null||where.equals(""))where=""; 
 		else where = "where " + where;
 		ArrayList<Device> mDeviceList = new ArrayList<Device>();
 		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_DEVICE+where, null);
@@ -213,7 +213,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	}
 	
 	public ArrayList<App> obtainAppList(String where){
-		if(where==null||where.equals(""))where="";
+		if(where==null||where.equals(""))where=""; 
 		else where = "where " + where;
 		ArrayList<App> mAppList = new ArrayList<App>();
 		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_APP+where, null);

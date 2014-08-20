@@ -1,10 +1,12 @@
 package kr.poturns.blink.internal;
 
+import kr.poturns.blink.external.ServiceControlActivity;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkProfile;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.bluetooth.BluetoothDevice;
+import android.content.Intent;
 import android.os.RemoteException;
 
 /**
@@ -69,9 +71,10 @@ public abstract class ConnectionSupportBinder extends IInternalOperationSupport.
 
 	@Override
 	public BlinkDevice[] obtainCurrentDiscoveryList() throws RemoteException {
-		if (mAssistant != null)
-			return mAssistant.obtainCurrentDiscoveryList();
-		return null;
+//		if (mAssistant != null)
+//			return mAssistant.obtainCurrentDiscoveryList();
+//		return null;
+		return ServiceKeeper.getInstance(CONTEXT).obtainDiscoveryArray();
 	}
 
 	@Override
@@ -94,22 +97,30 @@ public abstract class ConnectionSupportBinder extends IInternalOperationSupport.
 			origin.createBond();
 			
 		if (mAssistant != null)
-			mAssistant.connectToDeviceAsClient(device, BlinkProfile.UUID_BLINK);
+			mAssistant.connectToDeviceFromClient(device, BlinkProfile.UUID_BLINK);
 	}
 
 	@Override
 	public void disconnectDevice(BlinkDevice deviceX) throws RemoteException {
 		if (mAssistant != null)
-			mAssistant.disconnectFromDeviceAsClient(deviceX);
+			mAssistant.disconnectDevice(deviceX);
 	}
 
 	@Override
 	public BlinkDevice[] obtainConnectedDeviceList() throws RemoteException {
-		if (mAssistant != null)
-			mAssistant.obtainConnectedDeviceList();
-		return null;
+//		if (mAssistant != null)
+//			mAssistant.obtainConnectedDeviceList();
+//		return null;
+		return ServiceKeeper.getInstance(CONTEXT).obtainConnectedArray();
 	}
 
+	@Override
+	public void openControlActivity() throws RemoteException {
+		Intent intent = new Intent(CONTEXT, ServiceControlActivity.class);
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		CONTEXT.startActivity(intent);
+	}
+	
 	@Override
 	public void sendBlinkMessages(BlinkDevice target, String jsonMsg) throws RemoteException {
 		if (mAssistant != null)

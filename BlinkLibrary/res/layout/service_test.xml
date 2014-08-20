@@ -40,7 +40,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Disconnect Current" />
+                android:text="Open ControlAct." />
         </TableRow>
 
         <TableRow
@@ -80,21 +80,21 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Button" />
+                android:text="Send Hello" />
 
             <Button
                 android:id="@+id/button8"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Button" />
+                android:text="Disconnect Current" />
 
             <Button
                 android:id="@+id/button9"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Button" />
+                android:text="Connected Result" />
 
         </TableRow>
 
@@ -108,14 +108,14 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Button" />
+                android:text="Start Listening" />
 
             <Button
                 android:id="@+id/button11"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Button" />
+                android:text="Stop Listening" />
 
             <Button
                 android:id="@+id/button12"

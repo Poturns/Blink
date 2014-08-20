@@ -139,7 +139,7 @@ public class ClassicLinkThread extends Thread {
 			
 		} catch (IOException e) {
 		} finally {
-			mInputStream = null;
+			mOutputStream = null;
 		}
 		
 		try {
