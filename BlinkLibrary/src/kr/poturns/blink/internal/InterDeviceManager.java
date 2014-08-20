@@ -168,7 +168,7 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			// 해당 디바이스와 블루투스 연결 성립
 
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-			BlinkDevice device = BlinkDevice.load(origin);
+			final BlinkDevice device = BlinkDevice.load(origin);
 
 			// Broadcasting...
 			Intent mActionConnected = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);
@@ -177,13 +177,13 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			
 			Log.d("InterDeviceManager", "ACTION_ACL_CONNECTED : " + origin.getAddress());
 			
-			
 		} else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
 			// 해당 디바이스와 블루투스 연결 해제
 
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			BlinkDevice device = BlinkDevice.load(origin);
 
+			mServiceKeeper.removeConnection(device);
 			
 			// Broadcasting...
 			Intent mActionConnected = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCONNECTED);

@@ -7,6 +7,7 @@ import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import android.bluetooth.BluetoothGatt;
 import android.os.RemoteCallbackList;
+import android.util.Log;
 
 
 /**
@@ -43,7 +44,7 @@ public class ServiceKeeper {
 	private final HashMap<String, ConnectionSupportBinder> BINDER_MAP;
 	private final RemoteCallbackList<IInternalEventCallback> EVENT_CALLBACK_LIST;
 	
-	
+	private BlinkDevice mSelfDevice;
 	
 	private ServiceKeeper(BlinkLocalBaseService context) {
 		KEEPER_CONTEXT = context;
@@ -65,6 +66,7 @@ public class ServiceKeeper {
 	
 	void addConnection(BlinkDevice device, ClassicLinkThread thread) {
 		CLASSIC_CONN_MAP.put(device, thread);
+		
 	}
 	
 	void addConnection(BlinkDevice device, BluetoothGatt gatt) {
@@ -74,6 +76,20 @@ public class ServiceKeeper {
 	void removeConnection(BlinkDevice device) {
 		LE_CONN_MAP.remove(device);
 		CLASSIC_CONN_MAP.remove(device);
+	}
+	
+	Object getConnectionObject(BlinkDevice device) {
+		if (device.isLESupported()) {
+			return LE_CONN_MAP.get(device);
+			
+		} else
+			return CLASSIC_CONN_MAP.get(device);
+	}
+	
+	
+	void clearConnection() {
+		LE_CONN_MAP.clear();
+		CLASSIC_CONN_MAP.clear();
 	}
 	
 	void registerBinder(String packageName, ConnectionSupportBinder binder) {
@@ -105,5 +121,34 @@ public class ServiceKeeper {
 		return lists;
 	}
 	
+	public BlinkDevice getSelfDevice() {
+		return mSelfDevice;
+	}
 	
+	public void setSelfDevice(BlinkDevice device) {
+		mSelfDevice = device;
+	}
+	
+	public void updateNetworkMap(BlinkDevice device) {
+		// TODO :
+		Log.e("ServiceKeeper_updateNetworkMap", device.toString());
+		
+		BlinkDevice.load(device);
+	}
+	
+	public void sendSelfDeviceTo(BlinkDevice device) {
+		sendMessageToDevice(device, mSelfDevice);
+	}
+	
+	public void sendMessageToDevice(BlinkDevice device, Object msg) {
+		if (device.isLESupported()) {
+			
+			
+		} else {
+			ClassicLinkThread thread = CLASSIC_CONN_MAP.get(device);
+			if (thread != null)
+				thread.sendMessageToDevice(msg);
+			
+		}
+	}
 }

@@ -2,8 +2,6 @@ package kr.poturns.blink.internal;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.UUID;
 
 import kr.poturns.blink.internal.comm.BlinkDevice;
@@ -97,25 +95,15 @@ class BluetoothAssistant extends Handler{
 	final InterDeviceManager INTER_DEV_MANAGER;
 	final ThreadGroup CONNECTION_GROUP;
 	
-	//TODO : HashMap, ArrayList는 Thread-Safe하지 않으므로, Thread에 따른 데이터 정합성을 체크해야함!
-	private final HashMap<String, BluetoothGatt> LE_CONN_MAP;
-	private final HashMap<String, ClassicLinkThread> CLASSIC_CONN_MAP;
-	private final ArrayList<BlinkDevice> DISCOVERY_DEV_LIST;
-	
 	public BluetoothAssistant(InterDeviceManager manager) {
 		INTER_DEV_MANAGER = manager;
 		CONNECTION_GROUP = new ThreadGroup(TAG);
-		
-		LE_CONN_MAP = new HashMap<String, BluetoothGatt>();
-		CLASSIC_CONN_MAP = new HashMap<String, ClassicLinkThread>();
-		DISCOVERY_DEV_LIST = new ArrayList<BlinkDevice>();
 	}
 	
 	private BluetoothManager mBluetoothManager;
 	private FunctionOperator mFunctionOperator;
 	private DeviceAnalyzer mDeviceAnalyzer;
 	private ServiceKeeper mServiceKeeper;
-	private BlinkDevice mSelfDevice;
 	private boolean isLeSupported;
 	
 	/**
@@ -142,9 +130,8 @@ class BluetoothAssistant extends Handler{
 			break;
 		}
 		
-		LE_CONN_MAP.clear();
-		CLASSIC_CONN_MAP.clear();
-		DISCOVERY_DEV_LIST.clear();
+		mServiceKeeper.clearDiscovery();
+		mServiceKeeper.clearConnection();
 	}
 	
 	/**
@@ -177,13 +164,15 @@ class BluetoothAssistant extends Handler{
 	 * 블루투스가 On상태가 되었을 떄, 수행할 기능을 정의한다.
 	 */
 	void onBluetoothStateOn() {
+		BlinkDevice mSelfDevice = mServiceKeeper.getSelfDevice();
 		if (mSelfDevice == null) {
 			BluetoothAdapter mAdapter = BluetoothAdapter.getDefaultAdapter();
 			
 			mSelfDevice = BlinkDevice.load(mAdapter.getAddress());
-			if (System.currentTimeMillis() < mSelfDevice.getTimestamp()) {
+			if (System.currentTimeMillis() > mSelfDevice.getTimestamp()) {
 				mSelfDevice.setName(mAdapter.getName());
 				mSelfDevice.setIdentityPoint(DeviceAnalyzer.getIdentityPoint());
+				mServiceKeeper.setSelfDevice(mSelfDevice);
 			}
 		}
 		mSelfDevice.setIdentity(mDeviceAnalyzer.getCurrentIdentity().ordinal());
@@ -250,10 +239,7 @@ class BluetoothAssistant extends Handler{
 							BlinkDevice device  = BlinkDevice.load(mBluetoothSocket.getRemoteDevice());
 							
 							ClassicLinkThread thread = new ClassicLinkThread(sInstance, device, mBluetoothSocket, false);
-							thread.startListening();
-							
-							mServiceKeeper.addConnection(device, thread);
-							CLASSIC_CONN_MAP.put(device.getAddress(), thread);
+							thread.startThread();
 							
 						} catch (IOException e) {
 							e.printStackTrace();
@@ -355,7 +341,7 @@ class BluetoothAssistant extends Handler{
 		final BluetoothAdapter mAdapter = mBluetoothManager.getAdapter();
 
 		if (clear && !isLeScanning && !mAdapter.isDiscovering())
-			DISCOVERY_DEV_LIST.clear();
+			mServiceKeeper.clearDiscovery();
 
 		// New Discovery Start.
 		if (BluetoothDevice.DEVICE_TYPE_LE == type && !isLeScanning) {
@@ -418,11 +404,9 @@ class BluetoothAssistant extends Handler{
 					mBluetoothSocket = origin.createInsecureRfcommSocketToServiceRecord(uuid);
 				mBluetoothSocket.connect();
 				
-				ClassicLinkThread thread = new ClassicLinkThread(this, device, mBluetoothSocket, true);
-				thread.startListening();
+				final ClassicLinkThread thread = new ClassicLinkThread(this, device, mBluetoothSocket, true);
+				thread.startThread();
 
-				mServiceKeeper.addConnection(device, thread);
-				CLASSIC_CONN_MAP.put(device.getAddress(), thread);
 				
 			} catch (IOException e) {
 				Intent mIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECT_FAILED);
@@ -438,13 +422,18 @@ class BluetoothAssistant extends Handler{
 	 */
 	public void disconnectDevice(BlinkDevice device) {
 		Log.d("InterDeviceManager_disconnectFromDeviceAsClient()", "Disconnect");
+		
+		Object obj = mServiceKeeper.getConnectionObject(device);
+		if (obj == null)
+			return;
+		
 		if (device.isLESupported()) {
-			BluetoothGatt mGatt = LE_CONN_MAP.get(device.getAddress());
+			BluetoothGatt mGatt = (BluetoothGatt) obj;
 			mGatt.close();
 			
 		} else {
 			try {
-				ClassicLinkThread mThread = CLASSIC_CONN_MAP.get(device.getAddress());
+				ClassicLinkThread mThread = (ClassicLinkThread) obj;
 				mThread.destroy();
 				mThread.join(JOIN_TIMEOUT);
 				
@@ -452,31 +441,29 @@ class BluetoothAssistant extends Handler{
 				
 			}
 		}
-
-		mServiceKeeper.removeConnection(device);
 	}
 	
 	/**
 	 * 
-	 * @param deviceX
+	 * @param device
 	 */
-	synchronized void onMessageReceivedFrom(String json, BlinkDevice deviceX) {
+	synchronized void onMessageReceivedFrom(String json, BlinkDevice device) {
 		if (onLog)
 			Log.d("BluetoothAssistant_onMessageReceivedFrom", json + " [from ]");
-		mFunctionOperator.acceptJsonData(json, deviceX);
+		mFunctionOperator.acceptJsonData(json, device);
 	}
 
 	/**
 	 * 
 	 * @param json
-	 * @param deviceX
+	 * @param device
 	 */
-	void onMessageSentTo(String json, BlinkDevice deviceX) {
-		if (deviceX.isLESupported()) {
+	void onMessageSentTo(String json, BlinkDevice device) {
+		if (device.isLESupported()) {
 			
 			
 		} else {
-			CLASSIC_CONN_MAP.get(deviceX.getAddress()).sendMessageToDevice(json);
+			mServiceKeeper.sendMessageToDevice(device, json);
 			
 		}
 
@@ -513,20 +500,20 @@ class BluetoothAssistant extends Handler{
 		@Override 
 		public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 
-			BlinkDevice deviceX = BlinkDevice.load(gatt.getDevice());
+			BlinkDevice device = BlinkDevice.load(gatt.getDevice());
 			
 			if (status == BluetoothGatt.GATT_SUCCESS) {
 				
 				Intent mIntent; 
 				switch (newState) {
 				case BluetoothGatt.STATE_CONNECTED:
-					LE_CONN_MAP.put(deviceX.getAddress(), gatt);
+					mServiceKeeper.addConnection(device, gatt);
 
 					mIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);
 					break;
 						
 				case BluetoothGatt.STATE_DISCONNECTED:
-					LE_CONN_MAP.remove(deviceX.getAddress());
+					mServiceKeeper.removeConnection(device);
 
 					mIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCONNECTED);
 					break;
@@ -535,7 +522,7 @@ class BluetoothAssistant extends Handler{
 					return;
 				}
 				
-				mIntent.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) deviceX);
+				mIntent.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
 				INTER_DEV_MANAGER.MANAGER_CONTEXT.sendBroadcast(mIntent, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
 					
 			} else {
@@ -543,7 +530,7 @@ class BluetoothAssistant extends Handler{
 				//case BluetoothGatt.STATE_CONNECTED:
 				case BluetoothGatt.STATE_CONNECTING:
 					Intent mIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECT_FAILED);
-					mIntent.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) deviceX);
+					mIntent.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
 					INTER_DEV_MANAGER.MANAGER_CONTEXT.sendBroadcast(mIntent, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
 					break;
 				}
@@ -607,8 +594,8 @@ class BluetoothAssistant extends Handler{
 		}
 		
 		@Override
-		public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
-			BlinkDevice deviceX = BlinkDevice.load(device);
+		public void onConnectionStateChange(BluetoothDevice origin, int status, int newState) {
+			BlinkDevice device = BlinkDevice.load(origin);
 
 			if (status == BluetoothGatt.GATT_SUCCESS) {
 				
@@ -616,13 +603,14 @@ class BluetoothAssistant extends Handler{
 				switch (newState) {
 				case BluetoothGatt.STATE_CONNECTED:
 					// TODO : Gatt == null??
-					LE_CONN_MAP.put(deviceX.getAddress(), null);
+					BluetoothGatt gatt = null;
+					mServiceKeeper.addConnection(device, gatt);
 
 					mIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);
 					break;
 						
 				case BluetoothGatt.STATE_DISCONNECTED:
-					LE_CONN_MAP.remove(deviceX.getAddress());
+					mServiceKeeper.removeConnection(device);
 
 					mIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCONNECTED);
 					break;
@@ -631,7 +619,7 @@ class BluetoothAssistant extends Handler{
 					return;
 				}
 				
-				mIntent.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) deviceX);
+				mIntent.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
 				INTER_DEV_MANAGER.MANAGER_CONTEXT.sendBroadcast(mIntent, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
 					
 			} else {
@@ -639,7 +627,7 @@ class BluetoothAssistant extends Handler{
 				//case BluetoothGatt.STATE_CONNECTED:
 				case BluetoothGatt.STATE_CONNECTING:
 					Intent mIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECT_FAILED);
-					mIntent.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) deviceX);
+					mIntent.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
 					INTER_DEV_MANAGER.MANAGER_CONTEXT.sendBroadcast(mIntent, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
 					break;
 				}
