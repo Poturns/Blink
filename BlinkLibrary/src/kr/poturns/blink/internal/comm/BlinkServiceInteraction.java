@@ -1,6 +1,7 @@
 package kr.poturns.blink.internal.comm;
 
 import kr.poturns.blink.internal.BlinkLocalService;
+import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -28,9 +29,15 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		EVENT_BR = new EventBroadcastReceiver();
 		FILTER = new IntentFilter();
 		
+		FILTER.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);		// 블루투스 탐색 시작
+		FILTER.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);		// 블루투스 탐색 종료
+		
 		FILTER.addAction(BROADCAST_DEVICE_DISCOVERED);
 		FILTER.addAction(BROADCAST_DEVICE_CONNECTED);
 		FILTER.addAction(BROADCAST_DEVICE_DISCONNECTED);
+		FILTER.addAction(BROADCAST_DEVICE_IDENTITY_CHANGED);
+		
+		FILTER.addAction(BROADCAST_SETTING_CHANGED);
 		
 		mBlinkEventBroadcast = iBlinkEventBroadcast;
 	}
@@ -90,6 +97,16 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
 			
+			if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
+				onDiscoveryStarted();
+				return;
+				
+			} else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
+				onDiscoveryFinished();
+				return;
+			}
+			
+			
 			BlinkDevice device = (BlinkDevice) intent.getSerializableExtra(EXTRA_DEVICE);
 			
 			if (BROADCAST_DEVICE_DISCOVERED.equals(action)) {
@@ -108,6 +125,14 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	/**
 	 * [ <b>OVERRIDE IT</b>, if you want to complement some operations. ]
 	 * 
+	 * <p>블루투스 탐색이 시작되었을 때, 호출된다.
+	 * 
+	 */
+	public void onDiscoveryStarted() {}
+	
+	/**
+	 * [ <b>OVERRIDE IT</b>, if you want to complement some operations. ]
+	 * 
 	 * <p>블루투스 탐색 수행시, 디바이스가 발견되었을 때 호출된다.
 	 * <br>Override할 경우, 등록한 {@link IBlinkEventBroadcast}은 동작하지 않는다.
 	 * <hr>
@@ -118,6 +143,14 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 			mBlinkEventBroadcast.onDeviceDiscovered(device);
 	}	
 
+	/**
+	 * [ <b>OVERRIDE IT</b>, if you want to complement some operations. ]
+	 * 
+	 * <p>블루투스 탐색이 종료되었을 때, 호출된다.
+	 * 
+	 */
+	public void onDiscoveryFinished() {}
+	
 	/**
 	 * [ <b>OVERRIDE IT</b>, if you want to complement some operations. ]
 	 * 

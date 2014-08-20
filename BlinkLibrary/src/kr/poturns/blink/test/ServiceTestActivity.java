@@ -3,20 +3,13 @@ package kr.poturns.blink.test;
 import java.util.ArrayList;
 
 import kr.poturns.blink.R;
-import kr.poturns.blink.internal.BlinkLocalService;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
-import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothDevice;
-import android.content.ComponentName;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -67,6 +60,7 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 			
 			@Override
 			public void onDeviceConnected(BlinkDevice device) {
+				Xdevice = device;
 				resultView.append("CONNECTED!! " + device.getAddress() + " >> " + device.getName() + "\n");
 			}
 			
@@ -150,6 +144,13 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 					addresses.add(device.getAddress());
 				
 				ListView listView = new ListView(this);
+
+				final AlertDialog dialog = new AlertDialog.Builder(this)
+				.setTitle("Choose device to connect:")
+				.setView(listView)
+				.setPositiveButton("Close", null)
+				.create();
+				
 				listView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, addresses));
 				listView.setOnItemClickListener(new OnItemClickListener() {
 
@@ -160,6 +161,8 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 							Xdevice = devices[position];
 							iSupport.connectDevice(Xdevice);
 							
+							dialog.dismiss();
+							
 						} catch (Exception e) {
 							e.printStackTrace();
 							Xdevice = null;
@@ -167,11 +170,7 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 					}
 				});
 				
-				new AlertDialog.Builder(this)
-				.setTitle("Choose device to connect:")
-				.setView(listView)
-				.setPositiveButton("Close", null)
-				.show();
+				dialog.show();
 				
 			} break;
 				
@@ -180,7 +179,6 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 				break;
 				
 			case R.id.button8:
-				iSupport.disconnectDevice(Xdevice);
 				break;
 				
 			case R.id.button9: {
@@ -191,13 +189,33 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 					addresses.add(device.getAddress());
 				
 				ListView listView = new ListView(this);
-				listView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, addresses));
-				
-				new AlertDialog.Builder(this)
-				.setTitle("Connected Device :")
+
+				final AlertDialog dialog = new AlertDialog.Builder(this)
+				.setTitle("Choose device to disconnect:")
 				.setView(listView)
 				.setPositiveButton("Close", null)
-				.show();
+				.create();
+				
+				listView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, addresses));
+				listView.setOnItemClickListener(new OnItemClickListener() {
+
+					@Override
+					public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+						
+						try {
+							Xdevice = devices[position];
+							iSupport.disconnectDevice(Xdevice);
+							
+							dialog.dismiss();
+							
+						} catch (Exception e) {
+							e.printStackTrace();
+							Xdevice = null;
+						}
+					}
+				});
+				
+				dialog.show();
 				
 			} break;
 				

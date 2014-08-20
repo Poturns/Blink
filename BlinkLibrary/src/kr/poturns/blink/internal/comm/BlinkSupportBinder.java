@@ -18,6 +18,11 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+/**
+ * 
+ * @author Jiwon.Kim
+ *
+ */
 public class BlinkSupportBinder extends ConnectionSupportBinder {
 
 	private final String tag = "BlinkDatabaseBinder";
