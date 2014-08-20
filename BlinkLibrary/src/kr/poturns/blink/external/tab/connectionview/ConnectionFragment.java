@@ -100,7 +100,7 @@ public abstract class ConnectionFragment extends Fragment implements
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
 
-		if (savedInstanceState != null) {
+		if (savedInstanceState != null && mDeviceList.isEmpty()) {
 			mDeviceList
 					.addAll((Collection<? extends BlinkDevice>) savedInstanceState
 							.getParcelableArrayList("list"));
