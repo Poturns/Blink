@@ -1,10 +1,9 @@
-package kr.poturns.blink.external.tab.connectionview;
+package kr.poturns.blink.external;
 
 import kr.poturns.blink.R;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.app.Fragment;
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -12,6 +11,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -19,9 +19,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 /** 현재 연결된 Device들을 ListView의 형태로 보여주는 Fragment */
-public class ListConnectionFragment extends ConnectionFragment {
-	private SwipeRefreshLayout mSwipeRefreshLayout;
+public class ConnectionListFragment extends ConnectionFragment {
+	SwipeRefreshLayout mSwipeRefreshLayout;
 	ArrayAdapter<BlinkDevice> mAdapter;
+	TextView mHeaderView;
+	boolean mRemoved = false, mRefresh = false;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -38,21 +40,53 @@ public class ListConnectionFragment extends ConnectionFragment {
 				android.R.layout.simple_list_item_1, mDeviceList) {
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
+				BlinkDevice device = getItem(position);
 				View v = super.getView(position, convertView, parent);
-				TextView tv = (TextView) v.getTag(android.R.id.text1);
-				if (tv == null) {
-					tv = (TextView) v.findViewById(android.R.id.text1);
-					v.setTag(android.R.id.text1, tv);
-				}
-				tv.setText(getItem(position).getName());
+				TextView tv = (TextView) v.findViewById(android.R.id.text1);
+				tv.setText(device.getName());
+				tv.setCompoundDrawablesWithIntrinsicBounds(
+						device.isConnected() ? R.drawable.ic_action_device_access_bluetooth_connected
+								: R.drawable.ic_action_device_access_bluetooth,
+						0, 0, 0);
 				return v;
 			}
 		};
+		mHeaderView = (TextView) View.inflate(getActivity(),
+				R.layout.emptyview, null);
+		mHeaderView.setText(mHostDevice.getName());
+		mHeaderView.setCompoundDrawables(null, null, null, null);
+		mHeaderView.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				showHostDeviceInfomation();
+			}
+		});
 		ListView listView = (ListView) mSwipeRefreshLayout
 				.findViewById(android.R.id.list);
 		listView.setAdapter(mAdapter);
+		listView.setEmptyView(View.inflate(getActivity(), R.layout.emptyview,
+				null));
 		listView.setOnItemClickListener(mOnItemClickListener);
+		listView.setOnScrollListener(new AbsListView.OnScrollListener() {
+			@Override
+			public void onScroll(AbsListView view, int firstVisibleItem,
+					int visibleItemCount, int totalItemCount) {
+			}
 
+			@Override
+			public void onScrollStateChanged(AbsListView view, int scrollState) {
+				if (!mRemoved) {
+					((ListView) view).removeHeaderView(mHeaderView);
+					mRemoved = true;
+				}
+				if (mRemoved
+						&& scrollState != AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
+					((ListView) view).addHeaderView(mHeaderView);
+					mRemoved = false;
+				}
+			}
+		});
+		listView.addHeaderView(mHeaderView);
 		return mSwipeRefreshLayout;
 	}
 
@@ -78,32 +112,15 @@ public class ListConnectionFragment extends ConnectionFragment {
 	@Override
 	protected Fragment getChangeFragment() {
 		return Fragment.instantiate(getActivity(),
-				CircularConnectionFragment.class.getName());
+				ConnectionCircularFragment.class.getName());
 	}
 
 	private SwipeRefreshLayout.OnRefreshListener mOnRefreshListener = new SwipeRefreshLayout.OnRefreshListener() {
 
 		@Override
 		public void onRefresh() {
-			new Thread() {
-				public void run() {
-					mSwipeRefreshLayout.postDelayed(new Runnable() {
-
-						@Override
-						public void run() {
-							try {
-								fetchDeviceListFromBluetooth();
-							} catch (RemoteException e) {
-								e.printStackTrace();
-							}
-							mSwipeRefreshLayout.setRefreshing(false);
-							Toast.makeText(getActivity(),
-									"connection refresh!", Toast.LENGTH_SHORT)
-									.show();
-						}
-					}, 5000);
-				}
-			}.start();
+			mRefresh = true;
+			fetchDeviceListFromBluetooth();
 		}
 	};
 
@@ -117,6 +134,12 @@ public class ListConnectionFragment extends ConnectionFragment {
 
 	@Override
 	protected void onDeviceListChanged() {
+		if (mRefresh) {
+			mRefresh = false;
+			mSwipeRefreshLayout.setRefreshing(false);
+			Toast.makeText(getActivity(), "connection refresh!",
+					Toast.LENGTH_SHORT).show();
+		}
 		mAdapter.notifyDataSetChanged();
 	}
 }

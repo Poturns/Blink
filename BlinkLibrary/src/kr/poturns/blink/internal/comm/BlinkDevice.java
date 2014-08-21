@@ -441,4 +441,16 @@ public class BlinkDevice implements Parcelable, Serializable {
 		return Timestamp;
 	}
 
+	/** 현재 장비를 나타내는 BlinkDevice를 얻는다. */
+	public static BlinkDevice obtainHostDevice() {
+		BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+		final String address = adapter.getAddress();
+		BlinkDevice device;
+		if ((device = load(address)) == null) {
+			device = new BlinkDevice(address);
+		}
+		if (device.Name == null || device.Name.length() < 1)
+			device.Name = adapter.getName();
+		return device;
+	}
 }

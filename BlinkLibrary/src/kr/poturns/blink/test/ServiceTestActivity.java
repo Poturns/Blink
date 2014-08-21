@@ -78,31 +78,13 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 		interaction.startService();
 		
 		resultView = (TextView) findViewById(R.id.result_textView);
-		
-		button1 = (Button) findViewById(R.id.button1);
-		button1.setOnClickListener(this);
-		button2 = (Button) findViewById(R.id.button2);
-		button2.setOnClickListener(this);
-		button3 = (Button) findViewById(R.id.button3);
-		button3.setOnClickListener(this);
-		button4 = (Button) findViewById(R.id.button4);
-		button4.setOnClickListener(this);
-		button5 = (Button) findViewById(R.id.button5);
-		button5.setOnClickListener(this);
-		button6 = (Button) findViewById(R.id.button6);
-		button6.setOnClickListener(this);
-		button7 = (Button) findViewById(R.id.button7);
-		button7.setOnClickListener(this);
-		button8 = (Button) findViewById(R.id.button8);
-		button8.setOnClickListener(this);
-		button9 = (Button) findViewById(R.id.button9);
-		button9.setOnClickListener(this);
-		button10 = (Button) findViewById(R.id.button10);
-		button10.setOnClickListener(this);
-		button11 = (Button) findViewById(R.id.button11);
-		button11.setOnClickListener(this);
-		button12 = (Button) findViewById(R.id.button12);
-		button12.setOnClickListener(this);
+		int[] ids = new int[] { R.id.button1, R.id.button2, R.id.button3,
+				R.id.button4, R.id.button5, R.id.button6, R.id.button7,
+				R.id.button8, R.id.button9, R.id.button10, R.id.button11,
+				R.id.button12 };
+		for (int id : ids) {
+			findViewById(id).setOnClickListener(this);
+		}
 	}
 	
 	@Override

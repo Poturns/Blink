@@ -1,14 +1,14 @@
-package kr.poturns.blink.external.tab.dataview;
+package kr.poturns.blink.external;
 
+import java.io.Serializable;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
 import kr.poturns.blink.R;
-import kr.poturns.blink.db.archive.SystemDatabaseObject;
-import kr.poturns.blink.external.DBHelper;
-import kr.poturns.blink.external.IServiceContolActivity;
-import kr.poturns.blink.external.ViewTagExpandableAdapter;
+import kr.poturns.blink.db.SqliteManagerExtended;
+import kr.poturns.blink.db.archive.App;
+import kr.poturns.blink.db.archive.Device;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
@@ -23,43 +23,53 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
-public class ContentSelectFragment extends Fragment {
+/**
+ * '측정 데이터' 메뉴 진입시 처음으로 보여지는 화면을 구성하는 Fragment<br>
+ * <br>
+ * Database 내부의 Device의 목록과 Device에 따른 App의 항목을 보여준다.
+ */
+public class DataSelectFragment extends Fragment {
 	BaseExpandableListAdapter mAdapter;
-	Map<String, List<SystemDatabaseObject>> mDeviceMap;
-	DBHelper mHelper;
+	Map<Device, List<App>> mDeviceMap = new Hashtable<Device, List<App>>();
+	SqliteManagerExtended mManager;
+	Device mDevice;
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		mManager = ((IServiceContolActivity) getActivity())
+				.getDatabaseHandler();
 		Bundle arg = getArguments();
-		mHelper = DBHelper.getInstance(getActivity());
-		if (arg != null) {
+
+		if (arg == null) {
+			mDeviceMap = mManager.obtainDeviceMap();
+			if (mDeviceMap.isEmpty() && savedInstanceState != null) {
+				mDeviceMap = (Map<Device, List<App>>) savedInstanceState
+						.getSerializable("map");
+			}
+			mAdapter = new ContentAdapter(getActivity(), mDeviceMap);
+		} else if (BundleResolver.obtainApp(arg) == null) {
+			mDeviceMap = new Hashtable<Device, List<App>>();
+			mDeviceMap.put(mDevice, mManager.obtainAppList(mDevice));
+		} else {// argument에 device와 app 모두 있는 경우
 			changeFragment(arg);
 		}
-		if (savedInstanceState != null) {
-			// mDeviceMap = savedInstanceState.
-			mDeviceMap = new Hashtable<String, List<SystemDatabaseObject>>();
-		} else {
-			mDeviceMap = mHelper.getDeviceMap();
-		}
-		mAdapter = new ContentAdapter(getActivity(),
-				android.R.layout.simple_expandable_list_item_1,
-				android.R.layout.simple_expandable_list_item_1, mDeviceMap);
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
+		outState.putSerializable("map", (Serializable) mDeviceMap);
 	}
 
-	protected void changeFragment(Bundle arg) {
+	void changeFragment(Bundle arg) {
 		Fragment f = Fragment.instantiate(getActivity(),
 				DataViewFragment.class.getName(), arg);
 		getFragmentManager()
 				.beginTransaction()
 				.add(R.id.activity_main_fragment_content, f,
 						DataViewFragment.class.getSimpleName())
-				.addToBackStack(ContentSelectFragment.class.getSimpleName())
+				.addToBackStack(DataSelectFragment.class.getSimpleName())
 				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 				.commit();
 	}
@@ -93,24 +103,31 @@ public class ContentSelectFragment extends Fragment {
 	}
 
 	void refreshDeviceList() {
-		mHelper.refresh(getActivity());
 		mDeviceMap.clear();
-		mDeviceMap.putAll(mHelper.getDeviceMap());
+		mDeviceMap.putAll(mManager.obtainDeviceMap());
 		mAdapter.notifyDataSetChanged();
 	}
 
-	class ContentAdapter extends
-			ViewTagExpandableAdapter<String, SystemDatabaseObject> {
+	class ContentAdapter extends ViewTagExpandableAdapter<Device, App> {
 
-		public ContentAdapter(Context context, int groupResId, int childResId,
-				Map<String, ? extends List<SystemDatabaseObject>> map) {
-			super(context, groupResId, childResId, map);
+		public ContentAdapter(Context context,
+				Map<Device, ? extends List<App>> map) {
+			super(context, R.layout.list_fragment_content_select,
+					R.layout.list_fragment_content_select, map);
 		}
 
 		@Override
-		protected void createGroupView(int groupPosition, boolean isEcpanded,
+		protected void createGroupView(int groupPosition, boolean isExpanded,
 				ViewHolder h) {
-			((Holder) h).tv.setText(getGroup(groupPosition).toString());
+			final Device device = (Device) getGroup(groupPosition);
+			Holder holder = (Holder) h;
+			holder.tv.setText(device.Device);
+			holder.button.setOnClickListener(new View.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					changeFragment(BundleResolver.toBundle(device, null));
+				}
+			});
 		}
 
 		@Override
@@ -119,31 +136,27 @@ public class ContentSelectFragment extends Fragment {
 		}
 
 		@Override
-		protected void createChildView(int groupPosition, int childPosition,
-				boolean isLastChild, ViewHolder h) {
+		protected void createChildView(final int groupPosition,
+				int childPosition, boolean isLastChild, ViewHolder h) {
 			Holder holder = (Holder) h;
-			final SystemDatabaseObject item = (SystemDatabaseObject) getChild(
-					groupPosition, childPosition);
-			holder.tv.setText(item.mApp.PackageName);
-			holder.tv.setOnClickListener(new View.OnClickListener() {
-
+			final App item = (App) getChild(groupPosition, childPosition);
+			holder.tv.setText(item.AppName);
+			holder.button.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					Bundle b = new Bundle();
-					b.putString(IServiceContolActivity.EXTRA_DEVICE,
-							item.mDevice.Device);
-					b.putString(IServiceContolActivity.EXTRA_DEVICE_APP,
-							item.mApp.PackageName);
-					changeFragment(b);
+					changeFragment(BundleResolver.toBundle(
+							(Device) getGroup(groupPosition), item));
 				}
 			});
 		}
 
 		private class Holder implements ViewHolder {
 			TextView tv;
+			View button;
 
 			public Holder(View v) {
 				tv = (TextView) v.findViewById(android.R.id.text1);
+				button = v.findViewById(android.R.id.button1);
 			}
 		}
 	}

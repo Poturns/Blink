@@ -1,6 +1,8 @@
 package kr.poturns.blink.external;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
 import kr.poturns.blink.db.archive.BlinkLog;
 import android.os.Parcel;
@@ -24,6 +26,15 @@ public class ExternalDeviceAppLog implements Parcelable {
 	public static final int FIELD_DATETIME = 4;
 	public static final int FIELD_NOT = -1;
 	public String[] fieldArray = new String[FIELD_SIZE];
+
+	public static final List<ExternalDeviceAppLog> convert(
+			List<BlinkLog> logList) {
+		ArrayList<ExternalDeviceAppLog> list = new ArrayList<ExternalDeviceAppLog>();
+		for (BlinkLog log : logList) {
+			list.add(new ExternalDeviceAppLog(log));
+		}
+		return list;
+	}
 
 	public ExternalDeviceAppLog() {
 		for (int i = 0; i < FIELD_SIZE; i++)

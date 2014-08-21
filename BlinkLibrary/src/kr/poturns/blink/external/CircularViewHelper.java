@@ -1,4 +1,4 @@
-package kr.poturns.blink.external.tab.connectionview;
+package kr.poturns.blink.external;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,7 +52,7 @@ import android.widget.FrameLayout;
  * 
  * 
  */
-public class CircularViewHelper {
+class CircularViewHelper {
 	private ViewGroup mViewGroup;
 	private List<View> mChildViewList;
 	private View mCenterView;

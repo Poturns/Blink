@@ -14,5 +14,10 @@
     <string name="empty_data">데이터가 없습니다.</string>
     <string name="confirm_delete">정말 삭제하시겠습니까?</string>
     <string name="deleted">삭제되었습니다.</string>
+    <string name="fail">실패하였습니다.</string>
+    <string name="device_connected"> 이(가) 연결되었습니다.</string>
+    <string name="device_disconnected"> 이(가) 연결해제되었습니다.</string>
+
+    <color name="light_gray">#00101010</color>
 
 </resources>

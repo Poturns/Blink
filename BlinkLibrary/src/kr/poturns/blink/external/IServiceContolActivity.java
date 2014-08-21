@@ -1,6 +1,8 @@
 package kr.poturns.blink.external;
 
+import kr.poturns.blink.db.SqliteManagerExtended;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
+import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.os.Bundle;
 
 public interface IServiceContolActivity {
@@ -41,4 +43,11 @@ public interface IServiceContolActivity {
 	public BlinkServiceInteraction getServiceInteration();
 
 	public void setServiceInteration(BlinkServiceInteraction interaction);
+
+	public void setInternalOperationSupport(
+			IInternalOperationSupport blinkOperation);
+
+	public IInternalOperationSupport getInternalOperationSupport();
+
+	public SqliteManagerExtended getDatabaseHandler();
 }

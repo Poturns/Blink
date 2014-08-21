@@ -1,13 +1,13 @@
-package kr.poturns.blink.external.tab.logview;
+package kr.poturns.blink.external;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
 import kr.poturns.blink.R;
-import kr.poturns.blink.external.DBHelper;
-import kr.poturns.blink.external.ExternalDeviceAppLog;
-import kr.poturns.blink.external.IServiceContolActivity;
+import kr.poturns.blink.db.SqliteManagerExtended;
+import kr.poturns.blink.db.archive.App;
+import kr.poturns.blink.db.archive.Device;
 import android.app.Fragment;
 import android.content.AsyncTaskLoader;
 import android.content.Context;
@@ -35,8 +35,9 @@ public class LogViewFragment extends Fragment {
 	/** Log 리스트 */
 	ArrayList<ExternalDeviceAppLog> mLogList;
 	/** 현재 정렬 기준이 되는 Device, App */
-	String mCurrentDevice, mCurrentApp;
-	DBHelper mLogHelper;
+	Device mDevice;
+	App mApp;
+	SqliteManagerExtended mManager;
 	int mPrevTitleViewSelectionId;
 	int[] mTitleViewsIdArray = new int[] { R.id.fragment_logview_text_device,
 			R.id.fragment_logview_text_app, R.id.fragment_logview_text_content,
@@ -45,7 +46,8 @@ public class LogViewFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mLogHelper = DBHelper.getInstance(getActivity());
+		mManager = ((IServiceContolActivity) getActivity())
+				.getDatabaseHandler();
 		if (savedInstanceState != null) {
 			mLogList = savedInstanceState.getParcelableArrayList("list");
 		} else {
@@ -62,12 +64,11 @@ public class LogViewFragment extends Fragment {
 	private void checkArgumentsFromOtherFragment() {
 		Bundle arg = getArguments();
 		if (arg != null) {
-			mCurrentDevice = arg.getString(IServiceContolActivity.EXTRA_DEVICE);
-			mCurrentApp = arg
-					.getString(IServiceContolActivity.EXTRA_DEVICE_APP);
-			StringBuilder subTitle = new StringBuilder(mCurrentDevice);
-			if (mCurrentApp != null)
-				subTitle.append(" / ").append(mCurrentApp);
+			mDevice = BundleResolver.obtainDevice(arg);
+			mApp = BundleResolver.obtainApp(arg);
+			StringBuilder subTitle = new StringBuilder(mDevice.Device);
+			if (mApp != null)
+				subTitle.append(" / ").append(mApp.AppName);
 			getActivity().getActionBar().setSubtitle(subTitle.toString());
 		}
 		if (mLogList.isEmpty()) {
@@ -278,31 +279,31 @@ public class LogViewFragment extends Fragment {
 	Loader<List<ExternalDeviceAppLog>> getLoader(
 			Loader.OnLoadCompleteListener<List<ExternalDeviceAppLog>> l) {
 		Loader<List<ExternalDeviceAppLog>> loader = new LogLoader(
-				getActivity(), mLogHelper, mCurrentDevice, mCurrentApp);
+				getActivity(), mDevice, mApp);
 		loader.registerListener(0, l);
 		return loader;
 	}
 
 	class LogLoader extends AsyncTaskLoader<List<ExternalDeviceAppLog>> {
-		String device, app;
-		DBHelper helper;
+		Device device;
+		App app;
 
-		public LogLoader(Context context, DBHelper converter, String device,
-				String app) {
+		public LogLoader(Context context, Device device, App app) {
 			super(context);
 			this.device = device;
 			this.app = app;
-			this.helper = converter;
 		}
 
 		@Override
 		public List<ExternalDeviceAppLog> loadInBackground() {
-			if (app != null && device != null) {
-				return helper.getLogByApp(device, app, null, null);
+			if (app != null) {
+				return ExternalDeviceAppLog.convert(mManager.obtainLog(
+						device.Device, app.AppName, null, null));
 			} else if (device != null) {
-				return helper.getLogByDevice(device, null, null);
+				return ExternalDeviceAppLog.convert(mManager.obtainLog(
+						device.Device, null, null));
 			} else {
-				return helper.getLog(null, null);
+				return ExternalDeviceAppLog.convert(mManager.obtainLog());
 			}
 		}
 

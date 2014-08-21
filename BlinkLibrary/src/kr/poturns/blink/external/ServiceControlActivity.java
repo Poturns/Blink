@@ -1,11 +1,16 @@
 package kr.poturns.blink.external;
 
+import java.util.Set;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import kr.poturns.blink.R;
+import kr.poturns.blink.db.SqliteManagerExtended;
 import kr.poturns.blink.external.preference.PreferenceActivity;
-import kr.poturns.blink.external.tab.connectionview.CircularConnectionFragment;
-import kr.poturns.blink.external.tab.dataview.ContentSelectFragment;
-import kr.poturns.blink.external.tab.logview.LogViewFragment;
+import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
+import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import kr.poturns.blink.util.FileUtil;
 import android.app.Activity;
 import android.app.Fragment;
@@ -31,12 +36,15 @@ public final class ServiceControlActivity extends Activity implements
 	ListView mLeftListView;
 	int mCurrentPageSelection = 0;
 	BlinkServiceInteraction mInteraction;
+	IInternalOperationSupport mBlinkOperation;
+	SqliteManagerExtended mSqliteManagerExtended;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		FileUtil.createExternalDirectory();
 		setContentView(R.layout.activity_service_control);
+		mSqliteManagerExtended = new SqliteManagerExtended(this);
 		mSlidingPaneLayout = (SlidingPaneLayout) findViewById(R.id.activity_sliding_layout);
 		mSlidingPaneLayout.setSliderFadeColor(Color.TRANSPARENT);
 		mLeftListView = (ListView) findViewById(R.id.activity_main_left_drawer);
@@ -56,10 +64,10 @@ public final class ServiceControlActivity extends Activity implements
 		String fname;
 		switch (position) {
 		default:
-			fname = CircularConnectionFragment.class.getName();
+			fname = ConnectionCircularFragment.class.getName();
 			break;
 		case 1:
-			fname = ContentSelectFragment.class.getName();
+			fname = DataSelectFragment.class.getName();
 			break;
 		case 2:
 			fname = LogViewFragment.class.getName();
@@ -167,6 +175,8 @@ public final class ServiceControlActivity extends Activity implements
 				e.printStackTrace();
 			}
 		}
+		if (mSqliteManagerExtended != null)
+			mSqliteManagerExtended.close();
 		super.finish();
 	}
 
@@ -196,14 +206,26 @@ public final class ServiceControlActivity extends Activity implements
 	@Override
 	public boolean sendMessageToService(Bundle message) {
 		if (message != null) {
-			Object[] keys = message.keySet().toArray();
-			String str = "Send message to Service (\n";
-			for (Object key : keys) {
-				str += key.toString() + " : "
-						+ message.get(key.toString()).toString() + " , \n";
+			JSONObject json = new JSONObject();
+			Set<String> keySets = message.keySet();
+			for (String key : keySets) {
+				try {
+					json.put(key, JSONObject.wrap(message.get(key)));
+					mBlinkOperation.sendBlinkMessages(
+							BlinkDevice.obtainHostDevice(), json.toString());
+					Toast.makeText(this, json.toString(), Toast.LENGTH_SHORT)
+							.show();
+				} catch (JSONException e) {
+					e.printStackTrace();
+					Toast.makeText(this, "json convert error",
+							Toast.LENGTH_SHORT).show();
+				} catch (Exception e) {
+					e.printStackTrace();
+					Toast.makeText(this, "blink service error",
+							Toast.LENGTH_SHORT).show();
+				}
 			}
-			str += " )";
-			Toast.makeText(this, str, Toast.LENGTH_SHORT).show();
+
 		}
 		return false;
 	}
@@ -216,6 +238,22 @@ public final class ServiceControlActivity extends Activity implements
 	@Override
 	public void setServiceInteration(BlinkServiceInteraction interaction) {
 		mInteraction = interaction;
+	}
+
+	@Override
+	public SqliteManagerExtended getDatabaseHandler() {
+		return mSqliteManagerExtended;
+	}
+
+	@Override
+	public void setInternalOperationSupport(
+			IInternalOperationSupport blinkOperation) {
+		mBlinkOperation = blinkOperation;
+	}
+
+	@Override
+	public IInternalOperationSupport getInternalOperationSupport() {
+		return mBlinkOperation;
 	}
 
 }

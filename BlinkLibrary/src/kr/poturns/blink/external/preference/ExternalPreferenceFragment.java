@@ -4,6 +4,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 
 import kr.poturns.blink.R;
+import kr.poturns.blink.db.SqliteManagerExtended;
 import kr.poturns.blink.external.IServiceContolActivity;
 import kr.poturns.blink.util.FileUtil;
 import android.app.AlertDialog;
@@ -25,7 +26,7 @@ public class ExternalPreferenceFragment extends PreferenceFragment implements
 	private static final String TAG = ExternalPreferenceFragment.class
 			.getSimpleName();
 	/** '기기를 센터로 설정'의 Key */
-	private static final String KEY_SET_THIS_DEVICE_TO_HOST = "KEY_SET_THIS_DEVICE_TO_HOST";
+	private static final String KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST = "KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST";
 	private Bundle mResultBundle = new Bundle();
 
 	@Override
@@ -99,6 +100,8 @@ public class ExternalPreferenceFragment extends PreferenceFragment implements
 		int titleRes = preference.getTitleRes();
 		if (titleRes == R.string.preference_external_title_delete_database) {
 			new AlertDialog.Builder(getActivity())
+					.setTitle(titleRes)
+					.setIcon(R.drawable.ic_action_alerts_and_states_warning)
 					.setMessage(R.string.confirm_delete)
 					.setNegativeButton(android.R.string.no, null)
 					.setPositiveButton(android.R.string.yes,
@@ -108,12 +111,47 @@ public class ExternalPreferenceFragment extends PreferenceFragment implements
 										int which) {
 									File dbDirectory = FileUtil
 											.obtainExternalDirectory(FileUtil.EXTERNAL_ARCHIVE_DIRECTORY_NAME);
+									boolean result = false;
 									for (File file : dbDirectory.listFiles()) {
-										file.delete();
+										result |= !file.delete();
 									}
-									Toast.makeText(getActivity(),
-											R.string.deleted,
-											Toast.LENGTH_SHORT).show();
+									if (!result) {
+										Toast.makeText(getActivity(),
+												R.string.deleted,
+												Toast.LENGTH_SHORT).show();
+									} else {
+										Toast.makeText(getActivity(),
+												R.string.fail,
+												Toast.LENGTH_SHORT).show();
+									}
+								}
+							}).create().show();
+			return true;
+		} else if (titleRes == R.string.preference_external_title_delete_database_device) {
+			new AlertDialog.Builder(getActivity())
+					.setTitle(titleRes)
+					.setIcon(R.drawable.ic_action_alerts_and_states_warning)
+					.setMessage(R.string.confirm_delete)
+					.setNegativeButton(android.R.string.no, null)
+					.setPositiveButton(android.R.string.yes,
+							new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
+									SqliteManagerExtended manager = new SqliteManagerExtended(
+											getActivity());
+									boolean result = manager
+											.removeCurrentDeviceData();
+									manager.close();
+									if (result) {
+										Toast.makeText(getActivity(),
+												R.string.deleted,
+												Toast.LENGTH_SHORT).show();
+									} else {
+										Toast.makeText(getActivity(),
+												R.string.fail,
+												Toast.LENGTH_SHORT).show();
+									}
 								}
 							}).create().show();
 			return true;
@@ -124,10 +162,10 @@ public class ExternalPreferenceFragment extends PreferenceFragment implements
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 			String key) {
-		if (KEY_SET_THIS_DEVICE_TO_HOST.equals(key)) {
+		if (KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST.equals(key)) {
 			boolean isSetThisDeviceToHost = sharedPreferences.getBoolean(key,
 					false);
-			mResultBundle.putBoolean(KEY_SET_THIS_DEVICE_TO_HOST,
+			mResultBundle.putBoolean(KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST,
 					isSetThisDeviceToHost);
 			sendPreferenceDataToService(mResultBundle);
 		}

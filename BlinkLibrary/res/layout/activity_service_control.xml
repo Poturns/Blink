@@ -6,7 +6,7 @@
 
     <ListView
         android:id="@+id/activity_main_left_drawer"
-        android:layout_width="120dip"
+        android:layout_width="160dip"
         android:layout_height="match_parent"
         android:background="#15010101"
         android:choiceMode="singleChoice"

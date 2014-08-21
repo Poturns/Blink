@@ -1,15 +1,14 @@
-package kr.poturns.blink.external.tab.dataview;
+package kr.poturns.blink.external;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import kr.poturns.blink.R;
+import kr.poturns.blink.db.SqliteManagerExtended;
+import kr.poturns.blink.db.archive.App;
+import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
-import kr.poturns.blink.db.archive.SystemDatabaseObject;
-import kr.poturns.blink.external.DBHelper;
-import kr.poturns.blink.external.IServiceContolActivity;
 import android.app.Fragment;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -21,21 +20,24 @@ import com.handstudio.android.hzgrapherlib.graphview.BubbleGraphView;
 import com.handstudio.android.hzgrapherlib.vo.bubblegraph.BubbleGraph;
 import com.handstudio.android.hzgrapherlib.vo.bubblegraph.BubbleGraphVO;
 
-public class GraphFragment extends Fragment {
+public class DataGraphFragment extends Fragment {
 	private ViewGroup mGraphView;
-	DBHelper mHelper;
-	SystemDatabaseObject mDBObject;
+	SqliteManagerExtended mManager;
+
+	Device mDevice;
+	App mApp;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mHelper = DBHelper.getInstance(getActivity());
+		mManager = ((IServiceContolActivity) getActivity())
+				.getDatabaseHandler();
 		Bundle arg = getArguments();
-		String device = arg.getString(IServiceContolActivity.EXTRA_DEVICE);
-		String app = arg.getString(IServiceContolActivity.EXTRA_DEVICE_APP);
-		getActivity().getActionBar().setTitle(device);
-		getActivity().getActionBar().setSubtitle(app);
-		mDBObject = mHelper.getSystemDatabaseObjectByApp(device, app);
+
+		mDevice = BundleResolver.obtainDevice(arg);
+		mApp = BundleResolver.obtainApp(arg);
+		getActivity().getActionBar().setTitle(mDevice.Device);
+		getActivity().getActionBar().setSubtitle(mApp.AppName);
 	}
 
 	@Override
@@ -52,15 +54,16 @@ public class GraphFragment extends Fragment {
 	}
 
 	private View makeGraph() {
-		return new BubbleGraphView(getActivity(), createBubbleGraphVO());
+		BubbleGraphVO vo = createBubbleGraphVO();
+		if (vo != null)
+			return new BubbleGraphView(getActivity(), vo);
+		else
+			return null;
 	}
 
-	private BubbleGraph makeBubbleGraph(Measurement mesurement,
-			int color) {
-		ArrayList<Measurement> list = new ArrayList<Measurement>();
-		list.add(mesurement);
-		List<MeasurementData> dataList = mHelper.getManager()
-				.obtainMeasurementData(list, null, null);
+	private BubbleGraph makeBubbleGraph(Measurement measurement, int color) {
+		List<MeasurementData> dataList = mManager
+				.obtainMeasurementDataList(measurement);
 		int size = dataList.size();
 		if (size == 0)
 			return null;
@@ -73,16 +76,17 @@ public class GraphFragment extends Fragment {
 			defValue = array[i];
 		}
 
-		return new BubbleGraph(mesurement.Description, color, array, bubbles);
+		return new BubbleGraph(measurement.Description, color, array, bubbles);
 
 	}
 
 	private BubbleGraphVO createBubbleGraphVO() {
-		ArrayList<Measurement> list = new ArrayList<Measurement>();
-		list.add(mDBObject.mMeasurementList.get(0));
+		List<Measurement> measurementList = mManager.obtainMesurementList(mApp);
 		BubbleGraphVO ret = null;
-		List<MeasurementData> dataList = mHelper.getManager()
-				.obtainMeasurementData(list, null, null);
+		if (measurementList.isEmpty())
+			return null;
+		List<MeasurementData> dataList = mManager
+				.obtainMeasurementDataList(measurementList.get(0));
 		int size = dataList.size();
 		String[] legendArr = new String[size];
 		for (int i = 0; i < size; i++) {
@@ -95,7 +99,7 @@ public class GraphFragment extends Fragment {
 		ret.setIsAnimaionShow(true);
 		Random random = new Random(System.currentTimeMillis());
 		int graphCount = 0;
-		for (Measurement measurement : mDBObject.mMeasurementList) {
+		for (Measurement measurement : measurementList) {
 			int r = random.nextInt(256);
 			int g = random.nextInt(256);
 			int b = random.nextInt(256);

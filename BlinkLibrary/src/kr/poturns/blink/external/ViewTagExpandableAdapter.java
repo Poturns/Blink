@@ -85,7 +85,7 @@ public abstract class ViewTagExpandableAdapter<K, V> extends
 	}
 
 	protected abstract void createGroupView(int groupPosition,
-			boolean isEcpanded, ViewHolder h);
+			boolean isExpanded, ViewHolder h);
 
 	@Override
 	public View getChildView(int groupPosition, int childPosition,
