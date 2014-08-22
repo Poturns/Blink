@@ -11,7 +11,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -22,12 +21,14 @@ import android.widget.Toast;
 class ConnectionListFragment extends ConnectionFragment {
 	SwipeRefreshLayout mSwipeRefreshLayout;
 	ArrayAdapter<BlinkDevice> mAdapter;
-	TextView mHeaderView;
-	boolean mRemoved = false, mRefresh = false;
+	boolean mRefresh = false;
+	MenuItem mRetainOperationItem;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
+		setHasOptionsMenu(true);
+
 		mSwipeRefreshLayout = (SwipeRefreshLayout) View.inflate(getActivity(),
 				R.layout.fragment_list_connection, null);
 		mSwipeRefreshLayout.setOnRefreshListener(mOnRefreshListener);
@@ -36,6 +37,7 @@ class ConnectionListFragment extends ConnectionFragment {
 				android.R.color.holo_green_light,
 				android.R.color.holo_orange_light,
 				android.R.color.holo_red_light);
+		mDeviceList.add(mHostDevice);
 		mAdapter = new ArrayAdapter<BlinkDevice>(getActivity(),
 				android.R.layout.simple_list_item_1, mDeviceList) {
 			@Override
@@ -51,42 +53,12 @@ class ConnectionListFragment extends ConnectionFragment {
 				return v;
 			}
 		};
-		mHeaderView = (TextView) View.inflate(getActivity(),
-				R.layout.emptyview, null);
-		mHeaderView.setText(mHostDevice.getName());
-		mHeaderView.setCompoundDrawables(null, null, null, null);
-		mHeaderView.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				showHostDeviceInfomation();
-			}
-		});
 		ListView listView = (ListView) mSwipeRefreshLayout
 				.findViewById(android.R.id.list);
 		listView.setAdapter(mAdapter);
 		listView.setEmptyView(View.inflate(getActivity(), R.layout.emptyview,
 				null));
 		listView.setOnItemClickListener(mOnItemClickListener);
-		listView.setOnScrollListener(new AbsListView.OnScrollListener() {
-			@Override
-			public void onScroll(AbsListView view, int firstVisibleItem,
-					int visibleItemCount, int totalItemCount) {
-			}
-
-			@Override
-			public void onScrollStateChanged(AbsListView view, int scrollState) {
-				if (!mRemoved) {
-					((ListView) view).removeHeaderView(mHeaderView);
-					mRemoved = true;
-				}
-				if (mRemoved
-						&& scrollState != AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
-					((ListView) view).addHeaderView(mHeaderView);
-					mRemoved = false;
-				}
-			}
-		});
-		listView.addHeaderView(mHeaderView);
 		return mSwipeRefreshLayout;
 	}
 
@@ -99,9 +71,13 @@ class ConnectionListFragment extends ConnectionFragment {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		final int id = item.getItemId();
 		if (id == R.id.action_list_fillter) {
+			if (mRetainOperationItem != null)
+				mRetainOperationItem = item;
 			boolean check;
 			if ((check = !item.isChecked()))
 				retainConnectedDevicesFromList();
+			else
+				fetchDeviceListFromBluetooth();
 			item.setChecked(check);
 			return true;
 		} else {
@@ -139,6 +115,13 @@ class ConnectionListFragment extends ConnectionFragment {
 			Toast.makeText(getActivity(), "connection refresh!",
 					Toast.LENGTH_SHORT).show();
 		}
+		mDeviceList.add(0, mHostDevice);
 		mAdapter.notifyDataSetChanged();
+	}
+
+	@Override
+	void onDeviceListLoadFailed(boolean isFailedByConcurrentTask) {
+		super.onDeviceListLoadFailed(isFailedByConcurrentTask);
+		mRetainOperationItem.setChecked(!mRetainOperationItem.isChecked());
 	}
 }

@@ -22,6 +22,7 @@ import android.support.v4.widget.SlidingPaneLayout;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -43,6 +44,7 @@ public final class ServiceControlActivity extends Activity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		FileUtil.createExternalDirectory();
 		setContentView(R.layout.activity_service_control);
 		mSqliteManagerExtended = new SqliteManagerExtended(this);
@@ -138,22 +140,10 @@ public final class ServiceControlActivity extends Activity implements
 
 	@Override
 	public void onBackPressed() {
-		if (!isScreenSizeBig() && mSlidingPaneLayout.isOpen())
+		if (PrivateUtil.isScreenSizeSmall(this) && mSlidingPaneLayout.isOpen())
 			mSlidingPaneLayout.closePane();
 		else
 			super.onBackPressed();
-	}
-
-	boolean isScreenSizeBig() {
-		int sizeInfoMasked = getResources().getConfiguration().screenLayout
-				& Configuration.SCREENLAYOUT_SIZE_MASK;
-		switch (sizeInfoMasked) {
-		case Configuration.SCREENLAYOUT_SIZE_NORMAL:
-		case Configuration.SCREENLAYOUT_SIZE_SMALL:
-			return false;
-		default:
-			return true;
-		}
 	}
 
 	@Override

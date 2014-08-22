@@ -2,8 +2,10 @@ package kr.poturns.blink.external;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
+import kr.poturns.blink.R;
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.Context;
@@ -29,20 +31,22 @@ import android.widget.FrameLayout;
  * 		.findViewById(R.id.someId);
  * 
  * int size = 11;
- * List&lt;View&gt; viewList = new ArrayList(size);
+ * List&lt;Integer&gt; list = new ArrayList&lt;Integer&gt;(size);
  * for (int i = 0; i &lt; size; i++) {
- * 	TextView tv = new TextView(someContext);
- * 	tv.setText(&quot;View &quot; + i);
- * 	viewList.add(tv);
+ * 	list.add(i);
  * }
  * TextView centerView = new TextView(someContext);
  * centerView.setText(&quot;center&quot;);
  * 
  * CircularViewHelper circularAdapter = new CircularViewHelper(someFrameLayout,
- * 		centerView);
- * circularAdapter.addChildViews(viewList);
+ * 		centerView) {
+ * 	// childView의 형태를 정의
+ * 	protected View getView(int position, Object object){
+ * 		return View.inflate(....);
+ * 	}
+ * };
  * 
- * circularAdapter.drawChildViews();
+ * circularAdapter.drawChildViews(list);
  * 
  * </pre>
  * 
@@ -58,6 +62,8 @@ class CircularViewHelper {
 	private View mCenterView;
 	private Context mContext;
 	private int mCenterViewId;
+	private int mScreenWidth, mViewSize, mChildViewDistance;
+	private FrameLayout.LayoutParams mLayoutParams;
 	private static final int CENTER_VIEW_POSITION = -2;
 
 	/**
@@ -108,11 +114,12 @@ class CircularViewHelper {
 		return viewGroup instanceof FrameLayout;
 	}
 
-	public View getCenterView() {
+	/** 중앙에 배치된 View를 얻는다. */
+	public final View getCenterView() {
 		return mCenterView;
 	}
 
-	public void setCenterView(View centerView) {
+	public final void setCenterView(View centerView) {
 		if (mCenterView != null)
 			mViewGroup.removeView(mCenterView);
 		this.mCenterView = centerView;
@@ -137,59 +144,86 @@ class CircularViewHelper {
 	}
 
 	/**
-	 * 원형으로 배치될 View를 등록한다.
-	 * 
-	 * @param childViews
-	 *            원형으로 배치될 View들
+	 * 원형 View를 구성하는 Data가 변경되었을때,<br>
+	 * 원형으로 배치할 View의 크기 등등의 변수(Spec)를 다시 측정한다.
 	 */
-	public void addChildViews(Collection<? extends View> childViews) {
-		removeAllChildView();
-		mChildViewList.clear();
-		mChildViewList.addAll(childViews);
+	private void measuringSpec(int newSize) {
+		mScreenWidth = mContext.getResources().getDisplayMetrics().widthPixels;
+		mViewSize = mScreenWidth / (newSize < 8 ? 8 : newSize) * 2;
+		mChildViewDistance = (mScreenWidth - mViewSize - 20) / 2;
+		mLayoutParams = new FrameLayout.LayoutParams(mViewSize, mViewSize);
+		mLayoutParams.gravity = Gravity.CENTER;
 	}
 
-	public List<View> getChildViews() {
-		return mChildViewList;
-	}
-
-	/** ViewGroup에 ChildView를 배치한다. */
-	public void drawCircularView() {
-		final int size = mChildViewList.size();
-		final int screenWidth = mContext.getResources().getDisplayMetrics().widthPixels;
-		final int viewSize = screenWidth / (size < 8 ? 8 : size) * 2;
-		final int distance = (screenWidth - viewSize - 20) / 2;
+	/** 중앙의 View를 현재 Spec에 맞게 다시 그리고, 필요하다면 주어진 ViewGroup에 추가한다 */
+	private void setCenterViewSpec() {
 		ViewInfoTag tag = new ViewInfoTag();
 		tag.mIsDrag = false;
 		tag.mViewPosition = CENTER_VIEW_POSITION;
 		tag.mViewId = mCenterViewId;
 		mCenterView.setTag(tag);
 		mCenterView.setOnDragListener(mOnDragListener);
-		FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(viewSize,
-				viewSize);
-		lp.gravity = Gravity.CENTER;
-		mCenterView.setLayoutParams(lp);
+		mCenterView.setLayoutParams(mLayoutParams);
 
 		if (!mViewGroup.equals(mCenterView.getParent()))
 			mViewGroup.addView(mCenterView);
+	}
 
-		for (int i = 0; i < size; i++) {
-			View child = mChildViewList.get(i);
-			tag = new ViewInfoTag();
-			tag.mIsDrag = false;
-			tag.mViewId = i;
-			tag.mViewPosition = i;
-			tag.mTag = child.getTag();
-			child.setTag(tag);
-			child.setLayoutParams(lp);
-			float angleDeg = i * 360.0f / size - 90.0f;
-			float angleRad = (float) (angleDeg * Math.PI / 180.0f);
-			child.setTranslationX(distance * (float) Math.cos(angleRad));
-			child.setTranslationY(distance * (float) Math.sin(angleRad));
-			// tv.setRotation(angleDeg + 90.0f);
-			child.setOnTouchListener(mOnTouchListener);
-			child.setOnDragListener(mOnDragListener);
+	/** ViewGroup에 ChildView를 배치한다. */
+	public final void drawCircularView(Collection<? extends Object> datas) {
+		removeAllChildView();
+		mChildViewList.clear();
+		final int size = datas.size();
+		measuringSpec(size);
+		setCenterViewSpec();
+		View child;
+		int i = 0;
+		for (Object obj : datas) {
+			child = getView(i, obj);
+			child.setTag(obj);
+			setChildViewInfo(child, i, size);
 			mViewGroup.addView(child);
+			mChildViewList.add(child);
+			i++;
 		}
+	}
+
+	/**
+	 * 원형으로 배치할 childView를 생성한다. <br>
+	 * ChildView를 임의의 형태로 inflate하려면 재정의 할 수 있다.
+	 * 
+	 * @param position
+	 *            - {@link CircularViewHelper#drawCircularView(Collection)}에서
+	 *            인자로 넘겨준 {@link Collection}의 {@link Iterator}를 통해 얻어낸, <br>
+	 *            구성되려는 ChildView의 위치
+	 * @param object
+	 *            - {@link Collection}의 data
+	 */
+	protected View getView(int position, Object object) {
+		return View.inflate(mContext, R.layout.view_textview, null);
+	}
+
+	private void setChildViewInfo(View childView, int postion, int size) {
+		ViewInfoTag tag = new ViewInfoTag();
+		tag.mIsDrag = false;
+		tag.mViewId = postion;
+		tag.mViewPosition = postion;
+		tag.mTag = childView.getTag();
+		childView.setTag(tag);
+		childView.setLayoutParams(mLayoutParams);
+		float angleDeg = postion * 360.0f / size - 90.0f;
+		float angleRad = (float) (angleDeg * Math.PI / 180.0f);
+		childView.setTranslationX(mChildViewDistance
+				* (float) Math.cos(angleRad));
+		childView.setTranslationY(mChildViewDistance
+				* (float) Math.sin(angleRad));
+		// tv.setRotation(angleDeg + 90.0f);
+		childView.setOnTouchListener(mOnTouchListener);
+		childView.setOnDragListener(mOnDragListener);
+	}
+
+	public final List<View> getChildViews() {
+		return mChildViewList;
 	}
 
 	private View.OnTouchListener mOnTouchListener = new View.OnTouchListener() {
@@ -206,7 +240,7 @@ class CircularViewHelper {
 		}
 	};
 
-	private static Handler mHandler = new Handler() {
+	private static final Handler sHandler = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
@@ -220,7 +254,7 @@ class CircularViewHelper {
 		}
 	};
 	private static final int ACTION_CLICK = 888;
-	private View.OnDragListener mOnDragListener = new View.OnDragListener() {
+	private final View.OnDragListener mOnDragListener = new View.OnDragListener() {
 
 		@Override
 		public boolean onDrag(View v, DragEvent event) {
@@ -237,14 +271,14 @@ class CircularViewHelper {
 			case DragEvent.ACTION_DRAG_LOCATION:
 				return true;
 			case DragEvent.ACTION_DRAG_EXITED:
-				mHandler.removeMessages(ACTION_CLICK);
+				sHandler.removeMessages(ACTION_CLICK);
 				return true;
 			case DragEvent.ACTION_DROP:
-				if (tag.mIsDrag && !mHandler.hasMessages(ACTION_CLICK)) {
+				if (tag.mIsDrag && !sHandler.hasMessages(ACTION_CLICK)) {
 					Message m = Message.obtain();
 					m.what = ACTION_CLICK;
 					m.obj = v;
-					mHandler.sendMessageDelayed(m, 100);
+					sHandler.sendMessageDelayed(m, 100);
 					return false;
 				}
 				if (tag.mViewPosition == CENTER_VIEW_POSITION) {
@@ -258,7 +292,7 @@ class CircularViewHelper {
 				if (tag.mIsDrag) {
 					if (event.getResult() && tag.mDropViewId == mCenterViewId
 							&& mDragAndDropListener != null) {
-						mHandler.removeMessages(ACTION_CLICK);
+						sHandler.removeMessages(ACTION_CLICK);
 						mDragAndDropListener.onDrop(v);
 					}
 					tag.mDropViewId = View.NO_ID;
@@ -273,7 +307,23 @@ class CircularViewHelper {
 		}
 	};
 
-	public static class ViewInfoTag {
+	public final Object getViewTag(int position) {
+		return ((ViewInfoTag) mChildViewList.get(position).getTag()).mTag;
+	}
+
+	/**
+	 * CircularView에 속한 View의 Tag를 얻는다.
+	 * 
+	 * @param Tag
+	 *            얻어오려는 View
+	 * @throws ClassCastException
+	 * @see View#getTag()
+	 */
+	public final Object getViewTag(View childView) {
+		return ((ViewInfoTag) childView.getTag()).mTag;
+	}
+
+	private static class ViewInfoTag {
 		public boolean mIsDrag;
 		public int mViewId;
 		public int mDropViewId = View.NO_ID;
@@ -283,11 +333,19 @@ class CircularViewHelper {
 
 	private OnDragAndDropListener mDragAndDropListener;
 
-	public void setOnDragAndDropListener(OnDragAndDropListener l) {
+	public final void setOnDragAndDropListener(OnDragAndDropListener l) {
 		mDragAndDropListener = l;
 	}
 
 	public static interface OnDragAndDropListener {
+		/**
+		 * 터치한 View의 Drag가 시작되었을 때, 호출된다.
+		 * 
+		 * @param view
+		 *            Drag를 시작한 View
+		 * @param center
+		 *            중앙의 View
+		 */
 		public void onStartDrag(View view, View center);
 
 		/**
@@ -298,6 +356,14 @@ class CircularViewHelper {
 		 */
 		public void onDrop(View view);
 
+		/**
+		 * 터치한 View의 Drag가 종료되었을 때, 호출된다.
+		 * 
+		 * @param view
+		 *            Drag를 시작한 View
+		 * @param center
+		 *            중앙의 View
+		 */
 		public void onDropEnd(View view, View center);
 	}
 }

@@ -5,7 +5,6 @@ import java.util.List;
 
 import kr.poturns.blink.R;
 import kr.poturns.blink.external.CircularViewHelper.OnDragAndDropListener;
-import kr.poturns.blink.external.CircularViewHelper.ViewInfoTag;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.app.Fragment;
 import android.os.Bundle;
@@ -32,7 +31,22 @@ final class ConnectionCircularFragment extends ConnectionFragment {
 			Bundle savedInstanceState) {
 		ViewGroup viewGroup = (ViewGroup) View.inflate(getActivity(),
 				R.layout.fragment_circular_connection, null);
-		mCircularHelper = new CircularViewHelper(viewGroup, android.R.id.text1);
+		mCircularHelper = new CircularViewHelper(viewGroup, android.R.id.text1) {
+			@Override
+			protected View getView(int position, Object object) {
+				TextView view = (TextView) View.inflate(getActivity(),
+						R.layout.view_textview, null);
+				BlinkDevice device = (BlinkDevice) object;
+				view.setCompoundDrawablesWithIntrinsicBounds(
+						0,
+						device.isConnected() ? R.drawable.ic_action_device_access_bluetooth_connected
+								: R.drawable.ic_action_device_access_bluetooth,
+						0, 0);
+				view.setText(device.getName());
+				view.setOnClickListener(mOnClickListener);
+				return view;
+			}
+		};
 		TextView hostView = (TextView) mCircularHelper.getCenterView();
 		hostView.setText(mHostDevice.getName());
 		hostView.setOnClickListener(new View.OnClickListener() {
@@ -51,8 +65,7 @@ final class ConnectionCircularFragment extends ConnectionFragment {
 			}
 		});
 		mCircularHelper.setOnDragAndDropListener(mDragAndDropListener);
-		mCircularHelper.addChildViews(generateViews());
-		mCircularHelper.drawCircularView();
+		mCircularHelper.drawCircularView(mDeviceList);
 
 		mSlidingDrawer = (SlidingDrawer) viewGroup
 				.findViewById(R.id.fragment_circular_sliding_drawer);
@@ -92,7 +105,7 @@ final class ConnectionCircularFragment extends ConnectionFragment {
 
 		for (int i = 0; i < size; i++) {
 			View v = list.get(i);
-			if (!((BlinkDevice) ((ViewInfoTag) v.getTag()).mTag).isConnected())
+			if (!((BlinkDevice) mCircularHelper.getViewTag(i)).isConnected())
 				v.setAlpha(((float) (100 - percent) / 100f));
 		}
 	}
@@ -131,8 +144,8 @@ final class ConnectionCircularFragment extends ConnectionFragment {
 
 		@Override
 		public void onDrop(View view) {
-			connectOrDisConnectDevice((BlinkDevice) ((ViewInfoTag) view
-					.getTag()).mTag);
+			connectOrDisConnectDevice((BlinkDevice) mCircularHelper
+					.getViewTag(view));
 		}
 
 		@Override
@@ -154,7 +167,8 @@ final class ConnectionCircularFragment extends ConnectionFragment {
 
 		@Override
 		public void onClick(final View v) {
-			final BlinkDevice device = (BlinkDevice) ((ViewInfoTag) v.getTag()).mTag;
+			final BlinkDevice device = (BlinkDevice) mCircularHelper
+					.getViewTag(v);
 			showDialog(device);
 		}
 	};
@@ -167,8 +181,7 @@ final class ConnectionCircularFragment extends ConnectionFragment {
 			mSeekBar.setProgress(0);
 			mIsRefresh = false;
 		}
-		mCircularHelper.addChildViews(generateViews());
-		mCircularHelper.drawCircularView();
+		mCircularHelper.drawCircularView(mDeviceList);
 	}
 
 }
