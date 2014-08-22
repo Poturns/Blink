@@ -169,6 +169,13 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 			Xdevice = null;
 			
 		}
+
+		@Override
+        public void onReceiveMeasurementData(String schema, String data)
+                throws RemoteException {
+	        // TODO Auto-generated method stub
+	        
+        }
 		
 	};
 

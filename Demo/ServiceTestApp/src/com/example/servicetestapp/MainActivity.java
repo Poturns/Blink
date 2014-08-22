@@ -4,9 +4,14 @@ import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
+import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
+import kr.poturns.blink.schema.Eye;
+import kr.poturns.blink.util.ClassUtil;
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 
@@ -19,28 +24,7 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
-		
-		
-		mBlinkServiceInteraction = new BlinkServiceInteraction(this,new IBlinkEventBroadcast() {
-			
-			@Override
-			public void onDeviceDiscovered(BlinkDevice device) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void onDeviceDisconnected(BlinkDevice device) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void onDeviceConnected(BlinkDevice device) {
-				// TODO Auto-generated method stub
-				
-			}
-		},null){
+		mBlinkServiceInteraction = new BlinkServiceInteraction(this,mBlinkEventBroadcast,mInternalEventCallback){
 
 			@Override
             public void onServiceConnected(IInternalOperationSupport iSupport) {
@@ -62,6 +46,7 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
 		
 	}
 	
+	
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
@@ -79,5 +64,73 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
 			break;
 		}
 	}
+	
+
+	IBlinkEventBroadcast mBlinkEventBroadcast = new IBlinkEventBroadcast(){
+
+		@Override
+        public void onDeviceDiscovered(BlinkDevice device) {
+            // TODO Auto-generated method stub
+            
+        }
+
+		@Override
+        public void onDeviceConnected(BlinkDevice device) {
+            // TODO Auto-generated method stub
+            
+        }
+
+		@Override
+        public void onDeviceDisconnected(BlinkDevice device) {
+            // TODO Auto-generated method stub
+            
+        }
+		
+	};
+	
+	IInternalEventCallback mInternalEventCallback = new IInternalEventCallback(){
+
+		@Override
+        public IBinder asBinder() {
+	        // TODO Auto-generated method stub
+	        return null;
+        }
+
+		@Override
+        public void onDeviceConnected(BlinkDevice arg0) throws RemoteException {
+	        // TODO Auto-generated method stub
+	        
+        }
+
+		@Override
+        public void onDeviceConnectionFailed(BlinkDevice arg0)
+                throws RemoteException {
+	        // TODO Auto-generated method stub
+	        
+        }
+
+		@Override
+        public void onDeviceDisconnected(BlinkDevice arg0)
+                throws RemoteException {
+	        // TODO Auto-generated method stub
+	        
+        }
+
+		@Override
+        public void onDeviceDiscovered(BlinkDevice arg0) throws RemoteException {
+	        // TODO Auto-generated method stub
+	        
+        }
+
+		@Override
+        public void onReceiveMeasurementData(String arg0, String arg1)
+                throws RemoteException {
+	        // TODO Auto-generated method stub
+	        if(arg0.equals(ClassUtil.obtainClassSchema(Eye.class))){
+	        	Log.i(tag, arg1);
+	        }
+        }
+		
+	};
 
 }

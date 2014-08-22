@@ -14,8 +14,8 @@ import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
 
 /**
- * 간편하게 쿼리를 날릴 수 있는 기능과
- * 서비스와 데이터베이스 사이의 계층으로써 필요할 경우 블루투스 통신을 요청하는 클래스 -> 구현해야함
+ * 간편하게 쿼리를 날릴 수 있는 기능 추가
+ * SqliteManager는 직접 raw 쿼리를 날린다.
  * @author Jiwon
  *
  */
@@ -94,6 +94,19 @@ public class BlinkDatabaseManager extends SqliteManager{
 		return this;
 	}
 	
+	
+	
+	public boolean checkInDevice(MeasurementData mMeasurementData){
+		return false;
+	}
+	
+	public boolean checkInDevice(Function mFunction){
+		return false;
+	}
+	
+	public boolean checkInDevice(String schema){
+		return false;
+	}
 	/**
 	 * getter , setter methods
 	 */

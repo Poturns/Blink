@@ -16,14 +16,12 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 	public static final String INTENT_ACTION_NAME = "kr.poturns.blink.internal.BlinkLocalService";
 	
 	private final String tag = "BlinkLocalService";
-	public SqliteManager mSqliteManager = null;
 	
 	
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		Log.i(tag, "onCreate");
-		mSqliteManager = SqliteManager.getSqliteManager(this);
 	}
 	
 	@Override

@@ -18,6 +18,14 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+/**
+ * 서비스에 어떻게 요청할 지 정하며 Log를 남긴다.
+ * 만약 다른 디바이스에 해당하는 데이터면 블루투스쪽으로 넘겨야 한다.
+ * 다른 디바이스와 통신이 필요한 매서드는 두 가지이다.
+ * 1. obtainMeasurementData
+ * 2. startFunction
+ * @author Jiwon
+ */
 public class BlinkSupportBinder extends ConnectionSupportBinder {
 
 	private final String tag = "BlinkDatabaseBinder";
@@ -30,6 +38,9 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		mBlinkDatabaseManager = new BlinkDatabaseManager(context);
 	}
 
+	/**
+	 * DeviceName과 PackageName을 기준으로 SystemDatabaseObject를 얻어오는 매서드
+	 */
 	@Override
 	public SystemDatabaseObject obtainSystemDatabase(String DeviceName,
 			String PackageName) throws RemoteException {
@@ -41,6 +52,9 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		return mBlinkDatabaseManager.obtainSystemDatabase(DeviceName, PackageName);
 	}
 
+	/**
+	 * SystemDatabaseObject를 데이터베이스 등록하는 매서드
+	 */
 	@Override
 	public void registerSystemDatabase(
 			SystemDatabaseObject mSystemDatabaseObject)
@@ -66,11 +80,17 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		}
 	}
 
+	/**
+	 * 블루투스 통신이 필요할 수 있는 매서드
+	 */
 	@Override
 	public String obtainMeasurementData(String ClassName,
 			String DateTimeFrom, String DateTimeTo, int ContainType)
 			throws RemoteException {
 		// TODO Auto-generated method stub
+		// Check need bluetooth communicate
+		
+		
 		mBlinkDatabaseManager.registerLog(mDeviceName, mPackageName, mBlinkDatabaseManager.LOG_OBTAIN_MEASUREMENT, ClassName);
 		try{
 			Class<?> mClass = Class.forName(ClassName);
@@ -90,11 +110,15 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		return mBlinkDatabaseManager.obtainSystemDatabase();
 	}
 
+	/**
+	 * 블루투스 통신이 필요할 수 있는 매서드
+	 */
 	@Override
 	public List<MeasurementData> obtainMeasurementDataById(
 			List<Measurement> mMeasurementList,
 			String DateTimeFrom, String DateTimeTo) throws RemoteException {
 		// TODO Auto-generated method stub
+		// Check need bluetooth communicate
 		mBlinkDatabaseManager.registerLog(mDeviceName, mPackageName, mBlinkDatabaseManager.LOG_OBTAIN_MEASUREMENT, "By Id");
 		return mBlinkDatabaseManager.obtainMeasurementData(mMeasurementList, DateTimeFrom, DateTimeTo);
 	}
@@ -123,9 +147,13 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		mBlinkDatabaseManager.registerLog(DeviceName, PackageName, Type, Content);
 	}
 
+	/**
+	 * 블루투스 통신이 필요할 수 있는 매서드
+	 */
 	@Override
 	public void startFunction(Function mFunction) throws RemoteException {
 		// TODO Auto-generated method stub
+		// Check need bluetooth communicate
 		if(mFunction.Type==Function.TYPE_ACTIVITY)
 			CONTEXT.startActivity(new Intent(mFunction.Action).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 		else if(mFunction.Type==Function.TYPE_SERIVCE)

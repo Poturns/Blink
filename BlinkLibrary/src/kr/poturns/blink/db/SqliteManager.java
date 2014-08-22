@@ -74,16 +74,6 @@ public class SqliteManager extends SQLiteOpenHelper {
 		gson = new GsonBuilder().setPrettyPrinting().create();
 	}
 
-	public static SqliteManager getSqliteManager(Context context){
-		ensureDatabaseDir();
-		return new SqliteManager(context);
-	}
-	private static void ensureDatabaseDir() {
-		File mPreferenceDir = new File(Environment.getExternalStorageDirectory() + "/Blink");
-		mPreferenceDir.mkdir();
-		mPreferenceDir = new File(Environment.getExternalStorageDirectory() + "/Blink/archive/");
-		mPreferenceDir.mkdir();
-	}
 	/**
 	 * SqliteManager(this, "BlinkDatabase.db", null, 1); 호출시  BlinkDatabase.db가 없으면 호출된다.
 	 * DB가 생성될 때 호출되는 메소드
@@ -732,4 +722,5 @@ public class SqliteManager extends SQLiteOpenHelper {
 	public List<BlinkLog> obtainLog(){
 		return obtainLog(null,null,-1,null,null);
 	}
+	
 }

@@ -18,4 +18,5 @@ interface IInternalEventCallback {
 
 	oneway void onDeviceConnectionFailed(inout BlinkDevice device);
 
+	oneway void onReceiveMeasurementData(String schema,String data);
 }
