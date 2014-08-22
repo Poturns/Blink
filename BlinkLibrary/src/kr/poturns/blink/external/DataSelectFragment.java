@@ -28,7 +28,7 @@ import android.widget.TextView;
  * <br>
  * Database 내부의 Device의 목록과 Device에 따른 App의 항목을 보여준다.
  */
-public class DataSelectFragment extends Fragment {
+class DataSelectFragment extends Fragment {
 	BaseExpandableListAdapter mAdapter;
 	Map<Device, List<App>> mDeviceMap = new Hashtable<Device, List<App>>();
 	SqliteManagerExtended mManager;
@@ -63,8 +63,8 @@ public class DataSelectFragment extends Fragment {
 	}
 
 	void changeFragment(Bundle arg) {
-		Fragment f = Fragment.instantiate(getActivity(),
-				DataViewFragment.class.getName(), arg);
+		Fragment f = new DataViewFragment();
+		f.setArguments(arg);
 		getFragmentManager()
 				.beginTransaction()
 				.add(R.id.activity_main_fragment_content, f,

@@ -41,7 +41,7 @@
             android:label="@string/app_name" >
         </activity>
         <activity
-            android:name="kr.poturns.blink.external.preference.PreferenceActivity"
+            android:name="kr.poturns.blink.external.PreferenceActivity"
             android:label="@string/preference" />
         <activity android:name="kr.poturns.blink.test.ServiceTestActivity" >
 

@@ -19,7 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 /** 현재 연결된 Device들을 ListView의 형태로 보여주는 Fragment */
-public class ConnectionListFragment extends ConnectionFragment {
+class ConnectionListFragment extends ConnectionFragment {
 	SwipeRefreshLayout mSwipeRefreshLayout;
 	ArrayAdapter<BlinkDevice> mAdapter;
 	TextView mHeaderView;
@@ -111,8 +111,7 @@ public class ConnectionListFragment extends ConnectionFragment {
 
 	@Override
 	protected Fragment getChangeFragment() {
-		return Fragment.instantiate(getActivity(),
-				ConnectionCircularFragment.class.getName());
+		return new ConnectionCircularFragment();
 	}
 
 	private SwipeRefreshLayout.OnRefreshListener mOnRefreshListener = new SwipeRefreshLayout.OnRefreshListener() {

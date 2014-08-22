@@ -20,7 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 @SuppressWarnings("deprecation")
-public final class ConnectionCircularFragment extends ConnectionFragment {
+final class ConnectionCircularFragment extends ConnectionFragment {
 	/** layout 하단의 submenu 역할을 하는 SlidingDrawer */
 	private SlidingDrawer mSlidingDrawer;
 	private SeekBar mSeekBar;
@@ -119,8 +119,7 @@ public final class ConnectionCircularFragment extends ConnectionFragment {
 
 	@Override
 	protected Fragment getChangeFragment() {
-		return Fragment.instantiate(getActivity(),
-				ConnectionListFragment.class.getName());
+		return new ConnectionListFragment();
 	}
 
 	@Override

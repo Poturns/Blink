@@ -7,7 +7,6 @@ import org.json.JSONObject;
 
 import kr.poturns.blink.R;
 import kr.poturns.blink.db.SqliteManagerExtended;
-import kr.poturns.blink.external.preference.PreferenceActivity;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
@@ -31,6 +30,8 @@ import dev.dworks.libs.actionbartoggle.ActionBarToggle;
 
 public final class ServiceControlActivity extends Activity implements
 		IServiceContolActivity {
+	private static final String TAG = ServiceControlActivity.class
+			.getSimpleName();
 	ActionBarToggle mActionBarToggle;
 	SlidingPaneLayout mSlidingPaneLayout;
 	ListView mLeftListView;
@@ -61,26 +62,20 @@ public final class ServiceControlActivity extends Activity implements
 
 	@Override
 	public void transitFragment(int position, Bundle arguments) {
-		String fname;
+		Fragment f;
 		switch (position) {
 		default:
-			fname = ConnectionCircularFragment.class.getName();
+			f = new ConnectionCircularFragment();
 			break;
 		case 1:
-			fname = DataSelectFragment.class.getName();
+			f = new DataSelectFragment();
 			break;
 		case 2:
-			fname = LogViewFragment.class.getName();
+			f = new LogViewFragment();
 			break;
 		}
-		Fragment f;
-		try {
-			f = Fragment.instantiate(this, fname, arguments);
-		} catch (Exception e) {
-			Log.e(this.getClass().getSimpleName(), "", e);
-			return;
-		}
 
+		f.setArguments(arguments);
 		f.setHasOptionsMenu(true);
 		getFragmentManager().beginTransaction()
 				.replace(R.id.activity_main_fragment_content, f)
@@ -90,10 +85,6 @@ public final class ServiceControlActivity extends Activity implements
 		mCurrentPageSelection = position;
 		getActionBar().setTitle(
 				mLeftListView.getItemAtPosition(position).toString());
-	}
-
-	protected void closePane() {
-		mSlidingPaneLayout.closePane();
 	}
 
 	protected void startPreferenceActivity() {
@@ -187,7 +178,7 @@ public final class ServiceControlActivity extends Activity implements
 			if (!mSlidingPaneLayout.isOpen())
 				return;
 			if (mCurrentPageSelection == position) {
-				closePane();
+				mSlidingPaneLayout.closePane();
 				return;
 			}
 
@@ -199,7 +190,7 @@ public final class ServiceControlActivity extends Activity implements
 				startPreferenceActivity();
 				break;
 			}
-			closePane();
+			mSlidingPaneLayout.closePane();
 		}
 	};
 
@@ -211,10 +202,12 @@ public final class ServiceControlActivity extends Activity implements
 			for (String key : keySets) {
 				try {
 					json.put(key, JSONObject.wrap(message.get(key)));
+					String jsonMsg = json.toString();
+					Log.d(TAG, "sending to service : \n" + jsonMsg);
+					// XXX pacel null pointer exception!
 					mBlinkOperation.sendBlinkMessages(
-							BlinkDevice.obtainHostDevice(), json.toString());
-					Toast.makeText(this, json.toString(), Toast.LENGTH_SHORT)
-							.show();
+							BlinkDevice.obtainHostDevice(), jsonMsg);
+					return true;
 				} catch (JSONException e) {
 					e.printStackTrace();
 					Toast.makeText(this, "json convert error",
@@ -225,7 +218,6 @@ public final class ServiceControlActivity extends Activity implements
 							Toast.LENGTH_SHORT).show();
 				}
 			}
-
 		}
 		return false;
 	}

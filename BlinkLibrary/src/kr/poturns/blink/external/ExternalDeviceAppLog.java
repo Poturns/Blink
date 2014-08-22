@@ -17,7 +17,7 @@ import android.os.Parcelable;
  * <li>dateTime -> {@link ExternalDeviceAppLog#FIELD_DATETIME}</li>
  * 
  */
-public class ExternalDeviceAppLog implements Parcelable {
+class ExternalDeviceAppLog implements Parcelable {
 	public static final int FIELD_SIZE = 5;
 	public static final int FIELD_DEVICE = 0;
 	public static final int FIELD_APP = 1;

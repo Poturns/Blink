@@ -1,4 +1,4 @@
-package kr.poturns.blink.external.preference;
+package kr.poturns.blink.external;
 
 import kr.poturns.blink.R;
 import kr.poturns.blink.db.SqliteManagerExtended;
@@ -13,10 +13,10 @@ import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.widget.Toast;
 
-public class InternalPreferenceFragment extends PreferenceFragment implements
+class PreferenceInternalFragment extends PreferenceFragment implements
 		OnSharedPreferenceChangeListener {
 	// private static final String TAG =
-	// InternalPreferenceFragment.class.getSimpleName();
+	// PreferenceInternalFragment.class.getSimpleName();
 
 	/** Blink Application의 내부 설정 SharedPreference의 이름 */
 	public static final String INTERNAL_PREF_NAME = "pref_internal";

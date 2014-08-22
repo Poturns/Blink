@@ -27,7 +27,7 @@ import android.widget.SearchView.OnQueryTextListener;
 import android.widget.TextView;
 
 /** Blink Database에 기록된 Log를 보여주는 Fragment */
-public class LogViewFragment extends Fragment {
+class LogViewFragment extends Fragment {
 	/** ListAdapter */
 	ArrayAdapter<ExternalDeviceAppLog> mArrayAdapter;
 	/** Log 정렬하는 {@link Comparator} */

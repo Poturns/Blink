@@ -27,7 +27,7 @@ import com.handstudio.android.hzgrapherlib.vo.circlegraph.CircleGraphVO;
  * 
  * 현재 App의 MeasurementData들이 차지하는 비율을 파이 그래프 형태로 보여준다.
  */
-public class DataViewFragment extends Fragment {
+class DataViewFragment extends Fragment {
 	Device mDevice;
 	App mApp;
 	SqliteManagerExtended mManager;
@@ -46,8 +46,8 @@ public class DataViewFragment extends Fragment {
 	}
 
 	void changeFramgnet(Bundle bundle) {
-		Fragment f = Fragment.instantiate(getActivity(),
-				DataGraphFragment.class.getName(), bundle);
+		Fragment f = new DataGraphFragment();
+		f.setArguments(bundle);
 		getChildFragmentManager()
 				.beginTransaction()
 				.replace(android.R.id.content, f,

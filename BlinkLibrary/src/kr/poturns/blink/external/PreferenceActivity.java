@@ -1,6 +1,5 @@
-package kr.poturns.blink.external.preference;
+package kr.poturns.blink.external;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,7 +7,6 @@ import kr.poturns.blink.R;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
-import android.content.Context;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v13.app.FragmentPagerAdapter;
@@ -74,7 +72,7 @@ public class PreferenceActivity extends Activity {
 	 */
 	private void initViewPager() {
 		PagerAdapter mPagerAdapter = new PreferencePagerAdapter(
-				getFragmentManager(), this, mFragmentIdList);
+				getFragmentManager(), mFragmentIdList);
 		mViewPager = (ViewPager) findViewById(R.id.activity_preference_viewpager);
 		mViewPager
 				.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
@@ -134,20 +132,16 @@ public class PreferenceActivity extends Activity {
 
 	static class PreferencePagerAdapter extends FragmentPagerAdapter {
 		private List<Integer> mFragmentIdList;
-		private WeakReference<Context> mContextRef;
 
 		public PreferencePagerAdapter(FragmentManager supportManager,
-				Context context, List<Integer> fragmentIdList) {
+				List<Integer> fragmentIdList) {
 			super(supportManager);
 			mFragmentIdList = fragmentIdList;
-			mContextRef = new WeakReference<Context>(context);
 		}
 
 		@Override
 		public Fragment getItem(int position) {
-			return Fragment.instantiate(mContextRef.get(),
-					retrieveFragmentFromId(mFragmentIdList.get(position))
-							.getName());
+			return retrieveFragmentFromId(mFragmentIdList.get(position));
 		}
 
 		@Override
@@ -155,15 +149,14 @@ public class PreferenceActivity extends Activity {
 			return mFragmentIdList.size();
 		}
 
-		private static Class<? extends Fragment> retrieveFragmentFromId(
-				Integer fragmentId) {
+		private static Fragment retrieveFragmentFromId(Integer fragmentId) {
 			final int id = fragmentId.intValue();
 			if (id == R.string.title_preference_global)
-				return ExternalPreferenceFragment.class;
+				return new PreferenceExternalFragment();
 			else if (id == R.string.title_preference_app) {
-				return InternalPreferenceFragment.class;
+				return new PreferenceInternalFragment();
 			} else {
-				return InternalPreferenceFragment.class;
+				return new PreferenceInternalFragment();
 			}
 		}
 

@@ -20,7 +20,8 @@ import com.handstudio.android.hzgrapherlib.graphview.BubbleGraphView;
 import com.handstudio.android.hzgrapherlib.vo.bubblegraph.BubbleGraph;
 import com.handstudio.android.hzgrapherlib.vo.bubblegraph.BubbleGraphVO;
 
-public class DataGraphFragment extends Fragment {
+/** 해당 Device의 App의 Measurement Data들을 line graph형태로 보여준다. */
+class DataGraphFragment extends Fragment {
 	private ViewGroup mGraphView;
 	SqliteManagerExtended mManager;
 

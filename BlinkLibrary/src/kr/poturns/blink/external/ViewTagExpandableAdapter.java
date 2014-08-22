@@ -10,7 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 
-public abstract class ViewTagExpandableAdapter<K, V> extends
+abstract class ViewTagExpandableAdapter<K, V> extends
 		BaseExpandableListAdapter {
 	private Map<K, ? extends List<V>> mDataMap;
 	private Object[] mKeyArray = new Object[1];

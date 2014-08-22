@@ -1,11 +1,10 @@
-package kr.poturns.blink.external.preference;
+package kr.poturns.blink.external;
 
 import java.io.File;
 import java.lang.reflect.Field;
 
 import kr.poturns.blink.R;
 import kr.poturns.blink.db.SqliteManagerExtended;
-import kr.poturns.blink.external.IServiceContolActivity;
 import kr.poturns.blink.util.FileUtil;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -21,9 +20,9 @@ import android.preference.PreferenceScreen;
 import android.util.Log;
 import android.widget.Toast;
 
-public class ExternalPreferenceFragment extends PreferenceFragment implements
+class PreferenceExternalFragment extends PreferenceFragment implements
 		OnSharedPreferenceChangeListener {
-	private static final String TAG = ExternalPreferenceFragment.class
+	private static final String TAG = PreferenceExternalFragment.class
 			.getSimpleName();
 	/** '기기를 센터로 설정'의 Key */
 	private static final String KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST = "KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST";
