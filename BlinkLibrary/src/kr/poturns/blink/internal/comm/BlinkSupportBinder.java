@@ -4,7 +4,9 @@ import java.util.List;
 
 import kr.poturns.blink.db.BlinkDatabaseManager;
 import kr.poturns.blink.db.SqliteManager;
+import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.BlinkLog;
+import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
@@ -198,4 +200,129 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 			CONTEXT.sendBroadcast(new Intent(mFunction.Action));
 		
 	}
+
+	@Override
+    public IInternalOperationSupport queryDevice(String where)
+            throws RemoteException {
+	    // TODO Auto-generated method stub
+		mBlinkDatabaseManager.queryDevice(where);
+	    return this;
+    }
+
+	@Override
+    public IInternalOperationSupport queryApp(String where)
+            throws RemoteException {
+	    // TODO Auto-generated method stub
+		mBlinkDatabaseManager.queryApp(where);
+	    return this;
+    }
+
+	@Override
+    public IInternalOperationSupport queryFunction(String where)
+            throws RemoteException {
+	    // TODO Auto-generated method stub
+		mBlinkDatabaseManager.queryFunction(where);
+	    return this;
+    }
+
+	@Override
+    public IInternalOperationSupport queryMeasurement(String where)
+            throws RemoteException {
+	    // TODO Auto-generated method stub
+		mBlinkDatabaseManager.queryMeasurement(where);
+	    return this;
+    }
+
+	@Override
+    public IInternalOperationSupport queryMeasurementData(String where)
+            throws RemoteException {
+	    // TODO Auto-generated method stub
+		mBlinkDatabaseManager.queryMeasurementData(where);
+	    return this;
+    }
+
+	@Override
+    public boolean checkInDeviceByMeasureList(List<Measurement> mMeasurementList)
+            throws RemoteException {
+	    // TODO Auto-generated method stub
+	    return mBlinkDatabaseManager.checkInDevice(mMeasurementList);
+    }
+
+	@Override
+    public boolean checkInDeviceByFunction(Function mFunction)
+            throws RemoteException {
+	    // TODO Auto-generated method stub
+		return mBlinkDatabaseManager.checkInDevice(mFunction);
+    }
+
+	@Override
+    public boolean checkInDeviceByClass(String ClassName)
+            throws RemoteException {
+	    // TODO Auto-generated method stub
+		return mBlinkDatabaseManager.checkInDevice(ClassName);
+    }
+
+	@Override
+    public List<Device> getDeviceList() throws RemoteException {
+	    // TODO Auto-generated method stub
+		return mBlinkDatabaseManager.getDeviceList();
+    }
+
+	@Override
+    public void setDeviceList(List<Device> mDeviceList) throws RemoteException {
+	    // TODO Auto-generated method stub
+		mBlinkDatabaseManager.setDeviceList(mDeviceList);
+    }
+
+	@Override
+    public List<App> getAppList() throws RemoteException {
+	    // TODO Auto-generated method stub
+		return mBlinkDatabaseManager.getAppList();
+    }
+
+	@Override
+    public void setAppList(List<App> mAppList) throws RemoteException {
+	    // TODO Auto-generated method stub
+		mBlinkDatabaseManager.setAppList(mAppList);
+    }
+
+	@Override
+    public List<Function> getFunctionList() throws RemoteException {
+	    // TODO Auto-generated method stub
+		return mBlinkDatabaseManager.getFunctionList();
+    }
+
+	@Override
+    public void setFunctionList(List<Function> mFunctionList)
+            throws RemoteException {
+	    // TODO Auto-generated method stub
+		mBlinkDatabaseManager.setFunctionList(mFunctionList);
+    }
+
+	@Override
+    public List<Measurement> getMeasurementList() throws RemoteException {
+	    // TODO Auto-generated method stub
+		return mBlinkDatabaseManager.getMeasurementList();
+    }
+
+	@Override
+    public void setMeasurementList(List<Measurement> mMeasurementList)
+            throws RemoteException {
+	    // TODO Auto-generated method stub
+		mBlinkDatabaseManager.setMeasurementList(mMeasurementList);
+    }
+
+	@Override
+    public List<MeasurementData> getMeasurementDataList()
+            throws RemoteException {
+	    // TODO Auto-generated method stub
+		return mBlinkDatabaseManager.getMeasurementDataList();
+    }
+
+	@Override
+    public void setMeasurementDataList(
+            List<MeasurementData> mMeasurementDataList) throws RemoteException {
+	    // TODO Auto-generated method stub
+		mBlinkDatabaseManager.setMeasurementDataList(mMeasurementDataList);
+    }
 }

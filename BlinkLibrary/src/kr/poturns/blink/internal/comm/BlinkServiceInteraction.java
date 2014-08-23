@@ -4,7 +4,9 @@ import java.lang.reflect.Type;
 import java.util.List;
 
 import kr.poturns.blink.db.SqliteManager;
+import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.BlinkLog;
+import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
@@ -38,7 +40,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	
 	private IBlinkEventBroadcast mBlinkEventBroadcast;
 	private IInternalOperationSupport mInternalOperationSupport;
-	
+	private IInternalEventCallback mIInternalEventCallback;
 	/**
 	 * Application Info
 	 */
@@ -58,12 +60,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		FILTER.addAction(BROADCAST_DEVICE_DISCONNECTED);
 		
 		mBlinkEventBroadcast = iBlinkEventBroadcast;
-		try {
-			if(iInternalEventCallback!=null)mInternalOperationSupport.registerCallback(iInternalEventCallback);
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
+		mIInternalEventCallback = iInternalEventCallback;
 		/**
 		 * Setting Application Info
 		 */
@@ -71,7 +68,6 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		mPackageName = context.getPackageName();
 		mAppName = context.getApplicationInfo().loadLabel(context.getPackageManager()).toString();
 	}
-	
 	public BlinkServiceInteraction(Context context) {
 		this(context, null,null);
 	}
@@ -84,7 +80,14 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		
 		if(mInternalOperationSupport==null){
 			Log.i(tag, "binder is null");
-		}else Log.i(tag, "binder is not null");
+		}else {
+			try {
+				if(mIInternalEventCallback!=null)mInternalOperationSupport.registerCallback(mIInternalEventCallback);
+	        } catch (RemoteException e) {
+		        // TODO Auto-generated catch block
+		        e.printStackTrace();
+	        }
+		}
 			
 		onServiceConnected(mInternalOperationSupport);
 	}
@@ -217,6 +220,17 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		}
 	}
 	
+	public boolean registerExternalSystemDatabase(SystemDatabaseObject mSystemDatabaseObject){
+		try {
+			mInternalOperationSupport.registerSystemDatabase(mSystemDatabaseObject);
+				return true;
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
 	public SystemDatabaseObject obtainSystemDatabase(){
 		return obtainSystemDatabase(mDeviceName,mPackageName);
 	}
@@ -265,6 +279,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		String ClassName = obj.getName();
 		try{
 			String json = mInternalOperationSupport.obtainMeasurementData(ClassName, DateTimeFrom, DateTimeTo, ContainType);
+			Log.i(tag, "result : "+json);
 			return gson.fromJson(json,type);
 		}catch(Exception e){
 			e.printStackTrace();
@@ -329,4 +344,203 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 			e.printStackTrace();
 		}
 	}
+	
+    public BlinkServiceInteraction queryDevice(String where) {
+	    // TODO Auto-generated method stub
+    	try {
+	        mInternalOperationSupport.queryDevice(where);
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+	    return this;
+    }
+
+    public BlinkServiceInteraction queryApp(String where) {
+	    // TODO Auto-generated method stub
+		try {
+	        mInternalOperationSupport.queryApp(where);
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+	    return this;
+    }
+
+    public BlinkServiceInteraction queryFunction(String where) {
+	    // TODO Auto-generated method stub
+		try {
+	        mInternalOperationSupport.queryFunction(where);
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+	    return this;
+    }
+
+    public BlinkServiceInteraction queryMeasurement(String where)
+             {
+	    // TODO Auto-generated method stub
+		try {
+	        mInternalOperationSupport.queryMeasurement(where);
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+	    return this;
+    }
+
+    public BlinkServiceInteraction queryMeasurementData(String where) {
+	    // TODO Auto-generated method stub
+		try {
+	        mInternalOperationSupport.queryMeasurementData(where);
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+	    return this;
+    }
+
+    public boolean checkInDeviceByMeasureList(List<Measurement> mMeasurementList) {
+	    // TODO Auto-generated method stub
+	    try {
+	        return mInternalOperationSupport.checkInDeviceByMeasureList(mMeasurementList);
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+	    return false;
+    }
+
+    public boolean checkInDeviceByFunction(Function mFunction) {
+	    // TODO Auto-generated method stub
+		try {
+	        return mInternalOperationSupport.checkInDeviceByFunction(mFunction);
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+		return false;
+    }
+
+    public boolean checkInDeviceByClass(Class<?> obj) {
+	    // TODO Auto-generated method stub
+		try {
+			String ClassName = obj.getName();
+	        return mInternalOperationSupport.checkInDeviceByClass(ClassName);
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+		return false;
+    }
+
+    public List<Device> getDeviceList() {
+	    // TODO Auto-generated method stub
+		try {
+	        return mInternalOperationSupport.getDeviceList();
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+		return null;
+    }
+
+    public void setDeviceList(List<Device> mDeviceList) {
+	    // TODO Auto-generated method stub
+		try {
+	        mInternalOperationSupport.setDeviceList(mDeviceList);
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+    }
+
+    public List<App> getAppList()  {
+	    // TODO Auto-generated method stub
+		try {
+	        return mInternalOperationSupport.getAppList();
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+		return null;
+    }
+
+    public void setAppList(List<App> mAppList) {
+	    // TODO Auto-generated method stub
+		try {
+	        mInternalOperationSupport.setAppList(mAppList);
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+    }
+
+    public List<Function> getFunctionList() {
+	    // TODO Auto-generated method stub
+		try {
+	        return mInternalOperationSupport.getFunctionList();
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+		return null;
+    }
+
+    public void setFunctionList(List<Function> mFunctionList)
+             {
+	    // TODO Auto-generated method stub
+		try {
+	        mInternalOperationSupport.setFunctionList(mFunctionList);
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+    }
+
+    public List<Measurement> getMeasurementList()  {
+	    // TODO Auto-generated method stub
+		try {
+	        return mInternalOperationSupport.getMeasurementList();
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+		return null;
+    }
+
+    public void setMeasurementList(List<Measurement> mMeasurementList)
+             {
+	    // TODO Auto-generated method stub
+		try {
+	        mInternalOperationSupport.setMeasurementList(mMeasurementList);
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+    }
+
+    public List<MeasurementData> getMeasurementDataList()
+             {
+	    // TODO Auto-generated method stub
+		try {
+	        return mInternalOperationSupport.getMeasurementDataList();
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+		return null;
+    }
+
+    public void setMeasurementDataList(
+            List<MeasurementData> mMeasurementDataList)  {
+	    // TODO Auto-generated method stub
+		try {
+	        mInternalOperationSupport.setMeasurementDataList(mMeasurementDataList);
+        } catch (RemoteException e) {
+	        // TODO Auto-generated catch block
+	        e.printStackTrace();
+        }
+    }
 }

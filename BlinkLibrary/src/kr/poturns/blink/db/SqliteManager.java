@@ -341,15 +341,18 @@ public class SqliteManager extends SQLiteOpenHelper {
 			break;
 		case CONTAIN_FIELD:
 			args[0] = Measurement.getName();
-			sql = SQL_SELECT_MEASUREMENT + "where Measurement like %/?";
+			sql = SQL_SELECT_MEASUREMENT + "where Measurement like '%/"+args[0]+"'";
+			args = null;
 			break;
 		
 		case CONTAIN_PARENT:
 			args[0] = ClassUtil.obtainParentSchema(Measurement);
-			sql = SQL_SELECT_MEASUREMENT + "where Measurement like %?";
+			sql = SQL_SELECT_MEASUREMENT + "where Measurement like '%"+args[0]+"'";
+			args = null;
 			break;
 		} 
 		
+		Log.i(tag, "sql : "+sql);
 		Cursor mCursor = mSQLiteDatabase.rawQuery(sql, args);
 		ArrayList<Measurement> mMeasurementList = new ArrayList<Measurement>();
 		Measurement mMeasurement;
@@ -586,7 +589,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	 * @throws IllegalAccessException : private타입에 데이터를 대입할때 생기는 오류
 	 * @throws IllegalArgumentException : Field의 set 매소드에 obj와 다른 타입의 Argument를 대입하려고 할 경우 생기는 오류(즉 타입이 다름)
 	 */
-	public void setClassField(Field mField,String mData,Object obj) throws NumberFormatException, IllegalAccessException, IllegalArgumentException{
+	private void setClassField(Field mField,String mData,Object obj) throws NumberFormatException, IllegalAccessException, IllegalArgumentException{
 		//타입명을 먼저 얻는다.
 		String type = mField.getType().getName();
 		//타입에 따라서 캐스팅을 한 후 해당 필드에 대입한다.

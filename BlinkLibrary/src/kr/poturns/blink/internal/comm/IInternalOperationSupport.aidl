@@ -8,6 +8,8 @@ import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.BlinkLog;
 import kr.poturns.blink.db.archive.Function;
+import kr.poturns.blink.db.archive.Device;
+import kr.poturns.blink.db.archive.App;
 
 /**
  *
@@ -87,8 +89,13 @@ interface IInternalOperationSupport {
 	void sendBlinkMessages(inout BlinkDevice target, String jsonMsg);
 	
 	
-	
-	
+	/**
+	 * Sqlite에 데이터를 저장하거나 가져오는 매서드
+	 * 필요할 경우 바인더에서 블루투스쪽으로 데이터를 요청한다.
+	 * 관련 클래스는 BlinkDatabaseManager, SqliteManager이다.
+	 * @author Jiwon
+	 *
+	 */
 	void registerApplicationInfo(String DeviceName,String PackageName,String AppName);
 	SystemDatabaseObject obtainSystemDatabase(String DeviceName,String PackageName);
 	List<SystemDatabaseObject> obtainSystemDatabaseAll();
@@ -100,5 +107,27 @@ interface IInternalOperationSupport {
 	List<BlinkLog> obtainLog(String Device,String App,int Type,String DateTimeFrom,String DateTimeTo);
 	void startFunction(inout Function mFunction);
 	
-	
+	/**
+	 * BlinkDatabaseManager 관련 매서드
+	 * @author Jiwon
+	 *
+	 */	
+	IInternalOperationSupport queryDevice(String where);
+	IInternalOperationSupport queryApp(String where);
+	IInternalOperationSupport queryFunction(String where);
+	IInternalOperationSupport queryMeasurement(String where);
+	IInternalOperationSupport queryMeasurementData(String where);
+	boolean checkInDeviceByMeasureList(inout List<Measurement> mMeasurementList);
+	boolean checkInDeviceByFunction(inout Function mFunction);
+	boolean checkInDeviceByClass(String ClassName);
+	List<Device> getDeviceList();
+	void setDeviceList(inout List<Device> mDeviceList);
+	List<App> getAppList();
+	void setAppList(inout List<App> mAppList);
+	List<Function> getFunctionList();
+	void setFunctionList(inout List<Function> mFunctionList);
+	List<Measurement> getMeasurementList();
+	void setMeasurementList(inout List<Measurement> mMeasurementList);
+	List<MeasurementData> getMeasurementDataList();
+	void setMeasurementDataList(inout List<MeasurementData> mMeasurementDataList);
 }
