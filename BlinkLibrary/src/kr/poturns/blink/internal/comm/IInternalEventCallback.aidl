@@ -1,6 +1,11 @@
 package kr.poturns.blink.internal.comm;
 
 import kr.poturns.blink.internal.comm.BlinkDevice;
+import kr.poturns.blink.db.archive.SystemDatabaseObject;
+import kr.poturns.blink.db.archive.MeasurementData;
+import kr.poturns.blink.db.archive.Measurement;
+import kr.poturns.blink.db.archive.BlinkLog;
+import kr.poturns.blink.db.archive.Function;
 
 /**
  *
@@ -19,4 +24,6 @@ interface IInternalEventCallback {
 	oneway void onDeviceConnectionFailed(inout BlinkDevice device);
 
 	oneway void onReceiveMeasurementData(String schema,String data);
+	
+	//oneway void onReceiveMeasurementDataById(inout List<MeasurementData> mMeasurementDataList);
 }

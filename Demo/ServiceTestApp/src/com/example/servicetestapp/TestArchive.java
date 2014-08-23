@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import kr.poturns.blink.db.JsonManager;
+import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.archive.BlinkLog;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.MeasurementData;
@@ -13,6 +14,7 @@ import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.schema.Body;
 import kr.poturns.blink.schema.Eye;
 import kr.poturns.blink.schema.Heart;
+import kr.poturns.blink.schema.extendsEye;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -191,7 +193,7 @@ public class TestArchive {
 	 */
 	public void exampleObtainMeasurementDatabase(){
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		ArrayList<Eye> mEyeList = mBlinkServiceInteraction.obtainMeasurementData(Eye.class,new TypeToken<ArrayList<Eye>>(){}.getType());
+		ArrayList<Eye> mEyeList = mBlinkServiceInteraction.obtainMeasurementData(extendsEye.class,SqliteManager.CONTAIN_FIELD,new TypeToken<ArrayList<Eye>>(){}.getType());
 		for(int i=0;i<mEyeList.size();i++){
 			Log.i(tag, "Eye - left_sight : "+mEyeList.get(i).left_sight+" right_sight : "+mEyeList.get(i).right_sight+ " DateTime : "+mEyeList.get(i).DateTime);
 		}

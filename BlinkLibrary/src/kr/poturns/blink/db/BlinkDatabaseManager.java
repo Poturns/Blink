@@ -1,9 +1,11 @@
 package kr.poturns.blink.db;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
+import android.os.Build;
 
 import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.BlinkLog;
@@ -20,13 +22,11 @@ import kr.poturns.blink.db.archive.SystemDatabaseObject;
  *
  */
 public class BlinkDatabaseManager extends SqliteManager{
-	private ArrayList<SystemDatabaseObject> mSystemDatabaseObjectList = new ArrayList<SystemDatabaseObject>();
 	private ArrayList<Device> mDeviceList = new ArrayList<Device>();
 	private ArrayList<App> mAppList = new ArrayList<App>();
 	private ArrayList<Function> mFunctionList = new ArrayList<Function>();
 	private ArrayList<Measurement> mMeasurementList = new ArrayList<Measurement>();
 	private ArrayList<MeasurementData> mMeasurementDataList = new ArrayList<MeasurementData>();
-	private ArrayList<BlinkLog> mBlinkLogList = new ArrayList<BlinkLog>();
 	
 	public BlinkDatabaseManager(Context context) {
 		super(context);
@@ -46,6 +46,7 @@ public class BlinkDatabaseManager extends SqliteManager{
 		else NewWhere = where;
 				
 		this.mAppList = this.obtainAppList(NewWhere);
+		mAppList.toString();
 		return this;
 	}
 	public BlinkDatabaseManager queryFunction(String where){
@@ -58,7 +59,7 @@ public class BlinkDatabaseManager extends SqliteManager{
 		else NewWhere = where;
 				
 		this.mFunctionList = this.obtainFunctionList(NewWhere);
-		
+		mFunctionList.toString();
 		return this;
 	}
 	public BlinkDatabaseManager queryMeasurement(String where){
@@ -71,7 +72,7 @@ public class BlinkDatabaseManager extends SqliteManager{
 		else NewWhere = where;
 				
 		this.mMeasurementList = this.obtainMeasurementList(NewWhere);
-		
+		mMeasurementList.toString();
 		return this;
 	}
 	public BlinkDatabaseManager queryMeasurementData(String where){
@@ -84,41 +85,63 @@ public class BlinkDatabaseManager extends SqliteManager{
 		else NewWhere = where;
 				
 		this.mMeasurementDataList = this.obtainMeasurementDataList(NewWhere);
+		mMeasurementDataList.toString();
+		return this;
+	}
+	
+	
+	public boolean checkInDevice(List<Measurement> mMeasurementList){
+		mDeviceList.clear();
+		if(mMeasurementList.size()==0)return true;
 		
-		return this;
-	}
-	public BlinkDatabaseManager queryBlinkLog(){
-		return this;
-	}
-	public BlinkDatabaseManager querySystemDatabaseObject(){
-		return this;
-	}
-	
-	
-	
-	public boolean checkInDevice(MeasurementData mMeasurementData){
-		return false;
+		String where = "AppId in (";
+		//등록된 앱 리스트 확인
+		for(int i=0;i<mMeasurementList.size();i++){
+			where += mMeasurementList.get(i).AppId;
+			if(i<mMeasurementList.size()-1)where += ",";
+		}
+		where += ")";
+		
+		queryApp(where);
+		if(mAppList.size()==0)return true;
+		//등록된 디바이스 리스트 확인
+		queryDevice("DeviceId="+mAppList.get(0).DeviceId);
+		if(mDeviceList.size()==0)return true;
+		//디바이스 이름 비교
+		for(int i=0;i<mDeviceList.size();i++){
+			if(!mDeviceList.get(i).Device.contentEquals(Build.MODEL))return false;
+		}
+		return true;
 	}
 	
 	public boolean checkInDevice(Function mFunction){
+		mDeviceList.clear();
+		//등록된 앱 리스트 확인
+		queryApp("AppId="+mFunction.AppId);
+		if(mAppList.size()==0)return true;
+		//등록된 디바이스 리스트 확인
+		queryDevice("DeviceId="+mAppList.get(0).DeviceId);
+		if(mDeviceList.size()==0)return true;
+		//디바이스 이름 비교
+		if(mDeviceList.get(0).Device.contentEquals(Build.MODEL))return true;
 		return false;
 	}
 	
 	public boolean checkInDevice(String schema){
+		mDeviceList.clear();
+		//등록된 앱 리스트 확인
+		queryApp("AppId like *"+schema+"*");
+		if(mAppList.size()==0)return true;
+		//등록된 디바이스 리스트 확인
+		queryDevice("DeviceId="+mAppList.get(0).DeviceId);
+		if(mDeviceList.size()==0)return true;
+		//디바이스 이름 비교
+		if(mDeviceList.get(0).Device.contentEquals(Build.MODEL))return true;
 		return false;
 	}
 	/**
 	 * getter , setter methods
 	 */
-
-	public ArrayList<SystemDatabaseObject> getSystemDatabaseObjectList() {
-		return mSystemDatabaseObjectList;
-	}
-
-	public void setSystemDatabaseObjectList(
-			ArrayList<SystemDatabaseObject> mSystemDatabaseObjectList) {
-		this.mSystemDatabaseObjectList = mSystemDatabaseObjectList;
-	}
 
 	public ArrayList<Device> getDeviceList() {
 		return mDeviceList;
@@ -158,13 +181,5 @@ public class BlinkDatabaseManager extends SqliteManager{
 
 	public void setMeasurementDataList(ArrayList<MeasurementData> mMeasurementDataList) {
 		this.mMeasurementDataList = mMeasurementDataList;
-	}
-
-	public ArrayList<BlinkLog> getBlinkLogList() {
-		return mBlinkLogList;
-	}
-
-	public void setBlinkLogList(ArrayList<BlinkLog> mBlinkLogList) {
-		this.mBlinkLogList = mBlinkLogList;
 	}
 }

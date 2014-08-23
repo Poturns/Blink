@@ -272,9 +272,9 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		}
 	}
 
-	public List<MeasurementData> obtainMeasurementData(List<Measurement> mDeviceAppMeasurementList,String DateTimeFrom,String DateTimeTo){
+	public List<MeasurementData> obtainMeasurementData(List<Measurement> mMeasurementList,String DateTimeFrom,String DateTimeTo){
 		try{
-			return mInternalOperationSupport.obtainMeasurementDataById(mDeviceAppMeasurementList, DateTimeFrom, DateTimeTo);
+			return mInternalOperationSupport.obtainMeasurementDataById(mMeasurementList, DateTimeFrom, DateTimeTo);
 		}catch(Exception e){
 			e.printStackTrace();
 			return null;

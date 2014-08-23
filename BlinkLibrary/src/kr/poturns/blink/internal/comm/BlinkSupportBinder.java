@@ -89,9 +89,15 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 			throws RemoteException {
 		// TODO Auto-generated method stub
 		// Check need bluetooth communicate
-		
-		
 		mBlinkDatabaseManager.registerLog(mDeviceName, mPackageName, mBlinkDatabaseManager.LOG_OBTAIN_MEASUREMENT, ClassName);
+		
+		//디바이스 내에 있지 않으면
+		if(!mBlinkDatabaseManager.checkInDevice(ClassName)){
+			/**
+			 * 외부로 요청하는 함수 호출
+			 */
+			return null;
+		}
 		try{
 			Class<?> mClass = Class.forName(ClassName);
 			Log.i(tag, "class name : "+mClass.getName());
@@ -101,7 +107,23 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 			return null;
 		}
 	}
-
+	
+	/**
+	 * 클라이언트로 콜백해주는 함수
+	 * @param ClassName
+	 * @param data
+	 */
+	public void callbackMeasurementData(String ClassName,String data){
+		int N = CONTEXT.EVENT_CALLBACK_LIST.beginBroadcast();
+		for(int i=0;i<N;i++){
+			try {
+				CONTEXT.EVENT_CALLBACK_LIST.getBroadcastItem(i).onReceiveMeasurementData(ClassName, data);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 	@Override
 	public List<SystemDatabaseObject> obtainSystemDatabaseAll()
 			throws RemoteException {
@@ -120,6 +142,13 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		// TODO Auto-generated method stub
 		// Check need bluetooth communicate
 		mBlinkDatabaseManager.registerLog(mDeviceName, mPackageName, mBlinkDatabaseManager.LOG_OBTAIN_MEASUREMENT, "By Id");
+		//디바이스 내에 있지 않으면
+		if(!mBlinkDatabaseManager.checkInDevice(mMeasurementList)){
+			/**
+			 * 외부로 요청하는 함수 호출
+			 */
+			return null;
+		}
 		return mBlinkDatabaseManager.obtainMeasurementData(mMeasurementList, DateTimeFrom, DateTimeTo);
 	}
 
@@ -154,6 +183,13 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	public void startFunction(Function mFunction) throws RemoteException {
 		// TODO Auto-generated method stub
 		// Check need bluetooth communicate
+		if(!mBlinkDatabaseManager.checkInDevice(mFunction)){
+			/**
+			 * 외부로 요청하는 함수 호출
+			 */
+			return;
+		}
+		
 		if(mFunction.Type==Function.TYPE_ACTIVITY)
 			CONTEXT.startActivity(new Intent(mFunction.Action).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
 		else if(mFunction.Type==Function.TYPE_SERIVCE)

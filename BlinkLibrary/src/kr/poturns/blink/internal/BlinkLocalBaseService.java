@@ -34,7 +34,7 @@ abstract class BlinkLocalBaseService extends Service {
 	
 	
 	// *** LIFE CYCLE DECLARATION *** //
-	final RemoteCallbackList<IInternalEventCallback> EVENT_CALLBACK_LIST = new RemoteCallbackList<IInternalEventCallback>();
+	public final RemoteCallbackList<IInternalEventCallback> EVENT_CALLBACK_LIST = new RemoteCallbackList<IInternalEventCallback>();
 	final HashMap<String, BlinkSupportBinder> BINDER_MAP = new HashMap<String, BlinkSupportBinder>();
 
 	protected DeviceAnalyzer mDeviceAnalyzer;
