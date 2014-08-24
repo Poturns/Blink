@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import kr.poturns.blink.internal.comm.BlinkDevice;
+import kr.poturns.blink.internal.comm.BlinkMessage;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
@@ -21,6 +22,7 @@ public class ClassicLinkThread extends Thread {
 
 	private final InterDeviceManager INTER_DEV_MANAGER;
 	private final BluetoothAssistant ASSISTANT;
+	private final FunctionOperator FUNC_OPERATOR;
 	private final BlinkDevice DEVICE;
 	
 	private boolean isClient;
@@ -48,6 +50,7 @@ public class ClassicLinkThread extends Thread {
 
 		INTER_DEV_MANAGER = assistant.INTER_DEV_MANAGER;
 		ASSISTANT = assistant;
+		FUNC_OPERATOR = new FunctionOperator(INTER_DEV_MANAGER.MANAGER_CONTEXT);
 		DEVICE = device;
 	}
 	
@@ -82,17 +85,21 @@ public class ClassicLinkThread extends Thread {
 			try {
 				Object obj = mInputStream.readObject();
 				
-				if (obj instanceof String) {
-					String json = (String) obj;
-					ASSISTANT.onMessageReceivedFrom(json, DEVICE);
-
-					Log.d("ClassicLinkThread_run()", "Read : " + json);
+				if (obj instanceof BlinkMessage) {
+					BlinkMessage msg = (BlinkMessage) obj;
+					FUNC_OPERATOR.acceptBlinkMessage(msg, DEVICE);
 					
 				} else if (obj instanceof BlinkDevice) {
 					BlinkDevice opposite = (BlinkDevice) obj;
 					ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).updateBlinkNetwork(opposite);
 					
+				} else if (obj instanceof String) {
+						String json = (String) obj;
+						ASSISTANT.onMessageReceivedFrom(json, DEVICE);
+
+						Log.d("ClassicLinkThread_run()", "Read : " + json);
 				}
+						
 				
 				
 			} catch (IOException e) {

@@ -64,7 +64,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		FILTER.addAction(BROADCAST_DEVICE_DISCONNECTED);
 		FILTER.addAction(BROADCAST_DEVICE_IDENTITY_CHANGED);
 		
-		FILTER.addAction(BROADCAST_SETTING_CHANGED);
+		FILTER.addAction(BROADCAST_CONFIGURATION_CHANGED);
 		
 		mBlinkEventBroadcast = iBlinkEventBroadcast;
 		mIInternalEventCallback = iInternalEventCallback;
@@ -135,8 +135,28 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		CONTEXT.unregisterReceiver(EVENT_BR);
 	}
 	
+	public final void requestConfigurationChange(String[] keys) {
+		if (keys != null) {
+			for (String key : keys) {
+				
+			}
+		}
+		
+		Intent intent = new Intent(BROADCAST_REQUEST_CONFIGURATION_CHANGE);
+		CONTEXT.sendBroadcast(intent, PERMISSION_LISTEN_STATE_MESSAGE);
+	}
+	
 	public final void setOnBlinkEventBroadcast(IBlinkEventBroadcast iBlinkEventBroadcast) {
 		mBlinkEventBroadcast = iBlinkEventBroadcast;
+	}
+	
+	public final BlinkDevice obtainSelfDevice() {
+		try {
+			if (mInternalOperationSupport != null)
+				return mInternalOperationSupport.obtainSelfDevice();
+			
+		} catch (RemoteException e) { }
+		return null;
 	}
 	
 	private class EventBroadcastReceiver extends BroadcastReceiver {

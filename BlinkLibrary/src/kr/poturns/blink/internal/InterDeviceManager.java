@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.util.Log;
 
 /**
@@ -68,7 +69,10 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 	
 	void initiate() {
 		if (!isDestroyed && !isInitiated && (isInitiated = true)) {
-			MANAGER_CONTEXT.registerReceiver(this, BluetoothAssistant.obtainIntentFilter());
+			IntentFilter mIntentFiler = BluetoothAssistant.obtainIntentFilter();
+			mIntentFiler.addAction(IBlinkEventBroadcast.BROADCAST_REQUEST_CONFIGURATION_CHANGE);
+			
+			MANAGER_CONTEXT.registerReceiver(this, mIntentFiler);
 			
 			mServiceKeeper = ServiceKeeper.getInstance(MANAGER_CONTEXT);
 			mAssistant = BluetoothAssistant.getInstance(this);
@@ -213,6 +217,11 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			int prev_state = intent.getIntExtra(BluetoothAdapter.EXTRA_PREVIOUS_CONNECTION_STATE, BluetoothAdapter.ERROR);
 			
 			handleConnectionChanged(device, prev_state, curr_state);
+			
+			
+		} else if (IBlinkEventBroadcast.BROADCAST_REQUEST_CONFIGURATION_CHANGE.equals(action)) {
+			// 서비스 환경설정 값 변경 요청..
+			
 		}
 	}
 

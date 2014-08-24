@@ -35,9 +35,14 @@ public interface IBlinkEventBroadcast {
 	public static final String BROADCAST_DEVICE_IDENTITY_CHANGED = "kr.poturns.blink.internal.event.device_identity_changed";
 	
 	/**
+	 * 서비스에 환경설정 값 변경을 요청하는 Broadcast.
+	 */
+	public static final String BROADCAST_REQUEST_CONFIGURATION_CHANGE = "kr.poturns.blink.internal.request.configuration_change"; 
+	
+	/**
 	 * 
 	 */
-	public static final String BROADCAST_SETTING_CHANGED = "kr.poturns.blink.internal.event.setting_changed";
+	public static final String BROADCAST_CONFIGURATION_CHANGED = "kr.poturns.blink.internal.event.configuration_changed";
 	
 	// *** EXTRAs *** //
 	/**

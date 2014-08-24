@@ -56,6 +56,11 @@ interface IInternalOperationSupport {
 	 */
 	BlinkDevice[] obtainCurrentDiscoveryList();
 	
+	/**
+	 * 본 디바이스의 정보를 가져온다.
+	 */
+	BlinkDevice obtainSelfDevice();
+	
 	void startListeningAsServer();
 	
 	void stopListeningAsServer();
