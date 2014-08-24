@@ -49,10 +49,14 @@ public class SystemDatabaseObject implements Parcelable {
 	
 	//Java reflect을 이용한 Measurement 추가 
 	public void addMeasurement(Class<?> obj){
-		Log.i(tag, "addDeviceAppMeasurement(Object obj)");
+		
 		Field[] mFields = obj.getFields();
+		Log.i(tag, "addDeviceAppMeasurement(Object obj) : "+mFields.length+" classname : "+obj.getName());
 		for(int i=0;i<mFields.length;i++){
-			mMeasurementList.add(new Measurement(ClassUtil.obtainFieldSchema(mFields[i]),mFields[i].getType().getName(),""));
+			Log.i(tag, "Field : "+mFields[i].getName());
+			Measurement mMeasurement = new Measurement(ClassUtil.obtainFieldSchema(mFields[i]),mFields[i].getType().getName(),"");
+			Log.i(tag, mMeasurement.toString());
+			mMeasurementList.add(mMeasurement);
 		}
 	}
 	

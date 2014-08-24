@@ -19,13 +19,13 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 
 	public static final String INTENT_ACTION_NAME = "kr.poturns.blink.internal.BlinkLocalService";
 	public static final int NOTIFICATION_ID = 0x2009920;
+	private final String tag = "BlinkLocalService";
 	
-	final RemoteCallbackList<IInternalEventCallback> EVENT_CALLBACK_LIST = new RemoteCallbackList<IInternalEventCallback>();
+	public final RemoteCallbackList<IInternalEventCallback> EVENT_CALLBACK_LIST = new RemoteCallbackList<IInternalEventCallback>();
 	
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		
 		initiate();
 	}
 	

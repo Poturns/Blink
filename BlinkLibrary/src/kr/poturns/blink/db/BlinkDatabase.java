@@ -64,7 +64,7 @@ public class BlinkDatabase {
 				+ "'GroupId' INTEGER,"
 				+ "'Data' TEXT NOT NULL,"
 				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime')),"
-				+ "FOREIGN KEY('MeasurementId') REFERENCES DeviceAppMeasurement('MeasurementId')"
+				+ "FOREIGN KEY('MeasurementId') REFERENCES Measurement('MeasurementId')"
 				+ ");";
 		db.execSQL(sql);
 

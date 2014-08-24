@@ -19,7 +19,6 @@ public class TestArchive {
 	SystemDatabaseObject mSystemDatabaseObject;
 	
 	public TestArchive(Context context){
-		mSqliteManager = SqliteManager.getSqliteManager(context);
 		mJsonManager = new JsonManager();
 	}
 	public void run(){

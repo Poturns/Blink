@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import kr.poturns.blink.db.BlinkDatabaseManager;
 import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.archive.BlinkLog;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
@@ -33,7 +34,7 @@ public class DBHelper {
 	}
 
 	public synchronized void refresh(Context context) {
-		mManager = SqliteManager.getSqliteManager(context);
+		mManager = new BlinkDatabaseManager(context);
 		mDatabaseObjectList = mManager.obtainSystemDatabase();
 		mDeviceMap = new Hashtable<String, List<SystemDatabaseObject>>();
 		for (SystemDatabaseObject obj : mDatabaseObjectList) {
