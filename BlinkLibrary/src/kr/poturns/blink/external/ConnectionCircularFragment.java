@@ -7,6 +7,7 @@ import kr.poturns.blink.R;
 import kr.poturns.blink.external.CircularViewHelper.OnDragAndDropListener;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -33,8 +34,8 @@ final class ConnectionCircularFragment extends ConnectionFragment {
 				R.layout.fragment_circular_connection, null);
 		mCircularHelper = new CircularViewHelper(viewGroup, android.R.id.text1) {
 			@Override
-			protected View getView(int position, Object object) {
-				TextView view = (TextView) View.inflate(getActivity(),
+			protected View getView(Context context, int position, Object object) {
+				TextView view = (TextView) View.inflate(context,
 						R.layout.view_textview, null);
 				BlinkDevice device = (BlinkDevice) object;
 				view.setCompoundDrawablesWithIntrinsicBounds(

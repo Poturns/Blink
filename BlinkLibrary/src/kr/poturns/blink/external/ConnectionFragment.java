@@ -51,7 +51,7 @@ abstract class ConnectionFragment extends Fragment implements
 	SqliteManagerExtended mManager;
 	BlinkDevice mHostDevice = BlinkDevice.obtainHostDevice();
 	ProgressDialog mProgressDialog;
-	boolean mConnectionTasking = false;
+	boolean mConnectionTasking = false, mBluetoothEnabled = true;
 	BroadcastReceiver mConnectionDetectReceiver = new BluetoothConnectionReceiver();
 
 	// ReentrantLock mDeviceDataLock = new ReentrantLock();
@@ -66,9 +66,11 @@ abstract class ConnectionFragment extends Fragment implements
 						BluetoothAdapter.EXTRA_STATE);
 				switch (state) {
 				case BluetoothAdapter.STATE_ON:
+					mBluetoothEnabled = true;
 					fetchDeviceListFromBluetooth();
 					break;
 				default:
+					mBluetoothEnabled = false;
 					break;
 				}
 			}
@@ -203,6 +205,11 @@ abstract class ConnectionFragment extends Fragment implements
 	 * {@link #onDeviceListLoadFailed()}가 호출된다.
 	 */
 	final void fetchDeviceListFromBluetooth() {
+		if (!mBluetoothEnabled) {
+			Toast.makeText(getActivity(), "Bluetooth was not enabled.",
+					Toast.LENGTH_SHORT).show();
+			return;
+		}
 		// if (checkAndTryLock()) {
 		new DataLoaderTask(getActivity(), true).forceLoad();
 		onPreLoading();

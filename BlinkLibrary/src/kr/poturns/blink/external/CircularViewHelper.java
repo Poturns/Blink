@@ -179,7 +179,7 @@ class CircularViewHelper {
 		View child;
 		int i = 0;
 		for (Object obj : datas) {
-			child = getView(i, obj);
+			child = getView(mContext, i, obj);
 			child.setTag(obj);
 			setChildViewInfo(child, i, size);
 			mViewGroup.addView(child);
@@ -192,6 +192,8 @@ class CircularViewHelper {
 	 * 원형으로 배치할 childView를 생성한다. <br>
 	 * ChildView를 임의의 형태로 inflate하려면 재정의 할 수 있다.
 	 * 
+	 * @param context
+	 *            - Circular View를 구성하는 ViewGroup의 Context
 	 * @param position
 	 *            - {@link CircularViewHelper#drawCircularView(Collection)}에서
 	 *            인자로 넘겨준 {@link Collection}의 {@link Iterator}를 통해 얻어낸, <br>
@@ -199,8 +201,8 @@ class CircularViewHelper {
 	 * @param object
 	 *            - {@link Collection}의 data
 	 */
-	protected View getView(int position, Object object) {
-		return View.inflate(mContext, R.layout.view_textview, null);
+	protected View getView(Context context, int position, Object object) {
+		return View.inflate(context, R.layout.view_textview, null);
 	}
 
 	private void setChildViewInfo(View childView, int postion, int size) {
