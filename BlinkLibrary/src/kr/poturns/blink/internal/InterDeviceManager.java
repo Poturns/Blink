@@ -67,12 +67,19 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 	}
 	
 	void initiate() {
-		if (!isInitiated && (isInitiated = true)) {
+		if (!isDestroyed && !isInitiated && (isInitiated = true)) {
 			MANAGER_CONTEXT.registerReceiver(this, BluetoothAssistant.obtainIntentFilter());
 			
 			mServiceKeeper = ServiceKeeper.getInstance(MANAGER_CONTEXT);
 			mAssistant = BluetoothAssistant.getInstance(this);
 			mAssistant.inititiate();
+		}
+		
+	}
+	
+	void update() {
+		if (!isDestroyed && isInitiated) {
+			
 		}
 	}
 	
@@ -101,6 +108,9 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 		String action = intent.getAction();
 		Log.d("InterDeviceManager_onReceive()", ": "+action+" :" );
 		
+		if (isDestroyed)
+			return;
+		
 		if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
 			// 블루투스 상태 변화 감지
 			
@@ -114,7 +124,7 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			// 블루투스 스캔 모드 변화 감지
 			
 			
-		} else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
+		//} else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
 			// 블루투스 (Classic?) Discovery 시작
 			
 			
@@ -168,7 +178,7 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			// 해당 디바이스와 블루투스 연결 성립
 
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-			BlinkDevice device = BlinkDevice.load(origin);
+			final BlinkDevice device = BlinkDevice.load(origin);
 
 			// Broadcasting...
 			Intent mActionConnected = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);
@@ -177,13 +187,13 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			
 			Log.d("InterDeviceManager", "ACTION_ACL_CONNECTED : " + origin.getAddress());
 			
-			
 		} else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
 			// 해당 디바이스와 블루투스 연결 해제
 
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			BlinkDevice device = BlinkDevice.load(origin);
 
+			mServiceKeeper.removeConnection(device);
 			
 			// Broadcasting...
 			Intent mActionConnected = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCONNECTED);

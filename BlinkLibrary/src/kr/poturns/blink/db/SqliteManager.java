@@ -74,16 +74,6 @@ public class SqliteManager extends SQLiteOpenHelper {
 		gson = new GsonBuilder().setPrettyPrinting().create();
 	}
 
-	public static SqliteManager getSqliteManager(Context context){
-		ensureDatabaseDir();
-		return new SqliteManager(context);
-	}
-	private static void ensureDatabaseDir() {
-		File mPreferenceDir = new File(Environment.getExternalStorageDirectory() + "/Blink");
-		mPreferenceDir.mkdir();
-		mPreferenceDir = new File(Environment.getExternalStorageDirectory() + "/Blink/archive/");
-		mPreferenceDir.mkdir();
-	}
 	/**
 	 * SqliteManager(this, "BlinkDatabase.db", null, 1); 호출시  BlinkDatabase.db가 없으면 호출된다.
 	 * DB가 생성될 때 호출되는 메소드
@@ -307,7 +297,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	}
 	
 	public ArrayList<Function> obtainFunctionList(String where){
-		if(where==null||where.equals(""))where="";
+		if(where==null||where.equals(""))where=""; 
 		else where = "where " + where;
 		ArrayList<Function> mFunctionList = new ArrayList<Function>();
 		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_FUNCTION+where, null);
@@ -351,15 +341,18 @@ public class SqliteManager extends SQLiteOpenHelper {
 			break;
 		case CONTAIN_FIELD:
 			args[0] = Measurement.getName();
-			sql = SQL_SELECT_MEASUREMENT + "where Measurement like %/?";
+			sql = SQL_SELECT_MEASUREMENT + "where Measurement like '%/"+args[0]+"'";
+			args = null;
 			break;
 		
 		case CONTAIN_PARENT:
 			args[0] = ClassUtil.obtainParentSchema(Measurement);
-			sql = SQL_SELECT_MEASUREMENT + "where Measurement like %?";
+			sql = SQL_SELECT_MEASUREMENT + "where Measurement like '%"+args[0]+"'";
+			args = null;
 			break;
 		} 
 		
+		Log.i(tag, "sql : "+sql);
 		Cursor mCursor = mSQLiteDatabase.rawQuery(sql, args);
 		ArrayList<Measurement> mMeasurementList = new ArrayList<Measurement>();
 		Measurement mMeasurement;
@@ -376,7 +369,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	}
 	
 	public ArrayList<Measurement> obtainMeasurementList(String where){
-		if(where==null)where="";
+		if(where==null||where.equals(""))where="";
 		else where = "where " + where;
 		ArrayList<Measurement> mMeasurementList = new ArrayList<Measurement>();
 		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_MEASUREMENT+where, null);
@@ -399,7 +392,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	//-------------------------------MeasurementDatabase----------------------------------
 	
 	public ArrayList<MeasurementData> obtainMeasurementDataList(String where){
-		if(where==null)where="";
+		if(where==null||where.equals(""))where="";
 		else where = "where " + where;
 		ArrayList<MeasurementData> mMeasurementDataList = new ArrayList<MeasurementData>();
 		Cursor mCursor = mSQLiteDatabase.rawQuery(SQL_SELECT_MEASUREMENTDATA+where, null);
@@ -596,7 +589,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	 * @throws IllegalAccessException : private타입에 데이터를 대입할때 생기는 오류
 	 * @throws IllegalArgumentException : Field의 set 매소드에 obj와 다른 타입의 Argument를 대입하려고 할 경우 생기는 오류(즉 타입이 다름)
 	 */
-	public void setClassField(Field mField,String mData,Object obj) throws NumberFormatException, IllegalAccessException, IllegalArgumentException{
+	private void setClassField(Field mField,String mData,Object obj) throws NumberFormatException, IllegalAccessException, IllegalArgumentException{
 		//타입명을 먼저 얻는다.
 		String type = mField.getType().getName();
 		//타입에 따라서 캐스팅을 한 후 해당 필드에 대입한다.
@@ -732,4 +725,5 @@ public class SqliteManager extends SQLiteOpenHelper {
 	public List<BlinkLog> obtainLog(){
 		return obtainLog(null,null,-1,null,null);
 	}
+	
 }

@@ -18,10 +18,12 @@ public class DeviceAnalyzer {
 		UNKNOWN,
 		PERIPHERALS,
 		CORE,
+		SUB,
 		MAIN
 	}
 	
-	private static final int IDENTITY_POINTLINE_USER = 1024 * 1024 * 2;
+	private static final int IDENTITY_POINTLINE_MAIN = 1024 * 1024 * 4;
+	private static final int IDENTITY_POINTLINE_SUB = 1024 * 1024 * 2;
 	private static final int IDENTITY_POINTLINE_CORE = 1024 * 1024 * 1;
 	
 	private static final int IDENTITY_POINTLINE_TELEPHONY = 1024 * 64;
@@ -87,7 +89,7 @@ public class DeviceAnalyzer {
 		for (FeatureInfo feature : mPackageManager.getSystemAvailableFeatures()) 
 			ANALYSIS_ARRAY.add(feature.name);
 		
-		mIdentityPoint = hasUserSelection? IDENTITY_POINTLINE_USER : 0;
+		mIdentityPoint = hasUserSelection? IDENTITY_POINTLINE_MAIN : 0;
 		
 		// - Check Bluetooth LE Support.
 		if (hasBluetoothLE = ANALYSIS_ARRAY.contains(PackageManager.FEATURE_BLUETOOTH_LE))
@@ -171,8 +173,8 @@ public class DeviceAnalyzer {
 	
 	public final void setUserSelection(boolean selection) {
 		mIdentityPoint = (hasUserSelection = selection)? 
-				mIdentityPoint|(IDENTITY_POINTLINE_USER) : 
-					mIdentityPoint^(IDENTITY_POINTLINE_USER);
+				mIdentityPoint|(IDENTITY_POINTLINE_MAIN) : 
+					mIdentityPoint^(IDENTITY_POINTLINE_MAIN);
 	}
 	
 	public Identity getCurrentIdentity() {

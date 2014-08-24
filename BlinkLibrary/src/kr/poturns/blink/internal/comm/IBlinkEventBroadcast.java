@@ -27,9 +27,17 @@ public interface IBlinkEventBroadcast {
 	/**
 	 * 
 	 */
-	public static final String BROADCAST_DEVICE_CONNECT_FAILED = "kr.poturns.blink.internal.event.device_connectfailed";
+	public static final String BROADCAST_DEVICE_CONNECTION_FAILED = "kr.poturns.blink.internal.event.device_connection_failed";
 	
+	/**
+	 * 
+	 */
+	public static final String BROADCAST_DEVICE_IDENTITY_CHANGED = "kr.poturns.blink.internal.event.device_identity_changed";
 	
+	/**
+	 * 
+	 */
+	public static final String BROADCAST_SETTING_CHANGED = "kr.poturns.blink.internal.event.setting_changed";
 	
 	// *** EXTRAs *** //
 	/**

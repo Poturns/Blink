@@ -10,8 +10,8 @@ import android.util.Log;
 
 /**
  * 
- * 스레드를 시작할 때는 start() 대신에 startListening()을 사용한다.
- * 스레드를 종료할 때는 stopListening()을 호출하면 된다.
+ * 스레드를 시작할 때는 start() 대신 startThread()을 사용한다.
+ * 스레드를 종료할 때는 stopThread()을 호출한다.
  * 
  * @author Yeonho.Kim
  * @since 2014. 08. 01
@@ -21,7 +21,7 @@ public class ClassicLinkThread extends Thread {
 
 	private final InterDeviceManager INTER_DEV_MANAGER;
 	private final BluetoothAssistant ASSISTANT;
-	private final BlinkDevice DEVICE_X;
+	private final BlinkDevice DEVICE;
 	
 	private boolean isClient;
 	private BluetoothSocket mBluetoothSocket;
@@ -32,21 +32,23 @@ public class ClassicLinkThread extends Thread {
 	private boolean isRunning;
 	private boolean isStopped;
 	
-	public ClassicLinkThread(BluetoothAssistant assistant, BlinkDevice deviceX, BluetoothSocket socket, boolean client) {
-		this(assistant, deviceX);
+	public ClassicLinkThread(BluetoothAssistant assistant, BlinkDevice device, BluetoothSocket socket, boolean client) {
+		this(assistant, device);
 		
 		isClient =  client;
 		mBluetoothSocket = socket;
 		
 		init();
+		
+		ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).addConnection(device, this);
 	}
 	
-	private ClassicLinkThread(BluetoothAssistant assistant, BlinkDevice deviceX) {
-		super(assistant.CONNECTION_GROUP, deviceX.getName());
+	private ClassicLinkThread(BluetoothAssistant assistant, BlinkDevice device) {
+		super(assistant.CONNECTION_GROUP, device.getName());
 
 		INTER_DEV_MANAGER = assistant.INTER_DEV_MANAGER;
 		ASSISTANT = assistant;
-		DEVICE_X = deviceX;
+		DEVICE = device;
 	}
 	
 	private void init() {
@@ -68,16 +70,30 @@ public class ClassicLinkThread extends Thread {
 		isRunning = false;
 	}
 	
-	
 	@Override
 	public void run() {
-		Log.d("ClassicLinkThread_run()", "START");
+		Log.d("ClassicLinkThread_run()", "START : " + DEVICE.toString());
+		
+		// 본 디바이스 정보를 전송한다.
+		sendMessageToDevice(ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).getSelfDevice());
+		
+		// Read Operation
 		while (isRunning) {
 			try {
-				String json = (String) mInputStream.readObject();
+				Object obj = mInputStream.readObject();
+				
+				if (obj instanceof String) {
+					String json = (String) obj;
+					ASSISTANT.onMessageReceivedFrom(json, DEVICE);
 
-				Log.d("ClassicLinkThread_run()", "Read : " + json);
-				ASSISTANT.onMessageReceivedFrom(json, DEVICE_X);
+					Log.d("ClassicLinkThread_run()", "Read : " + json);
+					
+				} else if (obj instanceof BlinkDevice) {
+					BlinkDevice opposite = (BlinkDevice) obj;
+					ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).updateBlinkNetwork(opposite);
+					
+				}
+				
 				
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -94,32 +110,33 @@ public class ClassicLinkThread extends Thread {
 	
 	@Override
 	@Deprecated
-	public synchronized void start() {
-		
-	}
+	public synchronized void start() {}
 	
-	public synchronized void startListening() {
+	synchronized void startThread() {
 		Log.d("ClassicLinkThread_startListening()", "");
 		
-		if (!isRunning && (isRunning = true)) 
+		if (!isRunning && (isRunning = true)) {
 			super.start();
+		
+		}
 		
 		if (isStopped && (isStopped = false))
 			this.notify();
+		
 	}
 	
-	public synchronized void stopListening() {
+	synchronized void stopThread() {
 		if (isRunning && !isStopped && (isStopped = true)) {
 			try {
 				this.wait();
 				
 			} catch (InterruptedException e) {
-				destroy();
+				destroyThread();
 			}
 		}
 	}
 	
-	public void destroy() {
+	void destroyThread() {
 		Log.d("ClassicLinkThread_destroy()", "DESTROY");
 		isRunning = false;
 		interrupt();
@@ -152,11 +169,14 @@ public class ClassicLinkThread extends Thread {
 		}
 	}
 
-	public void sendMessageToDevice(Object obj) {
+	void sendMessageToDevice(Object obj) {
+		// TODO : TEST
+		obj = ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).getSelfDevice();
+		Log.d("InterDeviceManager_sendBlinkMessage()", DEVICE.getName() + " : " + obj.toString());
 		
 		if ((mOutputStream != null) && (obj != null)) {
 			try {
-				Log.d("InterDeviceManager_sendBlinkMessage()", DEVICE_X.getName() + " : " + (String)obj);
+				Log.d("InterDeviceManager_sendBlinkMessage()", DEVICE.getName() + " : " + obj.toString());
 				mOutputStream.writeObject(obj);
 				mOutputStream.flush();
 				

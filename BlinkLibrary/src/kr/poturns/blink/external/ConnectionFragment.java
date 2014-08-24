@@ -96,7 +96,7 @@ abstract class ConnectionFragment extends Fragment implements
 			mBlinkOperation = mActivityInterface.getInternalOperationSupport();
 			mInteraction.setOnBlinkEventBroadcast(this);
 		} else {
-			mInteraction = new BlinkServiceInteraction(activity, this) {
+			mInteraction = new BlinkServiceInteraction(activity, this, null) {
 				@Override
 				public void onServiceConnected(
 						IInternalOperationSupport iSupport) {

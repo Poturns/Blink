@@ -26,9 +26,14 @@ abstract class BlinkLocalBaseService extends Service {
 	public static final String PRIVATE_PROCESS_NAME = "kr.poturns.blink.internal.BlinkService";
 	
 	/**
-	 * Service의 수행을 요청하는 패키지 정보 Intent Extra Key.
+	 * Service의 수행을 요청하는 패키지 정보 Intent String Extra. 
 	 */
 	public static final String INTENT_EXTRA_SOURCE_PACKAGE = "Intent.Extra.Source.Package";
+	
+	/**
+	 * 본 디바이스의 Identity 변경을 알리는 Intent Int Extra. 
+	 */
+	public static final String INTENT_EXTRA_IDENTITY_CHANGE = "Intent.Extra.Identity.Change";
 	
 	
 	// *** LIFE CYCLE DECLARATION *** //
@@ -54,17 +59,13 @@ abstract class BlinkLocalBaseService extends Service {
 		DeviceAnalyzer.Identity mIdentity = mDeviceAnalyzer.getCurrentIdentity();
 		if (DeviceAnalyzer.Identity.UNKNOWN.equals(mIdentity)) {
 			// Identity를 확인하고, 서비스가 정상적으로 동작할 수 없는 환경이면 종료한다.
-			Toast.makeText(this, R.string.internal_baseservice_unable_alert, Toast.LENGTH_LONG).show();
+			//Toast.makeText(this, R.string.internal_baseservice_unable_alert, Toast.LENGTH_LONG).show();
 			stopSelf();
 			return;
 		}
 		
 		// Device간 통신 모듈을 연결한다. 
-		mInterDeviceManager = InterDeviceManager.getInstance(this);
-		if (mInterDeviceManager == null) {
-			
-		}
-
+		InterDeviceManager.getInstance(this);
 	}
 
 	@Override
@@ -73,7 +74,16 @@ abstract class BlinkLocalBaseService extends Service {
 		
 //		return (DeviceAnalyzer.Identity.UNKNOWN.equals(identity))? 
 //				START_NOT_STICKY : START_STICKY;
-		return START_STICKY; 
+		
+		if (intent != null) {
+			int mChangedIdentity = intent.getIntExtra(INTENT_EXTRA_IDENTITY_CHANGE, -1);
+			if (mChangedIdentity != -1) {
+				
+				intent.removeExtra(INTENT_EXTRA_IDENTITY_CHANGE);
+			}
+		}
+	
+		return START_REDELIVER_INTENT; 
 	}
 	
 	@Override
@@ -107,11 +117,7 @@ abstract class BlinkLocalBaseService extends Service {
 	@Override
 	public void onDestroy() {
 		Log.e("BlinkLocalBaseService", "onDestroy()");
-		// TODO Auto-generated method stub
-		if (mInterDeviceManager != null)
-			mInterDeviceManager.destroy();
-		
-		super.onDestroy();
+		InterDeviceManager.getInstance(this).destroy();
 	}
 	
 }

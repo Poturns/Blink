@@ -18,31 +18,26 @@ import android.os.RemoteCallbackList;
 public final class BlinkLocalService extends BlinkLocalBaseService {
 
 	public static final String INTENT_ACTION_NAME = "kr.poturns.blink.internal.BlinkLocalService";
+	public static final int NOTIFICATION_ID = 0x2009920;
+	private final String tag = "BlinkLocalService";
 	
-	final RemoteCallbackList<IInternalEventCallback> EVENT_CALLBACK_LIST = new RemoteCallbackList<IInternalEventCallback>();
+	public final RemoteCallbackList<IInternalEventCallback> EVENT_CALLBACK_LIST = new RemoteCallbackList<IInternalEventCallback>();
 	
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		
-		PendingIntent mPendingIntent = PendingIntent.getActivity(this, 0, 
-				new Intent(this, ServiceControlActivity.class), Intent.FLAG_ACTIVITY_NEW_TASK);
-		
-		Notification mBlinkNotification = new Notification.Builder(this)
-										.setSmallIcon(R.drawable.ic_launcher)
-										.setContentTitle("Blink Service")
-										.setContentText("Running Blink-Service")
-										.setContentIntent(mPendingIntent)
-										.build();
-		
-		startForeground(1, mBlinkNotification);
+		initiate();
 	}
 	
 	@Override
 	public IBinder onBind(Intent intent) {
+		String packageName = intent.getStringExtra(INTENT_EXTRA_SOURCE_PACKAGE);
+		if (packageName == null)
+			return null;
+		
 		try {
 			BlinkSupportBinder binder = new BlinkSupportBinder(this);
-			BINDER_MAP.put(intent.getStringExtra(INTENT_EXTRA_SOURCE_PACKAGE), binder);
+			BINDER_MAP.put(packageName, binder);
 			
 			return binder.asBinder();
 			
@@ -54,9 +49,24 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 	@Override
 	public boolean onUnbind(Intent intent) {
 		String packageName = intent.getStringExtra(INTENT_EXTRA_SOURCE_PACKAGE);
+		if (packageName == null)
+			return false;
 		
-		BINDER_MAP.remove(packageName);
+		return (BINDER_MAP.remove(packageName) != null);
+	}
+	
+	private void initiate() {
+
+		PendingIntent mPendingIntent = PendingIntent.getActivity(this, NOTIFICATION_ID, 
+				new Intent(this, ServiceControlActivity.class), Intent.FLAG_ACTIVITY_NEW_TASK);
 		
-		return super.onUnbind(intent);
+		Notification mBlinkNotification = new Notification.Builder(this)
+										.setSmallIcon(R.drawable.ic_launcher)
+										.setContentTitle("Blink Service")
+										.setContentText("Running Blink-Service")
+										.setContentIntent(mPendingIntent)
+										.build();
+		
+		startForeground(NOTIFICATION_ID, mBlinkNotification);
 	}
 }

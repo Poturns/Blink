@@ -42,6 +42,18 @@ public class BlinkDevice implements Parcelable, Serializable {
 	 */
 	private static final HashMap<String, BlinkDevice> CACHE_MAP = new HashMap<String, BlinkDevice>();
 	
+	public static BlinkDevice load(BlinkDevice device) {
+		BlinkDevice mDevice = BlinkDevice.load(device.Address);
+		mDevice.BlinkSupported = true;
+		mDevice.Connected = true;
+		
+		mDevice.Name = (device.Name == null)? mDevice.Name : device.Name;
+		mDevice.Identity = device.getIdentity().ordinal();
+		mDevice.IdentityPoint = device.getIdentityPoint();
+		mDevice.Timestamp = System.currentTimeMillis();
+		
+		return mDevice;
+	}
 	
 	/**
 	 * BlinkDevice Cache, System Repository 순으로 해당 디바이스의 주소를 탐색하여 반환한다.
@@ -49,16 +61,16 @@ public class BlinkDevice implements Parcelable, Serializable {
 	 * 
 	 * <p>BlinkDevice.{@link #load(String)}에 Address를 매개변수로 넣는다.
 	 *  
-	 * @param device
+	 * @param origin
 	 * @return
 	 * @see #load(String)
 	 * @see #update(BluetoothDevice)
 	 */
-	public static BlinkDevice load(BluetoothDevice device) {
-		BlinkDevice mDevice = BlinkDevice.load(device.getAddress());
+	public static BlinkDevice load(BluetoothDevice origin) {
+		BlinkDevice mDevice = BlinkDevice.load(origin.getAddress());
 		
 		if (mDevice != null)
-			return mDevice.update(device);
+			return mDevice.update(origin);
 		return null;
 	}
 	
@@ -97,8 +109,10 @@ public class BlinkDevice implements Parcelable, Serializable {
 			}
 
 			// System Repository에  존재하지 않을 경우, Cache에 새로 생성한다.
-			if (device == null)
+			if (device == null) {
 				device = new BlinkDevice(address);
+				device.writeToRepository();
+			}
 			
 			CACHE_MAP.put(address, device);
 			return device;
