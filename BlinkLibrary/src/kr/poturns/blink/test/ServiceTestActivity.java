@@ -3,6 +3,7 @@ package kr.poturns.blink.test;
 import java.util.ArrayList;
 
 import kr.poturns.blink.R;
+import kr.poturns.blink.db.archive.CallbackData;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
@@ -271,7 +272,7 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 		}
 
 		@Override
-        public void onReceiveMeasurementData(int responseCode, String data)
+        public void onReceiveData(int responseCode, CallbackData data)
                 throws RemoteException {
 	        // TODO Auto-generated method stub
 	        

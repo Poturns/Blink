@@ -6,6 +6,7 @@ import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.BlinkLog;
 import kr.poturns.blink.db.archive.Function;
+import kr.poturns.blink.db.archive.CallbackData;
 
 /**
  *
@@ -23,5 +24,5 @@ interface IInternalEventCallback {
 
 	oneway void onDeviceConnectionFailed(inout BlinkDevice device);
 
-	oneway void onReceiveMeasurementData(int responseCode,String data);
+	oneway void onReceiveData(int responseCode,inout CallbackData data);
 }

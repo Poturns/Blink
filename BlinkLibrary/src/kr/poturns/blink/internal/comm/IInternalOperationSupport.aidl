@@ -102,16 +102,17 @@ interface IInternalOperationSupport {
 	 * @author Jiwon
 	 *
 	 */
+	void setRequestPolicy(int RequestType);
 	void registerApplicationInfo(String DeviceName,String PackageName,String AppName);
 	SystemDatabaseObject obtainSystemDatabase(String DeviceName,String PackageName);
 	List<SystemDatabaseObject> obtainSystemDatabaseAll();
 	void registerSystemDatabase(inout SystemDatabaseObject mSystemDatabaseObject);
 	void registerMeasurementData(inout SystemDatabaseObject mSystemDatabaseObject,String ClassName,String JsonObj);
-	String obtainMeasurementData(String ClassName,String DateTimeFrom,String DateTimeTo,int ContainType,int RequestType,int RequestCode);
-	List<MeasurementData> obtainMeasurementDataById(inout List<Measurement> mMeasurementList,String DateTimeFrom,String DateTimeTo,int RequestType,int RequestCode);
+	String obtainMeasurementData(String ClassName,String DateTimeFrom,String DateTimeTo,int ContainType,int RequestCode);
+	List<MeasurementData> obtainMeasurementDataById(inout List<Measurement> mMeasurementList,String DateTimeFrom,String DateTimeTo,int RequestCode);
 	void registerLog(String Device,String App,int Type,String Content);
 	List<BlinkLog> obtainLog(String Device,String App,int Type,String DateTimeFrom,String DateTimeTo);
-	void startFunction(inout Function mFunction,int RequestType,int RequestCode);
+	void startFunction(inout Function mFunction,int RequestCode);
 	
 	/**
 	 * BlinkDatabaseManager 관련 매서드
@@ -122,7 +123,7 @@ interface IInternalOperationSupport {
 	IInternalOperationSupport queryApp(String where);
 	IInternalOperationSupport queryFunction(String where);
 	IInternalOperationSupport queryMeasurement(String where);
-	IInternalOperationSupport queryMeasurementData(String where,int RequestType,int RequestCode);
+	IInternalOperationSupport queryMeasurementData(String where,int RequestCode);
 	boolean checkInDeviceByMeasureList(inout List<Measurement> mMeasurementList);
 	boolean checkInDeviceByFunction(inout Function mFunction);
 	boolean checkInDeviceByClass(String ClassName);
