@@ -144,6 +144,13 @@ public class ServiceKeeper {
 		// TODO :
 		Log.e("ServiceKeeper_updateNetworkMap", device.toString());
 		
+
+		Identity mSelfDeviceIdentity = mSelfDevice.getIdentity();
+		if (!mSelfDeviceIdentity.equals(Identity.MAIN)) {
+			
+		}
+		
+		
 		Identity identity = BLINK_NETWORK_MAP.get(BlinkDevice.load(device.getAddress()));
 		if (identity == null) {
 			Identity mOtherDeviceIdentity = device.getIdentity();
@@ -178,7 +185,6 @@ public class ServiceKeeper {
 		int mOtherDevicePoint = otherDevice.getIdentityPoint();
 		Identity mSelfDeviceIdentity = mSelfDevice.getIdentity();
 		Identity mOtherDeviceIdentity = otherDevice.getIdentity();
-
 		if (mSelfDeviceIdentity.ordinal() == mOtherDeviceIdentity.ordinal()) {
 			
 			if (mSelfDeviceIdentity.equals(Identity.CORE)) {
