@@ -23,7 +23,5 @@ interface IInternalEventCallback {
 
 	oneway void onDeviceConnectionFailed(inout BlinkDevice device);
 
-	oneway void onReceiveMeasurementData(String schema,String data);
-	
-	//oneway void onReceiveMeasurementDataById(inout List<MeasurementData> mMeasurementDataList);
+	oneway void onReceiveMeasurementData(int responseCode,String data);
 }

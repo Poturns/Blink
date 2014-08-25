@@ -3,6 +3,7 @@ package com.example.servicetestapp;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
+import kr.poturns.blink.internal.comm.BlinkSupportBinder;
 import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
@@ -37,6 +38,12 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
 	            // TODO Auto-generated method stub
 	            
             }
+
+			@Override
+            public void onServiceFailed() {
+	            // TODO Auto-generated method stub
+	            
+            }
 			
 		};
 		
@@ -57,7 +64,7 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
 	public void onClick(View v){
 		switch (v.getId()) {
 		case R.id.btn_test:
-			mBlinkServiceInteraction.startFuntion(new Function("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY));
+			mBlinkServiceInteraction.startFuntion(new Function("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY),BlinkSupportBinder.REQUEST_TYPE_IN_DEVICE,0);
 			break;
 
 		default:
@@ -123,14 +130,12 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
         }
 
 		@Override
-        public void onReceiveMeasurementData(String arg0, String arg1)
+        public void onReceiveMeasurementData(int arg0, String arg1)
                 throws RemoteException {
 	        // TODO Auto-generated method stub
-	        if(arg0.equals(ClassUtil.obtainClassSchema(Eye.class))){
-	        	Log.i(tag, arg1);
-	        }
+	        
         }
-		
+
 	};
 
 }

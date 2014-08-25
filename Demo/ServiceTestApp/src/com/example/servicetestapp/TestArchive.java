@@ -14,6 +14,9 @@ import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
+import kr.poturns.blink.internal.comm.BlinkSupportBinder;
+import kr.poturns.blink.internal.comm.IInternalEventCallback;
+import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import kr.poturns.blink.schema.Body;
 import kr.poturns.blink.schema.Eye;
 import kr.poturns.blink.schema.Heart;
@@ -91,7 +94,7 @@ public class TestArchive {
 		List<Function> mFunctionList = mBlinkServiceInteraction.getFunctionList();
 		mBlinkServiceInteraction.queryMeasurement("");
 		List<Measurement> mMeasurementList = mBlinkServiceInteraction.getMeasurementList();
-		mBlinkServiceInteraction.queryMeasurementData("");
+		mBlinkServiceInteraction.queryMeasurementData("",BlinkSupportBinder.REQUEST_TYPE_IN_DEVICE,0);
 		List<MeasurementData> mMeasurementDataList = mBlinkServiceInteraction.getMeasurementDataList();
 		
 		Log.i(tag,"Device List :");
@@ -129,7 +132,7 @@ public class TestArchive {
 			Log.i(tag, "mFunctionList size : "+mFunctionList.size());
 			for(int i=0;i<mFunctionList.size();i++){
 				Log.i(tag, mFunctionList.get(i).toString());
-				mBlinkServiceInteraction.startFuntion(mFunctionList.get(i));
+				mBlinkServiceInteraction.startFuntion(mFunctionList.get(i),BlinkSupportBinder.REQUEST_TYPE_IN_DEVICE,0);
 			}
 		}
 	}
@@ -215,7 +218,7 @@ public class TestArchive {
 		Log.i(tag, "exampleObtainMeasurementDataById");
 		List<SystemDatabaseObject> mSystemDatabaseObjectList = mBlinkServiceInteraction.obtainSystemDatabaseAll();
 		for(int i=0;i<mSystemDatabaseObjectList.size();i++){
-			List<MeasurementData> mMeasurementDataList = mBlinkServiceInteraction.obtainMeasurementData(mSystemDatabaseObjectList.get(i).mMeasurementList, null, null);
+			List<MeasurementData> mMeasurementDataList = mBlinkServiceInteraction.obtainMeasurementData(mSystemDatabaseObjectList.get(i).mMeasurementList, null, null,BlinkSupportBinder.REQUEST_TYPE_IN_DEVICE,0);
 			for(int j=0;j<mMeasurementDataList.size();j++){
 				Log.i(tag, "MeasurementData "+j+" \n"+mMeasurementDataList.get(j).toString());
 			}
@@ -277,15 +280,15 @@ public class TestArchive {
 	 */
 	public void exampleObtainMeasurementDatabase(){
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		ArrayList<extendsEye> mEyeList = mBlinkServiceInteraction.obtainMeasurementData(extendsEye.class,SqliteManager.CONTAIN_FIELD,new TypeToken<ArrayList<extendsEye>>(){}.getType());
+		ArrayList<extendsEye> mEyeList = mBlinkServiceInteraction.obtainMeasurementData(extendsEye.class,SqliteManager.CONTAIN_FIELD,new TypeToken<ArrayList<extendsEye>>(){}.getType(),BlinkSupportBinder.REQUEST_TYPE_IN_DEVICE,0);
 		for(int i=0;i<mEyeList.size();i++){
 			Log.i(tag, "Eye - left_sight : "+mEyeList.get(i).left_sight+" right_sight : "+mEyeList.get(i).right_sight+ " DateTime : "+mEyeList.get(i).DateTime);
 		}
-		ArrayList<Body> mBodyList = mBlinkServiceInteraction.obtainMeasurementData(Body.class,new TypeToken<ArrayList<Body>>(){}.getType());
+		ArrayList<Body> mBodyList = mBlinkServiceInteraction.obtainMeasurementData(Body.class,new TypeToken<ArrayList<Body>>(){}.getType(),BlinkSupportBinder.REQUEST_TYPE_IN_DEVICE,0);
 		for(int i=0;i<mBodyList.size();i++){
 			Log.i(tag, "Body - height : "+mBodyList.get(i).height+" weight : "+mBodyList.get(i).weight+ " DateTime : "+mBodyList.get(i).DateTime);
 		}
-		ArrayList<Heart> mHeartList = mBlinkServiceInteraction.obtainMeasurementData(Heart.class,new TypeToken<ArrayList<Heart>>(){}.getType());
+		ArrayList<Heart> mHeartList = mBlinkServiceInteraction.obtainMeasurementData(Heart.class,new TypeToken<ArrayList<Heart>>(){}.getType(),BlinkSupportBinder.REQUEST_TYPE_IN_DEVICE,0);
 		for(int i=0;i<mHeartList.size();i++){
 			Log.i(tag, "Heart - beatrate : "+mHeartList.get(i).beatrate+" DateTime : "+mHeartList.get(i).DateTime);
 		}

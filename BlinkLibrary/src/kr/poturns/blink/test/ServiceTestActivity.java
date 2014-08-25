@@ -271,11 +271,11 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 		}
 
 		@Override
-		public void onReceiveMeasurementData(String schema, String data)
-				throws RemoteException {
-			// TODO Auto-generated method stub
-
-		}
+        public void onReceiveMeasurementData(int responseCode, String data)
+                throws RemoteException {
+	        // TODO Auto-generated method stub
+	        
+        }
 
 	};
 

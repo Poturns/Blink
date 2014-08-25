@@ -1,5 +1,7 @@
 package kr.poturns.blink.internal;
 
+import java.util.HashMap;
+
 import kr.poturns.blink.R;
 import kr.poturns.blink.external.ServiceControlActivity;
 import kr.poturns.blink.internal.comm.BlinkSupportBinder;
@@ -21,8 +23,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 	public static final int NOTIFICATION_ID = 0x2009920;
 	private final String tag = "BlinkLocalService";
 	
-	public final RemoteCallbackList<IInternalEventCallback> EVENT_CALLBACK_LIST = new RemoteCallbackList<IInternalEventCallback>();
-	
+	public final HashMap<String, RemoteCallbackList<IInternalEventCallback>> CALLBACK_MAP = new HashMap<String, RemoteCallbackList<IInternalEventCallback>>();
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -38,7 +39,6 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 		try {
 			BlinkSupportBinder binder = new BlinkSupportBinder(this);
 			BINDER_MAP.put(packageName, binder);
-			
 			return binder.asBinder();
 			
 		} catch (Exception e) {
@@ -52,6 +52,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 		if (packageName == null)
 			return false;
 		
+		CALLBACK_MAP.remove(packageName);
 		return (BINDER_MAP.remove(packageName) != null);
 	}
 	

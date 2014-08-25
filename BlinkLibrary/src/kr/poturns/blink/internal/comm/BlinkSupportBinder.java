@@ -35,8 +35,12 @@ import com.google.gson.GsonBuilder;
 >>>>>>> refs/remotes/origin/database
  */
 public class BlinkSupportBinder extends ConnectionSupportBinder {
-
 	private final String tag = "BlinkDatabaseBinder";
+	
+	public static final int REQUEST_TYPE_IN_DEVICE = 1;
+	public static final int REQUEST_TYPE_OUT_DEVICE = 2;
+	public static final int REQUEST_TYPE_DUAL_DEVICE = 3;
+	
 	String mDeviceName, mPackageName, mAppName;
 	Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	BlinkDatabaseManager mBlinkDatabaseManager;
@@ -46,6 +50,26 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		mBlinkDatabaseManager = new BlinkDatabaseManager(context);
 	}
 
+	@Override
+	public final boolean registerCallback(IInternalEventCallback callback) throws RemoteException {
+		if (callback != null){
+			if(CONTEXT.CALLBACK_MAP.get(mPackageName)!=null){
+				return CONTEXT.CALLBACK_MAP.get(mPackageName).register(callback);
+			}
+		}
+		return false;
+	}
+	
+	@Override
+	public final boolean unregisterCallback(IInternalEventCallback callback) throws RemoteException {
+		if (callback != null){
+			if(CONTEXT.CALLBACK_MAP.get(mPackageName)!=null){
+				return CONTEXT.CALLBACK_MAP.get(mPackageName).register(callback);
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * DeviceName과 PackageName을 기준으로 SystemDatabaseObject를 얻어오는 매서드
 	 */
@@ -93,7 +117,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	 */
 	@Override
 	public String obtainMeasurementData(String ClassName,
-			String DateTimeFrom, String DateTimeTo, int ContainType)
+			String DateTimeFrom, String DateTimeTo, int ContainType,int RequestType,int RequestCode)
 			throws RemoteException {
 		// TODO Auto-generated method stub
 		// Check need bluetooth communicate
@@ -104,6 +128,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 			/**
 			 * 외부로 요청하는 함수 호출
 			 */
+			
 			return null;
 		}
 		try{
@@ -121,11 +146,13 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	 * @param ClassName
 	 * @param data
 	 */
-	public void callbackMeasurementData(String ClassName,String data){
-		int N = CONTEXT.EVENT_CALLBACK_LIST.beginBroadcast();
+	public void callbackMeasurementData(int responseCode,String data){
+		if(CONTEXT.CALLBACK_MAP.get(mPackageName)==null)return;
+		
+		int N = CONTEXT.CALLBACK_MAP.get(mPackageName).beginBroadcast();
 		for(int i=0;i<N;i++){
 			try {
-				CONTEXT.EVENT_CALLBACK_LIST.getBroadcastItem(i).onReceiveMeasurementData(ClassName, data);
+				CONTEXT.CALLBACK_MAP.get(mPackageName).getBroadcastItem(i).onReceiveMeasurementData(responseCode, data);
 			} catch (RemoteException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -146,7 +173,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	@Override
 	public List<MeasurementData> obtainMeasurementDataById(
 			List<Measurement> mMeasurementList,
-			String DateTimeFrom, String DateTimeTo) throws RemoteException {
+			String DateTimeFrom, String DateTimeTo,int RequestType,int RequestCode) throws RemoteException {
 		// TODO Auto-generated method stub
 		// Check need bluetooth communicate
 		mBlinkDatabaseManager.registerLog(mDeviceName, mPackageName, mBlinkDatabaseManager.LOG_OBTAIN_MEASUREMENT, "By Id");
@@ -188,13 +215,14 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	 * 블루투스 통신이 필요할 수 있는 매서드
 	 */
 	@Override
-	public void startFunction(Function mFunction) throws RemoteException {
+	public void startFunction(Function mFunction,int RequestType,int RequestCode) throws RemoteException {
 		// TODO Auto-generated method stub
 		// Check need bluetooth communicate
 		if(!mBlinkDatabaseManager.checkInDevice(mFunction)){
 			/**
 			 * 외부로 요청하는 함수 호출
 			 */
+			
 			return;
 		}
 		
@@ -240,9 +268,15 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
     }
 
 	@Override
-    public IInternalOperationSupport queryMeasurementData(String where)
+    public IInternalOperationSupport queryMeasurementData(String where,int RequestType,int RequestCode)
             throws RemoteException {
 	    // TODO Auto-generated method stub
+		if(!mBlinkDatabaseManager.checkInDevice(mBlinkDatabaseManager.getMeasurementList())){
+			/**
+			 * 외부로 요청하는 함수 호출
+			 */
+			return this;
+		}
 		mBlinkDatabaseManager.queryMeasurementData(where);
 	    return this;
     }

@@ -7,6 +7,7 @@ import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 
 /**
@@ -28,20 +29,6 @@ public abstract class ConnectionSupportBinder extends IInternalOperationSupport.
 			throw new Exception();
 		
 		mAssistant = BluetoothAssistant.getInstance(InterDeviceManager.getInstance(context));
-	}
-
-	@Override
-	public final boolean registerCallback(IInternalEventCallback callback) throws RemoteException {
-		if (callback != null)
-			return CONTEXT.EVENT_CALLBACK_LIST.register(callback);
-		return false;
-	}
-	
-	@Override
-	public final boolean unregisterCallback(IInternalEventCallback callback) throws RemoteException {
-		if (callback != null) 
-			return CONTEXT.EVENT_CALLBACK_LIST.unregister(callback);
-		return false;
 	}
 
 	@Override

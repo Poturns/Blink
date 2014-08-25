@@ -309,18 +309,25 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		}
 	}
 	
-	public <Object> Object obtainMeasurementData(Class<?> obj,Type type){
-		return obtainMeasurementData(obj,null,null,SqliteManager.CONTAIN_DEFAULT,type);
+	/**
+	 * Blink 기본 schema에 있는 클래스만 사용 가능
+	 * @param obj
+	 * @param type
+	 * @param RequestType
+	 * @param RequestCode
+	 * @return
+	 */
+	public <Object> Object obtainMeasurementData(Class<?> obj,Type type,int RequestType,int RequestCode){
+		return obtainMeasurementData(obj,null,null,SqliteManager.CONTAIN_DEFAULT,type,RequestType,RequestCode);
 	}
 	
-	public <Object> Object obtainMeasurementData(Class<?> obj,int ContainType,Type type){
-		return obtainMeasurementData(obj,null,null,ContainType,type);
+	public <Object> Object obtainMeasurementData(Class<?> obj,int ContainType,Type type,int RequestType,int RequestCode){
+		return obtainMeasurementData(obj,null,null,ContainType,type,RequestType,RequestCode);
 	}
- 	public <Object> Object obtainMeasurementData(Class<?> obj,String DateTimeFrom,String DateTimeTo,int ContainType,Type type){
+ 	public <Object> Object obtainMeasurementData(Class<?> obj,String DateTimeFrom,String DateTimeTo,int ContainType,Type type,int RequestType,int RequestCode){
 		String ClassName = obj.getName();
 		try{
-			String json = mInternalOperationSupport.obtainMeasurementData(ClassName, DateTimeFrom, DateTimeTo, ContainType);
-			Log.i(tag, "result : "+json);
+			String json = mInternalOperationSupport.obtainMeasurementData(ClassName, DateTimeFrom, DateTimeTo, ContainType,RequestType,RequestCode);
 			return gson.fromJson(json,type);
 		}catch(Exception e){
 			e.printStackTrace();
@@ -328,9 +335,19 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		}
 	}
 
-	public List<MeasurementData> obtainMeasurementData(List<Measurement> mMeasurementList,String DateTimeFrom,String DateTimeTo){
+ 	
+ 	/**
+ 	 * 기본타입
+ 	 * @param mMeasurementList
+ 	 * @param DateTimeFrom
+ 	 * @param DateTimeTo
+ 	 * @param RequestType
+ 	 * @param RequestCode
+ 	 * @return
+ 	 */
+	public List<MeasurementData> obtainMeasurementData(List<Measurement> mMeasurementList,String DateTimeFrom,String DateTimeTo,int RequestType,int RequestCode){
 		try{
-			return mInternalOperationSupport.obtainMeasurementDataById(mMeasurementList, DateTimeFrom, DateTimeTo);
+			return mInternalOperationSupport.obtainMeasurementDataById(mMeasurementList, DateTimeFrom, DateTimeTo,RequestType,RequestCode);
 		}catch(Exception e){
 			e.printStackTrace();
 			return null;
@@ -377,9 +394,9 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		return obtainLog(null,null,-1,null,null);
 	}
 	
-	public void startFuntion(Function mFunction){
+	public void startFuntion(Function mFunction,int RequestType,int RequestCode){
 		try {
-			mInternalOperationSupport.startFunction(mFunction);
+			mInternalOperationSupport.startFunction(mFunction,RequestType,RequestCode);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -431,10 +448,10 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	    return this;
     }
 
-    public BlinkServiceInteraction queryMeasurementData(String where) {
+    public BlinkServiceInteraction queryMeasurementData(String where,int RequestType,int RequestCode) {
 	    // TODO Auto-generated method stub
 		try {
-	        mInternalOperationSupport.queryMeasurementData(where);
+	        mInternalOperationSupport.queryMeasurementData(where,RequestType,RequestCode);
         } catch (RemoteException e) {
 	        // TODO Auto-generated catch block
 	        e.printStackTrace();
