@@ -12,7 +12,8 @@ import android.util.Log;
 /**
  * 
  * 스레드를 시작할 때는 start() 대신 startThread()을 사용한다.
- * 스레드를 종료할 때는 stopThread()을 호출한다.
+ * 스레드를 중지할 때는 pauseThread()를 사용한다.
+ * 스레드를 종료할 때는 destroyThread()을 호출한다.
  * 
  * @author Yeonho.Kim
  * @since 2014. 08. 01
@@ -32,7 +33,7 @@ public class ClassicLinkThread extends Thread {
 	private ObjectOutputStream mOutputStream;
 	
 	private boolean isRunning;
-	private boolean isStopped;
+	private boolean isPaused;
 	
 	public ClassicLinkThread(BluetoothAssistant assistant, BlinkDevice device, BluetoothSocket socket, boolean client) {
 		this(assistant, device);
@@ -78,7 +79,7 @@ public class ClassicLinkThread extends Thread {
 		Log.d("ClassicLinkThread_run()", "START : " + DEVICE.toString());
 		
 		// 본 디바이스 정보를 전송한다.
-		sendMessageToDevice(ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).getSelfDevice());
+		sendMessageToDevice(BlinkDevice.HOST);
 		
 		// Read Operation
 		while (isRunning) {
@@ -94,13 +95,11 @@ public class ClassicLinkThread extends Thread {
 					ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).updateBlinkNetwork(opposite);
 					
 				} else if (obj instanceof String) {
-						String json = (String) obj;
-						ASSISTANT.onMessageReceivedFrom(json, DEVICE);
+					String json = (String) obj;
+					MSG_PROCESSOR.acceptJsonData(json, DEVICE);
 
-						Log.d("ClassicLinkThread_run()", "Read : " + json);
+					Log.d("ClassicLinkThread_run()", "Read : " + json);
 				}
-						
-				
 				
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -120,33 +119,30 @@ public class ClassicLinkThread extends Thread {
 	 * <br> {@link #startThread()}로 기능을 수행한다.
 	 * 
 	 * @see #startThread()
-	 * @see #stopThread()
+	 * @see #pauseThread()
 	 */
 	@Override
 	@Deprecated
 	public synchronized void start() {}
 	
 	/**
-	 * 
+	 * 본 스레드를 시작한다.
 	 */
 	synchronized void startThread() {
 		Log.d("ClassicLinkThread_startListening()", "");
 		
-		if (!isRunning && (isRunning = true)) {
+		if (!isRunning && (isRunning = true))
 			super.start();
 		
-		}
-		
-		if (isStopped && (isStopped = false))
+		if (isPaused && (isPaused = false))
 			this.notify();
-		
 	}
 	
 	/**
-	 * 
+	 * 본 스레드를 중지한다.
 	 */
-	synchronized void stopThread() {
-		if (isRunning && !isStopped && (isStopped = true)) {
+	synchronized void pauseThread() {
+		if (isRunning && !isPaused && (isPaused = true)) {
 			try {
 				this.wait();
 				
@@ -167,7 +163,7 @@ public class ClassicLinkThread extends Thread {
 	public void destroy() { }
 	
 	/**
-	 * 
+	 * 본 스레드를 파괴한다.
 	 */
 	void destroyThread() {
 		Log.d("ClassicLinkThread_destroy()", "DESTROY");
@@ -203,14 +199,11 @@ public class ClassicLinkThread extends Thread {
 	}
 
 	/**
+	 * 연결되어있는 상대 디바이스에게 Object 메세지를 전송한다.
 	 * 
 	 * @param obj
 	 */
 	void sendMessageToDevice(Object obj) {
-		// TODO : TEST
-		obj = ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).getSelfDevice();
-		Log.d("InterDeviceManager_sendBlinkMessage()", DEVICE.getName() + " : " + obj.toString());
-		
 		if ((mOutputStream != null) && (obj != null)) {
 			try {
 				Log.d("InterDeviceManager_sendBlinkMessage()", DEVICE.getName() + " : " + obj.toString());

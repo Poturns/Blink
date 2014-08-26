@@ -35,8 +35,6 @@ import android.util.Log;
  */
 class BluetoothAssistant extends Handler{
 	
-	private boolean onLog = true;
-
 	// *** CONSTANT DECLARATION *** //
 	public final static String TAG = "BluetoothAssistant";
 	
@@ -73,7 +71,7 @@ class BluetoothAssistant extends Handler{
 	public static IntentFilter obtainIntentFilter() {
 		IntentFilter mIntentFilter = new IntentFilter();
 		mIntentFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);				// 블루투스 상태 변화 
-		mIntentFilter.addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);			// 블루투스 탐색 모드 변화
+		//mIntentFilter.addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);			// 블루투스 탐색 모드 변화
 		//mIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);			// 블루투스 탐색 시작
 		mIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);		// 블루투스 탐색 종료
 		mIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);						// 블루투스 탐색시 디바이스 발견
@@ -155,7 +153,7 @@ class BluetoothAssistant extends Handler{
 	 * 블루투스가 Off상태가 되었을 때, 수행할 기능을 정의한다.
 	 */
 	void onBluetoothStateOff() {
-		Intent mIntent = (mDeviceAnalyzer.isAvailableAsCore())? 
+		Intent mIntent = (mDeviceAnalyzer.isAvailableAsCenter())? 
 				new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE) : 
 					new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE) ;
 					
@@ -167,19 +165,6 @@ class BluetoothAssistant extends Handler{
 	 * 블루투스가 On상태가 되었을 떄, 수행할 기능을 정의한다.
 	 */
 	void onBluetoothStateOn() {
-		BlinkDevice mSelfDevice = mServiceKeeper.getSelfDevice();
-		if (mSelfDevice == null) {
-			BluetoothAdapter mAdapter = BluetoothAdapter.getDefaultAdapter();
-			
-			mSelfDevice = BlinkDevice.load(mAdapter.getAddress());
-			if (System.currentTimeMillis() > mSelfDevice.getTimestamp()) {
-				mSelfDevice.setName(mAdapter.getName());
-				mSelfDevice.setIdentityPoint(DeviceAnalyzer.getIdentityPoint());
-				mServiceKeeper.setSelfDevice(mSelfDevice);
-			}
-		}
-		mSelfDevice.setIdentity(mDeviceAnalyzer.getCurrentIdentity().ordinal());
-		
 		startListeningServer(true);
 	}
 	
@@ -238,6 +223,9 @@ class BluetoothAssistant extends Handler{
 							
 					while (isServerActivated) {
 						try {
+							if (mServerSocket == null)
+								return;
+							
 							BluetoothSocket mBluetoothSocket = mServerSocket.accept(ACCEPT_TIMEOUT);
 							BlinkDevice device  = BlinkDevice.load(mBluetoothSocket.getRemoteDevice());
 							
@@ -351,6 +339,7 @@ class BluetoothAssistant extends Handler{
 			postDelayed(new Runnable() {
 				@Override
 				public void run() {
+					// 10초간 LE Discovery
 					isLeScanning = false;
 					mAdapter.stopLeScan(INTER_DEV_MANAGER);
 				}
@@ -426,52 +415,10 @@ class BluetoothAssistant extends Handler{
 	public void disconnectDevice(BlinkDevice device) {
 		Log.d("InterDeviceManager_disconnectFromDeviceAsClient()", "Disconnect");
 		
-		Object obj = mServiceKeeper.getConnectionObject(device);
-		if (obj == null)
-			return;
-		
-		if (device.isLESupported()) {
-			BluetoothGatt mGatt = (BluetoothGatt) obj;
-			mGatt.close();
-			
-		} else {
-			try {
-				ClassicLinkThread mThread = (ClassicLinkThread) obj;
-				mThread.destroyThread();
-				mThread.join(JOIN_TIMEOUT);
-				
-			} catch (InterruptedException e) {
-				
-			}
-		}
+		mServiceKeeper.removeConnection(device);
 	}
 	
-	/**
-	 * 
-	 * @param device
-	 */
-	synchronized void onMessageReceivedFrom(String json, BlinkDevice device) {
-		if (onLog)
-			Log.d("BluetoothAssistant_onMessageReceivedFrom", json + " [from ]");
-		mMessageProcessor.acceptJsonData(json, device);
-	}
-
-	/**
-	 * 
-	 * @param json
-	 * @param device
-	 */
-	void onMessageSentTo(String json, BlinkDevice device) {
-		if (device.isLESupported()) {
-			
-			
-		} else {
-			mServiceKeeper.sendMessageToDevice(device, json);
-			
-		}
-
-	}
-
+	
 	
 	// *** CALLBACK FIELD DECLARATION *** //
 	/**

@@ -42,6 +42,19 @@ public class BlinkDevice implements Parcelable, Serializable {
 	 */
 	private static final HashMap<String, BlinkDevice> CACHE_MAP = new HashMap<String, BlinkDevice>();
 	
+	/**
+	 * 
+	 */
+	public static final BlinkDevice HOST;
+	static {
+		BluetoothAdapter mAdapter = BluetoothAdapter.getDefaultAdapter();
+		HOST = (mAdapter != null)? load(mAdapter.getAddress()) : null;
+		
+		if (HOST != null && mAdapter != null)
+			HOST.setName(mAdapter.getName());
+	}
+
+	
 	public static BlinkDevice load(BlinkDevice device) {
 		BlinkDevice mDevice = BlinkDevice.load(device.Address);
 		mDevice.BlinkSupported = true;
@@ -50,6 +63,7 @@ public class BlinkDevice implements Parcelable, Serializable {
 		mDevice.Name = (device.Name == null)? mDevice.Name : device.Name;
 		mDevice.Identity = device.getIdentity().ordinal();
 		mDevice.IdentityPoint = device.getIdentityPoint();
+		mDevice.GroupID = device.getGroupID();
 		mDevice.Timestamp = System.currentTimeMillis();
 		
 		return mDevice;
@@ -467,16 +481,4 @@ public class BlinkDevice implements Parcelable, Serializable {
 		return Timestamp;
 	}
 
-	/** 현재 장비를 나타내는 BlinkDevice를 얻는다. */
-	public static BlinkDevice obtainHostDevice() {
-		BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-		final String address = adapter.getAddress();
-		BlinkDevice device;
-		if ((device = load(address)) == null) {
-			device = new BlinkDevice(address);
-		}
-		if (device.Name == null || device.Name.length() < 1)
-			device.Name = adapter.getName();
-		return device;
-	}
 }

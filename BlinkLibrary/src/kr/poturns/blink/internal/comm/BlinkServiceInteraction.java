@@ -44,6 +44,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	private IBlinkEventBroadcast mBlinkEventBroadcast;
 	private IInternalOperationSupport mInternalOperationSupport;
 	private IInternalEventCallback mIInternalEventCallback;
+	
 	/**
 	 * Application Info
 	 */
@@ -150,15 +151,6 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	
 	public final void setOnBlinkEventBroadcast(IBlinkEventBroadcast iBlinkEventBroadcast) {
 		mBlinkEventBroadcast = iBlinkEventBroadcast;
-	}
-	
-	public final BlinkDevice obtainSelfDevice() {
-		try {
-			if (mInternalOperationSupport != null)
-				return mInternalOperationSupport.obtainSelfDevice();
-			
-		} catch (RemoteException e) { }
-		return null;
 	}
 	
 	private class EventBroadcastReceiver extends BroadcastReceiver {

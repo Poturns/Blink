@@ -1,7 +1,11 @@
 package kr.poturns.blink.internal;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
+import kr.poturns.blink.internal.comm.BlinkDevice;
+import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
+import android.content.Intent;
 import android.content.pm.FeatureInfo;
 import android.content.pm.PackageManager;
 
@@ -162,11 +166,9 @@ public class DeviceAnalyzer {
 			}
 		}
 		
-		/*
-		 * 
-		 */
-		if (!init) {
-			InterDeviceManager.getInstance(ANALYZER_CONTEXT);
+		if (BlinkDevice.HOST != null) {
+			BlinkDevice.HOST.setIdentity(mIdentity.ordinal());
+			BlinkDevice.HOST.setIdentityPoint(mIdentityPoint);
 		}
 		
 		return mIdentity;
@@ -193,6 +195,57 @@ public class DeviceAnalyzer {
 	
 	/**
 	 * 
+	 * @param identity
+	 */
+	public final synchronized void grantIdentity(Identity identity) {
+		switch (identity) {
+		case MAIN:
+			mIdentityPoint |= IDENTITY_POINTLINE_MAIN;
+			mIdentityPoint ^= IDENTITY_POINTLINE_SUB;
+			mIdentityPoint ^= IDENTITY_POINTLINE_AUX;
+			break;
+			
+		case SUB: 
+			mIdentityPoint ^= IDENTITY_POINTLINE_MAIN;
+			mIdentityPoint |= IDENTITY_POINTLINE_SUB;
+			mIdentityPoint ^= IDENTITY_POINTLINE_AUX;
+			break;
+			
+		case AUX:
+			mIdentityPoint ^= IDENTITY_POINTLINE_MAIN;
+			mIdentityPoint ^= IDENTITY_POINTLINE_SUB;
+			mIdentityPoint |= IDENTITY_POINTLINE_AUX;
+			break;
+			
+		default:
+		}
+		
+		mIdentity = identity;
+		
+		if (BlinkDevice.HOST != null) {
+			BlinkDevice.HOST.setIdentity(mIdentity.ordinal());
+			BlinkDevice.HOST.setIdentityPoint(mIdentityPoint);
+			
+			if (BlinkDevice.HOST.getGroupID() == 0 && mIdentityPoint > IDENTITY_POINTLINE_AUX)
+				BlinkDevice.HOST.setGroupID(generateGroupId());
+			
+			Intent intent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_IDENTITY_CHANGED);
+			intent.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) BlinkDevice.HOST);
+			intent.putExtra(IBlinkEventBroadcast.EXTRA_IDENTITY, identity);
+			ANALYZER_CONTEXT.sendBroadcast(intent);
+		}
+	}
+
+	private int generateGroupId() {
+		if (BlinkDevice.HOST == null)
+			return 0;
+		
+		String strID = BlinkDevice.HOST.getAddress() + "@" + System.currentTimeMillis();
+		return strID.toUpperCase().hashCode();
+	}
+	
+	/**
+	 * 
 	 * @return
 	 */
 	public Identity getCurrentIdentity() {
@@ -203,7 +256,7 @@ public class DeviceAnalyzer {
 	 * 
 	 * @return
 	 */
-	public boolean isAvailableAsCore() {
-		return (mIdentity == Identity.COREABLE || mIdentity == Identity.MAIN);
+	public boolean isAvailableAsCenter() {
+		return (mIdentityPoint >= IDENTITY_POINTLINE_CORE);
 	}
 }
