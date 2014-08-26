@@ -17,7 +17,7 @@ public class BlinkDatabase {
 				+ "'UUID' TEXT,"
 				+ "'MacAddress' TEXT,"
 				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime')),"
-				+ "UNIQUE ('Device')"
+				+ "UNIQUE ('MacAddress')"
 				+ "); ";
 		db.execSQL(sql);
 

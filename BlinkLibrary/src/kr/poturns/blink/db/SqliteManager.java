@@ -112,13 +112,14 @@ public class SqliteManager extends SQLiteOpenHelper {
 		App mApp = mSystemDatabaseObject.mApp;
 		mDevice.Device = device;
 		mApp.PackageName = app;
-		//기존에 등록된 값이 없으면
+		//기존에 등록된 값이 있으면 해당 값을 찾아서 리턴
+
 		if(obtainDeviceList(mSystemDatabaseObject) && obtainAppList(mSystemDatabaseObject)){
 			mSystemDatabaseObject.isExist = true;
 			obtainFunction(mSystemDatabaseObject);
 			obtainMeasurement(mSystemDatabaseObject);
 		}
-		//기존에 등록된 값이 있으면 해당 값을 찾아서 리턴
+		//기존에 등록된 값이 없으면		
 		else {
 			mApp.Version = 1;
 			mApp.PackageName = app;

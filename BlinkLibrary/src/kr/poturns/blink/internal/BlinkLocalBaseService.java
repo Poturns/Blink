@@ -2,6 +2,7 @@ package kr.poturns.blink.internal;
 import java.util.HashMap;
 
 import kr.poturns.blink.R;
+import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkSupportBinder;
 import kr.poturns.blink.util.FileUtil;

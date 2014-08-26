@@ -3,6 +3,7 @@ package kr.poturns.blink.internal.comm;
 import java.lang.reflect.Type;
 import java.util.List;
 
+import kr.poturns.blink.db.BlinkDatabaseManager;
 import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.BlinkLog;
@@ -19,7 +20,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.os.Build;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
@@ -42,13 +42,18 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	private IBlinkEventBroadcast mBlinkEventBroadcast;
 	private IInternalOperationSupport mInternalOperationSupport;
 	private IInternalEventCallback mIInternalEventCallback;
+	private BlinkDatabaseManager mBlinkDatabaseManager;
 	/**
 	 * Application Info
 	 */
-	String mDeviceName = "";
-	String mPackageName = "";
-	String mAppName = "";
+	//바인더 컨넥션시 획득
+	private BlinkDevice mBlinkDevice;
+	//생성자에서 초기화
+	private String mPackageName = "";
+	private String mAppName = "";
 
+	public Local local;
+	public Remote remote;
 	Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	
 	public BlinkServiceInteraction(Context context, IBlinkEventBroadcast iBlinkEventBroadcast,IInternalEventCallback iInternalEventCallback) {
@@ -68,10 +73,13 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		
 		mBlinkEventBroadcast = iBlinkEventBroadcast;
 		mIInternalEventCallback = iInternalEventCallback;
+		mBlinkDatabaseManager = new BlinkDatabaseManager(context);
+		local = new Local();
+		remote = new Remote();
 		/**
 		 * Setting Application Info
 		 */
-		mDeviceName = Build.MODEL;
+		
 		mPackageName = context.getPackageName();
 		mAppName = context.getApplicationInfo().loadLabel(context.getPackageManager()).toString();
 	}
@@ -92,8 +100,13 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 				
 			}else {
 				try {
-					if(mIInternalEventCallback!=null)
+					mInternalOperationSupport.registerApplicationInfo(mPackageName, mAppName);
+					mBlinkDevice = mInternalOperationSupport.getBlinkDevice();
+					
+					if(mIInternalEventCallback!=null){
 						mInternalOperationSupport.registerCallback(mIInternalEventCallback);
+					}
+					//어플리케이션 관련 정보 교환
 					
 		        } catch (RemoteException e) {
 			        e.printStackTrace();
@@ -107,7 +120,6 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	@Override
 	public final void onServiceDisconnected(ComponentName name) {
 		CONTEXT.unregisterReceiver(EVENT_BR);
-		
 		onServiceDisconnected();
 	}
 	
@@ -248,59 +260,12 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	 */
 	
 	public boolean registerSystemDatabase(SystemDatabaseObject mSystemDatabaseObject){
+		mSystemDatabaseObject.mDevice.Device = mBlinkDevice.getName();
+		mSystemDatabaseObject.mDevice.MacAddress = mBlinkDevice.getAddress();
 		mSystemDatabaseObject.mApp.PackageName = mPackageName;
 		mSystemDatabaseObject.mApp.AppName = mAppName;
-		mSystemDatabaseObject.mDevice.Device = mDeviceName;
 		try {
 			mInternalOperationSupport.registerSystemDatabase(mSystemDatabaseObject);
-				return true;
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
-		}
-	}
-	
-	public boolean registerExternalSystemDatabase(SystemDatabaseObject mSystemDatabaseObject){
-		try {
-			mInternalOperationSupport.registerSystemDatabase(mSystemDatabaseObject);
-				return true;
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return false;
-		}
-	}
-	
-	public SystemDatabaseObject obtainSystemDatabase(){
-		return obtainSystemDatabase(mDeviceName,mPackageName);
-	}
-	
-	public SystemDatabaseObject obtainSystemDatabase(String DeviceName,String PackageName){
-		try {
-			return mInternalOperationSupport.obtainSystemDatabase(DeviceName, PackageName);
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
-	public List<SystemDatabaseObject> obtainSystemDatabaseAll(){
-		try {
-			return mInternalOperationSupport.obtainSystemDatabaseAll();
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
-	public boolean registerMeasurementData(SystemDatabaseObject mSystemDatabaseObject,Object obj){
-		String ClassName = obj.getClass().getName();
-		String jsonObj = gson.toJson(obj);
-		try {
-			mInternalOperationSupport.registerMeasurementData(mSystemDatabaseObject, ClassName,jsonObj);
 			return true;
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
@@ -309,301 +274,272 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		}
 	}
 	
-	/**
-	 * Blink 기본 schema에 있는 클래스만 사용 가능
-	 * @param obj
-	 * @param type
-	 * @param RequestType
-	 * @param RequestCode
-	 * @return
-	 */
-	public <Object> Object obtainMeasurementData(Class<?> obj,Type type,int RequestCode){
-		return obtainMeasurementData(obj,null,null,SqliteManager.CONTAIN_DEFAULT,type,RequestCode);
+	//예제를 위한 테스트 코드
+	public boolean registerExternalSystemDatabase(SystemDatabaseObject mSystemDatabaseObject){
+		try {
+			mSystemDatabaseObject.mDevice.MacAddress = "test";
+			mInternalOperationSupport.registerSystemDatabase(mSystemDatabaseObject);
+				return true;
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
 	}
 	
-	public <Object> Object obtainMeasurementData(Class<?> obj,int ContainType,Type type,int RequestCode){
-		return obtainMeasurementData(obj,null,null,ContainType,type,RequestCode);
-	}
- 	public <Object> Object obtainMeasurementData(Class<?> obj,String DateTimeFrom,String DateTimeTo,int ContainType,Type type,int RequestCode){
-		String ClassName = obj.getName();
-		try{
-			String json = mInternalOperationSupport.obtainMeasurementData(ClassName, DateTimeFrom, DateTimeTo, ContainType,RequestCode);
-			return gson.fromJson(json,type);
-		}catch(Exception e){
-			e.printStackTrace();
+	/**
+	 * Local로 동작하는 매소드
+	 * @author mementohora
+	 *
+	 */
+	public class Local {
+		public SystemDatabaseObject obtainSystemDatabase(){
+			return obtainSystemDatabase(mBlinkDevice.getName(),mPackageName);
+		}
+		
+		public SystemDatabaseObject obtainSystemDatabase(String DeviceName,String PackageName){
+			return mBlinkDatabaseManager.obtainSystemDatabase(DeviceName, PackageName);
+		}
+		
+		public List<SystemDatabaseObject> obtainSystemDatabaseAll(){
+			return mBlinkDatabaseManager.obtainSystemDatabase();
+		}
+		
+		public void registerMeasurementData(SystemDatabaseObject mSystemDatabaseObject,Object obj){
+			try {
+				mBlinkDatabaseManager.registerMeasurementData(mSystemDatabaseObject, obj);
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		public <Object> Object obtainMeasurementData(Class<?> obj,Type type){
+			return obtainMeasurementData(obj,null,null,SqliteManager.CONTAIN_DEFAULT,type);
+		}
+		public <Object> Object obtainMeasurementData(Class<?> obj,int ContainType,Type type){
+			return obtainMeasurementData(obj,null,null,ContainType,type);
+		}
+	 	public <Object> Object obtainMeasurementData(Class<?> obj,String DateTimeFrom,String DateTimeTo,int ContainType,Type type){
+			String json;
+			try {
+				json = mBlinkDatabaseManager.obtainMeasurementData(obj, DateTimeFrom, DateTimeTo, ContainType);
+				return gson.fromJson(json,type);
+			} catch (InstantiationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			return null;
 		}
-	}
-
- 	
- 	/**
- 	 * 기본타입
- 	 * @param mMeasurementList
- 	 * @param DateTimeFrom
- 	 * @param DateTimeTo
- 	 * @param RequestType
- 	 * @param RequestCode
- 	 * @return
- 	 */
-	public List<MeasurementData> obtainMeasurementData(List<Measurement> mMeasurementList,String DateTimeFrom,String DateTimeTo,int RequestCode){
-		try{
-			return mInternalOperationSupport.obtainMeasurementDataById(mMeasurementList, DateTimeFrom, DateTimeTo,RequestCode);
-		}catch(Exception e){
-			e.printStackTrace();
-			return null;
+		
+	 	public List<MeasurementData> obtainMeasurementData(List<Measurement> mMeasurementList,String DateTimeFrom,String DateTimeTo){
+	 		return mBlinkDatabaseManager.obtainMeasurementData(mMeasurementList, DateTimeFrom, DateTimeTo);
+	 	}
+	 	
+		public void startFunction(Function function){
+			if(function.Type==Function.TYPE_ACTIVITY)
+				CONTEXT.startActivity(new Intent(function.Action).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+			else if(function.Type==Function.TYPE_SERIVCE)
+				CONTEXT.startService(new Intent(function.Action));
+			else if(function.Type==Function.TYPE_BROADCAST)
+				CONTEXT.sendBroadcast(new Intent(function.Action));
 		}
-	}
-	
-	public int removeMeasurementData(Class<?> obj, String DateTimeFrom, String DateTimeTo){
-		int ret = 0;
-		return ret;
+		
+		public List<BlinkLog> obtainLog(String Device,String App,int Type,String DateTimeFrom,String DateTimeTo){
+			return mBlinkDatabaseManager.obtainLog(Device, App, Type, DateTimeFrom, DateTimeTo);
+		}
+		
+		public List<BlinkLog> obtainLog(String Device,String App,String DateTimeFrom,String DateTimeTo){
+			return obtainLog(Device,App,-1,DateTimeFrom,DateTimeTo);
+		}
+		
+		public List<BlinkLog> obtainLog(String Device,String DateTimeFrom,String DateTimeTo){
+			return obtainLog(Device,null,-1,DateTimeFrom,DateTimeTo);
+		}
+		
+		public List<BlinkLog> obtainLog(String DateTimeFrom,String DateTimeTo){
+			return obtainLog(null,null,-1,DateTimeFrom,DateTimeTo);
+		}
+		
+		public List<BlinkLog> obtainLog(){
+			return obtainLog(null,null,-1,null,null);
+		}
+		
+		public Local queryDevice(String where) {
+		    // TODO Auto-generated method stub
+	    	mBlinkDatabaseManager.queryDevice(where);
+		    return this;
+	    }
+
+	    public Local queryApp(String where) {
+		    // TODO Auto-generated method stub
+			mBlinkDatabaseManager.queryApp(where);
+		    return this;
+	    }
+
+	    public Local queryFunction(String where) {
+		    // TODO Auto-generated method stub
+			mBlinkDatabaseManager.queryFunction(where);
+		    return this;
+	    }
+
+	    public Local queryMeasurement(String where)
+	             {
+		    // TODO Auto-generated method stub
+			mBlinkDatabaseManager.queryMeasurement(where);
+		    return this;
+	    }
+
+	    public Local queryMeasurementData(String where) {
+		    // TODO Auto-generated method stub
+			mBlinkDatabaseManager.queryMeasurementData(where);
+			return this;
+	    }
+
+	    public boolean checkInDevice(List<Measurement> mMeasurementList) {
+		    // TODO Auto-generated method stub
+		    return mBlinkDatabaseManager.checkInDevice(mMeasurementList);
+	    }
+
+	    public boolean checkInDevice(Function mFunction) {
+		    // TODO Auto-generated method stub
+		    return mBlinkDatabaseManager.checkInDevice(mFunction);
+	    }
+
+	    public boolean checkInDevice(Class<?> obj) {
+		    // TODO Auto-generated method stub
+		    return mBlinkDatabaseManager.checkInDevice(obj);
+	    }
+
+	    public List<Device> getDeviceList() {
+		    // TODO Auto-generated method stub
+		    return mBlinkDatabaseManager.getDeviceList();
+	    }
+
+	    public void setDeviceList(List<Device> mDeviceList) {
+		    // TODO Auto-generated method stub
+			mBlinkDatabaseManager.setDeviceList(mDeviceList);
+	    }
+
+	    public List<App> getAppList()  {
+		    // TODO Auto-generated method stub
+		    return mBlinkDatabaseManager.getAppList();
+	    }
+
+	    public void setAppList(List<App> mAppList) {
+		    // TODO Auto-generated method stub
+			mBlinkDatabaseManager.setAppList(mAppList);
+	    }
+
+	    public List<Function> getFunctionList() {
+		    // TODO Auto-generated method stub
+		    return mBlinkDatabaseManager.getFunctionList();
+	    }
+
+	    public void setFunctionList(List<Function> mFunctionList)
+	             {
+		    // TODO Auto-generated method stub
+			mBlinkDatabaseManager.setFunctionList(mFunctionList);
+	    }
+
+	    public List<Measurement> getMeasurementList()  {
+		    // TODO Auto-generated method stub
+		    return mBlinkDatabaseManager.getMeasurementList();
+	    }
+
+	    public void setMeasurementList(List<Measurement> mMeasurementList)
+	             {
+		    // TODO Auto-generated method stub
+			mBlinkDatabaseManager.setMeasurementList(mMeasurementList);
+	    }
+
+	    public List<MeasurementData> getMeasurementDataList()
+	             {
+		    // TODO Auto-generated method stub
+		    return mBlinkDatabaseManager.getMeasurementDataList();
+	    }
+
+	    public void setMeasurementDataList(
+	            List<MeasurementData> mMeasurementDataList)  {
+		    // TODO Auto-generated method stub
+			mBlinkDatabaseManager.setMeasurementDataList(mMeasurementDataList);
+	    }
 	}
 	
 	/**
-	 * Log Methods
+	 * Remote와 통신할 수 있는 코드
+	 * 결과는 callback으로 넘겨진다.
+	 * @author mementohora
+	 *
 	 */
-	public void registerLog(String Device,String App,int Type,String Content){
-		try {
-			mInternalOperationSupport.registerLog(Device, App, Type, Content);
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public class Remote {
+		public void setRequestPolicy(int requestPolicy){
+			try {
+				mInternalOperationSupport.setRequestPolicy(requestPolicy);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-	}	
-	
-	public List<BlinkLog> obtainLog(String Device,String App,int Type,String DateTimeFrom,String DateTimeTo){
-		try {
-			return mInternalOperationSupport.obtainLog(Device, App, Type, DateTimeFrom, DateTimeTo);
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		
+		/**
+		 * Blink 기본 schema에 있는 클래스만 사용 가능
+		 * @param obj
+		 * @param type
+		 * @param RequestType
+		 * @param RequestCode
+		 * @return
+		 */
+		public void obtainMeasurementData(Class<?> obj,Type type,int RequestCode){
+			obtainMeasurementData(obj,null,null,SqliteManager.CONTAIN_DEFAULT,type,RequestCode);
 		}
-		return null;
-	}
-	
-	public List<BlinkLog> obtainLog(String Device,String App,String DateTimeFrom,String DateTimeTo){
-		return obtainLog(Device,App,-1,DateTimeFrom,DateTimeTo);
-	}
-	public List<BlinkLog> obtainLog(String Device,String DateTimeFrom,String DateTimeTo){
-		return obtainLog(Device,null,-1,DateTimeFrom,DateTimeTo);
-	}
-	public List<BlinkLog> obtainLog(String DateTimeFrom,String DateTimeTo){
-		return obtainLog(null,null,-1,DateTimeFrom,DateTimeTo);
-	}
-	public List<BlinkLog> obtainLog(){
-		return obtainLog(null,null,-1,null,null);
-	}
-	
-	/**
-	 * Function을 호출하는 매서드
-	 * @param mFunction
-	 * @param RequestCode
-	 */
-	public void startFuntion(Function mFunction,int RequestCode){
-		try {
-			mInternalOperationSupport.startFunction(mFunction,RequestCode);
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		
+		public void obtainMeasurementData(Class<?> obj,int ContainType,Type type,int RequestCode){
+			obtainMeasurementData(obj,null,null,ContainType,type,RequestCode);
 		}
-	}
-	
-    public BlinkServiceInteraction queryDevice(String where) {
-	    // TODO Auto-generated method stub
-    	try {
-	        mInternalOperationSupport.queryDevice(where);
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-	    return this;
-    }
-
-    public BlinkServiceInteraction queryApp(String where) {
-	    // TODO Auto-generated method stub
-		try {
-	        mInternalOperationSupport.queryApp(where);
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-	    return this;
-    }
-
-    public BlinkServiceInteraction queryFunction(String where) {
-	    // TODO Auto-generated method stub
-		try {
-	        mInternalOperationSupport.queryFunction(where);
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-	    return this;
-    }
-
-    public BlinkServiceInteraction queryMeasurement(String where)
-             {
-	    // TODO Auto-generated method stub
-		try {
-	        mInternalOperationSupport.queryMeasurement(where);
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-	    return this;
-    }
-
-    public BlinkServiceInteraction queryMeasurementData(String where,int RequestCode) {
-	    // TODO Auto-generated method stub
-		try {
-	        mInternalOperationSupport.queryMeasurementData(where,RequestCode);
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-	    return this;
-    }
-
-    public boolean checkInDeviceByMeasureList(List<Measurement> mMeasurementList) {
-	    // TODO Auto-generated method stub
-	    try {
-	        return mInternalOperationSupport.checkInDeviceByMeasureList(mMeasurementList);
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-	    return false;
-    }
-
-    public boolean checkInDeviceByFunction(Function mFunction) {
-	    // TODO Auto-generated method stub
-		try {
-	        return mInternalOperationSupport.checkInDeviceByFunction(mFunction);
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-		return false;
-    }
-
-    public boolean checkInDeviceByClass(Class<?> obj) {
-	    // TODO Auto-generated method stub
-		try {
+	 	public void obtainMeasurementData(Class<?> obj,String DateTimeFrom,String DateTimeTo,int ContainType,Type type,int RequestCode){
 			String ClassName = obj.getName();
-	        return mInternalOperationSupport.checkInDeviceByClass(ClassName);
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-		return false;
-    }
-
-    public List<Device> getDeviceList() {
-	    // TODO Auto-generated method stub
-		try {
-	        return mInternalOperationSupport.getDeviceList();
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-		return null;
-    }
-
-    public void setDeviceList(List<Device> mDeviceList) {
-	    // TODO Auto-generated method stub
-		try {
-	        mInternalOperationSupport.setDeviceList(mDeviceList);
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-    }
-
-    public List<App> getAppList()  {
-	    // TODO Auto-generated method stub
-		try {
-	        return mInternalOperationSupport.getAppList();
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-		return null;
-    }
-
-    public void setAppList(List<App> mAppList) {
-	    // TODO Auto-generated method stub
-		try {
-	        mInternalOperationSupport.setAppList(mAppList);
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-    }
-
-    public List<Function> getFunctionList() {
-	    // TODO Auto-generated method stub
-		try {
-	        return mInternalOperationSupport.getFunctionList();
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-		return null;
-    }
-
-    public void setFunctionList(List<Function> mFunctionList)
-             {
-	    // TODO Auto-generated method stub
-		try {
-	        mInternalOperationSupport.setFunctionList(mFunctionList);
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-    }
-
-    public List<Measurement> getMeasurementList()  {
-	    // TODO Auto-generated method stub
-		try {
-	        return mInternalOperationSupport.getMeasurementList();
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-		return null;
-    }
-
-    public void setMeasurementList(List<Measurement> mMeasurementList)
-             {
-	    // TODO Auto-generated method stub
-		try {
-	        mInternalOperationSupport.setMeasurementList(mMeasurementList);
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-    }
-
-    public List<MeasurementData> getMeasurementDataList()
-             {
-	    // TODO Auto-generated method stub
-		try {
-	        return mInternalOperationSupport.getMeasurementDataList();
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-		return null;
-    }
-
-    public void setMeasurementDataList(
-            List<MeasurementData> mMeasurementDataList)  {
-	    // TODO Auto-generated method stub
-		try {
-	        mInternalOperationSupport.setMeasurementDataList(mMeasurementDataList);
-        } catch (RemoteException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-        }
-    }
+			try{
+				mInternalOperationSupport.obtainMeasurementData(ClassName, DateTimeFrom, DateTimeTo, ContainType,RequestCode);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+	 	
+	 	/**
+	 	 * 기본타입
+	 	 * @param mMeasurementList
+	 	 * @param DateTimeFrom
+	 	 * @param DateTimeTo
+	 	 * @param RequestType
+	 	 * @param RequestCode
+	 	 * @return
+	 	 */
+		public void obtainMeasurementData(List<Measurement> mMeasurementList,String DateTimeFrom,String DateTimeTo,int RequestCode){
+			try{
+				mInternalOperationSupport.obtainMeasurementDataById(mMeasurementList, DateTimeFrom, DateTimeTo,RequestCode);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		
+		public void startFunction(Function function,int requestCode){
+			try {
+				mInternalOperationSupport.startFunction(function, requestCode);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
 }

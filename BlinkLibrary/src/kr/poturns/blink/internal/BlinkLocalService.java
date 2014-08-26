@@ -3,6 +3,8 @@ package kr.poturns.blink.internal;
 import java.util.HashMap;
 
 import kr.poturns.blink.R;
+import kr.poturns.blink.db.BlinkDatabaseManager;
+import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.external.ServiceControlActivity;
 import kr.poturns.blink.internal.comm.BlinkSupportBinder;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
@@ -24,6 +26,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 	private final String tag = "BlinkLocalService";
 	
 	public final HashMap<String, RemoteCallbackList<IInternalEventCallback>> CALLBACK_MAP = new HashMap<String, RemoteCallbackList<IInternalEventCallback>>();
+	private BlinkDatabaseManager mBlinkDatabaseManager;
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -61,6 +64,8 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 		PendingIntent mPendingIntent = PendingIntent.getActivity(this, NOTIFICATION_ID, 
 				new Intent(this, ServiceControlActivity.class), Intent.FLAG_ACTIVITY_NEW_TASK);
 		
+		mBlinkDatabaseManager = new BlinkDatabaseManager(this);
+		
 		Notification mBlinkNotification = new Notification.Builder(this)
 										.setSmallIcon(R.drawable.ic_launcher)
 										.setContentTitle("Blink Service")
@@ -69,5 +74,30 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 										.build();
 		
 		startForeground(NOTIFICATION_ID, mBlinkNotification);
+	}
+	
+	/**
+	 * MessageProcessor로부터 받은 메시지를 처리하는 매소드
+	 * @param message
+	 */
+	public String receiveMessageFromProcessor(String message){
+		return null;
+	}
+	
+	public void sendMessageToProcessor(){
+		
+	}
+	/**
+	 * 함수를 실행시켜주는 매소드
+	 * 바인더나 MessageProcessor로부터 호출된다.
+	 * @param function
+	 */
+	public void startFunction(Function function){
+		if(function .Type==Function.TYPE_ACTIVITY)
+			startActivity(new Intent(function.Action).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+		else if(function .Type==Function.TYPE_SERIVCE)
+			startService(new Intent(function.Action));
+		else if(function.Type==Function.TYPE_BROADCAST)
+			sendBroadcast(new Intent(function.Action));
 	}
 }
