@@ -91,23 +91,24 @@ public final class FileUtil {
 				}
 			}
 			
-			// 하위 디렉토리들을 생성한다.
-			final String[] detailPaths = new String[] {
-					EXTERNAL_SYSTEM_DEVICE_REPOSITORY_PATH
-			};
-			
-			for (final String path : detailPaths) {
-				File externalSubFile = new File(path);
-				if (externalSubFile.mkdirs() || externalSubFile.isDirectory()) {
-					Log.d(TAG, path + " created, : " + externalSubFile);
-				} else {
-					Log.d(TAG, path + "could not create");
-				}
-			}
-			
 		} else {
 			Log.d(TAG, "external dir could not create : " + externalFile);
 		}
+
+		// 하위 디렉토리들을 생성한다.
+		final String[] detailPaths = new String[] {
+				EXTERNAL_SYSTEM_DEVICE_REPOSITORY_PATH
+		};
+		
+		for (final String path : detailPaths) {
+			File externalSubFile = new File(path);
+			if (externalSubFile.mkdirs() || externalSubFile.isDirectory()) {
+				Log.d(TAG, path + " created, : " + externalSubFile);
+			} else {
+				Log.d(TAG, path + "could not create");
+			}
+		}
+		
 	}
 
 	/**

@@ -14,17 +14,25 @@ import android.content.pm.PackageManager;
 public class DeviceAnalyzer {
 	
 	// *** CONSTANT DECLARATION *** //
+	/**
+	 * 디바이스의 역할 코드.
+	 * 
+	 * @author Yeonho.Kim
+	 *
+	 */
 	public enum Identity {
 		UNKNOWN,
 		PERIPHERALS,
-		CORE,
+		COREABLE,
+		AUX,
 		SUB,
 		MAIN
 	}
 	
-	private static final int IDENTITY_POINTLINE_MAIN = 1024 * 1024 * 4;
-	private static final int IDENTITY_POINTLINE_SUB = 1024 * 1024 * 2;
-	private static final int IDENTITY_POINTLINE_CORE = 1024 * 1024 * 1;
+	static final int IDENTITY_POINTLINE_MAIN = 1024 * 1024 * 16;
+	static final int IDENTITY_POINTLINE_SUB = 1024 * 1024 * 8;
+	static final int IDENTITY_POINTLINE_AUX = 1024 * 1024 * 2;
+	static final int IDENTITY_POINTLINE_CORE = 1024 * 1024 * 1;
 	
 	private static final int IDENTITY_POINTLINE_TELEPHONY = 1024 * 64;
 	private static final int IDENTITY_POINTLINE_WIFIDIRECT = 1024 * 2;
@@ -54,6 +62,8 @@ public class DeviceAnalyzer {
 	public static int getIdentityPoint() {
 		return (sInstance == null)? 0 : sInstance.mIdentityPoint;
 	}
+	
+	
 	
 	
 	// *** FIELD DECLARATION *** //
@@ -134,7 +144,7 @@ public class DeviceAnalyzer {
 		
 		// IdentityPoint가 User_또는_Core Line에 체크될 경우, CORE Identity로 설정한다.
 		if (mIdentityPoint >= IDENTITY_POINTLINE_CORE)
-			mIdentity = Identity.CORE;
+			mIdentity = Identity.COREABLE;
 		
 		// IdentityPoint가 None일 경우, UNKNOWN Identity로 설정한다.
 		else if (mIdentityPoint == NONE)
@@ -143,7 +153,7 @@ public class DeviceAnalyzer {
 		else {
 			// 초기상태일 때, IdentityPoint가 WIFI+STORAGE Line에 체크될 경우, CORE Identity로 설정한다.
 			if (init && (mIdentityPoint > IDENTITY_POINTLINE_WIFI + IDENTITY_POINTLINE_STORAGE)) {
-				mIdentity = Identity.CORE;
+				mIdentity = Identity.COREABLE;
 			
 			// 그 외의 경우, PERIPHERALS Identity로 설정한다.
 			} else {
@@ -171,17 +181,29 @@ public class DeviceAnalyzer {
 		return ANALYSIS_ARRAY.contains(feature);
 	}
 	
+	/**
+	 * 
+	 * @param selection
+	 */
 	public final void setUserSelection(boolean selection) {
 		mIdentityPoint = (hasUserSelection = selection)? 
 				mIdentityPoint|(IDENTITY_POINTLINE_MAIN) : 
 					mIdentityPoint^(IDENTITY_POINTLINE_MAIN);
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
 	public Identity getCurrentIdentity() {
 		return mIdentity;
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
 	public boolean isAvailableAsCore() {
-		return (mIdentity == Identity.CORE || mIdentity == Identity.MAIN);
+		return (mIdentity == Identity.COREABLE || mIdentity == Identity.MAIN);
 	}
 }

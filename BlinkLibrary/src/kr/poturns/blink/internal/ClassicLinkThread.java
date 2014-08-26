@@ -22,7 +22,7 @@ public class ClassicLinkThread extends Thread {
 
 	private final InterDeviceManager INTER_DEV_MANAGER;
 	private final BluetoothAssistant ASSISTANT;
-	private final FunctionOperator FUNC_OPERATOR;
+	private final MessageProcessor MSG_PROCESSOR;
 	private final BlinkDevice DEVICE;
 	
 	private boolean isClient;
@@ -50,7 +50,7 @@ public class ClassicLinkThread extends Thread {
 
 		INTER_DEV_MANAGER = assistant.INTER_DEV_MANAGER;
 		ASSISTANT = assistant;
-		FUNC_OPERATOR = new FunctionOperator(INTER_DEV_MANAGER.MANAGER_CONTEXT);
+		MSG_PROCESSOR = new MessageProcessor(INTER_DEV_MANAGER.MANAGER_CONTEXT);
 		DEVICE = device;
 	}
 	
@@ -87,7 +87,7 @@ public class ClassicLinkThread extends Thread {
 				
 				if (obj instanceof BlinkMessage) {
 					BlinkMessage msg = (BlinkMessage) obj;
-					FUNC_OPERATOR.acceptBlinkMessage(msg, DEVICE);
+					MSG_PROCESSOR.acceptBlinkMessage(msg, DEVICE);
 					
 				} else if (obj instanceof BlinkDevice) {
 					BlinkDevice opposite = (BlinkDevice) obj;
@@ -114,11 +114,21 @@ public class ClassicLinkThread extends Thread {
 		}
 		Log.d("ClassicLinkThread_run()", "END");
 	}
-	
+
+	/**
+	 * 이 메소드는 아무런 기능을 수행하지 않는다.
+	 * <br> {@link #startThread()}로 기능을 수행한다.
+	 * 
+	 * @see #startThread()
+	 * @see #stopThread()
+	 */
 	@Override
 	@Deprecated
 	public synchronized void start() {}
 	
+	/**
+	 * 
+	 */
 	synchronized void startThread() {
 		Log.d("ClassicLinkThread_startListening()", "");
 		
@@ -132,6 +142,9 @@ public class ClassicLinkThread extends Thread {
 		
 	}
 	
+	/**
+	 * 
+	 */
 	synchronized void stopThread() {
 		if (isRunning && !isStopped && (isStopped = true)) {
 			try {
@@ -142,7 +155,20 @@ public class ClassicLinkThread extends Thread {
 			}
 		}
 	}
+
+	/**
+	 * 이 메소드는 아무런 기능을 수행하지 않는다.
+	 * <br> {@link #destroyThread()}로 기능을 수행한다.
+	 * 
+	 * @see #destroyThread()
+	 */
+	@Deprecated
+	@Override
+	public void destroy() { }
 	
+	/**
+	 * 
+	 */
 	void destroyThread() {
 		Log.d("ClassicLinkThread_destroy()", "DESTROY");
 		isRunning = false;
@@ -176,6 +202,10 @@ public class ClassicLinkThread extends Thread {
 		}
 	}
 
+	/**
+	 * 
+	 * @param obj
+	 */
 	void sendMessageToDevice(Object obj) {
 		// TODO : TEST
 		obj = ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).getSelfDevice();

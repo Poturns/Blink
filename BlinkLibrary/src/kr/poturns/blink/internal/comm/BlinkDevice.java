@@ -177,6 +177,7 @@ public class BlinkDevice implements Parcelable, Serializable {
 	
 	private int Identity;
 	private int IdentityPoint;
+	private int GroupID;
 
 	private boolean AutoConnect;
 	private boolean SecureConnect;
@@ -195,6 +196,7 @@ public class BlinkDevice implements Parcelable, Serializable {
 		
 		Identity = DeviceAnalyzer.Identity.UNKNOWN.ordinal();
 		IdentityPoint = 0;
+		GroupID = 0;
 		
 		AutoConnect = false;
 		SecureConnect = true;
@@ -217,6 +219,7 @@ public class BlinkDevice implements Parcelable, Serializable {
 		
 		Identity = parcel.readInt();
 		IdentityPoint = parcel.readInt();
+		GroupID = parcel.readInt();
 		
 		boolean[] bools = new boolean[5];
 		parcel.readBooleanArray(bools);
@@ -331,6 +334,7 @@ public class BlinkDevice implements Parcelable, Serializable {
 		
 		dest.writeInt(Identity);
 		dest.writeInt(IdentityPoint);
+		dest.writeInt(GroupID);
 		
 		dest.writeBooleanArray(new boolean[]{
 			AutoConnect, SecureConnect, BlinkSupported, Connected, Discovered 	
@@ -413,6 +417,14 @@ public class BlinkDevice implements Parcelable, Serializable {
 	
 	public void setIdentity(int identity) {
 		Identity = identity;
+	}
+	
+	public void setGroupID(int id) {
+		GroupID = id;
+	}
+	
+	public int getGroupID() {
+		return GroupID;
 	}
 	
 	public boolean isAutoConnect() {

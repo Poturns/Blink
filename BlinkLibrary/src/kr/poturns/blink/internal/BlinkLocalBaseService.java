@@ -36,6 +36,8 @@ abstract class BlinkLocalBaseService extends Service {
 	public static final String INTENT_EXTRA_IDENTITY_CHANGE = "Intent.Extra.Identity.Change";
 	
 	
+	
+	
 	// *** LIFE CYCLE DECLARATION *** //
 	final HashMap<String, BlinkSupportBinder> BINDER_MAP = new HashMap<String, BlinkSupportBinder>();
 
@@ -50,8 +52,7 @@ abstract class BlinkLocalBaseService extends Service {
 		// For Service Debugging... 
 		//android.os.Debug.waitForDebugger();
 		
-		// Blink 서비스에 필요한 기본 디렉토리 생성.
-		FileUtil.createExternalDirectory();
+		initiatate();
 		
 		// Blink 서비스를 위한 본 디바이스 정보 파악.
 		mDeviceAnalyzer = DeviceAnalyzer.getInstance(this);
@@ -118,6 +119,14 @@ abstract class BlinkLocalBaseService extends Service {
 	public void onDestroy() {
 		Log.e("BlinkLocalBaseService", "onDestroy()");
 		InterDeviceManager.getInstance(this).destroy();
+	}
+	
+	private void initiatate() {
+		
+		// Blink 서비스에 필요한 기본 디렉토리 생성.
+		FileUtil.createExternalDirectory();
+		
+		
 	}
 	
 }

@@ -160,6 +160,7 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			BlinkDevice device = BlinkDevice.load(origin);
+			device.setDiscovered(true);
 			
 			mServiceKeeper.addDiscovery(device);
 			
@@ -182,7 +183,8 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			// 해당 디바이스와 블루투스 연결 성립
 
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-			final BlinkDevice device = BlinkDevice.load(origin);
+			BlinkDevice device = BlinkDevice.load(origin);
+			device.setConnected(true);
 
 			// Broadcasting...
 			Intent mActionConnected = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);
@@ -196,6 +198,7 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			BlinkDevice device = BlinkDevice.load(origin);
+			device.setConnected(false);
 
 			mServiceKeeper.removeConnection(device);
 			
@@ -222,6 +225,7 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 		} else if (IBlinkEventBroadcast.BROADCAST_REQUEST_CONFIGURATION_CHANGE.equals(action)) {
 			// 서비스 환경설정 값 변경 요청..
 			
+			// TODO : Preference 에서 설정값 적용해오기.			
 		}
 	}
 
@@ -270,12 +274,14 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 		switch (curr_state) {
 		case BluetoothAdapter.STATE_CONNECTED:
 			Log.d("InterDeviceManager_handleConnectionChanged()", "STATE_CONNECTED");
+			device.setConnected(true);
 			
 			mActionIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);
 			break;
 	
 		case BluetoothAdapter.STATE_DISCONNECTED:
 			Log.d("InterDeviceManager_handleConnectionChanged()", "STATE_DISCONNECTED");
+			device.setConnected(false);
 			
 			mActionIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCONNECTED);
 			break;
@@ -294,6 +300,8 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 		Log.d("InterDeviceManager", "[LE] " + origin.getName() + " : " + origin.getUuids()[0]);
 		
 		BlinkDevice device = BlinkDevice.load(origin);
+		device.setDiscovered(true);
+		
 		if (scanRecord != null) {
 			
 		}
