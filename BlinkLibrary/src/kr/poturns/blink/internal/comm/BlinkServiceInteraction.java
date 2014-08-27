@@ -310,7 +310,6 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	//예제를 위한 테스트 코드
 	public boolean registerExternalSystemDatabase(SystemDatabaseObject mSystemDatabaseObject){
 		try {
-			mSystemDatabaseObject.mDevice.MacAddress = "test";
 			mInternalOperationSupport.registerSystemDatabase(mSystemDatabaseObject);
 				return true;
 		} catch (RemoteException e) {

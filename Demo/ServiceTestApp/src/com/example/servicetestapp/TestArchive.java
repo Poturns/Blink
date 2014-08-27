@@ -38,13 +38,13 @@ public class TestArchive {
 		this.mBlinkServiceInteraction = mBlinkServiceInteraction;
 	}
 	public void run(){
-		exampleRemoteCall();
-//		exampleRegisterSystemDatabase();
-//		exmampleRegisterExternalSystemDatabase();
+//		exampleRemoteCall();
+		exampleRegisterSystemDatabase();
+		exmampleRegisterExternalSystemDatabase();
 //		exampleObtainSystemDatabaseAll();
 //		exampleObtainMeasurementDataById();
 //		exampleObtainSystemDatabase();
-//		exampleRegisterMeasurementDatabase();
+		exampleRegisterMeasurementDatabase();
 //		exampleObtainMeasurementDatabase();
 //		exampleLogAll();
 //		exampleStartFuntion();
@@ -170,13 +170,18 @@ public class TestArchive {
 	public void exmampleRegisterExternalSystemDatabase(){
 		//외부 디바이스 임시 등록
 		mSystemDatabaseObject = mBlinkServiceInteraction.local.obtainSystemDatabase();
-		mSystemDatabaseObject.mDevice.Device = "ExternalDevice";
-		mSystemDatabaseObject.mApp.PackageName = "ExternalPackageName";
-		mSystemDatabaseObject.mApp.AppName = "ExternalAppName";
+		mSystemDatabaseObject.mDevice.Device = "MJ-G2";
+		mSystemDatabaseObject.mDevice.MacAddress = "58:A2:B5:54:2D:A9";
+		mSystemDatabaseObject.mApp.PackageName = "TextPackageName";
+		mSystemDatabaseObject.mApp.AppName = "TextAppName";
 		mSystemDatabaseObject.mFunctionList.clear();
-		mSystemDatabaseObject.addFunction("ExternalFunction", "ExternalFunction","ExternalFunction",Function.TYPE_ACTIVITY);
+		mSystemDatabaseObject.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY);
+		mSystemDatabaseObject.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_SERIVCE);
+		mSystemDatabaseObject.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_BROADCAST);
 		mSystemDatabaseObject.mMeasurementList.clear();
+		mSystemDatabaseObject.addMeasurement(Eye.class);
 		mSystemDatabaseObject.addMeasurement(Body.class);
+		mSystemDatabaseObject.addMeasurement(Heart.class);
 		mBlinkServiceInteraction.registerExternalSystemDatabase(mSystemDatabaseObject);
 	}
 	
@@ -229,39 +234,43 @@ public class TestArchive {
 	 */
 	public void exampleRegisterMeasurementDatabase(){
 		Log.i(tag, "exampleRegisterMeasurementDatabase");
-		mSystemDatabaseObject = mBlinkServiceInteraction.local.obtainSystemDatabase();
-		if(mSystemDatabaseObject.isExist){
-			try {
-				Eye mEye;
-				Body mBody;
-				Heart mHeart;
-				Random random = new Random();
-				for(int i=0;i<10;i++){
-					mEye = new Eye();
-					mEye.left_sight = Math.round(random.nextDouble()*10d)/10d;
-					mEye.right_sight = Math.round(random.nextDouble()*10d)/10d;
-					mBlinkServiceInteraction.local.registerMeasurementData(mSystemDatabaseObject,mEye);
-				}
-				for(int i=0;i<10;i++){
-					mBody = new Body();
-					mBody.height = Math.round(random.nextFloat()*10f)/10f+random.nextInt(50)+140;
-					mBody.weight = Math.round(random.nextFloat()*10f)/10f+random.nextInt(50)+40;
-					mBlinkServiceInteraction.local.registerMeasurementData(mSystemDatabaseObject,mBody);
-				}
+//		mSystemDatabaseObject = mBlinkServiceInteraction.local.obtainSystemDatabase();
+		List<SystemDatabaseObject> mSystemDatabaseObjectList = mBlinkServiceInteraction.local.obtainSystemDatabaseAll();
+		for(int j=0;j<mSystemDatabaseObjectList.size();j++){
+			mSystemDatabaseObject = mSystemDatabaseObjectList.get(j);
+			if(mSystemDatabaseObject.isExist){
+				try {
+					Eye mEye;
+					Body mBody;
+					Heart mHeart;
+					Random random = new Random();
+					for(int i=0;i<10;i++){
+						mEye = new Eye();
+						mEye.left_sight = Math.round(random.nextDouble()*10d)/10d;
+						mEye.right_sight = Math.round(random.nextDouble()*10d)/10d;
+						mBlinkServiceInteraction.local.registerMeasurementData(mSystemDatabaseObject,mEye);
+					}
+					for(int i=0;i<10;i++){
+						mBody = new Body();
+						mBody.height = Math.round(random.nextFloat()*10f)/10f+random.nextInt(50)+140;
+						mBody.weight = Math.round(random.nextFloat()*10f)/10f+random.nextInt(50)+40;
+						mBlinkServiceInteraction.local.registerMeasurementData(mSystemDatabaseObject,mBody);
+					}
+					
+					for(int i=0;i<10;i++){
+						mHeart = new Heart();
+						mHeart.beatrate = random.nextInt(20)+60;
+						mBlinkServiceInteraction.local.registerMeasurementData(mSystemDatabaseObject,mHeart);
+					}
 				
-				for(int i=0;i<10;i++){
-					mHeart = new Heart();
-					mHeart.beatrate = random.nextInt(20)+60;
-					mBlinkServiceInteraction.local.registerMeasurementData(mSystemDatabaseObject,mHeart);
+					
+				} catch (IllegalArgumentException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-			
-				
-			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			}else {
+				return;
 			}
-		}else {
-			return;
 		}
 	}
 	

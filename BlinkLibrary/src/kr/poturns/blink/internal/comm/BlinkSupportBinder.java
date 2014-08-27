@@ -54,6 +54,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		super(context);
 		mBlinkDatabaseManager = new BlinkDatabaseManager(context);
 		mBlinkDevice = BlinkDevice.HOST;
+		if(mBlinkDevice==null)Log.i(tag, "BlinkDevice.HOST : null");
 	}
 
 	@Override
