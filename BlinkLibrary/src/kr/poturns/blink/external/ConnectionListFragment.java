@@ -1,8 +1,8 @@
 package kr.poturns.blink.external;
 
 import kr.poturns.blink.R;
+import kr.poturns.blink.external.ConnectionFragment.BaseConnectionFragment;
 import kr.poturns.blink.internal.comm.BlinkDevice;
-import android.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
@@ -18,7 +18,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 /** 현재 연결된 Device들을 ListView의 형태로 보여주는 Fragment */
-class ConnectionListFragment extends ConnectionFragment {
+class ConnectionListFragment extends BaseConnectionFragment {
 	SwipeRefreshLayout mSwipeRefreshLayout;
 	ArrayAdapter<BlinkDevice> mAdapter;
 	boolean mRefresh = false;
@@ -37,9 +37,9 @@ class ConnectionListFragment extends ConnectionFragment {
 				android.R.color.holo_green_light,
 				android.R.color.holo_orange_light,
 				android.R.color.holo_red_light);
-		mDeviceList.add(mHostDevice);
+		showHostDeviceToList(true);
 		mAdapter = new ArrayAdapter<BlinkDevice>(getActivity(),
-				android.R.layout.simple_list_item_1, mDeviceList) {
+				android.R.layout.simple_list_item_1, getDeviceList()) {
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
 				BlinkDevice device = getItem(position);
@@ -86,7 +86,7 @@ class ConnectionListFragment extends ConnectionFragment {
 	}
 
 	@Override
-	protected Fragment getChangeFragment() {
+	public BaseConnectionFragment getChangedFragment() {
 		return new ConnectionCircularFragment();
 	}
 
@@ -108,20 +108,20 @@ class ConnectionListFragment extends ConnectionFragment {
 	};
 
 	@Override
-	protected void onDeviceListChanged() {
+	public void onDeviceListChanged() {
 		if (mRefresh) {
 			mRefresh = false;
 			mSwipeRefreshLayout.setRefreshing(false);
 			Toast.makeText(getActivity(), "connection refresh!",
 					Toast.LENGTH_SHORT).show();
 		}
-		mDeviceList.add(0, mHostDevice);
+		showHostDeviceToList(true);
 		mAdapter.notifyDataSetChanged();
 	}
 
 	@Override
-	void onDeviceListLoadFailed(boolean isFailedByConcurrentTask) {
-		super.onDeviceListLoadFailed(isFailedByConcurrentTask);
+	public void onDeviceListLoadFailed() {
+		super.onDeviceListLoadFailed();
 		mRetainOperationItem.setChecked(!mRetainOperationItem.isChecked());
 	}
 }

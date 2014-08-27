@@ -49,11 +49,27 @@ class DataSelectFragment extends Fragment {
 						.getSerializable("map");
 			}
 			mAdapter = new ContentAdapter(getActivity(), mDeviceMap);
-		} else if (BundleResolver.obtainApp(arg) == null) {
+		} else {
 			mDeviceMap = new Hashtable<Device, List<App>>();
-			mDeviceMap.put(mDevice, mManager.obtainAppList(mDevice));
-		} else {// argument에 device와 app 모두 있는 경우
-			changeFragment(arg);
+			if (mDevice != null)
+				mDeviceMap.put(mDevice, mManager.obtainAppList(mDevice));
+		}
+	}
+
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+		if (!hidden) {
+			// argument에 device와 app 모두 있는 경우
+			if (BundleResolver.obtainApp(getArguments()) != null) {
+				changeFragment(getArguments());
+			} else if ((mDevice = BundleResolver.obtainDevice(getArguments())) != null) {
+				mDeviceMap.put(mDevice, mManager.obtainAppList(mDevice));
+				mAdapter.notifyDataSetChanged();
+			}
+		} else {
+			if (getActivity() != null)
+				getActivity().getActionBar().setSubtitle(null);
 		}
 	}
 
@@ -112,7 +128,7 @@ class DataSelectFragment extends Fragment {
 
 		public ContentAdapter(Context context,
 				Map<Device, ? extends List<App>> map) {
-			super(context, R.layout.list_fragment_content_select,
+			super(context, android.R.layout.simple_expandable_list_item_1,
 					R.layout.list_fragment_content_select, map);
 		}
 
@@ -122,12 +138,6 @@ class DataSelectFragment extends Fragment {
 			final Device device = (Device) getGroup(groupPosition);
 			Holder holder = (Holder) h;
 			holder.tv.setText(device.Device);
-			holder.button.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					changeFragment(BundleResolver.toBundle(device, null));
-				}
-			});
 		}
 
 		@Override

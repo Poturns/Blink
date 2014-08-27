@@ -5,8 +5,8 @@ import java.util.List;
 
 import kr.poturns.blink.R;
 import kr.poturns.blink.external.CircularViewHelper.OnDragAndDropListener;
+import kr.poturns.blink.external.ConnectionFragment.BaseConnectionFragment;
 import kr.poturns.blink.internal.comm.BlinkDevice;
-import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -17,10 +17,9 @@ import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.SlidingDrawer;
 import android.widget.TextView;
-import android.widget.Toast;
 
 @SuppressWarnings("deprecation")
-final class ConnectionCircularFragment extends ConnectionFragment {
+final class ConnectionCircularFragment extends BaseConnectionFragment {
 	/** layout 하단의 submenu 역할을 하는 SlidingDrawer */
 	private SlidingDrawer mSlidingDrawer;
 	private SeekBar mSeekBar;
@@ -32,6 +31,7 @@ final class ConnectionCircularFragment extends ConnectionFragment {
 			Bundle savedInstanceState) {
 		ViewGroup viewGroup = (ViewGroup) View.inflate(getActivity(),
 				R.layout.fragment_circular_connection, null);
+		showHostDeviceToList(false);
 		mCircularHelper = new CircularViewHelper(viewGroup, android.R.id.text1) {
 			@Override
 			protected View getView(Context context, int position, Object object) {
@@ -43,13 +43,17 @@ final class ConnectionCircularFragment extends ConnectionFragment {
 						device.isConnected() ? R.drawable.ic_action_device_access_bluetooth_connected
 								: R.drawable.ic_action_device_access_bluetooth,
 						0, 0);
-				view.setText(device.getName());
+				String name = device.getName();
+				// TODO 현재 ChildView 크기 만큼, 표시되는 이름 길이 줄이기
+				// int size = getSize();
+				// if(name!=null && device.getName().length())
+				view.setText(name);
 				view.setOnClickListener(mOnClickListener);
 				return view;
 			}
 		};
 		TextView hostView = (TextView) mCircularHelper.getCenterView();
-		hostView.setText(mHostDevice.getName());
+		hostView.setText(getHostDevice().getName());
 		hostView.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -66,7 +70,7 @@ final class ConnectionCircularFragment extends ConnectionFragment {
 			}
 		});
 		mCircularHelper.setOnDragAndDropListener(mDragAndDropListener);
-		mCircularHelper.drawCircularView(mDeviceList);
+		mCircularHelper.drawCircularView(getDeviceList());
 
 		mSlidingDrawer = (SlidingDrawer) viewGroup
 				.findViewById(R.id.fragment_circular_sliding_drawer);
@@ -113,11 +117,11 @@ final class ConnectionCircularFragment extends ConnectionFragment {
 
 	ArrayList<View> generateViews() {
 		ArrayList<View> list = new ArrayList<View>();
-		int size = mDeviceList.size();
+		int size = getDeviceList().size();
 		for (int i = 0; i < size; i++) {
 			TextView view = (TextView) View.inflate(getActivity(),
 					R.layout.view_textview, null);
-			BlinkDevice device = mDeviceList.get(i);
+			BlinkDevice device = getDeviceList().get(i);
 			view.setCompoundDrawablesWithIntrinsicBounds(
 					0,
 					device.isConnected() ? R.drawable.ic_action_device_access_bluetooth_connected
@@ -132,7 +136,7 @@ final class ConnectionCircularFragment extends ConnectionFragment {
 	}
 
 	@Override
-	protected Fragment getChangeFragment() {
+	public BaseConnectionFragment getChangedFragment() {
 		return new ConnectionListFragment();
 	}
 
@@ -161,7 +165,7 @@ final class ConnectionCircularFragment extends ConnectionFragment {
 		public void onDropEnd(View view, View center) {
 			center.setBackgroundResource(R.drawable.drawable_rounded_circle);
 			view.setBackgroundResource(R.drawable.drawable_rounded_circle);
-			((TextView) center).setText(mHostDevice.getName());
+			((TextView) center).setText(getHostDevice().getName());
 		}
 	};
 	private View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -175,14 +179,12 @@ final class ConnectionCircularFragment extends ConnectionFragment {
 	};
 
 	@Override
-	protected void onDeviceListChanged() {
+	public void onDeviceListChanged() {
 		if (mIsRefresh) {
-			Toast.makeText(getActivity(), "connection refresh!",
-					Toast.LENGTH_SHORT).show();
 			mSeekBar.setProgress(0);
 			mIsRefresh = false;
 		}
-		mCircularHelper.drawCircularView(mDeviceList);
+		mCircularHelper.drawCircularView(getDeviceList());
 	}
 
 }

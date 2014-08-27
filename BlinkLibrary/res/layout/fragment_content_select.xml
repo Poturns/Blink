@@ -10,6 +10,8 @@
         android:layout_height="wrap_content" >
     </ExpandableListView>
 
-    <include layout="@layout/emptyview" />
+    <include
+        layout="@layout/emptyview"
+        android:visibility="invisible" />
 
 </FrameLayout>

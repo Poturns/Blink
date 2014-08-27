@@ -11,6 +11,7 @@ import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.internal.comm.BlinkDevice;
+import android.bluetooth.BluetoothAdapter;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -171,33 +172,42 @@ public class SqliteManagerExtended extends SqliteManager {
 		return object;
 	}
 
-	public <T> boolean register(T... datas) {
+	public boolean register(Object... datas) {
 		if (datas == null)
 			return false;
-		boolean result = false, check;
+		boolean result = true;
 		mSQLiteDatabase.beginTransaction();
-		if (datas[0] instanceof App) {
-			for (App app : (App[]) datas) {
+		for (Object obj : datas) {
+			if (obj instanceof App) {
+				App app = (App) obj;
 				ContentValues values = new ContentValues();
 				values.put("DeviceId", app.DeviceId);
 				values.put("PackageName", app.PackageName);
 				values.put("AppName", app.AppName);
 				values.put("Version", app.Version);
-				check = mSQLiteDatabase.insert("App", null, values) == -1;
-			}
-			result = true;
-		} else if (datas[0] instanceof Measurement) {
-			for (Measurement measurement : (Measurement[]) datas) {
+				result &= mSQLiteDatabase.insert("App", null, values) == -1;
+			} else if (obj instanceof Measurement) {
+				Measurement measurement = (Measurement) obj;
 				ContentValues values = new ContentValues();
-				values.put("AppId", "" + measurement.AppId);
-				values.put("Measurement", "" + measurement.Measurement);
+				values.put("AppId", String.valueOf(measurement.AppId));
+				values.put("Measurement", measurement.Measurement);
 				values.put("Type", "" + measurement.Type);
-				values.put("Description", "" + measurement.Description);
-				check = mSQLiteDatabase.insert("Measurement", null, values) == -1;
-			}
-		} else if (datas[0] instanceof MeasurementData) {
+				values.put("Description", measurement.Description);
+				result &= mSQLiteDatabase.insert("Measurement", null, values) == -1;
+			} else if (obj instanceof MeasurementData) {
+
+			} else if (obj instanceof Function) {
+
+			} else if (obj instanceof Device) {
+
+			} else
+				continue;
+			if (!result)
+				break;
 		}
-		mSQLiteDatabase.setTransactionSuccessful();
+		if (result) {
+			mSQLiteDatabase.setTransactionSuccessful();
+		}
 		mSQLiteDatabase.endTransaction();
 		return result;
 	}
@@ -214,8 +224,9 @@ public class SqliteManagerExtended extends SqliteManager {
 		return map;
 	}
 
+	/** Database에서 현재 Device의 Data를 삭제한다 */
 	public boolean removeCurrentDeviceData() {
-		Device device = obtainDevice(BlinkDevice.obtainHostDevice());
+		Device device = obtainDevice(obtainHostDevice());
 		List<App> appList = obtainAppList(device);
 		List<Measurement> measurementList = new ArrayList<Measurement>();
 
@@ -248,8 +259,9 @@ public class SqliteManagerExtended extends SqliteManager {
 		}
 	}
 
+	/** @hide */
 	public boolean removeCurrentAppData(Context context) {
-		Device device = obtainDevice(BlinkDevice.obtainHostDevice());
+		Device device = obtainDevice(obtainHostDevice());
 		List<App> appList = obtainAppList(device);
 		App app = null;
 		for (App tempApp : appList) {
@@ -282,5 +294,16 @@ public class SqliteManagerExtended extends SqliteManager {
 		} finally {
 			mSQLiteDatabase.endTransaction();
 		}
+	}
+
+	/** 현재 장비를 나타내는 BlinkDevice를 얻는다. */
+	private static BlinkDevice obtainHostDevice() {
+		BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+		final String address = adapter.getAddress();
+		BlinkDevice device;
+		device = BlinkDevice.load(address);
+		if (device.getName() == null || device.getName().length() < 1)
+			device.setName(adapter.getName());
+		return device;
 	}
 }

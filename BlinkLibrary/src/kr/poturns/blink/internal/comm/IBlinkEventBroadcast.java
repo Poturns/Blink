@@ -91,4 +91,5 @@ public interface IBlinkEventBroadcast {
 	 * @param device
 	 */
 	public void onDeviceDisconnected(BlinkDevice device);
+
 }

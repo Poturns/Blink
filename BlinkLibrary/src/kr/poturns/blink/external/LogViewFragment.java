@@ -62,15 +62,7 @@ class LogViewFragment extends Fragment {
 
 	/** Fragment의 Argument를 확인하여 값이 있다면 해당 값에 적절한 Log를 불러온다. */
 	private void checkArgumentsFromOtherFragment() {
-		Bundle arg = getArguments();
-		if (arg != null) {
-			mDevice = BundleResolver.obtainDevice(arg);
-			mApp = BundleResolver.obtainApp(arg);
-			StringBuilder subTitle = new StringBuilder(mDevice.Device);
-			if (mApp != null)
-				subTitle.append(" / ").append(mApp.AppName);
-			getActivity().getActionBar().setSubtitle(subTitle.toString());
-		}
+		checkArgumentAndResolveData();
 		if (mLogList.isEmpty()) {
 			getLoader(
 					new Loader.OnLoadCompleteListener<List<ExternalDeviceAppLog>>() {
@@ -84,6 +76,26 @@ class LogViewFragment extends Fragment {
 							loader.abandon();
 						}
 					}).forceLoad();
+		}
+	}
+
+	void checkArgumentAndResolveData() {
+		Bundle arg = getArguments();
+		if (arg != null && !arg.isEmpty()) {
+			mDevice = BundleResolver.obtainDevice(arg);
+			mApp = BundleResolver.obtainApp(arg);
+			StringBuilder subTitle = new StringBuilder(mDevice.Device);
+			if (mApp != null)
+				subTitle.append(" / ").append(mApp.AppName);
+			getActivity().getActionBar().setSubtitle(subTitle.toString());
+		}
+	}
+
+	@Override
+	public void onHiddenChanged(boolean hidden) {
+		super.onHiddenChanged(hidden);
+		if (!hidden) {
+			checkArgumentAndResolveData();
 		}
 	}
 

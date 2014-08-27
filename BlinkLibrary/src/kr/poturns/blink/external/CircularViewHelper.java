@@ -62,7 +62,12 @@ class CircularViewHelper {
 	private View mCenterView;
 	private Context mContext;
 	private int mCenterViewId;
-	private int mScreenWidth, mViewSize, mChildViewDistance;
+	/** ChildView의 지름 */
+	private int mViewSize;
+	/** CenterView 와 ChildView와의 거리 */
+	private int mChildViewDistance;
+	/** ChildView 개수 */
+	private int mObjectSize;
 	private FrameLayout.LayoutParams mLayoutParams;
 	private static final int CENTER_VIEW_POSITION = -2;
 
@@ -148,9 +153,9 @@ class CircularViewHelper {
 	 * 원형으로 배치할 View의 크기 등등의 변수(Spec)를 다시 측정한다.
 	 */
 	private void measuringSpec(int newSize) {
-		mScreenWidth = mContext.getResources().getDisplayMetrics().widthPixels;
-		mViewSize = mScreenWidth / (newSize < 8 ? 8 : newSize) * 2;
-		mChildViewDistance = (mScreenWidth - mViewSize - 20) / 2;
+		final int screenWidth = mContext.getResources().getDisplayMetrics().widthPixels;
+		mViewSize = screenWidth / (newSize < 8 ? 8 : newSize) * 2;
+		mChildViewDistance = (screenWidth - mViewSize - 20) / 2;
 		mLayoutParams = new FrameLayout.LayoutParams(mViewSize, mViewSize);
 		mLayoutParams.gravity = Gravity.CENTER;
 	}
@@ -173,15 +178,21 @@ class CircularViewHelper {
 	public final void drawCircularView(Collection<? extends Object> datas) {
 		removeAllChildView();
 		mChildViewList.clear();
-		final int size = datas.size();
-		measuringSpec(size);
+		if (datas == null) {
+			mObjectSize = 0;
+			measuringSpec(mObjectSize);
+			setCenterViewSpec();
+			return;
+		}
+		mObjectSize = datas.size();
+		measuringSpec(mObjectSize);
 		setCenterViewSpec();
 		View child;
 		int i = 0;
 		for (Object obj : datas) {
 			child = getView(mContext, i, obj);
 			child.setTag(obj);
-			setChildViewInfo(child, i, size);
+			setChildViewInfo(child, i, mObjectSize);
 			mViewGroup.addView(child);
 			mChildViewList.add(child);
 			i++;
@@ -203,6 +214,10 @@ class CircularViewHelper {
 	 */
 	protected View getView(Context context, int position, Object object) {
 		return View.inflate(context, R.layout.view_textview, null);
+	}
+
+	public int getSize() {
+		return mObjectSize;
 	}
 
 	private void setChildViewInfo(View childView, int postion, int size) {

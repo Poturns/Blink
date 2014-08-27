@@ -1,38 +1,32 @@
 package kr.poturns.blink.external;
 
-import java.util.Set;
-
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.util.ArrayList;
+import java.util.List;
 
 import kr.poturns.blink.R;
 import kr.poturns.blink.db.SqliteManagerExtended;
-import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import kr.poturns.blink.util.FileUtil;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.widget.SlidingPaneLayout;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 import dev.dworks.libs.actionbartoggle.ActionBarToggle;
 
 public final class ServiceControlActivity extends Activity implements
 		IServiceContolActivity {
-	private static final String TAG = ServiceControlActivity.class
-			.getSimpleName();
+	// private static final String TAG = ServiceControlActivity.class
+	// .getSimpleName();
 	ActionBarToggle mActionBarToggle;
 	SlidingPaneLayout mSlidingPaneLayout;
 	ListView mLeftListView;
@@ -40,6 +34,7 @@ public final class ServiceControlActivity extends Activity implements
 	BlinkServiceInteraction mInteraction;
 	IInternalOperationSupport mBlinkOperation;
 	SqliteManagerExtended mSqliteManagerExtended;
+	List<Fragment> mFragmentList = new ArrayList<Fragment>();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -59,53 +54,44 @@ public final class ServiceControlActivity extends Activity implements
 				R.array.activity_sercive_control_menu_array,
 				android.R.layout.simple_list_item_1));
 		mLeftListView.setOnItemClickListener(mLeftListViewOnItemClickListener);
+		mFragmentList.add(new ConnectionFragment());
+		mFragmentList.add(new DataSelectFragment());
+		mFragmentList.add(new LogViewFragment());
+		mFragmentList.add(new PreferenceExternalFragment());
+		FragmentTransaction transaction = getFragmentManager()
+				.beginTransaction();
+		int i = 0;
+		for (Fragment f : mFragmentList) {
+			f.setArguments(new Bundle());
+			transaction.add(R.id.activity_main_fragment_content, f,
+					String.valueOf(i++)).hide(f);
+		}
+		transaction.commit();
 		transitFragment(0, null);
 	}
 
 	@Override
 	public void transitFragment(int position, Bundle arguments) {
-		Fragment f;
-		switch (position) {
-		default:
-			f = new ConnectionCircularFragment();
-			break;
-		case 1:
-			f = new DataSelectFragment();
-			break;
-		case 2:
-			f = new LogViewFragment();
-			break;
+		Fragment currentFragment = mFragmentList.get(mCurrentPageSelection);
+		Fragment shownFragment = mFragmentList.get(position);
+		FragmentTransaction transaction = getFragmentManager()
+				.beginTransaction();
+		if (currentFragment != null) {
+			transaction.hide(currentFragment);
 		}
-
-		f.setArguments(arguments);
-		f.setHasOptionsMenu(true);
-		getFragmentManager().beginTransaction()
-				.replace(R.id.activity_main_fragment_content, f)
-				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+		if (shownFragment != null) {
+			Bundle fragmentArg = shownFragment.getArguments();
+			if (fragmentArg != null && arguments != null) {
+				fragmentArg.clear();
+				fragmentArg.putAll(arguments);
+			}
+			transaction.show(shownFragment);
+		}
+		transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 				.commit();
-
 		mCurrentPageSelection = position;
 		getActionBar().setTitle(
 				mLeftListView.getItemAtPosition(position).toString());
-	}
-
-	protected void startPreferenceActivity() {
-		startActivityForResult(new Intent(this, PreferenceActivity.class),
-				REQUEST_PREFERENCE);
-	}
-
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		switch (requestCode) {
-		case REQUEST_PREFERENCE:
-			if (resultCode == RESULT_SERVICE) {
-				Bundle bundle = data.getBundleExtra(RESULT_EXTRA);
-				sendMessageToService(bundle);
-			}
-			break;
-		default:
-			super.onActivityResult(requestCode, resultCode, data);
-		}
 	}
 
 	@Override
@@ -172,45 +158,11 @@ public final class ServiceControlActivity extends Activity implements
 				return;
 			}
 
-			switch (position) {
-			default: // connection / data / log
-				transitFragment(position, null);
-				break;
-			case 3: // setting
-				startPreferenceActivity();
-				break;
-			}
+			// connection / data / log / setting fragment
+			transitFragment(position, null);
 			mSlidingPaneLayout.closePane();
 		}
 	};
-
-	@Override
-	public boolean sendMessageToService(Bundle message) {
-		if (message != null) {
-			JSONObject json = new JSONObject();
-			Set<String> keySets = message.keySet();
-			for (String key : keySets) {
-				try {
-					json.put(key, JSONObject.wrap(message.get(key)));
-					String jsonMsg = json.toString();
-					Log.d(TAG, "sending to service : \n" + jsonMsg);
-					// XXX pacel null pointer exception!
-					mBlinkOperation.sendBlinkMessages(
-							BlinkDevice.obtainHostDevice(), jsonMsg);
-					return true;
-				} catch (JSONException e) {
-					e.printStackTrace();
-					Toast.makeText(this, "json convert error",
-							Toast.LENGTH_SHORT).show();
-				} catch (Exception e) {
-					e.printStackTrace();
-					Toast.makeText(this, "blink service error",
-							Toast.LENGTH_SHORT).show();
-				}
-			}
-		}
-		return false;
-	}
 
 	@Override
 	public BlinkServiceInteraction getServiceInteration() {

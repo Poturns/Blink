@@ -6,10 +6,10 @@ import java.lang.reflect.Field;
 import kr.poturns.blink.R;
 import kr.poturns.blink.db.SqliteManagerExtended;
 import kr.poturns.blink.util.FileUtil;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -20,13 +20,26 @@ import android.preference.PreferenceScreen;
 import android.util.Log;
 import android.widget.Toast;
 
+/**
+ * Blink Library의 설정 변경을 하는 PreferenceFragment<br>
+ * <br>
+ * 변경 된 설정값은 Binder를 통해 Service에 전달된다.
+ */
 class PreferenceExternalFragment extends PreferenceFragment implements
 		OnSharedPreferenceChangeListener {
 	private static final String TAG = PreferenceExternalFragment.class
 			.getSimpleName();
 	/** '기기를 센터로 설정'의 Key */
 	private static final String KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST = "KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST";
-	private Bundle mResultBundle = new Bundle();
+	IServiceContolActivity mInterface;
+
+	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+		if (activity instanceof IServiceContolActivity) {
+			mInterface = (IServiceContolActivity) activity;
+		}
+	}
 
 	@Override
 	public void onCreate(Bundle paramBundle) {
@@ -162,19 +175,12 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 			String key) {
 		if (KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST.equals(key)) {
-			boolean isSetThisDeviceToHost = sharedPreferences.getBoolean(key,
-					false);
-			mResultBundle.putBoolean(KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST,
-					isSetThisDeviceToHost);
-			sendPreferenceDataToService(mResultBundle);
+			sendPreferenceDataToService(KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST);
 		}
 	}
 
 	/** 설정에서 변경된 값을 Service에 전달한다. */
-	private void sendPreferenceDataToService(Bundle object) {
-		getActivity().setResult(
-				IServiceContolActivity.RESULT_SERVICE,
-				new Intent().putExtra(IServiceContolActivity.RESULT_EXTRA,
-						object));
+	private void sendPreferenceDataToService(String keyName) {
+		mInterface.getServiceInteration().requestConfigurationChange(keyName);
 	}
 }

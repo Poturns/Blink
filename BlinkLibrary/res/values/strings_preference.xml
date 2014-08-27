@@ -13,8 +13,5 @@
     <string name="preference_external_title_delete_database_device">기기 정보 삭제</string>
     <string name="preference_external_key_delete_database_deivce">KEY_EXTERNAL_DELETE_DATABASE_DEVICE</string>
     <string name="preference_external_summary_delete_database_device">Blink Database에 저장되어있는 현재 기기에 관한 정보를 모두 삭제합니다.</string>
-    <string name="preference_internal_title_delete_database">Application Database 내용 삭제</string>
-    <string name="preference_internal_key_delete_database">KEY_INTERNAL_DELETE_DATABASE_APP</string>
-    <string name="preference_internal_summary_delete_database">Blink Database에서 현재 구동중인 Application에 관한 정보를 모두 삭제합니다.</string>
 
 </resources>

@@ -16,10 +16,14 @@ class BundleResolver {
 	}
 
 	public static Device obtainDevice(Bundle bundle) {
+		if (bundle == null)
+			return null;
 		return bundle.getParcelable(IServiceContolActivity.EXTRA_DEVICE);
 	}
 
 	public static App obtainApp(Bundle bundle) {
+		if (bundle == null)
+			return null;
 		return bundle.getParcelable(IServiceContolActivity.EXTRA_DEVICE_APP);
 	}
 }
