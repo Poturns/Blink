@@ -101,7 +101,7 @@ class BluetoothAssistant extends Handler{
 	}
 	
 	private BluetoothManager mBluetoothManager;
-	private FunctionOperator mFunctionOperator;
+	private MessageProcessor mMessageProcessor;
 	private DeviceAnalyzer mDeviceAnalyzer;
 	private ServiceKeeper mServiceKeeper;
 	private boolean isLeSupported;
@@ -113,7 +113,7 @@ class BluetoothAssistant extends Handler{
 		BlinkLocalBaseService mContext = INTER_DEV_MANAGER.MANAGER_CONTEXT;
 		
 		mBluetoothManager = (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
-		mFunctionOperator = new FunctionOperator(mContext);
+		mMessageProcessor = new MessageProcessor(mContext);
 		mDeviceAnalyzer = DeviceAnalyzer.getInstance(mContext);
 		mServiceKeeper = ServiceKeeper.getInstance(mContext);
 		
@@ -453,7 +453,7 @@ class BluetoothAssistant extends Handler{
 	synchronized void onMessageReceivedFrom(String json, BlinkDevice device) {
 		if (onLog)
 			Log.d("BluetoothAssistant_onMessageReceivedFrom", json + " [from ]");
-		mFunctionOperator.acceptJsonData(json, device);
+		mMessageProcessor.acceptJsonData(json, device);
 	}
 
 	/**

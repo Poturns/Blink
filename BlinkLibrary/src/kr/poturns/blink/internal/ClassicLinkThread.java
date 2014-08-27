@@ -22,7 +22,7 @@ public class ClassicLinkThread extends Thread {
 
 	private final InterDeviceManager INTER_DEV_MANAGER;
 	private final BluetoothAssistant ASSISTANT;
-	private final FunctionOperator FUNC_OPERATOR;
+	private final MessageProcessor FUNC_OPERATOR;
 	private final BlinkDevice DEVICE;
 	
 	private boolean isClient;
@@ -50,7 +50,7 @@ public class ClassicLinkThread extends Thread {
 
 		INTER_DEV_MANAGER = assistant.INTER_DEV_MANAGER;
 		ASSISTANT = assistant;
-		FUNC_OPERATOR = new FunctionOperator(INTER_DEV_MANAGER.MANAGER_CONTEXT);
+		FUNC_OPERATOR = new MessageProcessor(INTER_DEV_MANAGER.MANAGER_CONTEXT);
 		DEVICE = device;
 	}
 	
