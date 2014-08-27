@@ -332,41 +332,33 @@ public class SqliteManager extends SQLiteOpenHelper {
 		}
 	}
 	
+	public ArrayList<Measurement> obtainMeasurementList(Class<?> mClass,int ContainType){
+		ArrayList<Measurement> mMeasurementList = new ArrayList<Measurement>();
+		
+		Field[] mFields = mClass.getFields();
+		for(int i=0;i<mFields.length;i++){
+			mMeasurementList.addAll(obtainMeasurementList(mFields[i], ContainType));
+		}
+		return mMeasurementList;
+	}
+	
+	
 	public ArrayList<Measurement> obtainMeasurementList(Field Measurement,int ContainType){
-		String[] args = new String[1];
-		String sql = "";
+		String where = "";
 		switch (ContainType) {
 		case CONTAIN_DEFAULT:
-			args[0] = ClassUtil.obtainFieldSchema(Measurement);
-			sql = SQL_SELECT_MEASUREMENT + "where Measurement=?";
+			where = "Measurement='" + ClassUtil.obtainFieldSchema(Measurement)+"'";
 			break;
 		case CONTAIN_FIELD:
-			args[0] = Measurement.getName();
-			sql = SQL_SELECT_MEASUREMENT + "where Measurement like '%/"+args[0]+"'";
-			args = null;
+			where = "Measurement like '%/"+Measurement.getName()+"'";
 			break;
 		
 		case CONTAIN_PARENT:
-			args[0] = ClassUtil.obtainParentSchema(Measurement);
-			sql = SQL_SELECT_MEASUREMENT + "where Measurement like '%"+args[0]+"'";
-			args = null;
+			where = SQL_SELECT_MEASUREMENT + "where Measurement like '%"+ClassUtil.obtainParentSchema(Measurement)+"'";
 			break;
 		} 
 		
-		Log.i(tag, "sql : "+sql);
-		Cursor mCursor = mSQLiteDatabase.rawQuery(sql, args);
-		ArrayList<Measurement> mMeasurementList = new ArrayList<Measurement>();
-		Measurement mMeasurement;
-		while(mCursor.moveToNext()){
-			mMeasurement = new Measurement();
-			mMeasurement.AppId = mCursor.getInt(mCursor.getColumnIndex("AppId"));
-			mMeasurement.MeasurementId = mCursor.getInt(mCursor.getColumnIndex("MeasurementId"));
-			mMeasurement.Measurement = mCursor.getString(mCursor.getColumnIndex("Measurement"));
-			mMeasurement.Type = mCursor.getString(mCursor.getColumnIndex("Type"));
-			mMeasurement.Description = mCursor.getString(mCursor.getColumnIndex("Description"));
-			mMeasurementList.add(mMeasurement);
-		}
-		return mMeasurementList;
+		return obtainMeasurementList(where);
 	}
 	
 	public ArrayList<Measurement> obtainMeasurementList(String where){
@@ -431,8 +423,8 @@ public class SqliteManager extends SQLiteOpenHelper {
 			}
 		}
 		
-		if(DateTimeFrom!=null)condition.add("DateTime >= '"+DateTimeFrom+"'");
-		if(DateTimeTo!=null)condition.add("DateTime <= '"+DateTimeTo+"'");
+		if(DateTimeFrom!=null && !DateTimeFrom.equals(""))condition.add("DateTime >= '"+DateTimeFrom+"'");
+		if(DateTimeTo!=null && !DateTimeTo.equals(""))condition.add("DateTime <= '"+DateTimeTo+"'");
 		condition.add("MeasurementId in (" + MeasurementIdcondition + ")");
 		
 		for(int i=0;i<condition.size();i++){

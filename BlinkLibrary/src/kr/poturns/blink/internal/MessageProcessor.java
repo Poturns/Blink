@@ -2,6 +2,8 @@ package kr.poturns.blink.internal;
 
 import java.util.ArrayList;
 
+import android.util.Log;
+
 import kr.poturns.blink.db.JsonManager;
 import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
@@ -15,16 +17,16 @@ import kr.poturns.blink.internal.comm.BlinkMessage;
  * @since 2014.07.12
  *
  */
-class MessageProcessor {
+public class MessageProcessor {
 	
-	private final BlinkLocalBaseService OPERATOR_CONTEXT;
+	private final BlinkLocalService OPERATOR_CONTEXT;
 	private final ServiceKeeper SERVICE_KEEPER;
 	
 	private JsonManager mJsonManager;
 	private SqliteManager mSqliteManager;
 	
 	public MessageProcessor(BlinkLocalBaseService context) {
-		OPERATOR_CONTEXT = context;
+		OPERATOR_CONTEXT = (BlinkLocalService)context;
 		SERVICE_KEEPER = ServiceKeeper.getInstance(context);
 		
 		mJsonManager = new JsonManager();
@@ -48,7 +50,8 @@ class MessageProcessor {
 	 * @param fromDevice
 	 */
 	public void acceptBlinkMessage(BlinkMessage message, BlinkDevice fromDevice) {
-		
+		String ret = OPERATOR_CONTEXT.receiveMessageFromProcessor(message.getMessage());
+		SERVICE_KEEPER.obtainBinder(message.getSourceApplication()).callbackData(message.getCode(), ret);
 		
 		// EXAMPLE !!
 		/*
@@ -72,8 +75,8 @@ class MessageProcessor {
 	 * @param toDevice
 	 */
 	public void sendBlinkMessageTo(BlinkMessage message, BlinkDevice toDevice) {
-		
-		
+		Log.i("test", "sendBlinkMessageTo");
+		acceptBlinkMessage(message,null);
 		
 		
 		
@@ -82,6 +85,6 @@ class MessageProcessor {
 		 * SendRemote시에만 발생하고
 		 * 여기서 추가 json을 붙여줘야 하나??
 		 */
-		SERVICE_KEEPER.sendMessageToDevice(toDevice, message);
+//		SERVICE_KEEPER.sendMessageToDevice(toDevice, message);
 	}
 }

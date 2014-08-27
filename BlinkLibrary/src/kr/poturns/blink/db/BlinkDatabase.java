@@ -79,6 +79,15 @@ public class BlinkDatabase {
 				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime'))"
 				+ ");";
 		db.execSQL(sql);
+		
+		Log.i(tag, "logDatabase ok");
+		
+		sql = "create table 'Synchronize' ("
+				+ "'DeviceId' INTEGER PRIMARY KEY ,"
+				+ "'Sequence' INTEGER NOT NULL,"
+				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime'))"
+				+ ");";
+		db.execSQL(sql);
 
 		Log.i(tag, "logDatabase ok");
 	}

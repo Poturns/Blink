@@ -39,52 +39,27 @@ public class TestArchive {
 	}
 	public void run(){
 //		exampleRemoteCall();
-		exampleRegisterSystemDatabase();
-		exmampleRegisterExternalSystemDatabase();
+//		exampleRegisterSystemDatabase();
+//		exmampleRegisterExternalSystemDatabase();
 //		exampleObtainSystemDatabaseAll();
 //		exampleObtainMeasurementDataById();
 //		exampleObtainSystemDatabase();
-		exampleRegisterMeasurementDatabase();
+//		exampleRegisterMeasurementDatabase();
 //		exampleObtainMeasurementDatabase();
 //		exampleLogAll();
 //		exampleStartFuntion();
 //		exampleBlinkDatabaseManager();
-//		exampleCheckInDevice();
+		exampleRemoteCall();
 	}
 	
 	private void exampleRemoteCall() {
 		// TODO Auto-generated method stub
 		mBlinkServiceInteraction.remote.setRequestPolicy(BlinkSupportBinder.REQUEST_TYPE_DUAL_DEVICE);
-		mBlinkServiceInteraction.remote.startFunction(new Function("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY), 0);
+		mBlinkServiceInteraction.remote.obtainMeasurementData(Eye.class, 0);
+		
+//		mBlinkServiceInteraction.local.queryDevice("").queryApp("").queryMeasurement("");
+//		mBlinkServiceInteraction.remote.obtainMeasurementData(mBlinkServiceInteraction.local.getMeasurementList(), null, null, 1);
 	}
-	/**
-	 * 데이터가 디바이스 내에 있는지 확인하는 예제
-	 */
-	private void exampleCheckInDevice() {
-	    // TODO Auto-generated method stub
-		boolean result = false;
-		
-		//checkInDeviceByClass
-		result = mBlinkServiceInteraction.local.checkInDevice(Eye.class);
-		Log.i(tag, "checkInDeviceByClass(Eye.class) : "+result);
-		
-		result = mBlinkServiceInteraction.local.checkInDevice(Body.class);
-		Log.i(tag, "checkInDeviceByClass(Body.class) : "+result);
-		
-		//checkInDeviceByFunction
-		mBlinkServiceInteraction.local.queryDevice("");
-		mBlinkServiceInteraction.local.queryFunction("");
-		List<Function> mFunctionList = mBlinkServiceInteraction.local.getFunctionList();
-		if(mFunctionList.size()>0){
-			result = mBlinkServiceInteraction.local.checkInDevice(mFunctionList.get(0));
-			Log.i(tag, "checkInDeviceByFunction : "+result);
-		}
-		
-		//checkInDeviceByMeasureList
-		mBlinkServiceInteraction.local.queryMeasurement("");
-		result = mBlinkServiceInteraction.local.checkInDevice(mBlinkServiceInteraction.local.getMeasurementList());
-		Log.i(tag, "checkInDeviceByMeasureList : "+result);
-    }
 	
 	/**
 	 * BlinkDatabaseManager 사용법을 설명하는 예제
@@ -284,7 +259,7 @@ public class TestArchive {
 	 */
 	public void exampleObtainMeasurementDatabase(){
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		ArrayList<extendsEye> mEyeList = mBlinkServiceInteraction.local.obtainMeasurementData(extendsEye.class,SqliteManager.CONTAIN_FIELD,new TypeToken<ArrayList<extendsEye>>(){}.getType());
+		ArrayList<Eye> mEyeList = mBlinkServiceInteraction.local.obtainMeasurementData(Eye.class,SqliteManager.CONTAIN_FIELD,new TypeToken<ArrayList<Eye>>(){}.getType());
 		for(int i=0;i<mEyeList.size();i++){
 			Log.i(tag, "Eye - left_sight : "+mEyeList.get(i).left_sight+" right_sight : "+mEyeList.get(i).right_sight+ " DateTime : "+mEyeList.get(i).DateTime);
 		}

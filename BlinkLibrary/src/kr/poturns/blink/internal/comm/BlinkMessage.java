@@ -30,14 +30,15 @@ public class BlinkMessage implements Serializable {
 	private String DestinationApplication;
 	
 	private int Type;
+	private int Code;
 	private boolean Reliable;
 	private long Timestamp;
 	
 	private String message;
 	
 	private BlinkMessage() {
-		
 		Type = 0;
+		Code = 0;
 		Reliable = false;
 		Timestamp = 0;
 	}
@@ -98,7 +99,8 @@ public class BlinkMessage implements Serializable {
 		 * @return
 		 */
 		public Builder setDestinationDevice(BlinkDevice device) {
-			mBlinkMessage.DestinationAddress = device.getAddress();
+			if (device != null)
+				mBlinkMessage.DestinationAddress = device.getAddress();
 			return this;
 		}
 		
@@ -110,7 +112,8 @@ public class BlinkMessage implements Serializable {
 		 * @return
 		 */
 		public Builder setDestinationApplication(String packageName) {
-			mBlinkMessage.DestinationApplication = packageName;
+			if (packageName != null)
+				mBlinkMessage.DestinationApplication = packageName;
 			return this;
 		}
 		
@@ -124,6 +127,19 @@ public class BlinkMessage implements Serializable {
 		 */
 		public Builder setType(int type) {
 			mBlinkMessage.Type = type;
+			return this;
+		}
+		
+		/**
+		 * 메세지의 요청/응답 번호를 설정한다.
+		 * <p> TYPE_1 : 
+		 * <br> TYPE_2 :
+		 * <hr>
+		 * @param type
+		 * @return
+		 */
+		public Builder setCode(int Code) {
+			mBlinkMessage.Code = Code;
 			return this;
 		}
 		
@@ -146,6 +162,7 @@ public class BlinkMessage implements Serializable {
 		 * @return
 		 */
 		public Builder setMessage(String message) {
+			mBlinkMessage.message = message;
 			return this;
 		}
 		
@@ -193,5 +210,9 @@ public class BlinkMessage implements Serializable {
 	public String getMessage() {
 		return message;
 	}
-	
+
+	public int getCode() {
+	    return Code;
+    }
+
 }
