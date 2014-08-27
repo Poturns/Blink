@@ -23,13 +23,7 @@ class SqliteManagerExtended extends SqliteManager {
 
 	public SqliteManagerExtended(Context context) {
 		super(context);
-		try {
-			Field database = this.getClass().getSuperclass()
-					.getField("mSQLiteDatabase");
-			mSQLiteDatabase = (SQLiteDatabase) database.get(database);
-		} catch (Exception e) {
-			throw new RuntimeException("cannot resolve database");
-		}
+		mSQLiteDatabase = getReadableDatabase();
 	}
 
 	/**
