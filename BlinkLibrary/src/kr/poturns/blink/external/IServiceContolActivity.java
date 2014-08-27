@@ -1,6 +1,5 @@
 package kr.poturns.blink.external;
 
-import kr.poturns.blink.db.SqliteManagerExtended;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.os.Bundle;

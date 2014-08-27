@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import kr.poturns.blink.R;
-import kr.poturns.blink.db.SqliteManagerExtended;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import kr.poturns.blink.util.FileUtil;

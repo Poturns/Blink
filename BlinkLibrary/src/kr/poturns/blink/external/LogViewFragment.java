@@ -5,7 +5,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import kr.poturns.blink.R;
-import kr.poturns.blink.db.SqliteManagerExtended;
 import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.Device;
 import android.app.Fragment;

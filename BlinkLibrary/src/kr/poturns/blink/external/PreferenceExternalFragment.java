@@ -4,7 +4,6 @@ import java.io.File;
 import java.lang.reflect.Field;
 
 import kr.poturns.blink.R;
-import kr.poturns.blink.db.SqliteManagerExtended;
 import kr.poturns.blink.util.FileUtil;
 import android.app.Activity;
 import android.app.AlertDialog;

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import kr.poturns.blink.R;
-import kr.poturns.blink.db.SqliteManagerExtended;
 import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.internal.comm.BlinkDevice;

@@ -1,10 +1,12 @@
-package kr.poturns.blink.db;
+package kr.poturns.blink.external;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
+import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
@@ -14,11 +16,20 @@ import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 
-public class SqliteManagerExtended extends SqliteManager {
+class SqliteManagerExtended extends SqliteManager {
+	private SQLiteDatabase mSQLiteDatabase;
 
 	public SqliteManagerExtended(Context context) {
 		super(context);
+		try {
+			Field database = this.getClass().getSuperclass()
+					.getField("mSQLiteDatabase");
+			mSQLiteDatabase = (SQLiteDatabase) database.get(database);
+		} catch (Exception e) {
+			throw new RuntimeException("cannot resolve database");
+		}
 	}
 
 	/**
