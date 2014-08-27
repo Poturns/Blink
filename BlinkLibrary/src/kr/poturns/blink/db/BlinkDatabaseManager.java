@@ -180,6 +180,27 @@ public class BlinkDatabaseManager extends SqliteManager{
 		return true;
 	}
 	
+	public Device obtainDevice(Function function){
+		mDeviceList.clear();
+		//등록된 앱 리스트 확인
+		queryApp("AppId="+function.AppId);
+		if(mAppList.size()==0)return null;
+		//등록된 디바이스 리스트 확인
+		queryDevice("DeviceId="+mAppList.get(0).DeviceId);
+		if(mDeviceList.size()==0)return null;
+		//디바이스 이름 비교
+		return mDeviceList.get(0);
+	}
+	
+	public App obtainApp(Function function){
+		mDeviceList.clear();
+		//등록된 앱 리스트 확인
+		queryApp("AppId="+function.AppId);
+		if(mAppList.size()==0)return null;
+		//등록된 디바이스 리스트 확인
+		return mAppList.get(0);
+	}
+	
 	public boolean checkInDevice(Function mFunction){
 		mDeviceList.clear();
 		//등록된 앱 리스트 확인
@@ -193,21 +214,13 @@ public class BlinkDatabaseManager extends SqliteManager{
 		return false;
 	}
 	
-	public boolean checkInDevice(String ClassName){
+	public boolean checkInDevice(Class<?> obj){
 		mDeviceList.clear();
 		mAppList.clear();
 		mMeasurementList.clear();
 		
 		//등록된 앱 리스트 확인
-		Class<?> mClass;
-        try {
-	        mClass = Class.forName(ClassName);
-        } catch (ClassNotFoundException e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-	        return true;
-        }
-		Field[] mFields = mClass.getFields();
+		Field[] mFields = obj.getFields();
 		for(int i=0;i<mFields.length;i++){
 			mMeasurementList.addAll(obtainMeasurementList(mFields[i],CONTAIN_DEFAULT));
 		}

@@ -62,7 +62,7 @@ final class ConnectionFragment extends Fragment {
 	/** Database manager */
 	SqliteManagerExtended mManager;
 	/** 이 Activity가 실행되고 있는 BlinkDevice */
-	BlinkDevice mHostDevice;
+	BlinkDevice mHostDevice = BlinkDevice.HOST;
 	ProgressDialog mProgressDialog;
 	/** BlinkDevice 연결 작업 여부 */
 	boolean mConnectionTasking = false;
@@ -184,8 +184,6 @@ final class ConnectionFragment extends Fragment {
 			mActivityInterface.setServiceInteration(mInteraction);
 			mInteraction.startService();
 		}
-		if ((mHostDevice = mInteraction.obtainSelfDevice()) == null)
-			mHostDevice = PrivateUtil.obtainHostDevice();
 	}
 
 	@Override
@@ -261,9 +259,6 @@ final class ConnectionFragment extends Fragment {
 
 	private final boolean fetchDeviceListBluetoothInternal() {
 		try {
-			mHostDevice = mBlinkOperation.obtainSelfDevice();
-			if (mHostDevice == null)
-				mHostDevice = PrivateUtil.obtainHostDevice();
 			mBlinkOperation.startDiscovery(BluetoothDevice.DEVICE_TYPE_DUAL);
 		} catch (Exception e) {
 			e.printStackTrace();

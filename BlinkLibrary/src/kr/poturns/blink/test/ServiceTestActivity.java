@@ -3,6 +3,8 @@ package kr.poturns.blink.test;
 import java.util.ArrayList;
 
 import kr.poturns.blink.R;
+import kr.poturns.blink.db.archive.CallbackData;
+import kr.poturns.blink.internal.DeviceAnalyzer.Identity;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
@@ -47,7 +49,7 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 
 			@Override
 			public void onServiceDisconnected() {
-
+				resultView.setText("");
 			}
 
 			@Override
@@ -58,7 +60,7 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 			@Override
 			public void onDeviceDiscovered(BlinkDevice device) {
 				resultView.append("DISCOVERED : " + device.getAddress()
-						+ " >> " + device.getName() + "\n");
+						+ " >> " + device.getName() + "\n"); 
 			}
 
 			@Override
@@ -72,6 +74,21 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 			public void onDeviceDisconnected(BlinkDevice device) {
 				resultView.append("DISCONNECTED!! " + device.getAddress()
 						+ " >> " + device.getName() + "\n");
+			}
+			
+			@Override
+			public void onIdentityChanged(Identity identity) {
+				resultView.append("IDENTITY CHANGED!! " + identity.toString() + "\n");
+			}
+			
+			@Override
+			public void onDiscoveryStarted() {
+				resultView.append("DISCOVERY START\n"); 
+			}
+			
+			@Override
+			public void onDiscoveryFinished() {
+				resultView.append("DISCOVERY FINISH\n"); 
 			}
 		};
 		interaction.startService();
@@ -271,11 +288,11 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 		}
 
 		@Override
-		public void onReceiveMeasurementData(String schema, String data)
-				throws RemoteException {
-			// TODO Auto-generated method stub
-
-		}
+        public void onReceiveData(int responseCode, CallbackData data)
+                throws RemoteException {
+	        // TODO Auto-generated method stub
+	        
+        }
 
 	};
 

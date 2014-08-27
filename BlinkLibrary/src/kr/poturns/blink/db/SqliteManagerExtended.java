@@ -11,7 +11,6 @@ import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.internal.comm.BlinkDevice;
-import android.bluetooth.BluetoothAdapter;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -298,12 +297,6 @@ public class SqliteManagerExtended extends SqliteManager {
 
 	/** 현재 장비를 나타내는 BlinkDevice를 얻는다. */
 	private static BlinkDevice obtainHostDevice() {
-		BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-		final String address = adapter.getAddress();
-		BlinkDevice device;
-		device = BlinkDevice.load(address);
-		if (device.getName() == null || device.getName().length() < 1)
-			device.setName(adapter.getName());
-		return device;
+		return BlinkDevice.HOST;
 	}
 }

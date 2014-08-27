@@ -56,11 +56,6 @@ interface IInternalOperationSupport {
 	 */
 	BlinkDevice[] obtainCurrentDiscoveryList();
 	
-	/**
-	 * 본 디바이스의 정보를 가져온다.
-	 */
-	BlinkDevice obtainSelfDevice();
-	
 	void startListeningAsServer();
 	
 	void stopListeningAsServer();
@@ -107,38 +102,11 @@ interface IInternalOperationSupport {
 	 * @author Jiwon
 	 *
 	 */
-	void registerApplicationInfo(String DeviceName,String PackageName,String AppName);
-	SystemDatabaseObject obtainSystemDatabase(String DeviceName,String PackageName);
-	List<SystemDatabaseObject> obtainSystemDatabaseAll();
+	void setRequestPolicy(int requestPolicy);
+	void registerApplicationInfo(String PackageName,String AppName);
+	BlinkDevice getBlinkDevice();
 	void registerSystemDatabase(inout SystemDatabaseObject mSystemDatabaseObject);
-	void registerMeasurementData(inout SystemDatabaseObject mSystemDatabaseObject,String ClassName,String JsonObj);
-	String obtainMeasurementData(String ClassName,String DateTimeFrom,String DateTimeTo,int ContainType);
-	List<MeasurementData> obtainMeasurementDataById(inout List<Measurement> mMeasurementList,String DateTimeFrom,String DateTimeTo);
-	void registerLog(String Device,String App,int Type,String Content);
-	List<BlinkLog> obtainLog(String Device,String App,int Type,String DateTimeFrom,String DateTimeTo);
-	void startFunction(inout Function mFunction);
-	
-	/**
-	 * BlinkDatabaseManager 관련 매서드
-	 * @author Jiwon
-	 *
-	 */	
-	IInternalOperationSupport queryDevice(String where);
-	IInternalOperationSupport queryApp(String where);
-	IInternalOperationSupport queryFunction(String where);
-	IInternalOperationSupport queryMeasurement(String where);
-	IInternalOperationSupport queryMeasurementData(String where);
-	boolean checkInDeviceByMeasureList(inout List<Measurement> mMeasurementList);
-	boolean checkInDeviceByFunction(inout Function mFunction);
-	boolean checkInDeviceByClass(String ClassName);
-	List<Device> getDeviceList();
-	void setDeviceList(inout List<Device> mDeviceList);
-	List<App> getAppList();
-	void setAppList(inout List<App> mAppList);
-	List<Function> getFunctionList();
-	void setFunctionList(inout List<Function> mFunctionList);
-	List<Measurement> getMeasurementList();
-	void setMeasurementList(inout List<Measurement> mMeasurementList);
-	List<MeasurementData> getMeasurementDataList();
-	void setMeasurementDataList(inout List<MeasurementData> mMeasurementDataList);
+	void obtainMeasurementData(String ClassName,String DateTimeFrom,String DateTimeTo,int ContainType,int requestCode);
+	void obtainMeasurementDataById(inout List<Measurement> mMeasurementList,String DateTimeFrom,String DateTimeTo,int requestCode);
+	void startFunction(inout Function function,int requestCode);
 }

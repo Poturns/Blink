@@ -1,12 +1,16 @@
 package kr.poturns.blink.internal;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 
 import kr.poturns.blink.internal.DeviceAnalyzer.Identity;
 import kr.poturns.blink.internal.comm.BlinkDevice;
+import kr.poturns.blink.internal.comm.BlinkSupportBinder;
+import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import android.bluetooth.BluetoothGatt;
+import android.content.Intent;
 import android.os.RemoteCallbackList;
 import android.util.Log;
 
@@ -43,10 +47,8 @@ public class ServiceKeeper {
 	private final HashMap<BlinkDevice, ClassicLinkThread> CLASSIC_CONN_MAP;
 	private final HashMap<BlinkDevice, BluetoothGatt> LE_CONN_MAP;
 	
-	private final HashMap<String, ConnectionSupportBinder> BINDER_MAP;
+	private final HashMap<String, BlinkSupportBinder> BINDER_MAP;
 	private final RemoteCallbackList<IInternalEventCallback> EVENT_CALLBACK_LIST;
-	
-	private BlinkDevice mSelfDevice;
 	
 	private ServiceKeeper(BlinkLocalBaseService context) {
 		KEEPER_CONTEXT = context;
@@ -55,7 +57,7 @@ public class ServiceKeeper {
 		BLINK_NETWORK_MAP = new HashMap<BlinkDevice, Identity>();
 		CLASSIC_CONN_MAP = new HashMap<BlinkDevice, ClassicLinkThread>();
 		LE_CONN_MAP = new HashMap<BlinkDevice, BluetoothGatt>();
-		BINDER_MAP = new HashMap<String, ConnectionSupportBinder>();
+		BINDER_MAP = new HashMap<String, BlinkSupportBinder>();
 		EVENT_CALLBACK_LIST = new RemoteCallbackList<IInternalEventCallback>();
 	}
 	
@@ -81,8 +83,17 @@ public class ServiceKeeper {
 	}
 
 	void removeConnection(BlinkDevice device) {
-		LE_CONN_MAP.remove(device);
-		CLASSIC_CONN_MAP.remove(device);
+		if (device == null)
+			return ;
+		
+		BluetoothGatt mGatt = LE_CONN_MAP.remove(device);
+		if (mGatt != null)
+			mGatt.close();
+		
+		ClassicLinkThread mLinkThread = CLASSIC_CONN_MAP.remove(device);
+		if (mLinkThread != null) {
+			mLinkThread.destroyThread();
+		}
 	}
 	
 	Object getConnectionObject(BlinkDevice device) {
@@ -96,11 +107,26 @@ public class ServiceKeeper {
 	
 	void clearConnection() {
 		LE_CONN_MAP.clear();
+		
+		for (ClassicLinkThread thread : CLASSIC_CONN_MAP.values())
+			thread.destroyThread();
 		CLASSIC_CONN_MAP.clear();
 	}
 	
-	void registerBinder(String packageName, ConnectionSupportBinder binder) {
+	void registerBinder(String packageName, BlinkSupportBinder binder) {
 		BINDER_MAP.put(packageName, binder);
+	}
+	
+	BlinkSupportBinder obtainBinder(String packageName) {
+		if (packageName != null)
+			return BINDER_MAP.get(packageName);
+		return null;
+	}
+	
+	boolean releaseBinder(String packageName) {
+		if (packageName != null)
+			return (BINDER_MAP.remove(packageName) != null);
+		return false;
 	}
 	
 	/**
@@ -128,96 +154,169 @@ public class ServiceKeeper {
 		return lists;
 	}
 	
-	public BlinkDevice getSelfDevice() {
-		return mSelfDevice;
-	}
-	
-	public void setSelfDevice(BlinkDevice device) {
-		mSelfDevice = device;
-	}
-
+	/**
+	 * 본 디바이스의 정보를 타겟 디바이스에게 전달한다.
+	 * 
+	 * @param device
+	 */
 	void introduceToBlinkNetwork(BlinkDevice device) {
-		sendMessageToDevice(device, mSelfDevice);
+		sendMessageToDevice(device, BlinkDevice.HOST);
 	}
 	
+	/**
+	 * BlinkNetwork의 Identity를 제어하는 메소드.
+	 * 
+	 * @param device
+	 */
 	void updateBlinkNetwork(BlinkDevice device) {
 		// TODO :
-		Log.e("ServiceKeeper_updateNetworkMap", device.toString());
-		
 
-		Identity mSelfDeviceIdentity = mSelfDevice.getIdentity();
-		if (!mSelfDeviceIdentity.equals(Identity.MAIN)) {
-			
-		}
-		
-		
-		Identity identity = BLINK_NETWORK_MAP.get(BlinkDevice.load(device.getAddress()));
-		if (identity == null) {
-			Identity mOtherDeviceIdentity = device.getIdentity();
-			
-			// 새로 Identity를 등록한다.
-			if (Identity.UNKNOWN.equals(mOtherDeviceIdentity)) {
-				
-				
-			} else if (Identity.PERIPHERALS.equals(mOtherDeviceIdentity)){
-				BLINK_NETWORK_MAP.put(device, Identity.PERIPHERALS);
-			
-			} else if (Identity.CORE.equals(mOtherDeviceIdentity)) {
-				
-			}
-			
-			
-		} else if (identity.equals(device.getIdentity())) {
-			// 등록된 Identity가 같을 경우, 데이터 갱신 & Pass
-			BlinkDevice.load(device);
-			
-			
-		} else {
-			// 등록된 Identity와 다를 경우, 
-			
-		}
-		
-	}
-	
-	private Identity calculate(BlinkDevice otherDevice) {
+		int myDevicePoint = BlinkDevice.HOST.getIdentityPoint();
+		int myDeviceGroupID = BlinkDevice.HOST.getGroupID();
+		boolean isMyFirst = (myDeviceGroupID == 0);
+		Identity myDeviceIdentity = BlinkDevice.HOST.getIdentity();
 
-		int mSelfDevicePoint = mSelfDevice.getIdentityPoint();
-		int mOtherDevicePoint = otherDevice.getIdentityPoint();
-		Identity mSelfDeviceIdentity = mSelfDevice.getIdentity();
-		Identity mOtherDeviceIdentity = otherDevice.getIdentity();
-		if (mSelfDeviceIdentity.ordinal() == mOtherDeviceIdentity.ordinal()) {
+		int otherDevicePoint = device.getIdentityPoint();
+		int otherDeviceGroupID = device.getGroupID();
+		boolean isOtherFirst = (otherDeviceGroupID == 0);
+		Identity otherDeviceIdentity = device.getIdentity();
+
+		Log.e("ServiceKeeper_updateNetworkMap", myDeviceIdentity + " vs. " + otherDeviceIdentity);
+		
+		
+		switch (myDeviceIdentity) {
+		case MAIN:
+			BLINK_NETWORK_MAP.put(BlinkDevice.load(device), otherDeviceIdentity);
+			break;
 			
-			if (mSelfDeviceIdentity.equals(Identity.CORE)) {
-				
-				
+		case SUB:
+			if (myDeviceGroupID == otherDeviceGroupID) {
+				if (myDevicePoint < otherDevicePoint) {
+					// TODO : 전권 이양 작업.... 작업 동기화
+				}
+
+				BLINK_NETWORK_MAP.put(BlinkDevice.load(device), otherDeviceIdentity);
 			}
+			break;
 			
-			if (mSelfDevicePoint > mOtherDevicePoint) {
+		case AUX:
+			if (myDeviceGroupID == otherDeviceGroupID) {
+				if (myDevicePoint < otherDevicePoint) {
+					DeviceAnalyzer.getInstance(KEEPER_CONTEXT).grantIdentity(Identity.COREABLE);
+					// TODO : 전권 이양 작업.... 작업 동기화
+
+					BLINK_NETWORK_MAP.put(BlinkDevice.HOST, Identity.COREABLE);
+					BLINK_NETWORK_MAP.put(BlinkDevice.load(device), otherDeviceIdentity);
+					
+				} else if (myDevicePoint > otherDeviceGroupID) {
+					
+					if (myDeviceIdentity == otherDeviceIdentity)
+						device.setIdentity(Identity.COREABLE.ordinal());
+					
+					BLINK_NETWORK_MAP.put(BlinkDevice.load(device), device.getIdentity());
+				}
+					
+			}
+			break;
+			
+		case COREABLE:
+			if (isMyFirst) {
+				if (isOtherFirst) {
+					if (myDevicePoint > otherDevicePoint) {
+						
+						DeviceAnalyzer.getInstance(KEEPER_CONTEXT).grantIdentity(Identity.MAIN);
+						
+						device.setGroupID(BlinkDevice.HOST.getGroupID());
+						
+						BLINK_NETWORK_MAP.put(BlinkDevice.load(device), otherDeviceIdentity);
+						BLINK_NETWORK_MAP.put(BlinkDevice.HOST, Identity.MAIN);
+						
+						sendMessageToDevice(device, BlinkDevice.HOST);
+						
+					} else if (myDevicePoint == otherDevicePoint) {
+						// 선택 유도 Dialog
+					}
+					
+					
+				} else if (otherDevicePoint > DeviceAnalyzer.IDENTITY_POINTLINE_AUX) {
+					BlinkDevice.HOST.setGroupID(device.getGroupID());
+					BLINK_NETWORK_MAP.put(BlinkDevice.load(device), otherDeviceIdentity);
+					
+				} else {
+					// 다른 그룹에 속해있는 비결정권자 디바이스가 본 디바이스에 접근한 경우..
+					// >> 연결 해제.
+					//BluetoothAssistant.getInstance(InterDeviceManager.getInstance(KEEPER_CONTEXT)).disconnectDevice(device);
+				}
 				
 				
-			} else if (mSelfDevicePoint < mOtherDevicePoint) {
-				
+			} else if (myDeviceGroupID == otherDeviceGroupID) {
+				switch (otherDeviceIdentity) {
+				case MAIN:
+				case SUB:
+				case AUX:
+					BLINK_NETWORK_MAP.put(BlinkDevice.load(device), otherDeviceIdentity);
+					break;
+					
+				default:
+				}
 				
 			} else {
-				// 포인트도 같을 경우, User의 판단:
+				// 동일한 그룹의 디바이스가 아닌 경우...
+				// >> 연결 해제.
+				//BluetoothAssistant.getInstance(InterDeviceManager.getInstance(KEEPER_CONTEXT)).disconnectDevice(device);
 			}
+
+			break;	
 			
-		} else {
-			
+		default:
+			if (isMyFirst) {
+				if (!isOtherFirst){
+					switch (otherDeviceIdentity){
+					case MAIN:
+					case SUB:
+					case AUX:
+						BlinkDevice.HOST.setGroupID(device.getGroupID());
+						DeviceAnalyzer.getInstance(KEEPER_CONTEXT).grantIdentity(Identity.PERIPHERALS);
+
+						BLINK_NETWORK_MAP.put(BlinkDevice.HOST, Identity.PERIPHERALS);
+						BLINK_NETWORK_MAP.put(BlinkDevice.load(device), otherDeviceIdentity);
+						break;
+						
+					default:
+					}
+				}
+				
+				
+			} else if (myDeviceGroupID == otherDeviceGroupID) {
+				switch (otherDeviceIdentity) {
+				case MAIN:
+				case SUB:
+				case AUX:
+					BLINK_NETWORK_MAP.put(BlinkDevice.load(device), otherDeviceIdentity);
+					break;
+					
+				default:
+				}
+			}
 		}
-		
-		return otherDevice.getIdentity();
 	}
 	
-	public void sendMessageToDevice(BlinkDevice device, Object msg) {
-		if (device.isLESupported()) {
+	/**
+	 * 타겟 디바이스에 전달받은 Object 메세지를 보낸다.
+	 * 
+	 * @param targetDevice
+	 * @param msg
+	 */
+	public void sendMessageToDevice(BlinkDevice targetDevice, Object msg) {
+		if (targetDevice.isLESupported()) {
 			
 			
 		} else {
-			ClassicLinkThread thread = CLASSIC_CONN_MAP.get(device);
+			ClassicLinkThread thread = CLASSIC_CONN_MAP.get(targetDevice);
 			if (thread != null)
 				thread.sendMessageToDevice(msg);
 			
 		}
 	}
+	
 }

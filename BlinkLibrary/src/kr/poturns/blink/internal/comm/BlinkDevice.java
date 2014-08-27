@@ -42,6 +42,19 @@ public class BlinkDevice implements Parcelable, Serializable {
 	 */
 	private static final HashMap<String, BlinkDevice> CACHE_MAP = new HashMap<String, BlinkDevice>();
 	
+	/**
+	 * 
+	 */
+	public static final BlinkDevice HOST;
+	static {
+		BluetoothAdapter mAdapter = BluetoothAdapter.getDefaultAdapter();
+		HOST = (mAdapter != null)? load(mAdapter.getAddress()) : null;
+		
+		if (HOST != null && mAdapter != null)
+			HOST.setName(mAdapter.getName());
+	}
+
+	
 	public static BlinkDevice load(BlinkDevice device) {
 		BlinkDevice mDevice = BlinkDevice.load(device.Address);
 		mDevice.BlinkSupported = true;
@@ -50,6 +63,7 @@ public class BlinkDevice implements Parcelable, Serializable {
 		mDevice.Name = (device.Name == null)? mDevice.Name : device.Name;
 		mDevice.Identity = device.getIdentity().ordinal();
 		mDevice.IdentityPoint = device.getIdentityPoint();
+		mDevice.GroupID = device.getGroupID();
 		mDevice.Timestamp = System.currentTimeMillis();
 		
 		return mDevice;
@@ -177,6 +191,7 @@ public class BlinkDevice implements Parcelable, Serializable {
 	
 	private int Identity;
 	private int IdentityPoint;
+	private int GroupID;
 
 	private boolean AutoConnect;
 	private boolean SecureConnect;
@@ -195,6 +210,7 @@ public class BlinkDevice implements Parcelable, Serializable {
 		
 		Identity = DeviceAnalyzer.Identity.UNKNOWN.ordinal();
 		IdentityPoint = 0;
+		GroupID = 0;
 		
 		AutoConnect = false;
 		SecureConnect = true;
@@ -217,6 +233,7 @@ public class BlinkDevice implements Parcelable, Serializable {
 		
 		Identity = parcel.readInt();
 		IdentityPoint = parcel.readInt();
+		GroupID = parcel.readInt();
 		
 		boolean[] bools = new boolean[5];
 		parcel.readBooleanArray(bools);
@@ -331,6 +348,7 @@ public class BlinkDevice implements Parcelable, Serializable {
 		
 		dest.writeInt(Identity);
 		dest.writeInt(IdentityPoint);
+		dest.writeInt(GroupID);
 		
 		dest.writeBooleanArray(new boolean[]{
 			AutoConnect, SecureConnect, BlinkSupported, Connected, Discovered 	
@@ -413,6 +431,14 @@ public class BlinkDevice implements Parcelable, Serializable {
 	
 	public void setIdentity(int identity) {
 		Identity = identity;
+	}
+	
+	public void setGroupID(int id) {
+		GroupID = id;
+	}
+	
+	public int getGroupID() {
+		return GroupID;
 	}
 	
 	public boolean isAutoConnect() {
