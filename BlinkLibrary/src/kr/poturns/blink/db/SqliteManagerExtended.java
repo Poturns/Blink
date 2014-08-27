@@ -215,7 +215,7 @@ public class SqliteManagerExtended extends SqliteManager {
 	}
 
 	public boolean removeCurrentDeviceData() {
-		Device device = obtainDevice(BlinkDevice.obtainHostDevice());
+		Device device = obtainDevice(BlinkDevice.HOST);
 		List<App> appList = obtainAppList(device);
 		List<Measurement> measurementList = new ArrayList<Measurement>();
 
@@ -249,7 +249,7 @@ public class SqliteManagerExtended extends SqliteManager {
 	}
 
 	public boolean removeCurrentAppData(Context context) {
-		Device device = obtainDevice(BlinkDevice.obtainHostDevice());
+		Device device = obtainDevice(BlinkDevice.HOST);
 		List<App> appList = obtainAppList(device);
 		App app = null;
 		for (App tempApp : appList) {

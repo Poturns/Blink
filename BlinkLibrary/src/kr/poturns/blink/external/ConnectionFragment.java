@@ -49,7 +49,7 @@ abstract class ConnectionFragment extends Fragment implements
 	IInternalOperationSupport mBlinkOperation;
 	BlinkServiceInteraction mInteraction;
 	SqliteManagerExtended mManager;
-	BlinkDevice mHostDevice = BlinkDevice.obtainHostDevice();
+	BlinkDevice mHostDevice = BlinkDevice.HOST;
 	ProgressDialog mProgressDialog;
 	boolean mConnectionTasking = false, mBluetoothEnabled = true;
 	BroadcastReceiver mConnectionDetectReceiver = new BluetoothConnectionReceiver();
@@ -217,7 +217,7 @@ abstract class ConnectionFragment extends Fragment implements
 	}
 
 	private final boolean fetchDeviceListBluetoothInternal() {
-		mHostDevice = BlinkDevice.obtainHostDevice();
+		mHostDevice = BlinkDevice.HOST;
 		BlinkDevice[] devices;
 		try {
 			devices = mBlinkOperation.obtainCurrentDiscoveryList();

@@ -25,18 +25,13 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 /**
-<<<<<<< HEAD
- * 
- * @author Jiwon.Kim
- *
-=======
  * 서비스에 어떻게 요청할 지 정하며 Log를 남긴다.
  * 만약 다른 디바이스에 해당하는 데이터면 블루투스쪽으로 넘겨야 한다.
  * 다른 디바이스와 통신이 필요한 매서드는 두 가지이다.
  * 1. obtainMeasurementData
  * 2. startFunction
- * @author Jiwon
->>>>>>> refs/remotes/origin/database
+ * 
+ * @author Jiwon.Kim
  */
 public class BlinkSupportBinder extends ConnectionSupportBinder {
 	private final String tag = "BlinkDatabaseBinder";
@@ -58,7 +53,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	public BlinkSupportBinder(BlinkLocalService context) throws Exception {
 		super(context);
 		mBlinkDatabaseManager = new BlinkDatabaseManager(context);
-		mBlinkDevice = ServiceKeeper.getInstance(CONTEXT).getSelfDevice();
+		mBlinkDevice = BlinkDevice.HOST;
 	}
 
 	@Override

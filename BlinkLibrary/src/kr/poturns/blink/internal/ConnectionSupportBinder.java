@@ -104,8 +104,7 @@ public abstract class ConnectionSupportBinder extends IInternalOperationSupport.
 	
 	@Override
 	public void sendBlinkMessages(BlinkDevice target, String jsonMsg) throws RemoteException {
-		if (mAssistant != null)
-			mAssistant.onMessageSentTo(jsonMsg, target);
+		ServiceKeeper.getInstance(CONTEXT).sendMessageToDevice(target, jsonMsg);
 	}
 	
 }

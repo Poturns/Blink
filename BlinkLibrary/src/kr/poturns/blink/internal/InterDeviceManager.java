@@ -10,6 +10,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.util.Log;
 
 /**
@@ -53,6 +54,7 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 
 	// *** FIELD DECLARATION *** //
 	final BlinkLocalBaseService MANAGER_CONTEXT;
+	int mStartDiscoveryType = BluetoothDevice.DEVICE_TYPE_UNKNOWN;
 
 	private BluetoothAssistant mAssistant;
 	private ServiceKeeper mServiceKeeper;
@@ -60,15 +62,17 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 	private boolean isInitiated = false;
 	private boolean isDestroyed = false;
 	
+	
 	private InterDeviceManager(BlinkLocalBaseService context) {
 		this.MANAGER_CONTEXT = context;
-		
 		initiate();
 	}
 	
-	void initiate() {
+	private void initiate() {
 		if (!isDestroyed && !isInitiated && (isInitiated = true)) {
-			MANAGER_CONTEXT.registerReceiver(this, BluetoothAssistant.obtainIntentFilter());
+			IntentFilter mIntentFiler = BluetoothAssistant.obtainIntentFilter();
+			mIntentFiler.addAction(IBlinkEventBroadcast.BROADCAST_REQUEST_CONFIGURATION_CHANGE);
+			MANAGER_CONTEXT.registerReceiver(this, mIntentFiler);
 			
 			mServiceKeeper = ServiceKeeper.getInstance(MANAGER_CONTEXT);
 			mAssistant = BluetoothAssistant.getInstance(this);
@@ -78,13 +82,13 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 	}
 	
 	void update() {
-		if (!isDestroyed && isInitiated) {
+		if (isInitiated && !isDestroyed) {
 			
 		}
 	}
 	
 	void destroy() {
-		if (!isDestroyed && (isDestroyed = true)) {
+		if (isInitiated && !isDestroyed && (isDestroyed = true)) {
 			MANAGER_CONTEXT.unregisterReceiver(this);
 			
 			mAssistant.destroy();
@@ -105,11 +109,12 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 	
 	@Override
 	public void onReceive(Context context, Intent intent) {
+		if (isDestroyed)
+			return;
+		
 		String action = intent.getAction();
 		Log.d("InterDeviceManager_onReceive()", ": "+action+" :" );
 		
-		if (isDestroyed)
-			return;
 		
 		if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
 			// 블루투스 상태 변화 감지
@@ -120,7 +125,7 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			handleStateChanged(prev_state, curr_state);
 				
 			
-		} else if (BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(action)) {
+		//} else if (BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(action)) {
 			// 블루투스 스캔 모드 변화 감지
 			
 			
@@ -156,6 +161,7 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			BlinkDevice device = BlinkDevice.load(origin);
+			device.setDiscovered(true);
 			
 			mServiceKeeper.addDiscovery(device);
 			
@@ -178,7 +184,8 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			// 해당 디바이스와 블루투스 연결 성립
 
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-			final BlinkDevice device = BlinkDevice.load(origin);
+			BlinkDevice device = BlinkDevice.load(origin);
+			device.setConnected(true);
 
 			// Broadcasting...
 			Intent mActionConnected = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);
@@ -192,6 +199,7 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			BlinkDevice device = BlinkDevice.load(origin);
+			device.setConnected(false);
 
 			mServiceKeeper.removeConnection(device);
 			
@@ -213,6 +221,12 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			int prev_state = intent.getIntExtra(BluetoothAdapter.EXTRA_PREVIOUS_CONNECTION_STATE, BluetoothAdapter.ERROR);
 			
 			handleConnectionChanged(device, prev_state, curr_state);
+			
+			
+		} else if (IBlinkEventBroadcast.BROADCAST_REQUEST_CONFIGURATION_CHANGE.equals(action)) {
+			// 서비스 환경설정 값 변경 요청..
+			
+			// TODO : Preference 에서 설정값 적용해오기.			
 		}
 	}
 
@@ -261,13 +275,13 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 		switch (curr_state) {
 		case BluetoothAdapter.STATE_CONNECTED:
 			Log.d("InterDeviceManager_handleConnectionChanged()", "STATE_CONNECTED");
-			
+			device.setConnected(true);
 			mActionIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);
 			break;
 	
 		case BluetoothAdapter.STATE_DISCONNECTED:
 			Log.d("InterDeviceManager_handleConnectionChanged()", "STATE_DISCONNECTED");
-			
+			device.setConnected(false);
 			mActionIntent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCONNECTED);
 			break;
 
@@ -284,7 +298,11 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 	public void onLeScan(BluetoothDevice origin, int rssi, byte[] scanRecord) {
 		Log.d("InterDeviceManager", "[LE] " + origin.getName() + " : " + origin.getUuids()[0]);
 		
+		//origin.fetchUuidsWithSdp();
+		
 		BlinkDevice device = BlinkDevice.load(origin);
+		device.setDiscovered(true);
+		
 		if (scanRecord != null) {
 			
 		}
@@ -296,13 +314,4 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 		mActionDiscovered.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
 		MANAGER_CONTEXT.sendBroadcast(mActionDiscovered, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
 	}
-	
-	
-	
-	// *** BINDING DECLARATION *** //
-	/**
-	 * 
-	 */
-	int mStartDiscoveryType = BluetoothDevice.DEVICE_TYPE_UNKNOWN;
-
 }

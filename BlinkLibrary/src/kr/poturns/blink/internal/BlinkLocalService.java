@@ -21,15 +21,18 @@ import android.os.RemoteCallbackList;
  */
 public final class BlinkLocalService extends BlinkLocalBaseService {
 
+	private static final String NAME = "BlinkLocalService";
+	
 	public static final String INTENT_ACTION_NAME = "kr.poturns.blink.internal.BlinkLocalService";
+	
 	public static final int NOTIFICATION_ID = 0x2009920;
-	private final String tag = "BlinkLocalService";
 	
 	public final HashMap<String, RemoteCallbackList<IInternalEventCallback>> CALLBACK_MAP = new HashMap<String, RemoteCallbackList<IInternalEventCallback>>();
 	private BlinkDatabaseManager mBlinkDatabaseManager;
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		
 		initiate();
 	}
 	
@@ -39,10 +42,15 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 		if (packageName == null)
 			return null;
 		
+		ServiceKeeper mServiceKeeper = ServiceKeeper.getInstance(this);
 		try {
-			BlinkSupportBinder binder = new BlinkSupportBinder(this);
-			BINDER_MAP.put(packageName, binder);
-			return binder.asBinder();
+			BlinkSupportBinder mBinder = mServiceKeeper.obtainBinder(packageName);
+			if (mBinder == null) {
+				mBinder = new BlinkSupportBinder(this);
+				mServiceKeeper.registerBinder(packageName, mBinder);
+			}
+			
+			return mBinder.asBinder();
 			
 		} catch (Exception e) {
 			return null;
@@ -52,13 +60,13 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 	@Override
 	public boolean onUnbind(Intent intent) {
 		String packageName = intent.getStringExtra(INTENT_EXTRA_SOURCE_PACKAGE);
-		if (packageName == null)
-			return false;
 		
-		CALLBACK_MAP.remove(packageName);
-		return (BINDER_MAP.remove(packageName) != null);
+		return ServiceKeeper.getInstance(this).releaseBinder(packageName);
 	}
 	
+	/**
+	 * 
+	 */
 	private void initiate() {
 
 		PendingIntent mPendingIntent = PendingIntent.getActivity(this, NOTIFICATION_ID, 
@@ -68,7 +76,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 		
 		Notification mBlinkNotification = new Notification.Builder(this)
 										.setSmallIcon(R.drawable.ic_launcher)
-										.setContentTitle("Blink Service")
+										.setContentTitle(NAME)
 										.setContentText("Running Blink-Service")
 										.setContentIntent(mPendingIntent)
 										.build();

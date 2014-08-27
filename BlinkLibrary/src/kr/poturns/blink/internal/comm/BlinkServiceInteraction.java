@@ -13,6 +13,7 @@ import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import kr.poturns.blink.internal.BlinkLocalService;
+import kr.poturns.blink.internal.DeviceAnalyzer;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -30,6 +31,7 @@ import com.google.gson.GsonBuilder;
 /**
  * 
  * @author Yeonho.Kim
+ * @author Jiwon.Kim
  * @since 2014.08.19
  *
  */
@@ -69,7 +71,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		FILTER.addAction(BROADCAST_DEVICE_DISCONNECTED);
 		FILTER.addAction(BROADCAST_DEVICE_IDENTITY_CHANGED);
 		
-		FILTER.addAction(BROADCAST_SETTING_CHANGED);
+		FILTER.addAction(BROADCAST_CONFIGURATION_CHANGED);
 		
 		mBlinkEventBroadcast = iBlinkEventBroadcast;
 		mIInternalEventCallback = iInternalEventCallback;
@@ -147,6 +149,17 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		CONTEXT.unregisterReceiver(EVENT_BR);
 	}
 	
+	public final void requestConfigurationChange(String[] keys) {
+		if (keys != null) {
+			for (String key : keys) {
+				
+			}
+		}
+		
+		Intent intent = new Intent(BROADCAST_REQUEST_CONFIGURATION_CHANGE);
+		CONTEXT.sendBroadcast(intent, PERMISSION_LISTEN_STATE_MESSAGE);
+	}
+	
 	public final void setOnBlinkEventBroadcast(IBlinkEventBroadcast iBlinkEventBroadcast) {
 		mBlinkEventBroadcast = iBlinkEventBroadcast;
 	}
@@ -177,6 +190,11 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 				
 			} else if (BROADCAST_DEVICE_DISCONNECTED.equals(action)) {
 				onDeviceDisconnected(device);
+				
+			} else if (BROADCAST_DEVICE_IDENTITY_CHANGED.equals(action)) {
+				onIdentityChanged(device.getIdentity());
+				
+			} else if (BROADCAST_CONFIGURATION_CHANGED.equals(action)) {
 				
 			}
 		}
@@ -239,6 +257,19 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	}
 	
 	/**
+	 * 
+	 * @param identity
+	 */
+	public void onIdentityChanged(DeviceAnalyzer.Identity identity) { }
+	
+	/**
+	 * 
+	 */
+	public void onConfigurationChanged() { }
+	
+	
+	
+	/**
 	 * Service에 Binding 되었을 때 호출된다.
 	 * 
 	 * @param iSupport
@@ -254,6 +285,8 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	 * Service에서 Binding이 실패하였을 때 호출된다.
 	 */
 	public abstract void onServiceFailed();
+	
+	
 	
 	/**
 	 * Database Interaction

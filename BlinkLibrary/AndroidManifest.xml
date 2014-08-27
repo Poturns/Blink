@@ -30,11 +30,11 @@
         <activity
             android:name="kr.poturns.blink.external.ServiceControlActivity"
             android:label="@string/app_name" >
-            <intent-filter>
+            <!-- <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            </intent-filter> -->
         </activity>
         <activity
             android:name="kr.poturns.blink.db.TestActivity"
@@ -45,13 +45,13 @@
             android:label="@string/preference" />
         <activity android:name="kr.poturns.blink.test.ServiceTestActivity" >
 
-            <!--
+            
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            -->
+           
         </activity>
 
         <service

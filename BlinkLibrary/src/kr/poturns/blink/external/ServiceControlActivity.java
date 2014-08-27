@@ -196,7 +196,7 @@ public final class ServiceControlActivity extends Activity implements
 					Log.d(TAG, "sending to service : \n" + jsonMsg);
 					// XXX pacel null pointer exception!
 					mBlinkOperation.sendBlinkMessages(
-							BlinkDevice.obtainHostDevice(), jsonMsg);
+							BlinkDevice.HOST, jsonMsg);
 					return true;
 				} catch (JSONException e) {
 					e.printStackTrace();
