@@ -53,8 +53,13 @@ public class SqliteManager extends SQLiteOpenHelper {
 	private final String SQL_SELECT_MEASUREMENT = "SELECT * FROM Measurement ";
 	private final String SQL_SELECT_MEASUREMENTDATA =  "SELECT * FROM MeasurementData ";
 	private final String SQL_SELECT_GROUPID =  "SELECT max(GroupId) FROM MeasurementData ";
+	private final String SQL_DELETE_DEVICE = "delete from Device ";
+	private final String SQL_DELETE_APP = "delete from App ";
+	private final String SQL_DELETE_FUNCTION = "delete from Function ";
+	private final String SQL_DELETE_MEASUREMENT = "delete from Measurement ";
 	private final String SQL_DELETE_MEASUREMENTDATA = "delete from MeasurementData ";
 	private final String SQL_SELECT_LOG =  "SELECT * FROM BlinkLog ";
+	
 	public static final String EXTERNAL_DB_FILE_PATH = Environment.getExternalStorageDirectory() + "/Blink/archive/";
 	public static final String EXTERNAL_DB_FILE_NAME = "BlinkDatabase.db";
 	
@@ -101,7 +106,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		registerDevice(mSystemDatabaseObject);
 		obtainDeviceList(mSystemDatabaseObject);
 		registerApp(mSystemDatabaseObject);
-		obtainAppList(mSystemDatabaseObject);
+		obtainApp(mSystemDatabaseObject);
 		registerFunction(mSystemDatabaseObject);
 		registerMeasurement(mSystemDatabaseObject);
 		Log.i(tag, "registerSystemDatabase OK");
@@ -114,7 +119,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		mApp.PackageName = app;
 		//기존에 등록된 값이 있으면 해당 값을 찾아서 리턴
 
-		if(obtainDeviceList(mSystemDatabaseObject) && obtainAppList(mSystemDatabaseObject)){
+		if(obtainDeviceList(mSystemDatabaseObject) && obtainApp(mSystemDatabaseObject)){
 			mSystemDatabaseObject.isExist = true;
 			obtainFunction(mSystemDatabaseObject);
 			obtainMeasurement(mSystemDatabaseObject);
@@ -186,7 +191,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mDeviceList;
 	}
 	
-	private boolean obtainAppList(SystemDatabaseObject mSystemDatabaseObject){
+	private boolean obtainApp(SystemDatabaseObject mSystemDatabaseObject){
 		App mApp = mSystemDatabaseObject.mApp;
 		String query = SQL_SELECT_APP+"where DeviceId=? and PackageName=?";
 		String[] args = {String.valueOf(mSystemDatabaseObject.mDevice.DeviceId),mSystemDatabaseObject.mApp.PackageName};

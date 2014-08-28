@@ -28,7 +28,7 @@ public class BlinkDatabase {
 				+ "'AppName' TEXT NOT NULL,"
 				+ "'Version' INTEGER NOT NULL DEFAULT (1),"
 				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime')),"
-				+ "UNIQUE ('PackageName'),"
+				+ "UNIQUE ('DeviceId','PackageName'),"
 				+ "FOREIGN KEY('DeviceId') REFERENCES Device('DeviceId')"
 				+ "); ";
 		db.execSQL(sql);
