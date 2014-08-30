@@ -7,7 +7,6 @@ import kr.poturns.blink.db.JsonManager;
 import kr.poturns.blink.util.ClassUtil;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
 
 public class SystemDatabaseObject implements Parcelable {
@@ -49,13 +48,10 @@ public class SystemDatabaseObject implements Parcelable {
 	
 	//Java reflect을 이용한 Measurement 추가 
 	public void addMeasurement(Class<?> obj){
-		
 		Field[] mFields = obj.getFields();
-		Log.i(tag, "addDeviceAppMeasurement(Object obj) : "+mFields.length+" classname : "+obj.getName());
 		for(int i=0;i<mFields.length;i++){
-			Log.i(tag, "Field : "+mFields[i].getName());
+			if(mFields[i].getName().contentEquals("DateTime"))continue;
 			Measurement mMeasurement = new Measurement(ClassUtil.obtainFieldSchema(mFields[i]),mFields[i].getType().getName(),"");
-			Log.i(tag, mMeasurement.toString());
 			mMeasurementList.add(mMeasurement);
 		}
 	}

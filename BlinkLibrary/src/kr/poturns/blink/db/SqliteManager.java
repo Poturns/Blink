@@ -274,7 +274,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		for(int i=0;i<mMeasurementList.size();i++){
 			mMeasurement = mMeasurementList.get(i);
 			mMeasurement.AppId = mApp.AppId;
-			if(mMeasurement.Measurement.endsWith("/DateTime"))continue;
+//			if(mMeasurement.Measurement.endsWith("/DateTime"))continue;
 			ContentValues values = new ContentValues();
 			values.put("AppId", ""+mMeasurement.AppId);
 			values.put("Measurement", ""+mMeasurement.Measurement);  

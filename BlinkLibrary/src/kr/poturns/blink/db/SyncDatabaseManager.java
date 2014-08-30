@@ -1,5 +1,6 @@
 package kr.poturns.blink.db;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -16,14 +17,17 @@ import android.content.Context;
 import android.util.Log;
 
 public class SyncDatabaseManager extends BlinkDatabaseManager{
+	private final static String tag = "SyncDatabaseManager";
+	
+	public Wearable wearable;
+	public Main main;
 	
 	private static final int TEMP_MEASUREMENT_ID = 999999;
-	private List<SystemDatabaseObject> oldSystemDatabaseObject;
-	private List<SystemDatabaseObject> newSystemDatabaseObject;
 	
 	public SyncDatabaseManager(Context context) {
 	    super(context);
-	    // TODO Auto-generated constructor stub
+	    wearable = new Wearable();
+	    main = new Main();
     }
 	
 	/**
@@ -31,8 +35,8 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 	 * @return
 	 */
 	private HashMap<Integer, Integer> obtainMeasurementMap(List<SystemDatabaseObject> SystemDatabaseObjctList){
-		oldSystemDatabaseObject = obtainSystemDatabase();
-		newSystemDatabaseObject = SystemDatabaseObjctList;
+		List<SystemDatabaseObject> oldSystemDatabaseObject = obtainSystemDatabase();
+		List<SystemDatabaseObject> newSystemDatabaseObject = SystemDatabaseObjctList;
 		
 		List<Measurement> oldMeasurementList;
 		List<Measurement> newMeasurementList;
@@ -45,7 +49,7 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		//새로운 SystemDatabaseObject 리스트의 인덱스
 		for(int i=0;i<newSystemDatabaseObject.size();i++){
 			//기존 SystemDatabaseObject 리스트의 인덱스
-			for(int j=0;i<oldSystemDatabaseObject.size();j++){
+			for(int j=0;j<oldSystemDatabaseObject.size();j++){
 				//동일한 systemDatabaseObject 검색
 				if(newSystemDatabaseObject.get(i).mDevice.MacAddress.contentEquals(oldSystemDatabaseObject.get(j).mDevice.MacAddress)
 						&& newSystemDatabaseObject.get(i).mApp.PackageName.contentEquals(oldSystemDatabaseObject.get(j).mApp.PackageName)){
@@ -71,22 +75,33 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 	}
 	
 	/**
-	 * 주어진 systemDatabaseObjectList로 systemDatabaseObject를 업데이트한다.
+	 * DB에 저장되어 있는 데이터와 비교하여 추가된 SystemDatabaseObject를 얻는다.
+	 * @param SystemDatabaseObjctList
 	 * @return
 	 */
-	public boolean syncSystemDatabase(List<SystemDatabaseObject> SystemDatabaseObjctList){
-		//변경해야할 MeasurementId 맵을 가진 HashMap을 얻는다.
-		HashMap<Integer, Integer> MeasurementMap = obtainMeasurementMap(SystemDatabaseObjctList);
-		//MeasurementData 테이블을 동기화한다.
-		SyncMeasurementData(MeasurementMap);
-		
-		//SystemDatabase를 동기화한다.
-		//기존 SystemDatabase삭제 (Device,App,Function,Measurement)
-		removeSystemDatabaseAll();
-		for(SystemDatabaseObject mSystemDatabaseObject : SystemDatabaseObjctList){
-			insertSystemDatabase(mSystemDatabaseObject);
+	private List<SystemDatabaseObject> obtainAddedSystemDatabaseObject(List<SystemDatabaseObject> SystemDatabaseObjctList){
+		List<SystemDatabaseObject> MainSystemDatabaseObjectList = obtainSystemDatabase();
+		List<SystemDatabaseObject> WearableSystemDatabaseObjectList = SystemDatabaseObjctList;
+		List<SystemDatabaseObject> AddedSystemDatabaseObjectList = new ArrayList<SystemDatabaseObject>();
+		boolean isAdded = true;
+		//웨어러블 SystemDatabaseObject 리스트의 인덱스
+		for(int i=0;i<WearableSystemDatabaseObjectList.size();i++){
+			isAdded = true;
+			//메인 SystemDatabaseObject 리스트의 인덱스
+			for(int j=0;j<MainSystemDatabaseObjectList.size();j++){
+				//동일한 systemDatabaseObject 검색
+				if(WearableSystemDatabaseObjectList.get(i).mDevice.MacAddress.contentEquals(MainSystemDatabaseObjectList.get(j).mDevice.MacAddress)
+						&& WearableSystemDatabaseObjectList.get(i).mApp.PackageName.contentEquals(MainSystemDatabaseObjectList.get(j).mApp.PackageName)
+						&& WearableSystemDatabaseObjectList.get(i).mApp.Version==MainSystemDatabaseObjectList.get(j).mApp.Version){
+					//동일한 SystemDatabaseObject가 존재하면 추가된게 아니기 때문에 isAdded 값 false로 변경
+					isAdded = false;
+				}
+			}
+			//추가된 SystemDatabaseObject 리스트에 추가
+			if(isAdded)AddedSystemDatabaseObjectList.add(WearableSystemDatabaseObjectList.get(i));
 		}
-		return true;
+		
+		return AddedSystemDatabaseObjectList;
 	}
 	
 	/**
@@ -130,6 +145,7 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 			values.put("AppId", mMeasurement.AppId);
 			values.put("MeasurementId", mMeasurement.MeasurementId);
 			values.put("Measurement", mMeasurement.Measurement);
+			values.put("Type", mMeasurement.Type);
 			values.put("Description", mMeasurement.Description);
 	        mSQLiteDatabase.insert("Measurement", null, values);
 		}
@@ -227,4 +243,46 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		String query = "update MeasurementData set "+set+" where "+where;
 		mSQLiteDatabase.execSQL(query);
 	}
+	
+	public class Wearable {
+		/**
+		 * 주어진 systemDatabaseObjectList로 systemDatabaseObject를 업데이트한다.
+		 * @return
+		 */
+		public boolean syncSystemDatabase(List<SystemDatabaseObject> SystemDatabaseObjctList){
+			//변경해야할 MeasurementId 맵을 가진 HashMap을 얻는다.
+			HashMap<Integer, Integer> MeasurementMap = obtainMeasurementMap(SystemDatabaseObjctList);
+			//MeasurementData 테이블을 동기화한다.
+			SyncMeasurementData(MeasurementMap);
+			
+			//SystemDatabase를 동기화한다.
+			//기존 SystemDatabase삭제 (Device,App,Function,Measurement)
+			removeSystemDatabaseAll();
+			
+			Log.i(tag, "syncSystemDatabase");
+			
+			for(SystemDatabaseObject mSystemDatabaseObject : SystemDatabaseObjctList){
+				insertSystemDatabase(mSystemDatabaseObject);
+			}
+			return true;
+		}
+	}
+	
+	public class Main {
+		/**
+		 * 주어진 SystemDatabaseObjectList와 비교하여 새로운 부분을 추가한다.
+		 */
+		public boolean syncSystemDatabase(List<SystemDatabaseObject> SystemDatabaseObjctList){
+			//Main Device에 저장되어 있지 않은 SystemDatabaseObject를 검색한다.
+			List<SystemDatabaseObject> AddedSystemDatabaseObjectList = obtainAddedSystemDatabaseObject(SystemDatabaseObjctList);
+			
+			//SystemDatabase에 추가한다.
+			for(SystemDatabaseObject mSystemDatabaseObject : AddedSystemDatabaseObjectList){
+				registerSystemDatabase(mSystemDatabaseObject);
+			}
+			return true;
+		}
+	}
+	
+	
 }

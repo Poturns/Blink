@@ -54,7 +54,7 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
 			
 		};
 		
-		mTestArchive = new TestArchive(mBlinkServiceInteraction);
+		mTestArchive = new TestArchive(mBlinkServiceInteraction,this);
 		mBlinkServiceInteraction.startService();
 		
 		
