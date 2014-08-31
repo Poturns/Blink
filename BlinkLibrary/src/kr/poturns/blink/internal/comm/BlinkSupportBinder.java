@@ -4,10 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import kr.poturns.blink.db.BlinkDatabaseManager;
-import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.archive.App;
-import kr.poturns.blink.db.archive.BlinkLog;
 import kr.poturns.blink.db.archive.CallbackData;
+import kr.poturns.blink.db.archive.DatabaseMessage;
 import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
@@ -16,7 +15,6 @@ import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import kr.poturns.blink.internal.BlinkLocalService;
 import kr.poturns.blink.internal.ConnectionSupportBinder;
 import kr.poturns.blink.internal.ServiceKeeper;
-import android.content.Intent;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Log;
@@ -63,8 +61,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		// TODO Auto-generated method stub
 		this.mPackageName = PackageName;
 		this.mAppName = AppName;
-		if(CONTEXT.CALLBACK_MAP.get(mPackageName)==null)
-			CONTEXT.CALLBACK_MAP.put(mPackageName, new RemoteCallbackList<IInternalEventCallback>());
 	}
 	
 	@Override
@@ -80,20 +76,19 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	
 	@Override
 	public final boolean registerCallback(IInternalEventCallback callback) throws RemoteException {
+		ServiceKeeper mServiceKeeper = ServiceKeeper.getInstance(CONTEXT);
 		if (callback != null){
-			if(CONTEXT.CALLBACK_MAP.get(mPackageName)!=null){
-				return CONTEXT.CALLBACK_MAP.get(mPackageName).register(callback);
-			}
+			mServiceKeeper.addRemoteCallbackList(mPackageName,callback);
+			return true;
 		}
 		return false;
 	}
 	
 	@Override
 	public final boolean unregisterCallback(IInternalEventCallback callback) throws RemoteException {
+		ServiceKeeper mServiceKeeper = ServiceKeeper.getInstance(CONTEXT);
 		if (callback != null){
-			if(CONTEXT.CALLBACK_MAP.get(mPackageName)!=null){
-				return CONTEXT.CALLBACK_MAP.get(mPackageName).unregister(callback);
-			}
+			return mServiceKeeper.clearRemoteCallbackList(mPackageName,callback);
 		}
 		return false;
 	}
@@ -104,17 +99,19 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	 * @param data
 	 */
 	public void callbackData(int responseCode,String data){
-		if(CONTEXT.CALLBACK_MAP.get(mPackageName)==null)return;
+		ServiceKeeper mServiceKeeper = ServiceKeeper.getInstance(CONTEXT);
+		RemoteCallbackList<IInternalEventCallback> mRemoteCallbackList = mServiceKeeper.obtainRemoteCallbackList(mPackageName);
+		if(mRemoteCallbackList==null)return;
 		CallbackData mCallbackData = CALLBACK_DATA_MAP.get(responseCode);
 		if(mCallbackData==null){
 			mCallbackData = new CallbackData();
 		}
 		mCallbackData.OutDeviceData = data;
 		
-		int N = CONTEXT.CALLBACK_MAP.get(mPackageName).beginBroadcast();
+		int N = mRemoteCallbackList.beginBroadcast();
 		for(int i=0;i<N;i++){
 			try {
-				CONTEXT.CALLBACK_MAP.get(mPackageName).getBroadcastItem(i).onReceiveData(responseCode, mCallbackData);
+				mRemoteCallbackList.getBroadcastItem(i).onReceiveData(responseCode, mCallbackData);
 			} catch (RemoteException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -140,46 +137,51 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 			String DateTimeFrom, String DateTimeTo, int ContainType,int requestCode)
 			throws RemoteException {
 		// TODO Auto-generated method stub
-		// Check need bluetooth communicate
-		mBlinkDatabaseManager.registerLog(mDeviceName, mPackageName, mBlinkDatabaseManager.LOG_OBTAIN_MEASUREMENT, ClassName);
-		CALLBACK_DATA_MAP.remove(requestCode);
-		
 		CallbackData mCallbackData = new CallbackData();
+		
+		CALLBACK_DATA_MAP.remove(requestCode);
 		
 		try {
 			Class<?> mClass = Class.forName(ClassName);
 			
-			//외부 디바이스에서만 데이터 검색
-			if(requestPolicy==REQUEST_TYPE_OUT_DEVICE){
-				if(!mBlinkDatabaseManager.checkInDevice(mClass)){
-					//요청하는 코드 추가				
-					callbackData(requestCode, null); 
-					
-				}else {
-					callbackData(requestCode, null);
+			BlinkMessage mBlinkMessage;
+			//자신의 디바이스가 아니고 다른곳에 function이 존재하면
+			if(mBlinkDatabaseManager.checkOutDevice(mClass,mBlinkDevice.getAddress())){
+				//DatabaseMessage 생성
+				DatabaseMessage mDatabaseMessage = new DatabaseMessage.Builder()
+				.setCondition(ClassName)
+				.setDateTimeFrom(DateTimeFrom)
+				.setDateTimeTo(DateTimeTo)
+				.setType(DatabaseMessage.OBTAIN_DATA_BY_CLASS)
+				.build();
+				
+				//BlinkMessage 생성
+				mBlinkMessage = new BlinkMessage.Builder()
+										.setDestinationDevice(null)
+										.setDestinationApplication(null)
+										.setSourceDevice(mBlinkDevice)
+										.setSourceApplication(mPackageName)
+										.setMessage(gson.toJson(mDatabaseMessage))
+										.setCode(requestCode)
+										.build();
+				if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
+					mCallbackData.InDeviceData = mBlinkDatabaseManager.obtainMeasurementData(mClass, DateTimeFrom, DateTimeTo, ContainType);
+					CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
 				}
-			}
-			//외부와 내부 디바이스 모두에서 데이터 검색
-			else if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
-				//나중에 콜백될 때 요청 코드에 따라서 내부 디바이스 데이터를 합쳐서 콜백
-				//내부 디바이스 데이터
-				mCallbackData.InDeviceData = mBlinkDatabaseManager.obtainMeasurementData(mClass, DateTimeFrom, DateTimeTo, ContainType);
-				CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
-				//찾으려는 데이터가 다른 디바이스에 있는 경우
-				if(!mBlinkDatabaseManager.checkInDevice(mClass)){
-					//요청하는 코드 추가
-					callbackData(requestCode, null); 
+				CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
+			}else {
+				if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
+					mCallbackData.InDeviceData = mBlinkDatabaseManager.obtainMeasurementData(mClass, DateTimeFrom, DateTimeTo, ContainType);
+					CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
 				}
-				//찾으려는 데이터가 다른 디바이스에 없는 경우
-				else {
-					callbackData(requestCode, null); 
-				}
+				callbackData(requestCode, null);
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			callbackData(requestCode, null);
 		}
+		
 	}
 	
 	
@@ -188,86 +190,88 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 			List<Measurement> mMeasurementList,
 			String DateTimeFrom, String DateTimeTo,int requestCode) throws RemoteException {
 		// TODO Auto-generated method stub
-		mBlinkDatabaseManager.registerLog(mDeviceName, mPackageName, mBlinkDatabaseManager.LOG_OBTAIN_MEASUREMENT, "By Id");
-		CALLBACK_DATA_MAP.remove(requestCode);
-		
 		CallbackData mCallbackData = new CallbackData();
 		
-		//외부 디바이스에서만 데이터 검색
-		if(requestPolicy==REQUEST_TYPE_OUT_DEVICE){
-			if(!mBlinkDatabaseManager.checkInDevice(mMeasurementList)){
-				//요청하는 코드 추가				
-				callbackData(requestCode, null); 
-				
-			}else {
-				callbackData(requestCode, null);
+		CALLBACK_DATA_MAP.remove(requestCode);
+		
+		BlinkMessage mBlinkMessage;
+		
+		//자신의 디바이스가 아니고 다른곳에 function이 존재하면
+		if(mBlinkDatabaseManager.checkOutDevice(mMeasurementList,mBlinkDevice.getAddress())){
+			//BlinkMessage 생성
+			DatabaseMessage mDatabaseMessage = new DatabaseMessage.Builder()
+														.setCondition(gson.toJson(mMeasurementList))
+														.setDateTimeFrom(DateTimeFrom)
+														.setDateTimeTo(DateTimeTo)
+														.setType(DatabaseMessage.OBTAIN_DATA_BY_ID)
+														.build();
+
+			String temp = gson.toJson(mDatabaseMessage);
+			Log.i("test",temp);
+			mBlinkMessage = new BlinkMessage.Builder()
+									.setDestinationDevice(null)
+									.setDestinationApplication(null)
+									.setSourceDevice(mBlinkDevice)
+									.setSourceApplication(mPackageName)
+									.setMessage(gson.toJson(mDatabaseMessage))
+									.setCode(requestCode)
+									.build();
+			if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
+				CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
+				List<MeasurementData> InDeviceData = mBlinkDatabaseManager.obtainMeasurementData(mMeasurementList, DateTimeFrom, DateTimeTo);
+				mCallbackData.InDeviceData =  gson.toJson(InDeviceData);
+				CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
 			}
-		}
-		//외부와 내부 디바이스 모두에서 데이터 검색
-		else if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
-			//나중에 콜백될 때 요청 코드에 따라서 내부 디바이스 데이터를 합쳐서 콜백
-			//내부 디바이스 데이터
-			List<MeasurementData> InDeviceData = mBlinkDatabaseManager.obtainMeasurementData(mMeasurementList, DateTimeFrom, DateTimeTo);
-			mCallbackData.InDeviceData =  gson.toJson(InDeviceData);
-			CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
-			//찾으려는 데이터가 다른 디바이스에 있는 경우
-			if(!mBlinkDatabaseManager.checkInDevice(mMeasurementList)){
-				//요청하는 코드 추가
-				callbackData(requestCode, null); 
-				
+			
+			CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
+		}else {
+			if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
+				List<MeasurementData> InDeviceData = mBlinkDatabaseManager.obtainMeasurementData(mMeasurementList, DateTimeFrom, DateTimeTo);
+				mCallbackData.InDeviceData =  gson.toJson(InDeviceData);
+				CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
 			}
-			//찾으려는 데이터가 다른 디바이스에 없는 경우
-			else {
-				callbackData(requestCode, null); 
-			}
+			callbackData(requestCode, null);
 		}
 	}
 
 	@Override
 	public void startFunction(Function function,int requestCode) throws RemoteException {
 		// TODO Auto-generated method stub
-		// Check need bluetooth communicate
 		CallbackData mCallbackData = new CallbackData();
+		
 		CALLBACK_DATA_MAP.remove(requestCode);
 		
-		//외부 디바이스에서만 데이터 검색
-		if(requestPolicy==REQUEST_TYPE_OUT_DEVICE){
-			Device device = mBlinkDatabaseManager.obtainDevice(function);
-			App app = mBlinkDatabaseManager.obtainApp(function);
-			//자신의 디바이스가 아니고 다른곳에 function이 존재하면
-			if(device!=null && !device.MacAddress.contentEquals(mBlinkDevice.getAddress())){
-				//요청하는 코드 추가	
-				//target
-//				device.MacAddress;
-//				app.PackageName;
-				//source
-//				mBlinkDevice.getAddress();
-//				mPackageName;
-				//message
-//				gson.toJson(function);
-				
-			}else {
-				callbackData(requestCode, null);
+		Device device = mBlinkDatabaseManager.obtainDevice(function);
+		App app = mBlinkDatabaseManager.obtainApp(function);
+		
+		BlinkMessage mBlinkMessage;
+		//자신의 디바이스가 아니고 다른곳에 function이 존재하면
+		if(device!=null && !device.MacAddress.contentEquals(mBlinkDevice.getAddress())){
+			//BlinkMessage 생성
+			mBlinkMessage = new BlinkMessage.Builder()
+									.setDestinationDevice(BlinkDevice.load(device.MacAddress))
+									.setDestinationApplication(app.PackageName)
+									.setSourceDevice(BlinkDevice.load(mBlinkDevice))
+									.setSourceApplication(mPackageName)
+									.setMessage(gson.toJson(function))
+									.setCode(requestCode)
+									.build();
+			//Remote Call
+			if(requestPolicy==REQUEST_TYPE_OUT_DEVICE){
+				CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, BlinkDevice.load(device.MacAddress));
 			}
-		}
-		//외부와 내부 디바이스 모두에서 데이터 검색
-		else if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
-			//나중에 콜백될 때 요청 코드에 따라서 내부 디바이스 데이터를 합쳐서 콜백
-			CONTEXT.startFunction(function);
-			mCallbackData.InDeviceData = "success";
-			CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
-			//찾으려는 데이터가 다른 디바이스에 있는 경우
-			if(!mBlinkDatabaseManager.checkInDevice(function)){
-				//요청하는 코드 추가
-				Log.i(tag, "if");
-				callbackData(requestCode, null); 
-				
+			else if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
+				CONTEXT.startFunction(function);
+				mCallbackData.InDeviceData = "success";
+				CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
 			}
-			//찾으려는 데이터가 다른 디바이스에 없는 경우
-			else {
-				Log.i(tag, "else");
-				callbackData(requestCode, null); 
+		}else {
+			if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
+				CONTEXT.startFunction(function);
+				mCallbackData.InDeviceData = "success";
+				CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
 			}
+			callbackData(requestCode, null);
 		}
 	}
 

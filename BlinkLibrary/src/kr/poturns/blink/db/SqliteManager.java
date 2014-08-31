@@ -53,8 +53,13 @@ public class SqliteManager extends SQLiteOpenHelper {
 	private final String SQL_SELECT_MEASUREMENT = "SELECT * FROM Measurement ";
 	private final String SQL_SELECT_MEASUREMENTDATA =  "SELECT * FROM MeasurementData ";
 	private final String SQL_SELECT_GROUPID =  "SELECT max(GroupId) FROM MeasurementData ";
+	private final String SQL_DELETE_DEVICE = "delete from Device ";
+	private final String SQL_DELETE_APP = "delete from App ";
+	private final String SQL_DELETE_FUNCTION = "delete from Function ";
+	private final String SQL_DELETE_MEASUREMENT = "delete from Measurement ";
 	private final String SQL_DELETE_MEASUREMENTDATA = "delete from MeasurementData ";
 	private final String SQL_SELECT_LOG =  "SELECT * FROM BlinkLog ";
+	
 	public static final String EXTERNAL_DB_FILE_PATH = Environment.getExternalStorageDirectory() + "/Blink/archive/";
 	public static final String EXTERNAL_DB_FILE_NAME = "BlinkDatabase.db";
 	
@@ -101,7 +106,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		registerDevice(mSystemDatabaseObject);
 		obtainDeviceList(mSystemDatabaseObject);
 		registerApp(mSystemDatabaseObject);
-		obtainAppList(mSystemDatabaseObject);
+		obtainApp(mSystemDatabaseObject);
 		registerFunction(mSystemDatabaseObject);
 		registerMeasurement(mSystemDatabaseObject);
 		Log.i(tag, "registerSystemDatabase OK");
@@ -114,7 +119,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		mApp.PackageName = app;
 		//기존에 등록된 값이 있으면 해당 값을 찾아서 리턴
 
-		if(obtainDeviceList(mSystemDatabaseObject) && obtainAppList(mSystemDatabaseObject)){
+		if(obtainDeviceList(mSystemDatabaseObject) && obtainApp(mSystemDatabaseObject)){
 			mSystemDatabaseObject.isExist = true;
 			obtainFunction(mSystemDatabaseObject);
 			obtainMeasurement(mSystemDatabaseObject);
@@ -186,7 +191,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mDeviceList;
 	}
 	
-	private boolean obtainAppList(SystemDatabaseObject mSystemDatabaseObject){
+	private boolean obtainApp(SystemDatabaseObject mSystemDatabaseObject){
 		App mApp = mSystemDatabaseObject.mApp;
 		String query = SQL_SELECT_APP+"where DeviceId=? and PackageName=?";
 		String[] args = {String.valueOf(mSystemDatabaseObject.mDevice.DeviceId),mSystemDatabaseObject.mApp.PackageName};
@@ -269,7 +274,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		for(int i=0;i<mMeasurementList.size();i++){
 			mMeasurement = mMeasurementList.get(i);
 			mMeasurement.AppId = mApp.AppId;
-			if(mMeasurement.Measurement.endsWith("/DateTime"))continue;
+//			if(mMeasurement.Measurement.endsWith("/DateTime"))continue;
 			ContentValues values = new ContentValues();
 			values.put("AppId", ""+mMeasurement.AppId);
 			values.put("Measurement", ""+mMeasurement.Measurement);  
@@ -332,41 +337,33 @@ public class SqliteManager extends SQLiteOpenHelper {
 		}
 	}
 	
+	public ArrayList<Measurement> obtainMeasurementList(Class<?> mClass,int ContainType){
+		ArrayList<Measurement> mMeasurementList = new ArrayList<Measurement>();
+		
+		Field[] mFields = mClass.getFields();
+		for(int i=0;i<mFields.length;i++){
+			mMeasurementList.addAll(obtainMeasurementList(mFields[i], ContainType));
+		}
+		return mMeasurementList;
+	}
+	
+	
 	public ArrayList<Measurement> obtainMeasurementList(Field Measurement,int ContainType){
-		String[] args = new String[1];
-		String sql = "";
+		String where = "";
 		switch (ContainType) {
 		case CONTAIN_DEFAULT:
-			args[0] = ClassUtil.obtainFieldSchema(Measurement);
-			sql = SQL_SELECT_MEASUREMENT + "where Measurement=?";
+			where = "Measurement='" + ClassUtil.obtainFieldSchema(Measurement)+"'";
 			break;
 		case CONTAIN_FIELD:
-			args[0] = Measurement.getName();
-			sql = SQL_SELECT_MEASUREMENT + "where Measurement like '%/"+args[0]+"'";
-			args = null;
+			where = "Measurement like '%/"+Measurement.getName()+"'";
 			break;
 		
 		case CONTAIN_PARENT:
-			args[0] = ClassUtil.obtainParentSchema(Measurement);
-			sql = SQL_SELECT_MEASUREMENT + "where Measurement like '%"+args[0]+"'";
-			args = null;
+			where = SQL_SELECT_MEASUREMENT + "where Measurement like '%"+ClassUtil.obtainParentSchema(Measurement)+"'";
 			break;
 		} 
 		
-		Log.i(tag, "sql : "+sql);
-		Cursor mCursor = mSQLiteDatabase.rawQuery(sql, args);
-		ArrayList<Measurement> mMeasurementList = new ArrayList<Measurement>();
-		Measurement mMeasurement;
-		while(mCursor.moveToNext()){
-			mMeasurement = new Measurement();
-			mMeasurement.AppId = mCursor.getInt(mCursor.getColumnIndex("AppId"));
-			mMeasurement.MeasurementId = mCursor.getInt(mCursor.getColumnIndex("MeasurementId"));
-			mMeasurement.Measurement = mCursor.getString(mCursor.getColumnIndex("Measurement"));
-			mMeasurement.Type = mCursor.getString(mCursor.getColumnIndex("Type"));
-			mMeasurement.Description = mCursor.getString(mCursor.getColumnIndex("Description"));
-			mMeasurementList.add(mMeasurement);
-		}
-		return mMeasurementList;
+		return obtainMeasurementList(where);
 	}
 	
 	public ArrayList<Measurement> obtainMeasurementList(String where){
@@ -431,8 +428,8 @@ public class SqliteManager extends SQLiteOpenHelper {
 			}
 		}
 		
-		if(DateTimeFrom!=null)condition.add("DateTime >= '"+DateTimeFrom+"'");
-		if(DateTimeTo!=null)condition.add("DateTime <= '"+DateTimeTo+"'");
+		if(DateTimeFrom!=null && !DateTimeFrom.equals(""))condition.add("DateTime >= '"+DateTimeFrom+"'");
+		if(DateTimeTo!=null && !DateTimeTo.equals(""))condition.add("DateTime <= '"+DateTimeTo+"'");
 		condition.add("MeasurementId in (" + MeasurementIdcondition + ")");
 		
 		for(int i=0;i<condition.size();i++){

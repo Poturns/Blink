@@ -28,7 +28,7 @@ public class BlinkDatabase {
 				+ "'AppName' TEXT NOT NULL,"
 				+ "'Version' INTEGER NOT NULL DEFAULT (1),"
 				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime')),"
-				+ "UNIQUE ('PackageName'),"
+				+ "UNIQUE ('DeviceId','PackageName'),"
 				+ "FOREIGN KEY('DeviceId') REFERENCES Device('DeviceId')"
 				+ "); ";
 		db.execSQL(sql);
@@ -76,6 +76,15 @@ public class BlinkDatabase {
 				+ "'App' TEXT NOT NULL,"
 				+ "'Type' INTEGER NOT NULL,"
 				+ "'Content' TEXT NOT NULL,"
+				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime'))"
+				+ ");";
+		db.execSQL(sql);
+		
+		Log.i(tag, "logDatabase ok");
+		
+		sql = "create table 'Synchronize' ("
+				+ "'DeviceId' INTEGER PRIMARY KEY ,"
+				+ "'Sequence' INTEGER NOT NULL,"
 				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime'))"
 				+ ");";
 		db.execSQL(sql);

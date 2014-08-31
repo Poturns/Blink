@@ -1,26 +1,32 @@
 package com.example.servicetestapp;
 
+import java.util.List;
+
 import kr.poturns.blink.db.archive.CallbackData;
 import kr.poturns.blink.db.archive.Function;
+import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
-import kr.poturns.blink.internal.comm.BlinkSupportBinder;
 import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import kr.poturns.blink.schema.Eye;
-import kr.poturns.blink.util.ClassUtil;
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 public class MainActivity extends Activity implements android.view.View.OnClickListener{
 	private final String tag = "MainActivity";
 	BlinkServiceInteraction mBlinkServiceInteraction = null;
 	TestArchive mTestArchive = null;
+	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -48,7 +54,7 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
 			
 		};
 		
-		mTestArchive = new TestArchive(mBlinkServiceInteraction);
+		mTestArchive = new TestArchive(mBlinkServiceInteraction,this);
 		mBlinkServiceInteraction.startService();
 		
 		
@@ -136,6 +142,31 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
 			Log.i(tag, "InDeviceData : "+arg1.InDeviceData);
 			Log.i(tag, "OutDeviceData : "+arg1.OutDeviceData);
 			Log.i(tag, "Error : "+arg1.Error);
+			
+			if(arg0==0){
+				if(arg1.InDeviceData!=null){
+					List<Eye> mEyeList = gson.fromJson(arg1.InDeviceData, new TypeToken<List<Eye>>(){}.getType());
+					for(int i=0;i<mEyeList.size();i++){
+						Log.i(tag, "Eye - left_sight : "+mEyeList.get(i).left_sight+" right_sight : "+mEyeList.get(i).right_sight+ " DateTime : "+mEyeList.get(i).DateTime);
+					}
+				}
+				if(arg1.OutDeviceData!=null){
+					List<Eye> mEyeList = gson.fromJson(arg1.OutDeviceData, new TypeToken<List<Eye>>(){}.getType());
+					for(int i=0;i<mEyeList.size();i++){
+						Log.i(tag, "Eye - left_sight : "+mEyeList.get(i).left_sight+" right_sight : "+mEyeList.get(i).right_sight+ " DateTime : "+mEyeList.get(i).DateTime);
+					}
+				}
+			}
+			else if(arg0==1){
+				if(arg1.InDeviceData!=null){
+					List<MeasurementData> mMeasurementList = gson.fromJson(arg1.InDeviceData, new TypeToken<List<MeasurementData>>(){}.getType());
+					Log.i(tag, mMeasurementList.toString());
+				}
+				if(arg1.OutDeviceData!=null){
+					List<MeasurementData> mMeasurementList = gson.fromJson(arg1.OutDeviceData, new TypeToken<List<MeasurementData>>(){}.getType());
+					Log.i(tag, mMeasurementList.toString());
+				}
+			}
 		}
 
 	};

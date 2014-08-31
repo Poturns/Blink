@@ -44,7 +44,7 @@ public class ServiceKeeper {
 	private final HashMap<BlinkDevice, BluetoothGatt> LE_CONN_MAP;
 	
 	private final HashMap<String, BlinkSupportBinder> BINDER_MAP;
-	private final RemoteCallbackList<IInternalEventCallback> EVENT_CALLBACK_LIST;
+	private final HashMap<String, RemoteCallbackList<IInternalEventCallback>> CALLBACK_MAP;
 	
 	private ServiceKeeper(BlinkLocalBaseService context) {
 		KEEPER_CONTEXT = context;
@@ -54,7 +54,7 @@ public class ServiceKeeper {
 		CLASSIC_CONN_MAP = new HashMap<BlinkDevice, ClassicLinkThread>();
 		LE_CONN_MAP = new HashMap<BlinkDevice, BluetoothGatt>();
 		BINDER_MAP = new HashMap<String, BlinkSupportBinder>();
-		EVENT_CALLBACK_LIST = new RemoteCallbackList<IInternalEventCallback>();
+		CALLBACK_MAP = new HashMap<String,RemoteCallbackList<IInternalEventCallback>>();
 	}
 	
 	void destroy() {
@@ -302,4 +302,23 @@ public class ServiceKeeper {
 		}
 	}
 	
+	/**
+	 * 콜백 리스트 관련 매소드
+	 */
+	public void addRemoteCallbackList(String packageName, IInternalEventCallback callback){
+		if(CALLBACK_MAP.get(packageName)==null)
+			CALLBACK_MAP.put(packageName, new RemoteCallbackList<IInternalEventCallback>());
+		RemoteCallbackList<IInternalEventCallback> mRemoteCallbackList = CALLBACK_MAP.get(packageName);
+		mRemoteCallbackList.register(callback);
+	}
+	
+	public boolean clearRemoteCallbackList(String packageName, IInternalEventCallback callback){
+		if(CALLBACK_MAP.get(packageName)==null)return false;
+		RemoteCallbackList<IInternalEventCallback> mRemoteCallbackList = CALLBACK_MAP.get(packageName);
+		return mRemoteCallbackList.unregister(callback);
+	}
+	
+	public RemoteCallbackList<IInternalEventCallback> obtainRemoteCallbackList(String packageName){
+		return CALLBACK_MAP.get(packageName);
+	}
 }

@@ -481,20 +481,20 @@ public abstract class BlinkServiceInteraction implements ServiceConnection,
 			return this;
 		}
 
-		public boolean checkInDevice(List<Measurement> mMeasurementList) {
-			// TODO Auto-generated method stub
-			return mBlinkDatabaseManager.checkInDevice(mMeasurementList);
-		}
-
-		public boolean checkInDevice(Function mFunction) {
-			// TODO Auto-generated method stub
-			return mBlinkDatabaseManager.checkInDevice(mFunction);
-		}
-
-		public boolean checkInDevice(Class<?> obj) {
-			// TODO Auto-generated method stub
-			return mBlinkDatabaseManager.checkInDevice(obj);
-		}
+//		public boolean checkInDevice(List<Measurement> mMeasurementList) {
+//			// TODO Auto-generated method stub
+//			return mBlinkDatabaseManager.checkInDevice(mMeasurementList);
+//		}
+//
+//		public boolean checkInDevice(Function mFunction) {
+//			// TODO Auto-generated method stub
+//			return mBlinkDatabaseManager.checkInDevice(mFunction);
+//		}
+//
+//		public boolean checkInDevice(Class<?> obj) {
+//			// TODO Auto-generated method stub
+//			return mBlinkDatabaseManager.checkInDevice(obj);
+//		}
 
 		public List<Device> getDeviceList() {
 			// TODO Auto-generated method stub
@@ -573,20 +573,16 @@ public abstract class BlinkServiceInteraction implements ServiceConnection,
 		 * @param RequestCode
 		 * @return
 		 */
-		public void obtainMeasurementData(Class<?> obj, Type type,
-				int RequestCode) {
+		public void obtainMeasurementData(Class<?> obj, int RequestCode) {
 			obtainMeasurementData(obj, null, null,
-					SqliteManager.CONTAIN_DEFAULT, type, RequestCode);
+					SqliteManager.CONTAIN_DEFAULT, RequestCode);
 		}
 
-		public void obtainMeasurementData(Class<?> obj, int ContainType,
-				Type type, int RequestCode) {
-			obtainMeasurementData(obj, null, null, ContainType, type,
-					RequestCode);
+		public void obtainMeasurementData(Class<?> obj, int ContainType, int RequestCode) {
+			obtainMeasurementData(obj, null, null, ContainType, RequestCode);
 		}
 
-		public void obtainMeasurementData(Class<?> obj, String DateTimeFrom,
-				String DateTimeTo, int ContainType, Type type, int RequestCode) {
+		public void obtainMeasurementData(Class<?> obj, String DateTimeFrom, String DateTimeTo, int ContainType, int RequestCode) {
 			String ClassName = obj.getName();
 			try {
 				mInternalOperationSupport.obtainMeasurementData(ClassName,

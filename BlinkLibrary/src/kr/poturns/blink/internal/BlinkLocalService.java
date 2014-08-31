@@ -1,18 +1,22 @@
 package kr.poturns.blink.internal;
 
-import java.util.HashMap;
+import java.util.List;
 
 import kr.poturns.blink.R;
 import kr.poturns.blink.db.BlinkDatabaseManager;
+import kr.poturns.blink.db.archive.DatabaseMessage;
 import kr.poturns.blink.db.archive.Function;
+import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.external.ServiceControlActivity;
 import kr.poturns.blink.internal.comm.BlinkSupportBinder;
-import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.IBinder;
-import android.os.RemoteCallbackList;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * 
@@ -27,8 +31,10 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 	
 	public static final int NOTIFICATION_ID = 0x2009920;
 	
-	public final HashMap<String, RemoteCallbackList<IInternalEventCallback>> CALLBACK_MAP = new HashMap<String, RemoteCallbackList<IInternalEventCallback>>();
 	private BlinkDatabaseManager mBlinkDatabaseManager;
+	public MessageProcessor mMessageProcessor;
+	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -73,6 +79,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 				new Intent(this, ServiceControlActivity.class), Intent.FLAG_ACTIVITY_NEW_TASK);
 		
 		mBlinkDatabaseManager = new BlinkDatabaseManager(this);
+		mMessageProcessor = new MessageProcessor(this);
 		
 		Notification mBlinkNotification = new Notification.Builder(this)
 										.setSmallIcon(R.drawable.ic_launcher)
@@ -89,12 +96,22 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 	 * @param message
 	 */
 	public String receiveMessageFromProcessor(String message){
+		DatabaseMessage mDatabaseMessage = gson.fromJson(message, DatabaseMessage.class);
+		if(mDatabaseMessage.getType()==DatabaseMessage.OBTAIN_DATA_BY_CLASS){
+			try {
+				Class<?> mClass = Class.forName(mDatabaseMessage.getCondition());
+	            return mBlinkDatabaseManager.obtainMeasurementData(mClass,mDatabaseMessage.getDateTimeFrom(), mDatabaseMessage.getDateTimeTo(), mDatabaseMessage.getContainType());
+            } catch (Exception e) {
+	            // TODO Auto-generated catch block
+	            e.printStackTrace();
+            } 
+		} else if(mDatabaseMessage.getType()==DatabaseMessage.OBTAIN_DATA_BY_ID){
+			List<Measurement> mMeasurementList = gson.fromJson(mDatabaseMessage.getCondition(),new TypeToken<List<Measurement>>(){}.getType());
+			return gson.toJson(mBlinkDatabaseManager.obtainMeasurementData(mMeasurementList,mDatabaseMessage.getDateTimeFrom(), mDatabaseMessage.getDateTimeTo()));
+		}
 		return null;
 	}
 	
-	public void sendMessageToProcessor(){
-		
-	}
 	/**
 	 * 함수를 실행시켜주는 매소드
 	 * 바인더나 MessageProcessor로부터 호출된다.
