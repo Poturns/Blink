@@ -92,7 +92,7 @@ public class ClassicLinkThread extends Thread {
 					
 				} else if (obj instanceof BlinkDevice) {
 					BlinkDevice opposite = (BlinkDevice) obj;
-					ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).updateBlinkNetwork(opposite);
+					//ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).updateBlinkNetwork(opposite);
 					
 				} else if (obj instanceof String) {
 					String json = (String) obj;

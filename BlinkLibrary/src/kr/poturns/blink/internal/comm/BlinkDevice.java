@@ -480,4 +480,8 @@ public class BlinkDevice implements Parcelable, Serializable {
 	public long getTimestamp() {
 		return Timestamp;
 	}
+	
+	public boolean isCenterDevice() {
+		return IdentityPoint > DeviceAnalyzer.IDENTITY_POINTLINE_PROXY;
+	}
 }

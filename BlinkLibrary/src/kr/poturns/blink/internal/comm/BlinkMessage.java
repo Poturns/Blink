@@ -2,12 +2,15 @@ package kr.poturns.blink.internal.comm;
 
 import java.io.Serializable;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 /**
  * 
  * @author Yeonho.Kim
  *
  */
-public class BlinkMessage implements Serializable {
+public class BlinkMessage implements Serializable, IBlinkMessagable {
 
 	// *** CONSTANT DECLARATION *** //
 	/**
@@ -20,6 +23,7 @@ public class BlinkMessage implements Serializable {
 	
 	public static final int TYPE_REQUEST_MEASUREMENT = 0x2;
 	
+	private static final Gson JSON_CREATOR = new GsonBuilder().setPrettyPrinting().create();
 	
 	
 
@@ -36,7 +40,6 @@ public class BlinkMessage implements Serializable {
 	private String message;
 	
 	private BlinkMessage() {
-		
 		Type = 0;
 		Reliable = false;
 		Timestamp = 0;
@@ -46,10 +49,18 @@ public class BlinkMessage implements Serializable {
 	 * BLE에서 사용할 수 있는 Message로 변환한다.
 	 * @return
 	 */
+	@Override
 	public Object toLeMessage() {
 		return null;
 	}
 
+
+	@Override
+	public String toClassicMessage() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	
 	
 	// *** BUILDER DECLARATION *** //
@@ -193,5 +204,4 @@ public class BlinkMessage implements Serializable {
 	public String getMessage() {
 		return message;
 	}
-	
 }

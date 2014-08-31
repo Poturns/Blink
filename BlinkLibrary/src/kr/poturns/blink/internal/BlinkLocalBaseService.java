@@ -1,8 +1,4 @@
 package kr.poturns.blink.internal;
-import java.util.HashMap;
-
-import kr.poturns.blink.R;
-import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.util.FileUtil;
 import android.app.Service;
@@ -50,13 +46,13 @@ abstract class BlinkLocalBaseService extends Service {
 		initiatate();
 		
 		// Blink 서비스를 위한 본 디바이스 정보 파악.
-		DeviceAnalyzer.Identity mIdentity = DeviceAnalyzer.getInstance(this).getCurrentIdentity();
-		if (DeviceAnalyzer.Identity.UNKNOWN.equals(mIdentity)) {
-			// Identity를 확인하고, 서비스가 정상적으로 동작할 수 없는 환경이면 종료한다.
-			//Toast.makeText(this, R.string.internal_baseservice_unable_alert, Toast.LENGTH_LONG).show();
-			stopSelf();
-			return;
-		}
+		new DeviceAnalyzer(this);
+//		if (DeviceAnalyzer.Identity.UNKNOWN.equals(mIdentity)) {
+//			// Identity를 확인하고, 서비스가 정상적으로 동작할 수 없는 환경이면 종료한다.
+//			//Toast.makeText(this, R.string.internal_baseservice_unable_alert, Toast.LENGTH_LONG).show();
+//			stopSelf();
+//			return;
+//		}
 		
 		// Device간 통신 모듈을 연결한다. 
 		InterDeviceManager.getInstance(this);

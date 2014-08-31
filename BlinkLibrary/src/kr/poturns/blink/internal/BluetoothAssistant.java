@@ -112,10 +112,10 @@ class BluetoothAssistant extends Handler{
 		
 		mBluetoothManager = (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
 		mMessageProcessor = new MessageProcessor(mContext);
-		mDeviceAnalyzer = DeviceAnalyzer.getInstance(mContext);
+		mDeviceAnalyzer = new DeviceAnalyzer(mContext);
 		mServiceKeeper = ServiceKeeper.getInstance(mContext);
 		
-		isLeSupported = DeviceAnalyzer.getInstance(mContext).hasBluetoothLE;
+		isLeSupported = mDeviceAnalyzer.isAvailableBluetoothLE();
 		
 		int state = BluetoothAdapter.getDefaultAdapter().getState();
 		switch (state) {
@@ -153,7 +153,8 @@ class BluetoothAssistant extends Handler{
 	 * 블루투스가 Off상태가 되었을 때, 수행할 기능을 정의한다.
 	 */
 	void onBluetoothStateOff() {
-		Intent mIntent = (mDeviceAnalyzer.isAvailableAsCenter())? 
+		// TODO :
+		Intent mIntent = (true)? 
 				new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE) : 
 					new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE) ;
 					
