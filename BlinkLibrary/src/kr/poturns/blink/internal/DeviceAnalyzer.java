@@ -1,12 +1,7 @@
 package kr.poturns.blink.internal;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-
 import kr.poturns.blink.internal.comm.BlinkDevice;
-import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.FeatureInfo;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
@@ -54,13 +49,20 @@ public class DeviceAnalyzer {
 	
 	
 	// *** STATIC DECLARATION *** //
+
+	private static DeviceAnalyzer sInstance = null;
 	
+	public static DeviceAnalyzer getInstance(BlinkLocalBaseService service) {
+		if (sInstance == null)
+			sInstance = new DeviceAnalyzer(service);
+		return sInstance;
+	}
 	
 	
 	// *** FIELD DECLARATION *** //
 	private final BlinkLocalBaseService ANALYZER_CONTEXT;
 	
-	public DeviceAnalyzer(BlinkLocalBaseService context) {
+	private DeviceAnalyzer(BlinkLocalBaseService context) {
 		this.ANALYZER_CONTEXT = context;
 		
 		int mIdentityPoint = analyze();
@@ -69,6 +71,7 @@ public class DeviceAnalyzer {
 		if (BlinkDevice.HOST != null) {
 			BlinkDevice.HOST.setIdentityPoint(mIdentityPoint);
 			BlinkDevice.HOST.setIdentity(mIdentity.ordinal());
+			//BlinkDevice.removeDeviceCache(BlinkDevice.HOST.getAddress());
 		}
 	}
 	

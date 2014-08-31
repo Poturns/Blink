@@ -2,13 +2,13 @@ package kr.poturns.blink.internal;
 
 import java.util.ArrayList;
 
-import android.util.Log;
-
 import kr.poturns.blink.db.JsonManager;
 import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
+import kr.poturns.blink.internal.comm.IBlinkMessagable;
+import android.util.Log;
 
 /**
  * 
@@ -86,5 +86,14 @@ public class MessageProcessor {
 		 * 여기서 추가 json을 붙여줘야 하나??
 		 */
 //		SERVICE_KEEPER.sendMessageToDevice(toDevice, message);
+	}
+	
+	private void handleSystemMessage(BlinkMessage message) {
+		switch(message.getType()) {
+		case BlinkMessage.TYPE_REQUEST_IDENTITY_SYNC:
+			//SERVICE_KEEPER.
+			break;
+			
+		}
 	}
 }

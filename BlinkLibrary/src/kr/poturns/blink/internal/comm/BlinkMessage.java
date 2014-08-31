@@ -17,17 +17,12 @@ public class BlinkMessage implements Serializable, IBlinkMessagable {
 	 * 
 	 */
 	private static final long serialVersionUID = 7552162163627874820L;
-
-	
-	public static final int TYPE_REQUEST_FUNCTION = 0x1;
-	
-	public static final int TYPE_REQUEST_MEASUREMENT = 0x2;
-	
-	private static final Gson JSON_CREATOR = new GsonBuilder().setPrettyPrinting().create();
 	
 	
 
 	// *** FIELD DECLARATION *** //
+	private final Gson JSON_CREATOR;
+	
 	private String SourceAddress;
 	private String SourceApplication;
 	private String DestinationAddress;
@@ -41,6 +36,8 @@ public class BlinkMessage implements Serializable, IBlinkMessagable {
 	private String message;
 	
 	private BlinkMessage() {
+		JSON_CREATOR = new GsonBuilder().setPrettyPrinting().create();
+		
 		Type = 0;
 		Code = 0;
 		Reliable = false;
@@ -184,6 +181,17 @@ public class BlinkMessage implements Serializable, IBlinkMessagable {
 		 */
 		public BlinkMessage build() {
 			mBlinkMessage.Timestamp = System.currentTimeMillis();
+			return mBlinkMessage;
+		}
+		
+		/**
+		 * 
+		 * @param json
+		 * @return
+		 */
+		public static BlinkMessage restore(String json) {
+			BlinkMessage mBlinkMessage = new BlinkMessage();
+			
 			return mBlinkMessage;
 		}
 	}

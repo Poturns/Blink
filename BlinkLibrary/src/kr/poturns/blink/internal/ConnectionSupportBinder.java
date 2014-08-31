@@ -3,11 +3,9 @@ package kr.poturns.blink.internal;
 import kr.poturns.blink.external.ServiceControlActivity;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkProfile;
-import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
-import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 
 /**
@@ -58,7 +56,7 @@ public abstract class ConnectionSupportBinder extends IInternalOperationSupport.
 
 	@Override
 	public BlinkDevice[] obtainCurrentDiscoveryList() throws RemoteException {
-		return ServiceKeeper.getInstance(CONTEXT).obtainDiscoveryArray();
+		return ServiceKeeper.getInstance(CONTEXT).obtainDiscoveredDevices();
 	}
 
 	@Override
@@ -92,7 +90,7 @@ public abstract class ConnectionSupportBinder extends IInternalOperationSupport.
 
 	@Override
 	public BlinkDevice[] obtainConnectedDeviceList() throws RemoteException {
-		return ServiceKeeper.getInstance(CONTEXT).obtainConnectedArray();
+		return ServiceKeeper.getInstance(CONTEXT).obtainConnectedDevices();
 	}
 
 	@Override

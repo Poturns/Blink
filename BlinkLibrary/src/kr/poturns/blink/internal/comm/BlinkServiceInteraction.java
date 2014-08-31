@@ -23,7 +23,6 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -35,9 +34,9 @@ import com.google.gson.GsonBuilder;
  * @since 2014.08.19
  * 
  */
-public abstract class BlinkServiceInteraction implements ServiceConnection,
-		IBlinkEventBroadcast {
+public abstract class BlinkServiceInteraction implements ServiceConnection, IBlinkEventBroadcast {
 	private final String tag = "BlinkServiceInteraction";
+	
 	private final Context CONTEXT;
 	private final EventBroadcastReceiver EVENT_BR;
 	private final IntentFilter FILTER;

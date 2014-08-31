@@ -46,7 +46,7 @@ abstract class BlinkLocalBaseService extends Service {
 		initiatate();
 		
 		// Blink 서비스를 위한 본 디바이스 정보 파악.
-		new DeviceAnalyzer(this);
+		DeviceAnalyzer.getInstance(this);
 //		if (DeviceAnalyzer.Identity.UNKNOWN.equals(mIdentity)) {
 //			// Identity를 확인하고, 서비스가 정상적으로 동작할 수 없는 환경이면 종료한다.
 //			//Toast.makeText(this, R.string.internal_baseservice_unable_alert, Toast.LENGTH_LONG).show();
@@ -90,7 +90,13 @@ abstract class BlinkLocalBaseService extends Service {
 		case TRIM_MEMORY_RUNNING_LOW:
 		case TRIM_MEMORY_RUNNING_CRITICAL:
 			Log.e("BlinkLocalBaseService", "onTrimMemory() : CLEAR CACHE");
-			BlinkDevice.clearCache();
+			BlinkDevice.clearAllCache();
+			break;
+			
+		case TRIM_MEMORY_MODERATE:
+		case TRIM_MEMORY_RUNNING_MODERATE:
+			Log.e("BlinkLocalBaseService", "onTrimMemory() : REMOVE UNNECESSARY");
+			BlinkDevice.removeUnnecessaryCache();
 			break;
 		}
 	}

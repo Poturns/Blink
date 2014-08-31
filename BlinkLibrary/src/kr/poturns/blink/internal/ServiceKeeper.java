@@ -1,7 +1,11 @@
 package kr.poturns.blink.internal;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import kr.poturns.blink.internal.DeviceAnalyzer.Identity;
 import kr.poturns.blink.internal.comm.BlinkDevice;
@@ -39,7 +43,7 @@ public class ServiceKeeper {
 	private final BlinkLocalBaseService KEEPER_CONTEXT;
 	private final HashSet<BlinkDevice> DISCOVERY_SET;
 	
-	private final HashMap<BlinkDevice, Identity> BLINK_NETWORK_MAP;
+	private final TreeMap<BlinkDevice, Identity> BLINK_NETWORK_MAP;
 	private final HashMap<BlinkDevice, ClassicLinkThread> CLASSIC_CONN_MAP;
 	private final HashMap<BlinkDevice, BluetoothGatt> LE_CONN_MAP;
 	
@@ -50,7 +54,7 @@ public class ServiceKeeper {
 		KEEPER_CONTEXT = context;
 		
 		DISCOVERY_SET = new HashSet<BlinkDevice>();
-		BLINK_NETWORK_MAP = new HashMap<BlinkDevice, Identity>();
+		BLINK_NETWORK_MAP = new TreeMap<BlinkDevice, Identity>();
 		CLASSIC_CONN_MAP = new HashMap<BlinkDevice, ClassicLinkThread>();
 		LE_CONN_MAP = new HashMap<BlinkDevice, BluetoothGatt>();
 		BINDER_MAP = new HashMap<String, BlinkSupportBinder>();
@@ -58,41 +62,88 @@ public class ServiceKeeper {
 	}
 	
 	void destroy() {
+		clearDiscovery();
 		
 	}
 	
+	/**
+	 * 
+	 * @param device
+	 */
 	void addDiscovery(BlinkDevice device) {
-		DISCOVERY_SET.add(device);
+		if (device != null && device.isDiscovered()) {
+			device.setDiscovered(true);
+			DISCOVERY_SET.add(device);
+		}
 	}
 
+	/**
+	 * 
+	 */
 	void clearDiscovery() {
+		for (BlinkDevice device : DISCOVERY_SET)
+			device.setDiscovered(false);
+		
 		DISCOVERY_SET.clear();
 	}
 	
+	/**
+	 * 
+	 * @param device
+	 * @param thread
+	 */
 	void addConnection(BlinkDevice device, ClassicLinkThread thread) {
-		CLASSIC_CONN_MAP.put(device, thread);
-		
-	}
-	
-	void addConnection(BlinkDevice device, BluetoothGatt gatt) {
-		LE_CONN_MAP.put(device, gatt);
-	}
-
-	void removeConnection(BlinkDevice device) {
-		if (device == null)
-			return ;
-		
-		BluetoothGatt mGatt = LE_CONN_MAP.remove(device);
-		if (mGatt != null)
-			mGatt.close();
-		
-		ClassicLinkThread mLinkThread = CLASSIC_CONN_MAP.remove(device);
-		if (mLinkThread != null) {
-			mLinkThread.destroyThread();
+		if (device != null) {
+			device.setConnected(true);
+			CLASSIC_CONN_MAP.put(device, thread);
 		}
 	}
 	
+	/**
+	 * 
+	 * @param device
+	 * @param gatt
+	 */
+	void addConnection(BlinkDevice device, BluetoothGatt gatt) {
+		if (device != null) {
+			device.setConnected(true);
+			LE_CONN_MAP.put(device, gatt);
+		}
+	}
+
+	/**
+	 * 
+	 * @param device
+	 */
+	void removeConnection(BlinkDevice device) {
+		if (device == null)
+			return ;
+
+		device.setConnected(false);
+		
+		if (device.isLESupported()) {
+			BluetoothGatt mGatt = LE_CONN_MAP.remove(device);
+			if (mGatt != null) {
+				mGatt.close();
+			}
+			
+		} else {
+			ClassicLinkThread mLinkThread = CLASSIC_CONN_MAP.remove(device);
+			if (mLinkThread != null) {
+				mLinkThread.destroyThread();
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 * @param device
+	 * @return
+	 */
 	Object getConnectionObject(BlinkDevice device) {
+		if (device == null)
+			return null;
+		
 		if (device.isLESupported()) {
 			return LE_CONN_MAP.get(device);
 			
@@ -100,25 +151,42 @@ public class ServiceKeeper {
 			return CLASSIC_CONN_MAP.get(device);
 	}
 	
-	
+	/**
+	 * 
+	 */
 	void clearConnection() {
-		LE_CONN_MAP.clear();
+		for (BluetoothGatt gatt : LE_CONN_MAP.values())
+			gatt.close();
 		
 		for (ClassicLinkThread thread : CLASSIC_CONN_MAP.values())
 			thread.destroyThread();
-		CLASSIC_CONN_MAP.clear();
 	}
 	
+	/**
+	 * 
+	 * @param packageName
+	 * @param binder
+	 */
 	void registerBinder(String packageName, BlinkSupportBinder binder) {
 		BINDER_MAP.put(packageName, binder);
 	}
 	
+	/**
+	 * 
+	 * @param packageName
+	 * @return
+	 */
 	BlinkSupportBinder obtainBinder(String packageName) {
 		if (packageName != null)
 			return BINDER_MAP.get(packageName);
 		return null;
 	}
 	
+	/**
+	 * 
+	 * @param packageName
+	 * @return
+	 */
 	boolean releaseBinder(String packageName) {
 		if (packageName != null)
 			return (BINDER_MAP.remove(packageName) != null);
@@ -129,7 +197,7 @@ public class ServiceKeeper {
 	 * 
 	 * @return
 	 */
-	public BlinkDevice[] obtainDiscoveryArray() {
+	public BlinkDevice[] obtainDiscoveredDevices() {
 		BlinkDevice[] lists = new BlinkDevice[DISCOVERY_SET.size()];
 		return DISCOVERY_SET.toArray(lists);
 	}
@@ -138,7 +206,7 @@ public class ServiceKeeper {
 	 * 
 	 * @return
 	 */
-	public BlinkDevice[] obtainConnectedArray() {
+	public BlinkDevice[] obtainConnectedDevices() {
 		BlinkDevice[] lists = new BlinkDevice[LE_CONN_MAP.size() + CLASSIC_CONN_MAP.size()];
 		
 		int index = 0; 
@@ -148,6 +216,32 @@ public class ServiceKeeper {
 			lists[index++] = (BlinkDevice) device;
 		
 		return lists;
+	}
+	
+	/**
+	 * 
+	 * @param identity
+	 * @return
+	 */
+	public BlinkDevice[] obtainIdentityDevices(Identity identity) {
+		ArrayList<BlinkDevice> mDeviceList = new ArrayList<BlinkDevice>();
+		for (Entry<BlinkDevice, Identity> entry : BLINK_NETWORK_MAP.entrySet()) {
+			if (entry.getValue() == identity)
+				mDeviceList.add(entry.getKey());
+		}
+		
+		BlinkDevice[] lists = new BlinkDevice[mDeviceList.size()];
+		return mDeviceList.toArray(lists);
+	}
+	
+	/**
+	 * 현재 Center 역할을 하고 있는 Device를 반환한다.
+	 * 
+	 * @return
+	 */
+	public BlinkDevice obtainCurrentCenterDevice() {
+		
+		return BLINK_NETWORK_MAP.lastKey();
 	}
 	
 	/**
