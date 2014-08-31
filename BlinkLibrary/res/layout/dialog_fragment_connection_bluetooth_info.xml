@@ -1,121 +1,126 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" >
 
-    <TextView
-        android:id="@+id/dialog_fragment_connection_title_macaddress"
+    <RelativeLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="30dp"
-        android:text="MacAddress : " />
+        android:layout_height="wrap_content" >
 
-    <TextView
-        android:id="@+id/dialog_fragment_connection_title_device_ego"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/dialog_fragment_connection_title_macaddress"
-        android:layout_below="@+id/dialog_fragment_connection_title_macaddress"
-        android:layout_marginTop="30dp"
-        android:text="디바이스 타입 : " />
+        <TextView
+            android:id="@+id/dialog_fragment_connection_title_macaddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="30dp"
+            android:text="MacAddress : " />
 
-    <TextView
-        android:id="@+id/dialog_fragment_connection_title_blink_support"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/dialog_fragment_connection_title_device_ego"
-        android:layout_below="@+id/dialog_fragment_connection_title_device_ego"
-        android:layout_marginTop="30dp"
-        android:text="BlinkLibrary 지원 : " />
+        <TextView
+            android:id="@+id/dialog_fragment_connection_title_device_ego"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/dialog_fragment_connection_title_macaddress"
+            android:layout_below="@+id/dialog_fragment_connection_title_macaddress"
+            android:layout_marginTop="30dp"
+            android:text="디바이스 타입 : " />
 
-    <TextView
-        android:id="@+id/dialog_fragment_connection_title_discoverd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/dialog_fragment_connection_title_blink_support"
-        android:layout_below="@+id/dialog_fragment_connection_title_blink_support"
-        android:layout_marginTop="30dp"
-        android:text="발견 여부 :" />
+        <TextView
+            android:id="@+id/dialog_fragment_connection_title_blink_support"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/dialog_fragment_connection_title_device_ego"
+            android:layout_below="@+id/dialog_fragment_connection_title_device_ego"
+            android:layout_marginTop="30dp"
+            android:text="BlinkLibrary 지원 : " />
 
-    <TextView
-        android:id="@+id/dialog_fragment_connection_title_connection"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/dialog_fragment_connection_title_discoverd"
-        android:layout_below="@+id/dialog_fragment_connection_title_discoverd"
-        android:layout_marginTop="30dp"
-        android:text="연결 상태 : " />
+        <TextView
+            android:id="@+id/dialog_fragment_connection_title_discoverd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/dialog_fragment_connection_title_blink_support"
+            android:layout_below="@+id/dialog_fragment_connection_title_blink_support"
+            android:layout_marginTop="30dp"
+            android:text="발견 여부 :" />
 
-    <TextView
-        android:id="@+id/dialog_fragment_connection_title_autoconnect"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/dialog_fragment_connection_title_connection"
-        android:layout_below="@+id/dialog_fragment_connection_title_connection"
-        android:layout_marginTop="30dp"
-        android:text="자동 연결 : " />
+        <TextView
+            android:id="@+id/dialog_fragment_connection_title_connection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/dialog_fragment_connection_title_discoverd"
+            android:layout_below="@+id/dialog_fragment_connection_title_discoverd"
+            android:layout_marginTop="30dp"
+            android:text="연결 상태 : " />
 
-    <TextView
-        android:id="@+id/dialog_fragment_connection_title_ble"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/dialog_fragment_connection_title_autoconnect"
-        android:layout_below="@+id/dialog_fragment_connection_title_autoconnect"
-        android:layout_marginTop="30dp"
-        android:text="BLE 지원 : " />
+        <TextView
+            android:id="@+id/dialog_fragment_connection_title_autoconnect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/dialog_fragment_connection_title_connection"
+            android:layout_below="@+id/dialog_fragment_connection_title_connection"
+            android:layout_marginTop="30dp"
+            android:text="자동 연결 : " />
 
-    <TextView
-        android:id="@+id/dialog_fragment_connection_macaddress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/dialog_fragment_connection_title_macaddress"
-        android:layout_marginLeft="50dp"
-        android:layout_toRightOf="@+id/dialog_fragment_connection_title_macaddress" />
+        <TextView
+            android:id="@+id/dialog_fragment_connection_title_ble"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/dialog_fragment_connection_title_autoconnect"
+            android:layout_below="@+id/dialog_fragment_connection_title_autoconnect"
+            android:layout_marginTop="30dp"
+            android:text="BLE 지원 : " />
 
-    <TextView
-        android:id="@+id/dialog_fragment_connection_device_ego"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/dialog_fragment_connection_title_device_ego"
-        android:layout_alignLeft="@+id/dialog_fragment_connection_macaddress" />
+        <TextView
+            android:id="@+id/dialog_fragment_connection_macaddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/dialog_fragment_connection_title_macaddress"
+            android:layout_marginLeft="50dp"
+            android:layout_toRightOf="@+id/dialog_fragment_connection_title_macaddress" />
 
-    <TextView
-        android:id="@+id/dialog_fragment_connection_blink_support"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/dialog_fragment_connection_title_blink_support"
-        android:layout_alignLeft="@+id/dialog_fragment_connection_device_ego" />
+        <TextView
+            android:id="@+id/dialog_fragment_connection_device_ego"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/dialog_fragment_connection_title_device_ego"
+            android:layout_alignLeft="@+id/dialog_fragment_connection_macaddress" />
 
-    <TextView
-        android:id="@+id/dialog_fragment_connection_discoverd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/dialog_fragment_connection_title_discoverd"
-        android:layout_alignLeft="@+id/dialog_fragment_connection_blink_support" />
+        <TextView
+            android:id="@+id/dialog_fragment_connection_blink_support"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/dialog_fragment_connection_title_blink_support"
+            android:layout_alignLeft="@+id/dialog_fragment_connection_device_ego" />
 
-    <TextView
-        android:id="@+id/dialog_fragment_connection_connection"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/dialog_fragment_connection_title_connection"
-        android:layout_alignLeft="@+id/dialog_fragment_connection_discoverd" />
+        <TextView
+            android:id="@+id/dialog_fragment_connection_discoverd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/dialog_fragment_connection_title_discoverd"
+            android:layout_alignLeft="@+id/dialog_fragment_connection_blink_support" />
 
-    <TextView
-        android:id="@+id/dialog_fragment_connection_autoconnect"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/dialog_fragment_connection_title_autoconnect"
-        android:layout_alignLeft="@+id/dialog_fragment_connection_connection" />
+        <TextView
+            android:id="@+id/dialog_fragment_connection_connection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/dialog_fragment_connection_title_connection"
+            android:layout_alignLeft="@+id/dialog_fragment_connection_discoverd" />
 
-    <TextView
-        android:id="@+id/dialog_fragment_connection_ble"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/dialog_fragment_connection_title_ble"
-        android:layout_alignLeft="@+id/dialog_fragment_connection_autoconnect" />
+        <TextView
+            android:id="@+id/dialog_fragment_connection_autoconnect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/dialog_fragment_connection_title_autoconnect"
+            android:layout_alignLeft="@+id/dialog_fragment_connection_connection" />
 
-</RelativeLayout>
+        <TextView
+            android:id="@+id/dialog_fragment_connection_ble"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/dialog_fragment_connection_title_ble"
+            android:layout_alignLeft="@+id/dialog_fragment_connection_autoconnect" />
+    </RelativeLayout>
+
+</ScrollView>

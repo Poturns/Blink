@@ -12,7 +12,6 @@ import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -23,18 +22,17 @@ import android.bluetooth.BluetoothDevice;
 import android.content.AsyncTaskLoader;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TabHost;
@@ -60,7 +58,7 @@ final class ConnectionFragment extends Fragment {
 	BlinkServiceInteraction mInteraction;
 	/** Database manager */
 	SqliteManagerExtended mManager;
-	/** 이 Activity가 실행되고 있는 BlinkDevice */
+	/** BlinkLibrary를 구동하고 있는 장비를 나타내는 BlinkDevice객체 */
 	BlinkDevice mHostDevice = BlinkDevice.HOST;
 	ProgressDialog mProgressDialog;
 	/** BlinkDevice 연결 작업 여부 */
@@ -153,6 +151,7 @@ final class ConnectionFragment extends Fragment {
 
 				@Override
 				public void onServiceDisconnected() {
+					// Service와 연결이 끊기면 현재 Activity를 종료한다.
 					Toast.makeText(activity,
 							"Blink Service was disconnected!!",
 							Toast.LENGTH_SHORT).show();
@@ -162,6 +161,7 @@ final class ConnectionFragment extends Fragment {
 
 				@Override
 				public void onServiceFailed() {
+					// Service의 binding이 실패하면 현재 Activity를 종료한다.
 					Toast.makeText(activity,
 							"Blink Service connection was failed!!",
 							Toast.LENGTH_SHORT).show();
@@ -188,6 +188,7 @@ final class ConnectionFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
+		// ChildFragment의 container역할을 하는 View를 생성한다.
 		return inflater.inflate(R.layout.fragment_connection, container, false);
 	}
 
@@ -256,6 +257,10 @@ final class ConnectionFragment extends Fragment {
 		onPreLoading();
 	}
 
+	/**
+	 * 비 동기적으로 실행될 {@link ConnectionFragment#fetchDeviceListFromBluetooth()}<br>
+	 * 실제 작업을 수행한다.
+	 */
 	private final boolean fetchDeviceListBluetoothInternal() {
 		try {
 			mBlinkOperation.startDiscovery(BluetoothDevice.DEVICE_TYPE_DUAL);
@@ -277,6 +282,10 @@ final class ConnectionFragment extends Fragment {
 		onPreLoading();
 	}
 
+	/**
+	 * 비 동기적으로 실행될 {@link ConnectionFragment#retainConnectedDevicesFromList()}<br>
+	 * 실제 작업을 수행한다.
+	 */
 	private final boolean retainConnectedDevicesFromListInternal() {
 		boolean result = true;
 		List<BlinkDevice> list = Collections.synchronizedList(mDeviceList);
@@ -296,10 +305,28 @@ final class ConnectionFragment extends Fragment {
 		return result;
 	}
 
+	/** 현재 DeviceList에 이전에 Discovery된 Device의 목록을 유지한다. */
+	final void obtainDiscoveryList() {
+		try {
+			BlinkDevice[] devices = mBlinkOperation
+					.obtainCurrentDiscoveryList();
+			mDeviceList.clear();
+			for (BlinkDevice device : devices) {
+				mDeviceList.add(device);
+			}
+			mCurrentChildFragmentInterface.onDeviceListChanged();
+		} catch (RemoteException e) {
+			e.printStackTrace();
+			onDeviceListLoadFailed();
+		}
+	}
+
+	/** BlinkLibrary를 구동하고 있는 장비에 관한 Dialog를 띄운다. */
 	final void showHostDeviceInfomation() {
 		showDialog(mHostDevice);
 	}
 
+	/** 비동기 작업 전 호출된다. */
 	void onPreLoading() {
 		if (mConnectionTasking)
 			mProgressDialog.show();
@@ -308,6 +335,7 @@ final class ConnectionFragment extends Fragment {
 		mCurrentChildFragmentInterface.onPreLoading();
 	}
 
+	/** 비동기 작업 후 호출된다. */
 	void onPostLoading() {
 		if (mConnectionTasking) {
 			mProgressDialog.dismiss();
@@ -324,6 +352,12 @@ final class ConnectionFragment extends Fragment {
 		mCurrentChildFragmentInterface.onDeviceListLoadFailed();
 	}
 
+	/**
+	 * ChildFragment를 변경할 때 호출한다.
+	 * 
+	 * @param callback
+	 *            UI를 보여줄 ChildFragment
+	 */
 	void onFragmentChanged(BaseConnectionFragment callback) {
 		this.mCurrentChildFragmentInterface = callback;
 		if (mInteraction != null)
@@ -383,8 +417,11 @@ final class ConnectionFragment extends Fragment {
 								android.content.Loader<Boolean> loader,
 								Boolean result) {
 							onPostLoading();
-							if (result && mIsConnectTask
-									^ mDevice.isConnected()) {
+							// 비 동기 작업이 성공 했고,
+							// 요청 boolean값과 연결 상태 boolean 값이 다른 경우
+							// 작업의 성공이라고 판단한다.
+							if (result
+									&& (mIsConnectTask ^ mDevice.isConnected())) {
 								if (mIsConnectTask) {
 									mCurrentChildFragmentInterface
 											.onDeviceConnected(mDevice);
@@ -437,16 +474,6 @@ final class ConnectionFragment extends Fragment {
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 			getDialog().setTitle(mBlinkDevice.getName());
-			Point size = new Point();
-			getActivity().getWindow().getDecorView().getDisplay().getSize(size);
-
-			if (PrivateUtil.isScreenSizeSmall(getActivity())) {
-				getDialog().getWindow().setLayout(size.x / 19 * 10,
-						size.y / 19 * 10);
-			} else {
-				getDialog().getWindow().setLayout(size.x / 19 * 5,
-						size.y / 19 * 4);
-			}
 
 			final View v = inflater.inflate(
 					R.layout.dialog_fragment_connection_device_info, container,
@@ -518,6 +545,25 @@ final class ConnectionFragment extends Fragment {
 			}
 		}
 
+		@Override
+		public void onResume() {
+			super.onResume();
+			Point size = new Point();
+			getActivity().getWindow().getDecorView().getDisplay().getSize(size);
+			// Dialog의 크기를 결정한다.
+			if (PrivateUtil.isScreenSizeSmall(getActivity())) {
+				getDialog().getWindow().setLayout(size.x / 19 * 16,
+						size.y / 19 * 13);
+			} else {
+				getDialog().getWindow().setLayout(size.x / 19 * 11,
+						size.y / 19 * 12);
+			}
+		}
+
+		/**
+		 * {@link DeviceInfoDialogFragment#mBlinkDevice}의 Bluetooth 관련 정보를 보여주는
+		 * Fragment
+		 */
 		private class BlinkDeviceInfoFragment extends Fragment {
 			BlinkDevice mDevice = DeviceInfoDialogFragment.this.mBlinkDevice;
 
@@ -551,33 +597,76 @@ final class ConnectionFragment extends Fragment {
 			}
 		}
 
+		/**
+		 * BlinkDatabase를 조회하여 {@link DeviceInfoDialogFragment#mBlinkDevice}의
+		 * 정보를 보여주는 Fragment
+		 */
 		private class DatabaseDeviceInfoFragment extends Fragment {
 			ArrayAdapter<App> mDialogListAdapter;
 			List<App> mAppList;
-			AlertDialog mAppDialog;
 
 			@Override
 			public void onCreate(Bundle savedInstanceState) {
 				super.onCreate(savedInstanceState);
 				mAppList = mManager.obtainAppList(mDevice);
 				mDialogListAdapter = new ArrayAdapter<App>(getActivity(),
-						android.R.layout.simple_list_item_1, mAppList) {
+						R.layout.list_app, android.R.id.text1, mAppList) {
 					@Override
 					public View getView(int position, View convertView,
 							ViewGroup parent) {
+						final App app = getItem(position);
 						View v = super.getView(position, convertView, parent);
+						if (v.getTag(R.id.list_app_linearlayout) == null)
+							v.setTag(R.id.list_app_linearlayout,
+									v.findViewById(R.id.list_app_linearlayout));
+
 						TextView tv = (TextView) v
 								.findViewById(android.R.id.text1);
-						tv.setText(getItem(position).AppName);
+						tv.setText("<App> " + getItem(position).AppName);
+						v.setOnClickListener(new View.OnClickListener() {
+
+							@Override
+							public void onClick(View v) {
+								View linearLayout = (View) v
+										.getTag(R.id.list_app_linearlayout);
+								int visible = linearLayout.getVisibility();
+								if (visible == View.VISIBLE) {
+									linearLayout.setVisibility(View.GONE);
+								} else {
+									linearLayout.setVisibility(View.VISIBLE);
+								}
+								linearLayout.postInvalidate();
+							}
+						});
+						View viewGroup = (View) v
+								.getTag(R.id.list_app_linearlayout);
+						viewGroup.findViewById(android.R.id.text1)
+								.setOnClickListener(new View.OnClickListener() {
+
+									@Override
+									public void onClick(View v) {
+										mActivityInterface.transitFragment(1,
+												BundleResolver.toBundle(
+														mDevice, app));
+										((DialogFragment) DatabaseDeviceInfoFragment.this
+												.getParentFragment()).dismiss();
+									}
+								});
+						viewGroup.findViewById(android.R.id.text2)
+								.setOnClickListener(new View.OnClickListener() {
+
+									@Override
+									public void onClick(View v) {
+										mActivityInterface.transitFragment(2,
+												BundleResolver.toBundle(
+														mDevice, app));
+										((DialogFragment) DatabaseDeviceInfoFragment.this
+												.getParentFragment()).dismiss();
+									}
+								});
 						return v;
 					}
 				};
-				View dialogView = View.inflate(getActivity(),
-						R.layout.dialog_app, null);
-				mAppDialog = new AlertDialog.Builder(getActivity())
-						.setView(dialogView)
-						.setPositiveButton(android.R.string.cancel, null)
-						.create();
 			}
 
 			@Override
@@ -588,40 +677,6 @@ final class ConnectionFragment extends Fragment {
 						false);
 				ListView listView = (ListView) v
 						.findViewById(android.R.id.list);
-				listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-					@Override
-					public void onItemClick(AdapterView<?> parent, View view,
-							int position, long id) {
-						final App app = (App) parent
-								.getItemAtPosition(position);
-						mAppDialog.setTitle(app.AppName);
-						mAppDialog.setButton(DialogInterface.BUTTON_NEUTRAL,
-								"Log", new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog,
-											int which) {
-										mActivityInterface.transitFragment(2,
-												BundleResolver.toBundle(
-														mDevice, app));
-										((DialogFragment) DatabaseDeviceInfoFragment.this
-												.getParentFragment()).dismiss();
-									}
-								});
-						mAppDialog.setButton(DialogInterface.BUTTON_NEGATIVE,
-								"Data", new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog,
-											int which) {
-										mActivityInterface.transitFragment(1,
-												BundleResolver.toBundle(
-														mDevice, app));
-										((DialogFragment) DatabaseDeviceInfoFragment.this
-												.getParentFragment()).dismiss();
-									}
-								});
-						mAppDialog.show();
-					}
-				});
 				listView.setEmptyView(v.findViewById(android.R.id.empty));
 
 				listView.setAdapter(mDialogListAdapter);
@@ -653,30 +708,56 @@ final class ConnectionFragment extends Fragment {
 		public void onPreLoading() {
 		}
 
+		/** 현재 유지되고 있는 BlinkDevice의 리스트를 얻는다. */
 		List<BlinkDevice> getDeviceList() {
 			return mParentFragment.mDeviceList;
 		}
 
+		/** BlinkLibrary를 구동하고 있는 장비를 나타내는 BlinkDevice객체를 얻는다.. */
 		BlinkDevice getHostDevice() {
 			return mParentFragment.mHostDevice;
 		}
 
-		void showHostDeviceInfomation() {
+		/** BlinkLibrary를 구동하고 있는 장비에 관한 Dialog를 띄운다. */
+		void showHostDeviceInfoDialog() {
 			mParentFragment.showHostDeviceInfomation();
 		}
 
-		void showDialog(BlinkDevice device) {
+		/**
+		 * 해당 {@link BlinkDevice}에 관한 Dialog를 띄운다.
+		 * 
+		 * @param device
+		 *            정보를 보려는 {@link BlinkDevice}
+		 */
+		void showBlinkDeviceInfoDialog(BlinkDevice device) {
 			mParentFragment.showDialog(device);
 		}
 
+		/**
+		 * Service를 통해 Bluetooth Discovery를 시작하고, DeviceList를 변경한다.<br>
+		 * {@link BlinkDevice}가 Discovery될 때마다
+		 * {@link BaseConnectionFragment#onDeviceDiscovered(BlinkDevice)}가 호출된다.
+		 */
 		void fetchDeviceListFromBluetooth() {
 			mParentFragment.fetchDeviceListFromBluetooth();
 		}
 
+		/** 현재 DeviceList에 이전에 Discovery된 Device의 목록을 유지한다. */
+		void obtainDiscoveryList() {
+			mParentFragment.obtainDiscoveryList();
+		}
+
+		/** 현재 DeviceList에서 연결된 Device만 남긴다. */
 		void retainConnectedDevicesFromList() {
 			mParentFragment.retainConnectedDevicesFromList();
 		}
 
+		/**
+		 * 현재 기기와 {@link BlinkDevice}를 연결/연결해제 한다.
+		 * 
+		 * @param device
+		 *            연결/연결 해제할 Device
+		 */
 		void connectOrDisConnectDevice(BlinkDevice device) {
 			mParentFragment.connectOrDisConnectDevice(device);
 		}
@@ -724,10 +805,17 @@ final class ConnectionFragment extends Fragment {
 					Toast.LENGTH_SHORT).show();
 		}
 
+		/** 다른 Fragment로 UI를 변경한다. */
 		void changeFragment() {
 			mParentFragment.onFragmentChanged(getChangedFragment());
 		}
 
+		/**
+		 * DeviceList에 HostDevice를 추가 할 것인지 결정한다.
+		 * 
+		 * @param show
+		 *            true - 추가 / false - 추가하지 않음
+		 */
 		void showHostDeviceToList(boolean show) {
 			if (show
 					&& !mParentFragment.mDeviceList
@@ -738,7 +826,11 @@ final class ConnectionFragment extends Fragment {
 			}
 		}
 
-		boolean isFetching() {
+		/**
+		 * 현재 {@link BaseConnectionFragment#fetchDeviceListFromBluetooth()} 가 작업
+		 * 중 인지 여부를 반환한다.
+		 */
+		final boolean isFetching() {
 			return mParentFragment.mFetchTasking;
 		}
 

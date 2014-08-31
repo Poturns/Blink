@@ -8,6 +8,7 @@
     <string name="fragment_logview_title_datetime">시간</string>
     <string name="action_search">검색</string>
     <string name="action_refresh">새로고침</string>
+    <string name="action_view_change">보기 전환</string>
     <string name="action_show_as_graphic">그래픽으로 보기</string>
     <string name="action_show_as_list">리스트로 보기</string>
     <string name="action_show_only_connected">연결된 장비만 보기</string>
@@ -18,6 +19,10 @@
     <string name="device_connected"> 이(가) 연결되었습니다.</string>
     <string name="device_disconnected"> 이(가) 연결해제되었습니다.</string>
     <string name="choose_content">이동할 항목을 선택하세요.</string>
+    <string name="show_db_info">DB 정보 보기</string>
+    <string name="show_log_info">Log 보기</string>
+    <string name="recent_list">최근 변경된 Measurement 리스트</string>
+    <string name="measurement_data">측정 데이터</string>
 
     <string-array name="dialog_connect_page_titles">
         <item>Bluetooth 정보</item>

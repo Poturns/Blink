@@ -98,7 +98,7 @@ public abstract class ConnectionSupportBinder extends IInternalOperationSupport.
 	@Override
 	public void openControlActivity() throws RemoteException {
 		Intent intent = new Intent(CONTEXT, ServiceControlActivity.class);
-		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
 		CONTEXT.startActivity(intent);
 	}
 	

@@ -91,14 +91,6 @@ class LogViewFragment extends Fragment {
 	}
 
 	@Override
-	public void onHiddenChanged(boolean hidden) {
-		super.onHiddenChanged(hidden);
-		if (!hidden) {
-			checkArgumentAndResolveData();
-		}
-	}
-
-	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		outState.putParcelableArrayList("list", mLogList);

@@ -8,7 +8,7 @@
         android:id="@+id/activity_main_left_drawer"
         android:layout_width="160dip"
         android:layout_height="match_parent"
-        android:background="#15010101"
+        android:background="@android:color/white"
         android:choiceMode="singleChoice"
         android:dividerHeight="1dp"
         android:scrollbars="none" />

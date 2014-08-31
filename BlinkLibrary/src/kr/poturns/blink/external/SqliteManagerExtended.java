@@ -1,7 +1,8 @@
 package kr.poturns.blink.external;
 
-import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -98,9 +99,20 @@ class SqliteManagerExtended extends SqliteManager {
 			return new ArrayList<MeasurementData>();
 		}
 		return obtainDataListFromCursor(mSQLiteDatabase.query(
-				"MeasurementData", null, "MesurementId=?",
+				"MeasurementData", null, "MeasurementId=?",
 				new String[] { String.valueOf(measurement.MeasurementId) },
 				null, null, null), MeasurementData.class);
+	}
+
+	/** DB에서 주어진 Measurement의 MeasuremenData List의 크기를 얻는다. */
+	public int obtainMeasurementDataListSize(Measurement measurement) {
+		Cursor cursor = mSQLiteDatabase.query("MeasurementData", null,
+				"MeasurementId=?",
+				new String[] { String.valueOf(measurement.MeasurementId) },
+				null, null, null);
+		int size = cursor.getCount();
+		cursor.close();
+		return size;
 	}
 
 	/* 주어진 class에 따라 Cursor에서 데이터 리스트를 얻어온다. */
@@ -124,7 +136,6 @@ class SqliteManagerExtended extends SqliteManager {
 	private static final <T> T retriveDataFromCursor(Cursor cursor, T object) {
 		if (object instanceof MeasurementData) {
 			MeasurementData measurementData = (MeasurementData) object;
-			measurementData = new MeasurementData();
 			measurementData.MeasurementId = cursor.getInt(cursor
 					.getColumnIndex("MeasurementId"));
 			measurementData.GroupId = cursor.getInt(cursor
@@ -243,12 +254,12 @@ class SqliteManagerExtended extends SqliteManager {
 			String[] args = new String[1];
 			for (Measurement measurement : measurementList) {
 				args[0] = String.valueOf(measurement.MeasurementId);
-				mSQLiteDatabase.delete("MeasurementData", "MesurementId=?",
+				mSQLiteDatabase.delete("MeasurementData", "MeasurementId=?",
 						args);
 			}
 			for (App app : appList) {
 				args[0] = String.valueOf(app.AppId);
-				mSQLiteDatabase.delete("Fuction", "AppId=?", args);
+				mSQLiteDatabase.delete("Function", "AppId=?", args);
 				mSQLiteDatabase.delete("Measurement", "AppId=?", args);
 			}
 			args[0] = String.valueOf(device.DeviceId);
@@ -291,6 +302,7 @@ class SqliteManagerExtended extends SqliteManager {
 			args[0] = String.valueOf(app.AppId);
 			mSQLiteDatabase.delete("Fuction", "AppId=?", args);
 			mSQLiteDatabase.delete("Measurement", "AppId=?", args);
+			mSQLiteDatabase.setTransactionSuccessful();
 			return true;
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -303,5 +315,29 @@ class SqliteManagerExtended extends SqliteManager {
 	/** 현재 장비를 나타내는 BlinkDevice를 얻는다. */
 	private static BlinkDevice obtainHostDevice() {
 		return BlinkDevice.HOST;
+	}
+
+	/**
+	 * 주어진 시간 이후에 변경이 감지된 {@link Measurement}의 리스트를 반환한다.
+	 * 
+	 * @param lastTime
+	 *            변경을 감지할 기준점이 될 시간
+	 * @param limit
+	 *            반환될 List의 개수의 제한, SQLite의 LIMIT cause, 0 이하의 값인 경우 제한이 없다.
+	 */
+	public List<Measurement> obtainRecentModifiedMeasurement(Date lastTime,
+			int limit) {
+		if (lastTime == null)
+			lastTime = new Date();
+		String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+				.format(lastTime);
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT * FROM Measurement WHERE MeasurementId IN ")
+				.append("( SELECT DISTINCT MeasurementId FROM MeasurementData WHERE DateTime > ? )");
+		if (limit > 0)
+			query.append(" LIMIT ").append(limit);
+		Cursor cursor = mSQLiteDatabase.rawQuery(query.toString(),
+				new String[] { time });
+		return obtainDataListFromCursor(cursor, Measurement.class);
 	}
 }

@@ -1,5 +1,6 @@
 package kr.poturns.blink.external;
 
+import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
@@ -27,5 +28,13 @@ class PrivateUtil {
 		if (device.getName() == null || device.getName().length() < 1)
 			device.setName(adapter.getName());
 		return device;
+	}
+
+	public static String obtainSplitMeasurementSchema(Measurement measurement) {
+		String name = measurement.Measurement;
+		String[] parsed = name.split("/");
+		if (parsed.length > 1)
+			name = parsed[1];
+		return name;
 	}
 }

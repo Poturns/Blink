@@ -9,18 +9,6 @@
         android:layout_height="match_parent"
         android:padding="3dp" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:layout_gravity="center"
-        android:layout_marginBottom="30dp"
-        android:layout_marginTop="30dp"
-        android:drawableStart="@drawable/ic_action_alerts_and_states_warning"
-        android:gravity="center"
-        android:text="@string/empty_data"
-        android:textColor="@android:color/black"
-        android:visibility="invisible" />
+    <include layout="@layout/emptyview" />
 
 </RelativeLayout>

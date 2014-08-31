@@ -103,7 +103,7 @@ class ConnectionListFragment extends BaseConnectionFragment {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position,
 				long id) {
-			showDialog(mAdapter.getItem(position));
+			showBlinkDeviceInfoDialog(mAdapter.getItem(position));
 		}
 	};
 

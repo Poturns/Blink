@@ -24,7 +24,6 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 	private SlidingDrawer mSlidingDrawer;
 	private SeekBar mSeekBar;
 	CircularViewHelper mCircularHelper;
-	boolean mIsRefresh = false;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -57,14 +56,13 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 		hostView.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				showHostDeviceInfomation();
+				showHostDeviceInfoDialog();
 			}
 		});
 		hostView.setOnLongClickListener(new View.OnLongClickListener() {
 
 			@Override
 			public boolean onLongClick(View v) {
-				mIsRefresh = true;
 				fetchDeviceListFromBluetooth();
 				return true;
 			}
@@ -85,8 +83,8 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 					retainConnectedDevicesFromList();
 					seekBar.setProgress(100);
 				} else {
-					mIsRefresh = true;
-					fetchDeviceListFromBluetooth();
+					obtainDiscoveryList();
+					seekBar.setProgress(0);
 				}
 			}
 
@@ -174,16 +172,12 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 		public void onClick(final View v) {
 			final BlinkDevice device = (BlinkDevice) mCircularHelper
 					.getViewTag(v);
-			showDialog(device);
+			showBlinkDeviceInfoDialog(device);
 		}
 	};
 
 	@Override
 	public void onDeviceListChanged() {
-		if (mIsRefresh) {
-			mSeekBar.setProgress(0);
-			mIsRefresh = false;
-		}
 		mCircularHelper.drawCircularView(getDeviceList());
 	}
 

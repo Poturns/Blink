@@ -9,6 +9,7 @@ import kr.poturns.blink.R;
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.os.Handler;
 import android.os.Message;
 import android.view.DragEvent;
@@ -152,10 +153,23 @@ class CircularViewHelper {
 	 * 원형 View를 구성하는 Data가 변경되었을때,<br>
 	 * 원형으로 배치할 View의 크기 등등의 변수(Spec)를 다시 측정한다.
 	 */
-	private void measuringSpec(int newSize) {
-		final int screenWidth = mContext.getResources().getDisplayMetrics().widthPixels;
-		mViewSize = screenWidth / (newSize < 8 ? 8 : newSize) * 2;
-		mChildViewDistance = (screenWidth - mViewSize - 20) / 2;
+	protected void measuringSpec(int newSize) {
+		final int screenSize = Math.min(mContext.getResources()
+				.getDisplayMetrics().widthPixels, mContext.getResources()
+				.getDisplayMetrics().heightPixels);
+		int actionBarSize;
+		if (PrivateUtil.isScreenSizeSmall(mContext)) {
+			actionBarSize = 20;
+		} else {
+			final TypedArray styledAttributes = mContext.getTheme()
+					.obtainStyledAttributes(
+							new int[] { android.R.attr.actionBarSize });
+			actionBarSize = (int) styledAttributes.getDimension(0, 0);
+			styledAttributes.recycle();
+		}
+
+		mViewSize = (screenSize - actionBarSize) / Math.max(newSize, 8) * 2;
+		mChildViewDistance = (screenSize - mViewSize - actionBarSize * 2) / 2;
 		mLayoutParams = new FrameLayout.LayoutParams(mViewSize, mViewSize);
 		mLayoutParams.gravity = Gravity.CENTER;
 	}

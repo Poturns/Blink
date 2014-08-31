@@ -17,6 +17,7 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TabHost;
@@ -41,6 +42,7 @@ class DataViewFragment extends Fragment {
 	SqliteManagerExtended mManager;
 	private TabHost mTabHost;
 	private ViewPager mViewPager;
+	ArrayList<Fragment> mFragmentList = new ArrayList<Fragment>(3);
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -53,6 +55,9 @@ class DataViewFragment extends Fragment {
 
 		mDevice = BundleResolver.obtainDevice(arg);
 		mApp = BundleResolver.obtainApp(arg);
+		mFragmentList.add(new DataMeasurementsPieFragment());
+		mFragmentList.add(new DataMeasurementsLineGraphFragment());
+		mFragmentList.add(new DataMeasurementListFragment());
 	}
 
 	@Override
@@ -90,6 +95,7 @@ class DataViewFragment extends Fragment {
 		});
 		mViewPager = (ViewPager) v
 				.findViewById(R.id.dialog_deviceinfo_viewpager);
+		mViewPager.setOffscreenPageLimit(mFragmentList.size());
 		mViewPager
 				.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 					@Override
@@ -102,19 +108,12 @@ class DataViewFragment extends Fragment {
 
 			@Override
 			public int getCount() {
-				return 3;
+				return mFragmentList.size();
 			}
 
 			@Override
 			public Fragment getItem(int position) {
-				switch (position) {
-				case 2:
-					return new DataMeasurementListFragment();
-				case 1:
-					return new DataMeasurementsLineGraphFragment();
-				default:
-					return new DataMeasurementsPieFragment();
-				}
+				return mFragmentList.get(position);
 			}
 		});
 		return v;
@@ -142,6 +141,16 @@ class DataViewFragment extends Fragment {
 		getActivity().getActionBar().setSubtitle(null);
 	}
 
+	@Override
+	public void onDetach() {
+		mTabHost = null;
+		mViewPager = null;
+		getActivity().getActionBar().setTitle(
+				getResources().getStringArray(
+						R.array.activity_sercive_control_menu_array)[1]);
+		super.onDetach();
+	}
+
 	/** 현재 App의 MeasurementData들이 차지하는 비율을 파이 그래프 형태로 보여준다. */
 	class DataMeasurementsPieFragment extends Fragment {
 		@Override
@@ -156,29 +165,18 @@ class DataViewFragment extends Fragment {
 			return view;
 		}
 
-		@Override
-		public void onResume() {
-			super.onResume();
-			if (mDevice != null)
-				getActivity().getActionBar().setSubtitle(mDevice.Device);
-		}
-
-		@Override
-		public void onPause() {
-			getActivity().getActionBar().setSubtitle(null);
-			super.onPause();
-		}
-
 		private CircleGraphVO makePieGraph() {
 			ArrayList<CircleGraph> graphItemList = new ArrayList<CircleGraph>();
 			Random random = new Random(System.currentTimeMillis());
-			for (Measurement measurement : mManager.obtainMesurementList(mApp)) {
+			for (Measurement measurement : DataViewFragment.this.mManager
+					.obtainMesurementList(DataViewFragment.this.mApp)) {
 				int r = random.nextInt(256);
 				int g = random.nextInt(256);
 				int b = random.nextInt(256);
-				graphItemList.add(new CircleGraph(measurement.Measurement,
-						Color.rgb(r, g, b), mManager.obtainMeasurementDataList(
-								measurement).size()));
+				graphItemList.add(new CircleGraph(PrivateUtil
+						.obtainSplitMeasurementSchema(measurement), Color.rgb(
+						r, g, b), DataViewFragment.this.mManager
+						.obtainMeasurementDataListSize(measurement)));
 			}
 			if (graphItemList.isEmpty())
 				return null;
@@ -219,18 +217,6 @@ class DataViewFragment extends Fragment {
 		private ViewGroup mGraphView;
 
 		@Override
-		public void onCreate(Bundle savedInstanceState) {
-			super.onCreate(savedInstanceState);
-			mManager = ((IServiceContolActivity) getActivity())
-					.getDatabaseHandler();
-			Bundle arg = getArguments();
-
-			mDevice = BundleResolver.obtainDevice(arg);
-			mApp = BundleResolver.obtainApp(arg);
-
-		}
-
-		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 			View fragmentLayout = inflater.inflate(
@@ -252,7 +238,7 @@ class DataViewFragment extends Fragment {
 		}
 
 		private BubbleGraph makeBubbleGraph(Measurement measurement, int color) {
-			List<MeasurementData> dataList = mManager
+			List<MeasurementData> dataList = DataViewFragment.this.mManager
 					.obtainMeasurementDataList(measurement);
 			int size = dataList.size();
 			if (size == 0)
@@ -268,21 +254,22 @@ class DataViewFragment extends Fragment {
 
 			return new BubbleGraph(measurement.Description, color, array,
 					bubbles);
-
 		}
 
 		private BubbleGraphVO createBubbleGraphVO() {
-			List<Measurement> measurementList = mManager
-					.obtainMesurementList(mApp);
+			List<Measurement> measurementList = DataViewFragment.this.mManager
+					.obtainMesurementList(DataViewFragment.this.mApp);
 			BubbleGraphVO ret = null;
 			if (measurementList.isEmpty())
 				return null;
-			List<MeasurementData> dataList = mManager
+			List<MeasurementData> dataList = DataViewFragment.this.mManager
 					.obtainMeasurementDataList(measurementList.get(0));
 			int size = dataList.size();
 			String[] legendArr = new String[size];
 			for (int i = 0; i < size; i++) {
-				legendArr[i] = dataList.get(i).DateTime.substring(0, 4);
+				legendArr[i] = dataList.get(i).DateTime;
+				if (legendArr[i].length() > 5)
+					legendArr[i] = legendArr[i].substring(0, 4);
 			}
 			ret = new BubbleGraphVO(legendArr);
 			ret.setAnimationDuration(1000);
@@ -317,7 +304,8 @@ class DataViewFragment extends Fragment {
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
 			mMeasurementList = new ArrayList<Measurement>();
-			mMeasurementList.addAll(mManager.obtainMesurementList(mApp));
+			mMeasurementList.addAll(DataViewFragment.this.mManager
+					.obtainMesurementList(DataViewFragment.this.mApp));
 			mAdapter = new ArrayAdapter<Measurement>(getActivity(),
 					android.R.layout.simple_list_item_1, mMeasurementList) {
 				@Override
@@ -335,11 +323,21 @@ class DataViewFragment extends Fragment {
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View v = inflater.inflate(R.layout.dialog_fragment_connection_db_info,
-					container, false);
+			View v = inflater.inflate(
+					R.layout.dialog_fragment_connection_db_info, container,
+					false);
 			ListView listView = (ListView) v.findViewById(android.R.id.list);
 			listView.setAdapter(mAdapter);
 			listView.setEmptyView(v.findViewById(android.R.id.empty));
+			listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+				@Override
+				public void onItemClick(AdapterView<?> parent, View view,
+						int position, long id) {
+					Measurement measurement = (Measurement) parent
+							.getItemAtPosition(position);
+					// TODO Measurement data graph 보여주기
+				}
+			});
 			return v;
 		}
 	}
