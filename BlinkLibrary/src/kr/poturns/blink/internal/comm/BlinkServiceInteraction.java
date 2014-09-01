@@ -11,7 +11,7 @@ import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
-import kr.poturns.blink.db.archive.SystemDatabaseObject;
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.internal.BlinkLocalService;
 import kr.poturns.blink.internal.DeviceAnalyzer;
 import android.bluetooth.BluetoothAdapter;
@@ -313,7 +313,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	 */
 
 	public boolean registerSystemDatabase(
-			SystemDatabaseObject mSystemDatabaseObject) {
+			BlinkAppInfo mSystemDatabaseObject) {
 		mSystemDatabaseObject.mDevice.Device = mBlinkDevice.getName();
 		mSystemDatabaseObject.mDevice.MacAddress = mBlinkDevice.getAddress();
 		mSystemDatabaseObject.mApp.PackageName = mPackageName;
@@ -331,7 +331,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 
 	// 예제를 위한 테스트 코드
 	public boolean registerExternalSystemDatabase(
-			SystemDatabaseObject mSystemDatabaseObject) {
+			BlinkAppInfo mSystemDatabaseObject) {
 		try {
 			mInternalOperationSupport
 					.registerSystemDatabase(mSystemDatabaseObject);
@@ -350,22 +350,22 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	 * 
 	 */
 	public class Local {
-		public SystemDatabaseObject obtainSystemDatabase() {
+		public BlinkAppInfo obtainSystemDatabase() {
 			return obtainSystemDatabase(mBlinkDevice.getName(), mPackageName);
 		}
 
-		public SystemDatabaseObject obtainSystemDatabase(String DeviceName,
+		public BlinkAppInfo obtainSystemDatabase(String DeviceName,
 				String PackageName) {
 			return mBlinkDatabaseManager.obtainSystemDatabase(DeviceName,
 					PackageName);
 		}
 
-		public List<SystemDatabaseObject> obtainSystemDatabaseAll() {
+		public List<BlinkAppInfo> obtainSystemDatabaseAll() {
 			return mBlinkDatabaseManager.obtainSystemDatabase();
 		}
 
 		public void registerMeasurementData(
-				SystemDatabaseObject mSystemDatabaseObject, Object obj) {
+				BlinkAppInfo mSystemDatabaseObject, Object obj) {
 			try {
 				mBlinkDatabaseManager.registerMeasurementData(
 						mSystemDatabaseObject, obj);

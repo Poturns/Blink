@@ -11,7 +11,7 @@ import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
-import kr.poturns.blink.db.archive.SystemDatabaseObject;
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.internal.BlinkLocalService;
 import kr.poturns.blink.internal.ConnectionSupportBinder;
 import kr.poturns.blink.internal.ServiceKeeper;
@@ -124,7 +124,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	 */
 	@Override
 	public void registerSystemDatabase(
-			SystemDatabaseObject mSystemDatabaseObject)
+			BlinkAppInfo mSystemDatabaseObject)
 			throws RemoteException {
 		// TODO Auto-generated method stub
 		Log.i(tag, "registerSystemDatabase");

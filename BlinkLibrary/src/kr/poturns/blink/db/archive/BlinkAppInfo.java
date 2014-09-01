@@ -9,8 +9,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 
-public class SystemDatabaseObject implements Parcelable {
-	private final String tag = "SystemDatabaseObject";
+public class BlinkAppInfo implements Parcelable {
+	private final String tag = "BlinkAppInfo";
 	
 	public boolean isExist;
 	public Device mDevice;
@@ -18,7 +18,7 @@ public class SystemDatabaseObject implements Parcelable {
 	public ArrayList<Function> mFunctionList;
 	public ArrayList<Measurement> mMeasurementList;
 
-	public SystemDatabaseObject() {
+	public BlinkAppInfo() {
 		onCreate();
 	}
 	
@@ -81,23 +81,23 @@ public class SystemDatabaseObject implements Parcelable {
 		// TODO Auto-generated method stub
 		dest.writeString(JsonManager.gson.toJson(this));
 	}
-	public static final Parcelable.Creator<SystemDatabaseObject> CREATOR = new Parcelable.Creator<SystemDatabaseObject>() {
-		 public SystemDatabaseObject createFromParcel(Parcel in) {
-		 	return new SystemDatabaseObject(in);
+	public static final Parcelable.Creator<BlinkAppInfo> CREATOR = new Parcelable.Creator<BlinkAppInfo>() {
+		 public BlinkAppInfo createFromParcel(Parcel in) {
+		 	return new BlinkAppInfo(in);
 		 }
 	        
-		 public SystemDatabaseObject[] newArray( int size ) {
-			 return new SystemDatabaseObject[size];
+		 public BlinkAppInfo[] newArray( int size ) {
+			 return new BlinkAppInfo[size];
 		 }
 	};
-	public SystemDatabaseObject(Parcel in){
+	public BlinkAppInfo(Parcel in){
 		readFromParcel(in);
 	}
 	public void readFromParcel(Parcel in){
-		SystemDatabaseObject mSystemDatabaseObject = JsonManager.gson.fromJson(in.readString(),SystemDatabaseObject.class);
+		BlinkAppInfo mSystemDatabaseObject = JsonManager.gson.fromJson(in.readString(),BlinkAppInfo.class);
 		CopyFromOtherObject(mSystemDatabaseObject);
 	}
-	public void CopyFromOtherObject(SystemDatabaseObject mSystemDatabaseObject){
+	public void CopyFromOtherObject(BlinkAppInfo mSystemDatabaseObject){
 		this.isExist = mSystemDatabaseObject.isExist;
 		this.mDevice = mSystemDatabaseObject.mDevice;
 		this.mApp = mSystemDatabaseObject.mApp;

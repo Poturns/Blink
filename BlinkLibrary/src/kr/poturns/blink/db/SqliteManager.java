@@ -12,7 +12,7 @@ import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
-import kr.poturns.blink.db.archive.SystemDatabaseObject;
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.util.ClassUtil;
 import android.content.ContentValues;
 import android.content.Context;
@@ -102,7 +102,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	}
 
 	//-------------------------------SystemDatabase---------------------------------------
-	public void registerSystemDatabase(SystemDatabaseObject mSystemDatabaseObject){
+	public void registerSystemDatabase(BlinkAppInfo mSystemDatabaseObject){
 		registerDevice(mSystemDatabaseObject);
 		obtainDeviceList(mSystemDatabaseObject);
 		registerApp(mSystemDatabaseObject);
@@ -111,8 +111,8 @@ public class SqliteManager extends SQLiteOpenHelper {
 		registerMeasurement(mSystemDatabaseObject);
 		Log.i(tag, "registerSystemDatabase OK");
 	}
-	public SystemDatabaseObject obtainSystemDatabase(String device,String app){
-		SystemDatabaseObject mSystemDatabaseObject = new SystemDatabaseObject();
+	public BlinkAppInfo obtainSystemDatabase(String device,String app){
+		BlinkAppInfo mSystemDatabaseObject = new BlinkAppInfo();
 		Device mDevice = mSystemDatabaseObject.mDevice;
 		App mApp = mSystemDatabaseObject.mApp;
 		mDevice.Device = device;
@@ -136,15 +136,15 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mSystemDatabaseObject;
 	}
 	
-	public ArrayList<SystemDatabaseObject> obtainSystemDatabase(){
-		ArrayList<SystemDatabaseObject> mSystemDatabaseObjectList = new ArrayList<SystemDatabaseObject>();
+	public ArrayList<BlinkAppInfo> obtainSystemDatabase(){
+		ArrayList<BlinkAppInfo> mSystemDatabaseObjectList = new ArrayList<BlinkAppInfo>();
 		ArrayList<Device> mDeviceList = obtainDeviceList("");
 		ArrayList<App> mAppList = obtainAppList("");
-		SystemDatabaseObject mServiceDatabaseObject = null;
+		BlinkAppInfo mServiceDatabaseObject = null;
 		for(int i=0;i<mDeviceList.size();i++){
 			for(int j=0;j<mAppList.size();j++){
 				if(mDeviceList.get(i).DeviceId==mAppList.get(j).DeviceId){
-					mServiceDatabaseObject = new SystemDatabaseObject();
+					mServiceDatabaseObject = new BlinkAppInfo();
 					mServiceDatabaseObject.mDevice = mDeviceList.get(i);
 					mServiceDatabaseObject.mApp = mAppList.get(j);
 					obtainFunction(mServiceDatabaseObject);
@@ -157,7 +157,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mSystemDatabaseObjectList;
 	}
 	
-	private boolean obtainDeviceList(SystemDatabaseObject mSystemDatabaseObject){
+	private boolean obtainDeviceList(BlinkAppInfo mSystemDatabaseObject){
 		Device mDevice = mSystemDatabaseObject.mDevice;
 		String query = SQL_SELECT_DEVICE+"where Device=?";
 		String[] args = {mDevice.Device};
@@ -191,7 +191,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mDeviceList;
 	}
 	
-	private boolean obtainApp(SystemDatabaseObject mSystemDatabaseObject){
+	private boolean obtainApp(BlinkAppInfo mSystemDatabaseObject){
 		App mApp = mSystemDatabaseObject.mApp;
 		String query = SQL_SELECT_APP+"where DeviceId=? and PackageName=?";
 		String[] args = {String.valueOf(mSystemDatabaseObject.mDevice.DeviceId),mSystemDatabaseObject.mApp.PackageName};
@@ -229,7 +229,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	
 	
 	
-	private void registerDevice(SystemDatabaseObject mSystemDatabaseObject){
+	private void registerDevice(BlinkAppInfo mSystemDatabaseObject){
 		Device mDevice = mSystemDatabaseObject.mDevice;
 		ContentValues values = new ContentValues();
 		values.put("Device", mDevice.Device);
@@ -238,7 +238,7 @@ public class SqliteManager extends SQLiteOpenHelper {
         mSQLiteDatabase.insert("Device", null, values);
 	}
 	
-	private void registerApp(SystemDatabaseObject mSystemDatabaseObject){
+	private void registerApp(BlinkAppInfo mSystemDatabaseObject){
 		Device mDevice = mSystemDatabaseObject.mDevice;
 		App mApp = mSystemDatabaseObject.mApp;
 		ContentValues values = new ContentValues();
@@ -249,7 +249,7 @@ public class SqliteManager extends SQLiteOpenHelper {
         mSQLiteDatabase.insert("App", null, values);
 	}
 	
-	private void registerFunction(SystemDatabaseObject mSystemDatabaseObject){
+	private void registerFunction(BlinkAppInfo mSystemDatabaseObject){
 		App mApp = mSystemDatabaseObject.mApp;
 		ArrayList<Function> mFunctionList = mSystemDatabaseObject.mFunctionList;
 		Function mFunction;
@@ -267,7 +267,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		}
 	}
 	
-	private void registerMeasurement(SystemDatabaseObject mSystemDatabaseObject){
+	private void registerMeasurement(BlinkAppInfo mSystemDatabaseObject){
 		App mApp = mSystemDatabaseObject.mApp;
 		ArrayList<Measurement> mMeasurementList = mSystemDatabaseObject.mMeasurementList;
 		Measurement mMeasurement;
@@ -285,7 +285,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		}
 	}
 	
-	private void obtainFunction(SystemDatabaseObject mServiceDatabaseObject){
+	private void obtainFunction(BlinkAppInfo mServiceDatabaseObject){
 		App mApp = mServiceDatabaseObject.mApp;
 		String sql = SQL_SELECT_FUNCTION + "where AppId=?";
 		String[] args = {String.valueOf(mApp.AppId)};
@@ -320,7 +320,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mFunctionList;
 	}
 	
-	private void obtainMeasurement(SystemDatabaseObject mServiceDatabaseObject){
+	private void obtainMeasurement(BlinkAppInfo mServiceDatabaseObject){
 		App mApp = mServiceDatabaseObject.mApp;
 		String[] args = {String.valueOf(mApp.AppId)};
 		String sql = SQL_SELECT_MEASUREMENT + "where AppId=?";
@@ -472,7 +472,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	 * @param obj
 	 * @return 
 	 */
-	public void registerMeasurementData(SystemDatabaseObject mSystemDatabaseObject,Object obj) throws IllegalAccessException, IllegalArgumentException{
+	public void registerMeasurementData(BlinkAppInfo mSystemDatabaseObject,Object obj) throws IllegalAccessException, IllegalArgumentException{
 		MeasurementData mMeasurementData = new MeasurementData();
 		ContentValues values = new ContentValues();
 		ArrayList<Measurement> mMeasurementList = mSystemDatabaseObject.mMeasurementList;

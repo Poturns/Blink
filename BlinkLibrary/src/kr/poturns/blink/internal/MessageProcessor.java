@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import kr.poturns.blink.db.JsonManager;
 import kr.poturns.blink.db.SqliteManager;
-import kr.poturns.blink.db.archive.SystemDatabaseObject;
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
 import kr.poturns.blink.internal.comm.IBlinkMessagable;
@@ -36,9 +36,9 @@ public class MessageProcessor {
 	
 	@Deprecated
 	public void acceptJsonData(String json, BlinkDevice deviceX) {
-		ArrayList<SystemDatabaseObject> mObjectList = mJsonManager.obtainJsonSystemDatabaseObject(json);
+		ArrayList<BlinkAppInfo> mObjectList = mJsonManager.obtainJsonSystemDatabaseObject(json);
 		
-		for (SystemDatabaseObject object : mObjectList) {
+		for (BlinkAppInfo object : mObjectList) {
 			
 		}
 	}

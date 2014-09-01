@@ -11,7 +11,7 @@ import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
-import kr.poturns.blink.db.archive.SystemDatabaseObject;
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import android.content.ContentValues;
 import android.content.Context;
 import android.util.Log;
@@ -34,9 +34,9 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 	 * 기존 MeasurementId와 변경된 MeasurementId가 저장된 HashMap을 얻는다.
 	 * @return
 	 */
-	private HashMap<Integer, Integer> obtainMeasurementMap(List<SystemDatabaseObject> SystemDatabaseObjctList){
-		List<SystemDatabaseObject> oldSystemDatabaseObject = obtainSystemDatabase();
-		List<SystemDatabaseObject> newSystemDatabaseObject = SystemDatabaseObjctList;
+	private HashMap<Integer, Integer> obtainMeasurementMap(List<BlinkAppInfo> SystemDatabaseObjctList){
+		List<BlinkAppInfo> oldSystemDatabaseObject = obtainSystemDatabase();
+		List<BlinkAppInfo> newSystemDatabaseObject = SystemDatabaseObjctList;
 		
 		List<Measurement> oldMeasurementList;
 		List<Measurement> newMeasurementList;
@@ -46,9 +46,9 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		
 		HashMap<Integer, Integer> MeasurementMap = new HashMap<Integer, Integer>();
 		
-		//새로운 SystemDatabaseObject 리스트의 인덱스
+		//새로운 BlinkAppInfo 리스트의 인덱스
 		for(int i=0;i<newSystemDatabaseObject.size();i++){
-			//기존 SystemDatabaseObject 리스트의 인덱스
+			//기존 BlinkAppInfo 리스트의 인덱스
 			for(int j=0;j<oldSystemDatabaseObject.size();j++){
 				//동일한 systemDatabaseObject 검색
 				if(newSystemDatabaseObject.get(i).mDevice.MacAddress.contentEquals(oldSystemDatabaseObject.get(j).mDevice.MacAddress)
@@ -79,15 +79,15 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 	 * @param SystemDatabaseObjctList
 	 * @return
 	 */
-	private List<SystemDatabaseObject> obtainAddedSystemDatabaseObject(List<SystemDatabaseObject> SystemDatabaseObjctList){
-		List<SystemDatabaseObject> MainSystemDatabaseObjectList = obtainSystemDatabase();
-		List<SystemDatabaseObject> WearableSystemDatabaseObjectList = SystemDatabaseObjctList;
-		List<SystemDatabaseObject> AddedSystemDatabaseObjectList = new ArrayList<SystemDatabaseObject>();
+	private List<BlinkAppInfo> obtainAddedSystemDatabaseObject(List<BlinkAppInfo> SystemDatabaseObjctList){
+		List<BlinkAppInfo> MainSystemDatabaseObjectList = obtainSystemDatabase();
+		List<BlinkAppInfo> WearableSystemDatabaseObjectList = SystemDatabaseObjctList;
+		List<BlinkAppInfo> AddedSystemDatabaseObjectList = new ArrayList<BlinkAppInfo>();
 		boolean isAdded = true;
-		//웨어러블 SystemDatabaseObject 리스트의 인덱스
+		//웨어러블 BlinkAppInfo 리스트의 인덱스
 		for(int i=0;i<WearableSystemDatabaseObjectList.size();i++){
 			isAdded = true;
-			//메인 SystemDatabaseObject 리스트의 인덱스
+			//메인 BlinkAppInfo 리스트의 인덱스
 			for(int j=0;j<MainSystemDatabaseObjectList.size();j++){
 				//동일한 systemDatabaseObject 검색
 				if(WearableSystemDatabaseObjectList.get(i).mDevice.MacAddress.contentEquals(MainSystemDatabaseObjectList.get(j).mDevice.MacAddress)
@@ -97,7 +97,7 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 					isAdded = false;
 				}
 			}
-			//추가된 SystemDatabaseObject 리스트에 추가
+			//추가된 BlinkAppInfo 리스트에 추가
 			if(isAdded)AddedSystemDatabaseObjectList.add(WearableSystemDatabaseObjectList.get(i));
 		}
 		
@@ -109,14 +109,14 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 	 * register는 id값을 sqlite에서 만들어서 SystemDatabaseObject에 변경해주지만 여기서는 있는 그대로 입력된다.
 	 * @param mSystemDatabaseObject
 	 */
-	private void insertSystemDatabase(SystemDatabaseObject mSystemDatabaseObject){
+	private void insertSystemDatabase(BlinkAppInfo mSystemDatabaseObject){
 		insertDevice(mSystemDatabaseObject);
 		insertApp(mSystemDatabaseObject);
 		insertFunction(mSystemDatabaseObject);
 		insertMeasurement(mSystemDatabaseObject);
 	}
 	
-	private void insertDevice(SystemDatabaseObject mSystemDatabaseObject) {
+	private void insertDevice(BlinkAppInfo mSystemDatabaseObject) {
 		Device mDevice = mSystemDatabaseObject.mDevice;
 		ContentValues values = new ContentValues();
 		values.put("DeviceId", mDevice.DeviceId);
@@ -127,7 +127,7 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
         mSQLiteDatabase.insert("Device", null, values);
 	}
 	
-	private void insertApp(SystemDatabaseObject mSystemDatabaseObject) {
+	private void insertApp(BlinkAppInfo mSystemDatabaseObject) {
 		App mApp = mSystemDatabaseObject.mApp;
 		ContentValues values = new ContentValues();
 		values.put("AppId", mApp.AppId);
@@ -139,7 +139,7 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
         mSQLiteDatabase.insert("App", null, values);
 	}
 	
-	private void insertMeasurement(SystemDatabaseObject mSystemDatabaseObject) {
+	private void insertMeasurement(BlinkAppInfo mSystemDatabaseObject) {
 		for(Measurement mMeasurement : mSystemDatabaseObject.mMeasurementList){
 			ContentValues values = new ContentValues();
 			values.put("AppId", mMeasurement.AppId);
@@ -151,7 +151,7 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		}
 	}
 	
-	private void insertFunction(SystemDatabaseObject mSystemDatabaseObject) {
+	private void insertFunction(BlinkAppInfo mSystemDatabaseObject) {
 		for(Function mFunction : mSystemDatabaseObject.mFunctionList){
 			ContentValues values = new ContentValues();
 			values.put("AppId", mFunction.AppId);
@@ -249,7 +249,7 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		 * 주어진 systemDatabaseObjectList로 systemDatabaseObject를 업데이트한다.
 		 * @return
 		 */
-		public boolean syncSystemDatabase(List<SystemDatabaseObject> SystemDatabaseObjctList){
+		public boolean syncSystemDatabase(List<BlinkAppInfo> SystemDatabaseObjctList){
 			//변경해야할 MeasurementId 맵을 가진 HashMap을 얻는다.
 			HashMap<Integer, Integer> MeasurementMap = obtainMeasurementMap(SystemDatabaseObjctList);
 			//MeasurementData 테이블을 동기화한다.
@@ -261,7 +261,7 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 			
 			Log.i(tag, "syncSystemDatabase");
 			
-			for(SystemDatabaseObject mSystemDatabaseObject : SystemDatabaseObjctList){
+			for(BlinkAppInfo mSystemDatabaseObject : SystemDatabaseObjctList){
 				insertSystemDatabase(mSystemDatabaseObject);
 			}
 			return true;
@@ -272,12 +272,12 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		/**
 		 * 주어진 SystemDatabaseObjectList와 비교하여 새로운 부분을 추가한다.
 		 */
-		public boolean syncSystemDatabase(List<SystemDatabaseObject> SystemDatabaseObjctList){
+		public boolean syncSystemDatabase(List<BlinkAppInfo> SystemDatabaseObjctList){
 			//Main Device에 저장되어 있지 않은 SystemDatabaseObject를 검색한다.
-			List<SystemDatabaseObject> AddedSystemDatabaseObjectList = obtainAddedSystemDatabaseObject(SystemDatabaseObjctList);
+			List<BlinkAppInfo> AddedSystemDatabaseObjectList = obtainAddedSystemDatabaseObject(SystemDatabaseObjctList);
 			
 			//SystemDatabase에 추가한다.
-			for(SystemDatabaseObject mSystemDatabaseObject : AddedSystemDatabaseObjectList){
+			for(BlinkAppInfo mSystemDatabaseObject : AddedSystemDatabaseObjectList){
 				registerSystemDatabase(mSystemDatabaseObject);
 			}
 			return true;

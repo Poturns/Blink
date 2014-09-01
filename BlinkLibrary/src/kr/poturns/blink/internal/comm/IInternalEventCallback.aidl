@@ -1,7 +1,7 @@
 package kr.poturns.blink.internal.comm;
 
 import kr.poturns.blink.internal.comm.BlinkDevice;
-import kr.poturns.blink.db.archive.SystemDatabaseObject;
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.BlinkLog;
