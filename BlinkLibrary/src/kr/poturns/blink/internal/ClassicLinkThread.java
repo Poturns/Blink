@@ -49,8 +49,8 @@ public class ClassicLinkThread extends Thread {
 	private ClassicLinkThread(BluetoothAssistant assistant, BlinkDevice device) {
 		super(assistant.CONNECTION_GROUP, device.getName());
 
-		INTER_DEV_MANAGER = assistant.INTER_DEV_MANAGER;
 		ASSISTANT = assistant;
+		INTER_DEV_MANAGER = ASSISTANT.INTER_DEV_MANAGER;
 		MSG_PROCESSOR = new MessageProcessor(INTER_DEV_MANAGER.MANAGER_CONTEXT);
 		DEVICE = device;
 	}
@@ -92,11 +92,14 @@ public class ClassicLinkThread extends Thread {
 					
 				} else if (obj instanceof BlinkDevice) {
 					BlinkDevice opposite = (BlinkDevice) obj;
-					ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).updateBlinkNetwork(opposite);
+					//ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).updateBlinkNetwork(opposite);
 					
 				} else if (obj instanceof String) {
 					String json = (String) obj;
-					MSG_PROCESSOR.acceptJsonData(json, DEVICE);
+					
+					BlinkMessage mBlinkMessage = BlinkMessage.Builder.restore(json);
+					if (mBlinkMessage != null)
+						MSG_PROCESSOR.acceptBlinkMessage(mBlinkMessage, DEVICE);
 
 					Log.d("ClassicLinkThread_run()", "Read : " + json);
 				}

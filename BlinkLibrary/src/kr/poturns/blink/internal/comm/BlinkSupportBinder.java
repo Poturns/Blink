@@ -251,7 +251,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 			mBlinkMessage = new BlinkMessage.Builder()
 									.setDestinationDevice(BlinkDevice.load(device.MacAddress))
 									.setDestinationApplication(app.PackageName)
-									.setSourceDevice(BlinkDevice.load(mBlinkDevice))
+									.setSourceDevice(BlinkDevice.update(mBlinkDevice))
 									.setSourceApplication(mPackageName)
 									.setMessage(gson.toJson(function))
 									.setCode(requestCode)

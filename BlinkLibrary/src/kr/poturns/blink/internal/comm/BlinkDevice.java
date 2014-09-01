@@ -29,7 +29,7 @@ import android.os.Parcelable;
  * @since 2014.08.15
  *
  */
-public class BlinkDevice implements Parcelable, Serializable {
+public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDevice>  {
 
 	// *** CONSTANT DECLARATION *** //
 	/**
@@ -41,7 +41,10 @@ public class BlinkDevice implements Parcelable, Serializable {
 	 * Blink Device 객체에 대한 Cache.
 	 */
 	private static final HashMap<String, BlinkDevice> CACHE_MAP = new HashMap<String, BlinkDevice>();
+
 	
+	
+	// *** STATIC DECLARATION *** //
 	/**
 	 * 
 	 */
@@ -52,10 +55,11 @@ public class BlinkDevice implements Parcelable, Serializable {
 		
 		if (HOST != null && mAdapter != null)
 			HOST.setName(mAdapter.getName());
+		
 	}
 
 	
-	public static BlinkDevice load(BlinkDevice device) {
+	public static BlinkDevice update(BlinkDevice device) {
 		BlinkDevice mDevice = BlinkDevice.load(device.Address);
 		mDevice.BlinkSupported = true;
 		mDevice.Connected = true;
@@ -171,11 +175,23 @@ public class BlinkDevice implements Parcelable, Serializable {
 			CACHE_MAP.remove(address);
 		}
 	}
+
+	/**
+	 * 
+	 */
+	public static void removeUnnecessaryCache() {
+		for (BlinkDevice device : CACHE_MAP.values()) {
+			if (device.Connected || device.Discovered)
+				continue;
+			
+			CACHE_MAP.remove(device.getAddress()).writeToRepository();
+		}
+	}
 	
 	/**
 	 * Cache에 등록되어있던 정보는 Repository에 저장하고, Cache를 비운다.
 	 */
-	public static void clearCache() {
+	public static void clearAllCache() {
 		for (BlinkDevice device : CACHE_MAP.values())
 			device.writeToRepository();
 		
@@ -188,11 +204,13 @@ public class BlinkDevice implements Parcelable, Serializable {
 	private String Name;
 	private int Type;
 	private HashSet<String> Uuids = new HashSet<String>();
-	
+
+	// Group-dependent
 	private int Identity;
 	private int IdentityPoint;
 	private int GroupID;
 
+	// Device-dependent
 	private boolean AutoConnect;
 	private boolean SecureConnect;
 
@@ -379,6 +397,17 @@ public class BlinkDevice implements Parcelable, Serializable {
 			return false;
 		return hashCode() == o.hashCode();
 	}
+
+	@Override
+	public int compareTo(BlinkDevice another) {
+		if (IdentityPoint > another.IdentityPoint)
+			return 1;
+		else if (IdentityPoint < another.IdentityPoint)
+			return -1;
+		else
+			return 0;
+	}
+	
 	
 	
 	
@@ -454,7 +483,8 @@ public class BlinkDevice implements Parcelable, Serializable {
 	}
 
 	public void setSecureConnect(boolean secure) {
-		SecureConnect = secure;
+		//SecureConnect = secure;
+		SecureConnect = true;
 	}
 
 	public boolean isBlinkSupported() {
@@ -467,6 +497,7 @@ public class BlinkDevice implements Parcelable, Serializable {
 
 	public void setConnected(boolean connected) {
 		Connected = connected;
+		Timestamp = System.currentTimeMillis();
 	}
 
 	public boolean isDiscovered() {
@@ -475,9 +506,15 @@ public class BlinkDevice implements Parcelable, Serializable {
 
 	public void setDiscovered(boolean discovered) {
 		Discovered = discovered;
+		Timestamp = System.currentTimeMillis();
 	}
 
 	public long getTimestamp() {
 		return Timestamp;
 	}
+	
+	public boolean isCenterDevice() {
+		return IdentityPoint > DeviceAnalyzer.IDENTITY_POINTLINE_PROXY;
+	}
+
 }

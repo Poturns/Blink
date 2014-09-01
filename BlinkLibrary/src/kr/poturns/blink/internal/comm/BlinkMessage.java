@@ -2,28 +2,27 @@ package kr.poturns.blink.internal.comm;
 
 import java.io.Serializable;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 /**
  * 
  * @author Yeonho.Kim
  *
  */
-public class BlinkMessage implements Serializable {
+public class BlinkMessage implements Serializable, IBlinkMessagable {
 
 	// *** CONSTANT DECLARATION *** //
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 7552162163627874820L;
-
-	
-	public static final int TYPE_REQUEST_FUNCTION = 0x1;
-	
-	public static final int TYPE_REQUEST_MEASUREMENT = 0x2;
-	
 	
 	
 
 	// *** FIELD DECLARATION *** //
+	private final Gson JSON_CREATOR;
+	
 	private String SourceAddress;
 	private String SourceApplication;
 	private String DestinationAddress;
@@ -37,6 +36,8 @@ public class BlinkMessage implements Serializable {
 	private String message;
 	
 	private BlinkMessage() {
+		JSON_CREATOR = new GsonBuilder().setPrettyPrinting().create();
+		
 		Type = 0;
 		Code = 0;
 		Reliable = false;
@@ -47,10 +48,18 @@ public class BlinkMessage implements Serializable {
 	 * BLE에서 사용할 수 있는 Message로 변환한다.
 	 * @return
 	 */
+	@Override
 	public Object toLeMessage() {
 		return null;
 	}
 
+
+	@Override
+	public String toClassicMessage() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	
 	
 	// *** BUILDER DECLARATION *** //
@@ -174,6 +183,17 @@ public class BlinkMessage implements Serializable {
 			mBlinkMessage.Timestamp = System.currentTimeMillis();
 			return mBlinkMessage;
 		}
+		
+		/**
+		 * 
+		 * @param json
+		 * @return
+		 */
+		public static BlinkMessage restore(String json) {
+			BlinkMessage mBlinkMessage = new BlinkMessage();
+			
+			return mBlinkMessage;
+		}
 	}
 	
 	
@@ -214,5 +234,4 @@ public class BlinkMessage implements Serializable {
 	public int getCode() {
 	    return Code;
     }
-
 }

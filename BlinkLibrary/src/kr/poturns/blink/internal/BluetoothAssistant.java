@@ -38,11 +38,10 @@ class BluetoothAssistant extends Handler{
 	// *** CONSTANT DECLARATION *** //
 	public final static String TAG = "BluetoothAssistant";
 	
+	private final static int DISCOVERY_TIMEOUT = 10000;	// ms
 	private final static int ACCEPT_TIMEOUT = 60000;	// ms
 	private final static int JOIN_TIMEOUT = 1000;		// ms
 	
-	final static int MESSAGE_READ_STREAM = 0x1;
-
 	
 	
 	// *** STATIC DECLARATION *** //
@@ -72,7 +71,7 @@ class BluetoothAssistant extends Handler{
 		IntentFilter mIntentFilter = new IntentFilter();
 		mIntentFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);				// 블루투스 상태 변화 
 		//mIntentFilter.addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);			// 블루투스 탐색 모드 변화
-		//mIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);			// 블루투스 탐색 시작
+		mIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);			// 블루투스 탐색 시작
 		mIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);		// 블루투스 탐색 종료
 		mIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);						// 블루투스 탐색시 디바이스 발견
 		mIntentFilter.addAction(BluetoothDevice.ACTION_UUID);						// 블루투스 UUID 발견
@@ -115,7 +114,7 @@ class BluetoothAssistant extends Handler{
 		mDeviceAnalyzer = DeviceAnalyzer.getInstance(mContext);
 		mServiceKeeper = ServiceKeeper.getInstance(mContext);
 		
-		isLeSupported = DeviceAnalyzer.getInstance(mContext).hasBluetoothLE;
+		isLeSupported = mDeviceAnalyzer.isAvailableBluetoothLE();
 		
 		int state = BluetoothAdapter.getDefaultAdapter().getState();
 		switch (state) {
@@ -138,8 +137,7 @@ class BluetoothAssistant extends Handler{
 	void destroy() {
 		stopDiscovery();
 		stopListeningServer();
-		BlinkDevice.clearCache();
-		ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).destroy();
+		BlinkDevice.clearAllCache();
 	}
 
 	/**
@@ -153,7 +151,8 @@ class BluetoothAssistant extends Handler{
 	 * 블루투스가 Off상태가 되었을 때, 수행할 기능을 정의한다.
 	 */
 	void onBluetoothStateOff() {
-		Intent mIntent = (mDeviceAnalyzer.isAvailableAsCenter())? 
+		// TODO :
+		Intent mIntent = (true)? 
 				new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE) : 
 					new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE) ;
 					
@@ -331,8 +330,9 @@ class BluetoothAssistant extends Handler{
 	public void startDiscovery(int type, boolean clear) {
 		final BluetoothAdapter mAdapter = mBluetoothManager.getAdapter();
 
-		if (clear && !isLeScanning && !mAdapter.isDiscovering())
+		if (clear && !isLeScanning && !mAdapter.isDiscovering()) 
 			mServiceKeeper.clearDiscovery();
+		
 
 		// New Discovery Start.
 		if (BluetoothDevice.DEVICE_TYPE_LE == type && !isLeScanning) {
@@ -343,7 +343,7 @@ class BluetoothAssistant extends Handler{
 					isLeScanning = false;
 					mAdapter.stopLeScan(INTER_DEV_MANAGER);
 				}
-			}, 10000);
+			}, DISCOVERY_TIMEOUT);
 			
 			isLeScanning = true;
 			mAdapter.startLeScan(INTER_DEV_MANAGER);
