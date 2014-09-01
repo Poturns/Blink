@@ -62,6 +62,8 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 	private boolean isInitiated = false;
 	private boolean isDestroyed = false;
 	
+	private boolean isAutoConnectEnabled = true;
+	
 	
 	private InterDeviceManager(BlinkLocalBaseService context) {
 		this.MANAGER_CONTEXT = context;
@@ -115,6 +117,7 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 		String action = intent.getAction();
 		Log.d("InterDeviceManager_onReceive()", ": "+action+" :" );
 		
+		// TODO : 액션 스트링을 매번 처음부터 끝까지 매칭하는 것은 비효율적인 방법이 아닌가?!
 		
 		if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
 			// 블루투스 상태 변화 감지
@@ -161,9 +164,14 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			BlinkDevice device = BlinkDevice.load(origin);
-			device.setDiscovered(true);
 			
 			mServiceKeeper.addDiscovery(device);
+			
+			// $SYSTEM$ : AutoConnect 디바이스가 발견되었을 때, 자동 연결을 수행한다.
+			if (isAutoConnectEnabled && device.isAutoConnect()) {
+				if (!device.isConnected())
+					mAssistant.connectToDeviceFromClient(device);
+			}
 			
 			// Broadcasting...
 			Intent mActionFound = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCOVERED);
@@ -186,6 +194,7 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			BlinkDevice device = BlinkDevice.load(origin);
 			device.setConnected(true);
+			
 
 			// Broadcasting...
 			Intent mActionConnected = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);

@@ -2,42 +2,44 @@ package kr.poturns.blink.internal.comm;
 
 import java.io.Serializable;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 /**
  * 
  * @author Yeonho.Kim
  *
  */
-public class BlinkMessage implements Serializable {
+public class BlinkMessage implements Serializable, IBlinkMessagable {
 
 	// *** CONSTANT DECLARATION *** //
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 7552162163627874820L;
-
-	
-	public static final int TYPE_REQUEST_FUNCTION = 0x1;
-	
-	public static final int TYPE_REQUEST_MEASUREMENT = 0x2;
-	
 	
 	
 
 	// *** FIELD DECLARATION *** //
+	private final Gson JSON_CREATOR;
+	
 	private String SourceAddress;
 	private String SourceApplication;
 	private String DestinationAddress;
 	private String DestinationApplication;
 	
 	private int Type;
+	private int Code;
 	private boolean Reliable;
 	private long Timestamp;
 	
 	private String message;
 	
 	private BlinkMessage() {
+		JSON_CREATOR = new GsonBuilder().setPrettyPrinting().create();
 		
 		Type = 0;
+		Code = 0;
 		Reliable = false;
 		Timestamp = 0;
 	}
@@ -46,10 +48,18 @@ public class BlinkMessage implements Serializable {
 	 * BLE에서 사용할 수 있는 Message로 변환한다.
 	 * @return
 	 */
+	@Override
 	public Object toLeMessage() {
 		return null;
 	}
 
+
+	@Override
+	public String toClassicMessage() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	
 	
 	// *** BUILDER DECLARATION *** //
@@ -98,7 +108,8 @@ public class BlinkMessage implements Serializable {
 		 * @return
 		 */
 		public Builder setDestinationDevice(BlinkDevice device) {
-			mBlinkMessage.DestinationAddress = device.getAddress();
+			if (device != null)
+				mBlinkMessage.DestinationAddress = device.getAddress();
 			return this;
 		}
 		
@@ -110,7 +121,8 @@ public class BlinkMessage implements Serializable {
 		 * @return
 		 */
 		public Builder setDestinationApplication(String packageName) {
-			mBlinkMessage.DestinationApplication = packageName;
+			if (packageName != null)
+				mBlinkMessage.DestinationApplication = packageName;
 			return this;
 		}
 		
@@ -124,6 +136,19 @@ public class BlinkMessage implements Serializable {
 		 */
 		public Builder setType(int type) {
 			mBlinkMessage.Type = type;
+			return this;
+		}
+		
+		/**
+		 * 메세지의 요청/응답 번호를 설정한다.
+		 * <p> TYPE_1 : 
+		 * <br> TYPE_2 :
+		 * <hr>
+		 * @param type
+		 * @return
+		 */
+		public Builder setCode(int Code) {
+			mBlinkMessage.Code = Code;
 			return this;
 		}
 		
@@ -146,6 +171,7 @@ public class BlinkMessage implements Serializable {
 		 * @return
 		 */
 		public Builder setMessage(String message) {
+			mBlinkMessage.message = message;
 			return this;
 		}
 		
@@ -155,6 +181,17 @@ public class BlinkMessage implements Serializable {
 		 */
 		public BlinkMessage build() {
 			mBlinkMessage.Timestamp = System.currentTimeMillis();
+			return mBlinkMessage;
+		}
+		
+		/**
+		 * 
+		 * @param json
+		 * @return
+		 */
+		public static BlinkMessage restore(String json) {
+			BlinkMessage mBlinkMessage = new BlinkMessage();
+			
 			return mBlinkMessage;
 		}
 	}
@@ -193,5 +230,8 @@ public class BlinkMessage implements Serializable {
 	public String getMessage() {
 		return message;
 	}
-	
+
+	public int getCode() {
+	    return Code;
+    }
 }

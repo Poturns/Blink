@@ -7,6 +7,8 @@ import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
+import kr.poturns.blink.internal.comm.IBlinkMessagable;
+import android.util.Log;
 
 /**
  * 
@@ -15,16 +17,16 @@ import kr.poturns.blink.internal.comm.BlinkMessage;
  * @since 2014.07.12
  *
  */
-class MessageProcessor {
+public class MessageProcessor {
 	
-	private final BlinkLocalBaseService OPERATOR_CONTEXT;
+	private final BlinkLocalService OPERATOR_CONTEXT;
 	private final ServiceKeeper SERVICE_KEEPER;
 	
 	private JsonManager mJsonManager;
 	private SqliteManager mSqliteManager;
 	
 	public MessageProcessor(BlinkLocalBaseService context) {
-		OPERATOR_CONTEXT = context;
+		OPERATOR_CONTEXT = (BlinkLocalService)context;
 		SERVICE_KEEPER = ServiceKeeper.getInstance(context);
 		
 		mJsonManager = new JsonManager();
@@ -49,6 +51,7 @@ class MessageProcessor {
 	 * @param fromDevice
 	 */
 	public void acceptBlinkMessage(BlinkMessage message, BlinkDevice fromDevice) {
+
 		//
 		if(message.getDestinationAddress().equals(BlinkDevice.HOST.getAddress())){
 			
@@ -60,7 +63,12 @@ class MessageProcessor {
 			else{ // 타겟 디바이스와 연결되어 있지 않은 경우 요청한 디바이스에 fail message를 보낸다.
 				//sendBlinkMessageTo(,fromDevice);
 			}
-		}
+		}/*
+=======
+		String ret = OPERATOR_CONTEXT.receiveMessageFromProcessor(message.getMessage());
+		SERVICE_KEEPER.obtainBinder(message.getSourceApplication()).callbackData(message.getCode(), ret);
+		
+>>>>>>> refs/remotes/origin/service*/
 		// EXAMPLE !!
 		/*
 		BlinkMessage msg = new BlinkMessage.Builder()
@@ -83,6 +91,7 @@ class MessageProcessor {
 	 * @param toDevice
 	 */
 	public void sendBlinkMessageTo(BlinkMessage message, BlinkDevice toDevice) {
+//<<<<<<< HEAD
 		
 		
 		/*
@@ -113,8 +122,12 @@ class MessageProcessor {
 		 * Main 연결되있으면 Main으로
 		 * 
 		 */
-		
-		
+		/*
+=======
+		Log.i("test", "sendBlinkMessageTo");
+		acceptBlinkMessage(message,null);
+>>>>>>> refs/remotes/origin/service
+		*/
 		
 		
 		/*
@@ -122,6 +135,15 @@ class MessageProcessor {
 		 * SendRemote시에만 발생하고
 		 * 여기서 추가 json을 붙여줘야 하나??
 		 */
-		SERVICE_KEEPER.sendMessageToDevice(toDevice, message);
+//		SERVICE_KEEPER.sendMessageToDevice(toDevice, message);
+	}
+	
+	private void handleSystemMessage(BlinkMessage message) {
+		switch(message.getType()) {
+		case BlinkMessage.TYPE_REQUEST_IDENTITY_SYNC:
+			//SERVICE_KEEPER.
+			break;
+			
+		}
 	}
 }

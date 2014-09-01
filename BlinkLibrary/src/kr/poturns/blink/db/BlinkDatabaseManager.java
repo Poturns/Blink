@@ -9,6 +9,7 @@ import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
+import kr.poturns.blink.util.ClassUtil;
 import android.content.Context;
 import android.os.Build;
 import android.util.Log;
@@ -155,34 +156,10 @@ public class BlinkDatabaseManager extends SqliteManager{
 		return this;
 	}
 	
-	
-	public boolean checkInDevice(List<Measurement> mMeasurementList){
-		mDeviceList.clear();
-		if(mMeasurementList.size()==0)return true;
-		
-		String where = "AppId in (";
-		//등록된 앱 리스트 확인
-		for(int i=0;i<mMeasurementList.size();i++){
-			where += mMeasurementList.get(i).AppId;
-			if(i<mMeasurementList.size()-1)where += ",";
-		}
-		where += ")";
-		
-		queryApp(where);
-		if(mAppList.size()==0)return true;
-		//등록된 디바이스 리스트 확인
-		queryDevice("DeviceId="+mAppList.get(0).DeviceId);
-		if(mDeviceList.size()==0)return true;
-		//디바이스 이름 비교
-		for(int i=0;i<mDeviceList.size();i++){
-			if(!mDeviceList.get(i).Device.contentEquals(Build.MODEL))return false;
-		}
-		return true;
-	}
-	
 	public Device obtainDevice(Function function){
 		mDeviceList.clear();
 		//등록된 앱 리스트 확인
+		if(function==null)return null;
 		queryApp("AppId="+function.AppId);
 		if(mAppList.size()==0)return null;
 		//등록된 디바이스 리스트 확인
@@ -194,6 +171,7 @@ public class BlinkDatabaseManager extends SqliteManager{
 	
 	public App obtainApp(Function function){
 		mDeviceList.clear();
+		if(function==null)return null;
 		//등록된 앱 리스트 확인
 		queryApp("AppId="+function.AppId);
 		if(mAppList.size()==0)return null;
@@ -201,20 +179,52 @@ public class BlinkDatabaseManager extends SqliteManager{
 		return mAppList.get(0);
 	}
 	
-	public boolean checkInDevice(Function mFunction){
+	
+	
+	/**
+	 * Check out device has data
+	 */
+	
+	public boolean checkOutDevice(List<Measurement> mMeasurementList,String MacAddress){
 		mDeviceList.clear();
+		if(mMeasurementList.size()==0)return false;
+		
+		String where = "AppId in (";
 		//등록된 앱 리스트 확인
-		queryApp("AppId="+mFunction.AppId);
-		if(mAppList.size()==0)return true;
+		for(int i=0;i<mMeasurementList.size();i++){
+			where += mMeasurementList.get(i).AppId;
+			if(i<mMeasurementList.size()-1)where += ",";
+		}
+		where += ")";
+		
+		queryApp(where);
+		if(mAppList.size()==0)return false;
 		//등록된 디바이스 리스트 확인
 		queryDevice("DeviceId="+mAppList.get(0).DeviceId);
-		if(mDeviceList.size()==0)return true;
+		if(mDeviceList.size()==0)return false;
 		//디바이스 이름 비교
-		if(mDeviceList.get(0).Device.contentEquals(Build.MODEL))return true;
+		for(int i=0;i<mDeviceList.size();i++){
+			if(!mDeviceList.get(i).Device.contentEquals(MacAddress))return true;
+		}
 		return false;
 	}
 	
-	public boolean checkInDevice(Class<?> obj){
+	public boolean checkOutDevice(Function mFunction,String MacAddress){
+		mDeviceList.clear();
+		//등록된 앱 리스트 확인
+		queryApp("AppId="+mFunction.AppId);
+		if(mAppList.size()==0)return false;
+		//등록된 디바이스 리스트 확인
+		queryDevice("DeviceId="+mAppList.get(0).DeviceId);
+		if(mDeviceList.size()==0)return false;
+		//디바이스 이름 비교
+		for(int i=0;i<mDeviceList.size();i++){
+			if(!mDeviceList.get(i).MacAddress.contentEquals(MacAddress))return true;
+		}
+		return false;
+	}
+	
+	public boolean checkOutDevice(Class<?> obj,String MacAddress){
 		mDeviceList.clear();
 		mAppList.clear();
 		mMeasurementList.clear();
@@ -224,17 +234,9 @@ public class BlinkDatabaseManager extends SqliteManager{
 		for(int i=0;i<mFields.length;i++){
 			mMeasurementList.addAll(obtainMeasurementList(mFields[i],CONTAIN_DEFAULT));
 		}
-		
-		if(mMeasurementList.size()==0)return true;
-		queryApp("AppId="+mMeasurementList.get(0).AppId);
-		if(mAppList.size()==0)return true;
-		//등록된 디바이스 리스트 확인
-		queryDevice("DeviceId="+mAppList.get(0).DeviceId);
-		if(mDeviceList.size()==0)return true;
-		//디바이스 이름 비교
-		if(mDeviceList.get(0).Device.contentEquals(Build.MODEL))return true;
-		return false;
+		return checkOutDevice(mMeasurementList,MacAddress);
 	}
+	
 	/**
 	 * getter , setter methods
 	 */

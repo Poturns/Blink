@@ -23,7 +23,6 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -35,9 +34,9 @@ import com.google.gson.GsonBuilder;
  * @since 2014.08.19
  * 
  */
-public abstract class BlinkServiceInteraction implements ServiceConnection,
-		IBlinkEventBroadcast {
+public abstract class BlinkServiceInteraction implements ServiceConnection, IBlinkEventBroadcast {
 	private final String tag = "BlinkServiceInteraction";
+	
 	private final Context CONTEXT;
 	private final EventBroadcastReceiver EVENT_BR;
 	private final IntentFilter FILTER;
@@ -481,20 +480,20 @@ public abstract class BlinkServiceInteraction implements ServiceConnection,
 			return this;
 		}
 
-		public boolean checkInDevice(List<Measurement> mMeasurementList) {
-			// TODO Auto-generated method stub
-			return mBlinkDatabaseManager.checkInDevice(mMeasurementList);
-		}
-
-		public boolean checkInDevice(Function mFunction) {
-			// TODO Auto-generated method stub
-			return mBlinkDatabaseManager.checkInDevice(mFunction);
-		}
-
-		public boolean checkInDevice(Class<?> obj) {
-			// TODO Auto-generated method stub
-			return mBlinkDatabaseManager.checkInDevice(obj);
-		}
+//		public boolean checkInDevice(List<Measurement> mMeasurementList) {
+//			// TODO Auto-generated method stub
+//			return mBlinkDatabaseManager.checkInDevice(mMeasurementList);
+//		}
+//
+//		public boolean checkInDevice(Function mFunction) {
+//			// TODO Auto-generated method stub
+//			return mBlinkDatabaseManager.checkInDevice(mFunction);
+//		}
+//
+//		public boolean checkInDevice(Class<?> obj) {
+//			// TODO Auto-generated method stub
+//			return mBlinkDatabaseManager.checkInDevice(obj);
+//		}
 
 		public List<Device> getDeviceList() {
 			// TODO Auto-generated method stub
@@ -573,20 +572,16 @@ public abstract class BlinkServiceInteraction implements ServiceConnection,
 		 * @param RequestCode
 		 * @return
 		 */
-		public void obtainMeasurementData(Class<?> obj, Type type,
-				int RequestCode) {
+		public void obtainMeasurementData(Class<?> obj, int RequestCode) {
 			obtainMeasurementData(obj, null, null,
-					SqliteManager.CONTAIN_DEFAULT, type, RequestCode);
+					SqliteManager.CONTAIN_DEFAULT, RequestCode);
 		}
 
-		public void obtainMeasurementData(Class<?> obj, int ContainType,
-				Type type, int RequestCode) {
-			obtainMeasurementData(obj, null, null, ContainType, type,
-					RequestCode);
+		public void obtainMeasurementData(Class<?> obj, int ContainType, int RequestCode) {
+			obtainMeasurementData(obj, null, null, ContainType, RequestCode);
 		}
 
-		public void obtainMeasurementData(Class<?> obj, String DateTimeFrom,
-				String DateTimeTo, int ContainType, Type type, int RequestCode) {
+		public void obtainMeasurementData(Class<?> obj, String DateTimeFrom, String DateTimeTo, int ContainType, int RequestCode) {
 			String ClassName = obj.getName();
 			try {
 				mInternalOperationSupport.obtainMeasurementData(ClassName,
