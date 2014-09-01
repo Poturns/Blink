@@ -55,6 +55,11 @@ class SqliteManagerExtended extends SqliteManager {
 				Device.class);
 	}
 
+	/** {@link Measurement}로 부터 App 객체를 얻어온다. */
+	public App obtainAppByMeasurement(Measurement measurement) {
+		return null;
+	}
+
 	/** DB에서 모든 App의 List를 얻는다. */
 	public List<App> obtainAppList() {
 		return obtainDataListFromCursor(

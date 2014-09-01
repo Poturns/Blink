@@ -72,6 +72,7 @@ final class ConnectionFragment extends Fragment {
 	/** UI를 표시하는 ChildFragment */
 	IConnectionCallback mCurrentChildFragmentInterface;
 
+	/** ConnectionFragment의 UI와 작업의 Callback을 처리하는 interface */
 	interface IConnectionCallback extends IBlinkEventBroadcast {
 		/** 바뀌어질 Fragment를 얻는다. */
 		BaseConnectionFragment getChangedFragment();
