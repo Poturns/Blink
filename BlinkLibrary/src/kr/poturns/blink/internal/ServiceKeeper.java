@@ -308,6 +308,7 @@ public class ServiceKeeper {
 	 * @param msg
 	 */
 	public void sendMessageToDevice(BlinkDevice targetDevice, Object msg) {
+		//toDevice가 있어야함 왜냐면 targetMessage의 targetMac의 BlinkDevice 정보를 가져오면 Main으로 전송을 못함.
 		if (targetDevice.isLESupported()) {
 			
 			
