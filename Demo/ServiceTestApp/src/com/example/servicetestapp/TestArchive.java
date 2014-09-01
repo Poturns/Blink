@@ -13,7 +13,7 @@ import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
-import kr.poturns.blink.db.archive.SystemDatabaseObject;
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.BlinkSupportBinder;
 import kr.poturns.blink.schema.Body;
@@ -30,7 +30,7 @@ public class TestArchive {
 	private final String tag = "TestArchive";
 	
 	JsonManager mJsonManager;
-	SystemDatabaseObject mSystemDatabaseObject;
+	BlinkAppInfo mBlinkAppInfo;
 	BlinkServiceInteraction mBlinkServiceInteraction = null;
 	Context context;
 	public TestArchive(BlinkServiceInteraction mBlinkServiceInteraction,Context context){
@@ -56,57 +56,57 @@ public class TestArchive {
 	private void exampleSyncDatabase() {
 	    // TODO Auto-generated method stub
 		SyncDatabaseManager mSyncDatabaseManager = new SyncDatabaseManager(context);
-		ArrayList<SystemDatabaseObject> SystemDatabaseObjctList = new ArrayList<SystemDatabaseObject>();
-		SystemDatabaseObject mSystemDatabaseObject;
+		ArrayList<BlinkAppInfo> SystemDatabaseObjctList = new ArrayList<BlinkAppInfo>();
+		BlinkAppInfo mBlinkAppInfo;
 		
 		SystemDatabaseObjctList.clear();
 		int testMeasurementId = 1;
 		//wearable 테스트케이스 생성
 		for(int i=1;i<31;i++){
-			mSystemDatabaseObject = new SystemDatabaseObject();
-			mSystemDatabaseObject.mDevice.DeviceId = i;
-			mSystemDatabaseObject.mDevice.Device = "MJ-G2";
-			mSystemDatabaseObject.mDevice.MacAddress = "58:A2:B5:54:2D:A9"+i;
+			mBlinkAppInfo = new BlinkAppInfo();
+			mBlinkAppInfo.mDevice.DeviceId = i;
+			mBlinkAppInfo.mDevice.Device = "MJ-G2";
+			mBlinkAppInfo.mDevice.MacAddress = "58:A2:B5:54:2D:A9"+i;
 			
-			mSystemDatabaseObject.mApp.PackageName = "TestPackageName"+i;
-			mSystemDatabaseObject.mApp.AppName = "TestAppName"+i;
-			mSystemDatabaseObject.mApp.AppId = i;
-			mSystemDatabaseObject.mApp.DeviceId = i;
+			mBlinkAppInfo.mApp.PackageName = "TestPackageName"+i;
+			mBlinkAppInfo.mApp.AppName = "TestAppName"+i;
+			mBlinkAppInfo.mApp.AppId = i;
+			mBlinkAppInfo.mApp.DeviceId = i;
 			
-			mSystemDatabaseObject.addFunction("TestFunction"+i, "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY);
-			mSystemDatabaseObject.addFunction("TestFunction"+i, "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_SERIVCE);
-			mSystemDatabaseObject.addFunction("TestFunction"+i, "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_BROADCAST);
-			for(int j=0;j<mSystemDatabaseObject.mFunctionList.size();j++){
-				mSystemDatabaseObject.mFunctionList.get(j).AppId = i;
+			mBlinkAppInfo.addFunction("TestFunction"+i, "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY);
+			mBlinkAppInfo.addFunction("TestFunction"+i, "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_SERIVCE);
+			mBlinkAppInfo.addFunction("TestFunction"+i, "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_BROADCAST);
+			for(int j=0;j<mBlinkAppInfo.mFunctionList.size();j++){
+				mBlinkAppInfo.mFunctionList.get(j).AppId = i;
 			}
-			mSystemDatabaseObject.addMeasurement(Eye.class);
-			mSystemDatabaseObject.addMeasurement(Body.class);
-			mSystemDatabaseObject.addMeasurement(Heart.class);
-			for(int j=0;j<mSystemDatabaseObject.mMeasurementList.size();j++){
-				mSystemDatabaseObject.mMeasurementList.get(j).AppId = i;
-				mSystemDatabaseObject.mMeasurementList.get(j).MeasurementId = testMeasurementId++;
+			mBlinkAppInfo.addMeasurement(Eye.class);
+			mBlinkAppInfo.addMeasurement(Body.class);
+			mBlinkAppInfo.addMeasurement(Heart.class);
+			for(int j=0;j<mBlinkAppInfo.mMeasurementList.size();j++){
+				mBlinkAppInfo.mMeasurementList.get(j).AppId = i;
+				mBlinkAppInfo.mMeasurementList.get(j).MeasurementId = testMeasurementId++;
 			}
 			
-			SystemDatabaseObjctList.add(mSystemDatabaseObject);
+			SystemDatabaseObjctList.add(mBlinkAppInfo);
 		}
 		mSyncDatabaseManager.wearable.syncSystemDatabase(SystemDatabaseObjctList);
 		
 //		SystemDatabaseObjctList.clear();
 //		//main 테스트케이스 생성
 //		for(int i=1;i<31;i++){
-//			mSystemDatabaseObject = new SystemDatabaseObject();
-//			mSystemDatabaseObject.mDevice.DeviceId = i;
-//			mSystemDatabaseObject.mDevice.Device = "MJ-G2";
-//			mSystemDatabaseObject.mDevice.MacAddress = "58:A2:B5:54:2D:A9";
-//			mSystemDatabaseObject.mApp.PackageName = "TestPackageName"+i;
-//			mSystemDatabaseObject.mApp.AppName = "TestAppName"+i;
-//			mSystemDatabaseObject.addFunction("TestFunction"+i, "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY);
-//			mSystemDatabaseObject.addFunction("TestFunction"+i, "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_SERIVCE);
-//			mSystemDatabaseObject.addFunction("TestFunction"+i, "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_BROADCAST);
-//			mSystemDatabaseObject.addMeasurement(Eye.class);
-//			mSystemDatabaseObject.addMeasurement(Body.class);
-//			mSystemDatabaseObject.addMeasurement(Heart.class);
-//			SystemDatabaseObjctList.add(mSystemDatabaseObject);
+//			mBlinkAppInfo = new BlinkAppInfo();
+//			mBlinkAppInfo.mDevice.DeviceId = i;
+//			mBlinkAppInfo.mDevice.Device = "MJ-G2";
+//			mBlinkAppInfo.mDevice.MacAddress = "58:A2:B5:54:2D:A9";
+//			mBlinkAppInfo.mApp.PackageName = "TestPackageName"+i;
+//			mBlinkAppInfo.mApp.AppName = "TestAppName"+i;
+//			mBlinkAppInfo.addFunction("TestFunction"+i, "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY);
+//			mBlinkAppInfo.addFunction("TestFunction"+i, "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_SERIVCE);
+//			mBlinkAppInfo.addFunction("TestFunction"+i, "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_BROADCAST);
+//			mBlinkAppInfo.addMeasurement(Eye.class);
+//			mBlinkAppInfo.addMeasurement(Body.class);
+//			mBlinkAppInfo.addMeasurement(Heart.class);
+//			SystemDatabaseObjctList.add(mBlinkAppInfo);
 //		}
 //		mSyncDatabaseManager.main.syncSystemDatabase(SystemDatabaseObjctList);
     }
@@ -163,10 +163,10 @@ public class TestArchive {
 	private void exampleStartFuntion() {
 		// TODO Auto-generated method stub
 		Log.i(tag, "exampleStartFuntion");
-		mSystemDatabaseObject = mBlinkServiceInteraction.local.obtainSystemDatabase();
+		mBlinkAppInfo = mBlinkServiceInteraction.local.obtainSystemDatabase();
 		ArrayList<Function> mFunctionList;
-		if(mSystemDatabaseObject.isExist){
-			mFunctionList = mSystemDatabaseObject.mFunctionList;
+		if(mBlinkAppInfo.isExist){
+			mFunctionList = mBlinkAppInfo.mFunctionList;
 			Log.i(tag, "mFunctionList size : "+mFunctionList.size());
 			for(int i=0;i<mFunctionList.size();i++){
 				Log.i(tag, mFunctionList.get(i).toString());
@@ -178,52 +178,52 @@ public class TestArchive {
 	 * SystemDatabase를 등록하는 예제
 	 * 먼저 obtainSystemDatabase()를 통해 SystemDatabase를 Device 이름과 App 패키지명으로
 	 * 기존에 등록되어있는 것이 있는지 확인한다.
-	 * mSystemDatabaseObject.isExist 통해 등록되어있지 않으면 기능과 측정값을 등록하고
+	 * mBlinkAppInfo.isExist 통해 등록되어있지 않으면 기능과 측정값을 등록하고
 	 * mBlinkServiceManager.registerSystemDatabase() 호출을 통해 등록한다.
 	 * 측정값 등록은 클래스를 넣으면 자동으로 필드에 맞추어 등록을 해준다.
 	 */
 	public void exampleRegisterSystemDatabase(){
 		Log.i(tag, "exampleRegisterSystemDatabase");
 		//SystemDatabase 객체 얻기, 기존에 등록되어있으면 등록되어있는 값을 넣어준다.
-		mSystemDatabaseObject = mBlinkServiceInteraction.local.obtainSystemDatabase();
-		if(!mSystemDatabaseObject.isExist){
+		mBlinkAppInfo = mBlinkServiceInteraction.local.obtainSystemDatabase();
+		if(!mBlinkAppInfo.isExist){
 			//등록되어있지 않으면 추가적으로 등록할 함수, 측정값을 추가하고 등록한다.
-			mSystemDatabaseObject.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY);
-			mSystemDatabaseObject.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_SERIVCE);
-			mSystemDatabaseObject.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_BROADCAST);
-			mSystemDatabaseObject.addMeasurement(Eye.class);
-			mSystemDatabaseObject.addMeasurement(Body.class);
-			mSystemDatabaseObject.addMeasurement(Heart.class);
+			mBlinkAppInfo.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY);
+			mBlinkAppInfo.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_SERIVCE);
+			mBlinkAppInfo.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_BROADCAST);
+			mBlinkAppInfo.addMeasurement(Eye.class);
+			mBlinkAppInfo.addMeasurement(Body.class);
+			mBlinkAppInfo.addMeasurement(Heart.class);
 			//sqlite에 등록하는 함수
-			mBlinkServiceInteraction.registerSystemDatabase(mSystemDatabaseObject);
+			mBlinkServiceInteraction.registerSystemDatabase(mBlinkAppInfo);
 		}
 	}
 	
 	public void exmampleRegisterExternalSystemDatabase(){
 		//외부 디바이스 임시 등록
-		mSystemDatabaseObject = mBlinkServiceInteraction.local.obtainSystemDatabase();
-		mSystemDatabaseObject.mDevice.Device = "MJ-G2";
-		mSystemDatabaseObject.mDevice.MacAddress = "58:A2:B5:54:2D:A9";
-		mSystemDatabaseObject.mApp.PackageName = "TextPackageName";
-		mSystemDatabaseObject.mApp.AppName = "TextAppName";
-		mSystemDatabaseObject.mFunctionList.clear();
-		mSystemDatabaseObject.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY);
-		mSystemDatabaseObject.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_SERIVCE);
-		mSystemDatabaseObject.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_BROADCAST);
-		mSystemDatabaseObject.mMeasurementList.clear();
-		mSystemDatabaseObject.addMeasurement(Eye.class);
-		mSystemDatabaseObject.addMeasurement(Body.class);
-		mSystemDatabaseObject.addMeasurement(Heart.class);
-		mBlinkServiceInteraction.registerExternalSystemDatabase(mSystemDatabaseObject);
+		mBlinkAppInfo = mBlinkServiceInteraction.local.obtainSystemDatabase();
+		mBlinkAppInfo.mDevice.Device = "MJ-G2";
+		mBlinkAppInfo.mDevice.MacAddress = "58:A2:B5:54:2D:A9";
+		mBlinkAppInfo.mApp.PackageName = "TextPackageName";
+		mBlinkAppInfo.mApp.AppName = "TextAppName";
+		mBlinkAppInfo.mFunctionList.clear();
+		mBlinkAppInfo.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY);
+		mBlinkAppInfo.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_SERIVCE);
+		mBlinkAppInfo.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_BROADCAST);
+		mBlinkAppInfo.mMeasurementList.clear();
+		mBlinkAppInfo.addMeasurement(Eye.class);
+		mBlinkAppInfo.addMeasurement(Body.class);
+		mBlinkAppInfo.addMeasurement(Heart.class);
+		mBlinkServiceInteraction.registerExternalSystemDatabase(mBlinkAppInfo);
 	}
 	
 	/**
-	 * 등록되어있는 mSystemDatabaseObject를 얻어오는 예제
+	 * 등록되어있는 mBlinkAppInfo를 얻어오는 예제
 	 */
 	public void exampleObtainSystemDatabase(){
 		Log.i(tag, "exampleObtainSystemDatabase");
-		mSystemDatabaseObject = mBlinkServiceInteraction.local.obtainSystemDatabase();
-		if(mSystemDatabaseObject.isExist){
+		mBlinkAppInfo = mBlinkServiceInteraction.local.obtainSystemDatabase();
+		if(mBlinkAppInfo.isExist){
 			Log.i(tag, "등록된 디바이스와 어플리케이션이 있으면");
 		}else {
 			Log.i(tag, "등록된 디바이스와 어플리케이션이 없으면");
@@ -231,26 +231,26 @@ public class TestArchive {
 	}
 	
 	/**
-	 * 등록되어있는 모든 mSystemDatabaseObject를 얻어오는 예제
+	 * 등록되어있는 모든 mBlinkAppInfo를 얻어오는 예제
 	 */
 	public void exampleObtainSystemDatabaseAll(){
 		Log.i(tag, "exampleObtainSystemDatabaseAll");
-		List<SystemDatabaseObject> mSystemDatabaseObjectList = mBlinkServiceInteraction.local.obtainSystemDatabaseAll();
-		SystemDatabaseObject systemDatabaseObject = null;
-		for(int i=0;i<mSystemDatabaseObjectList.size();i++){
-			systemDatabaseObject = mSystemDatabaseObjectList.get(i);
-			Log.i(tag, i+" sdo :"+systemDatabaseObject.toString());
+		List<BlinkAppInfo> mBlinkAppInfoList = mBlinkServiceInteraction.local.obtainSystemDatabaseAll();
+		BlinkAppInfo BlinkAppInfo = null;
+		for(int i=0;i<mBlinkAppInfoList.size();i++){
+			BlinkAppInfo = mBlinkAppInfoList.get(i);
+			Log.i(tag, i+" sdo :"+BlinkAppInfo.toString());
 		}
 	}
 	
 	/**
-	 * mSystemDatabaseObject의 ID로 얻어오는 예제
+	 * mBlinkAppInfo의 ID로 얻어오는 예제
 	 */
 	public void exampleObtainMeasurementDataById(){
 		Log.i(tag, "exampleObtainMeasurementDataById");
-		List<SystemDatabaseObject> mSystemDatabaseObjectList = mBlinkServiceInteraction.local.obtainSystemDatabaseAll();
-		for(int i=0;i<mSystemDatabaseObjectList.size();i++){
-			List<MeasurementData> mMeasurementDataList = mBlinkServiceInteraction.local.obtainMeasurementData(mSystemDatabaseObjectList.get(i).mMeasurementList, null, null);
+		List<BlinkAppInfo> mBlinkAppInfoList = mBlinkServiceInteraction.local.obtainSystemDatabaseAll();
+		for(int i=0;i<mBlinkAppInfoList.size();i++){
+			List<MeasurementData> mMeasurementDataList = mBlinkServiceInteraction.local.obtainMeasurementData(mBlinkAppInfoList.get(i).mMeasurementList, null, null);
 			for(int j=0;j<mMeasurementDataList.size();j++){
 				Log.i(tag, "MeasurementData "+j+" \n"+mMeasurementDataList.get(j).toString());
 			}
@@ -261,16 +261,16 @@ public class TestArchive {
 	 * 측정값을 저장하는 예제
 	 * 이 예제에서는 Eye, Body, Heart 세 개의 클래스에서
 	 * 랜덤하게 100개씩 생성하여 등록하는 예제이다.
-	 * mBlinkServiceManager.registerMeasurementData(mSystemDatabaseObject,mEye) 에서
-	 * mSystemDatabaseObject와 해당 객체를 매개변수로 전달하면 등록을 해준다.
+	 * mBlinkServiceManager.registerMeasurementData(mBlinkAppInfo,mEye) 에서
+	 * mBlinkAppInfo와 해당 객체를 매개변수로 전달하면 등록을 해준다.
 	 */
 	public void exampleRegisterMeasurementDatabase(){
 		Log.i(tag, "exampleRegisterMeasurementDatabase");
-//		mSystemDatabaseObject = mBlinkServiceInteraction.local.obtainSystemDatabase();
-		List<SystemDatabaseObject> mSystemDatabaseObjectList = mBlinkServiceInteraction.local.obtainSystemDatabaseAll();
-		for(int j=0;j<mSystemDatabaseObjectList.size();j++){
-			mSystemDatabaseObject = mSystemDatabaseObjectList.get(j);
-			if(mSystemDatabaseObject.isExist){
+//		mBlinkAppInfo = mBlinkServiceInteraction.local.obtainSystemDatabase();
+		List<BlinkAppInfo> mBlinkAppInfoList = mBlinkServiceInteraction.local.obtainSystemDatabaseAll();
+		for(int j=0;j<mBlinkAppInfoList.size();j++){
+			mBlinkAppInfo = mBlinkAppInfoList.get(j);
+			if(mBlinkAppInfo.isExist){
 				try {
 					Eye mEye;
 					Body mBody;
@@ -280,19 +280,19 @@ public class TestArchive {
 						mEye = new Eye();
 						mEye.left_sight = Math.round(random.nextDouble()*10d)/10d;
 						mEye.right_sight = Math.round(random.nextDouble()*10d)/10d;
-						mBlinkServiceInteraction.local.registerMeasurementData(mSystemDatabaseObject,mEye);
+						mBlinkServiceInteraction.local.registerMeasurementData(mBlinkAppInfo,mEye);
 					}
 					for(int i=0;i<10;i++){
 						mBody = new Body();
 						mBody.height = Math.round(random.nextFloat()*10f)/10f+random.nextInt(50)+140;
 						mBody.weight = Math.round(random.nextFloat()*10f)/10f+random.nextInt(50)+40;
-						mBlinkServiceInteraction.local.registerMeasurementData(mSystemDatabaseObject,mBody);
+						mBlinkServiceInteraction.local.registerMeasurementData(mBlinkAppInfo,mBody);
 					}
 					
 					for(int i=0;i<10;i++){
 						mHeart = new Heart();
 						mHeart.beatrate = random.nextInt(20)+60;
-						mBlinkServiceInteraction.local.registerMeasurementData(mSystemDatabaseObject,mHeart);
+						mBlinkServiceInteraction.local.registerMeasurementData(mBlinkAppInfo,mHeart);
 					}
 				
 					
