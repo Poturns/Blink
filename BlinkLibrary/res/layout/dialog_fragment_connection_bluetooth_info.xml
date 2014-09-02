@@ -16,7 +16,7 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="20dp"
             android:layout_marginTop="30dp"
-            android:text="MacAddress : " />
+            android:text="@string/blink_state_macaddress" />
 
         <TextView
             android:id="@+id/dialog_fragment_connection_title_device_ego"
@@ -25,7 +25,7 @@
             android:layout_alignLeft="@+id/dialog_fragment_connection_title_macaddress"
             android:layout_below="@+id/dialog_fragment_connection_title_macaddress"
             android:layout_marginTop="30dp"
-            android:text="디바이스 타입 : " />
+            android:text="@string/blink_state_type" />
 
         <TextView
             android:id="@+id/dialog_fragment_connection_title_blink_support"
@@ -34,25 +34,16 @@
             android:layout_alignLeft="@+id/dialog_fragment_connection_title_device_ego"
             android:layout_below="@+id/dialog_fragment_connection_title_device_ego"
             android:layout_marginTop="30dp"
-            android:text="BlinkLibrary 지원 : " />
-
-        <TextView
-            android:id="@+id/dialog_fragment_connection_title_discoverd"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/dialog_fragment_connection_title_blink_support"
-            android:layout_below="@+id/dialog_fragment_connection_title_blink_support"
-            android:layout_marginTop="30dp"
-            android:text="발견 여부 :" />
+            android:text="@string/blink_state_support_library" />
 
         <TextView
             android:id="@+id/dialog_fragment_connection_title_connection"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/dialog_fragment_connection_title_discoverd"
-            android:layout_below="@+id/dialog_fragment_connection_title_discoverd"
+            android:layout_alignLeft="@+id/dialog_fragment_connection_title_blink_support"
+            android:layout_below="@+id/dialog_fragment_connection_title_blink_support"
             android:layout_marginTop="30dp"
-            android:text="연결 상태 : " />
+            android:text="@string/blink_state_connection" />
 
         <TextView
             android:id="@+id/dialog_fragment_connection_title_autoconnect"
@@ -61,7 +52,7 @@
             android:layout_alignLeft="@+id/dialog_fragment_connection_title_connection"
             android:layout_below="@+id/dialog_fragment_connection_title_connection"
             android:layout_marginTop="30dp"
-            android:text="자동 연결 : " />
+            android:text="@string/blink_state_auto_connect" />
 
         <TextView
             android:id="@+id/dialog_fragment_connection_title_ble"
@@ -69,8 +60,9 @@
             android:layout_height="wrap_content"
             android:layout_alignLeft="@+id/dialog_fragment_connection_title_autoconnect"
             android:layout_below="@+id/dialog_fragment_connection_title_autoconnect"
+            android:layout_marginBottom="10dp"
             android:layout_marginTop="30dp"
-            android:text="BLE 지원 : " />
+            android:text="@string/blink_state_ble" />
 
         <TextView
             android:id="@+id/dialog_fragment_connection_macaddress"
@@ -87,40 +79,45 @@
             android:layout_alignBottom="@+id/dialog_fragment_connection_title_device_ego"
             android:layout_alignLeft="@+id/dialog_fragment_connection_macaddress" />
 
-        <TextView
+        <Switch
             android:id="@+id/dialog_fragment_connection_blink_support"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/dialog_fragment_connection_title_blink_support"
-            android:layout_alignLeft="@+id/dialog_fragment_connection_device_ego" />
+            android:layout_alignLeft="@+id/dialog_fragment_connection_device_ego"
+            android:enabled="false"
+            android:textOff="@android:string/no"
+            android:textOn="@android:string/yes" />
 
-        <TextView
-            android:id="@+id/dialog_fragment_connection_discoverd"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/dialog_fragment_connection_title_discoverd"
-            android:layout_alignLeft="@+id/dialog_fragment_connection_blink_support" />
-
-        <TextView
+        <Switch
             android:id="@+id/dialog_fragment_connection_connection"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/dialog_fragment_connection_title_connection"
-            android:layout_alignLeft="@+id/dialog_fragment_connection_discoverd" />
+            android:layout_alignLeft="@+id/dialog_fragment_connection_blink_support"
+            android:enabled="true"
+            android:textOff="@android:string/no"
+            android:textOn="@android:string/yes" />
 
-        <TextView
+        <Switch
             android:id="@+id/dialog_fragment_connection_autoconnect"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/dialog_fragment_connection_title_autoconnect"
-            android:layout_alignLeft="@+id/dialog_fragment_connection_connection" />
+            android:layout_alignLeft="@+id/dialog_fragment_connection_connection"
+            android:enabled="true"
+            android:textOff="@android:string/no"
+            android:textOn="@android:string/yes" />
 
-        <TextView
+        <Switch
             android:id="@+id/dialog_fragment_connection_ble"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/dialog_fragment_connection_title_ble"
-            android:layout_alignLeft="@+id/dialog_fragment_connection_autoconnect" />
+            android:layout_alignLeft="@+id/dialog_fragment_connection_autoconnect"
+            android:enabled="false"
+            android:textOff="@android:string/no"
+            android:textOn="@android:string/yes" />
     </RelativeLayout>
 
 </ScrollView>

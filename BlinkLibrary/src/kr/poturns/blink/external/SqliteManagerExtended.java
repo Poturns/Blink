@@ -1,8 +1,6 @@
 package kr.poturns.blink.external;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +12,6 @@ import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.internal.comm.BlinkDevice;
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -48,6 +45,22 @@ class SqliteManagerExtended extends SqliteManager {
 		return null;
 	}
 
+	/**
+	 * {@link App}을 통해 {@link Device}를 얻는다.
+	 * 
+	 * @return {@link Device}, 없으면 null
+	 */
+	public Device obtainDeviceByApp(App app) {
+		try {
+			return obtainDataListFromCursor(
+					mSQLiteDatabase.rawQuery(
+							"SELECT * FROM Device WHERE DeviceId = "
+									+ app.DeviceId, null), Device.class).get(0);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 	/** Database안의 Device의 모든 List를 얻는다. */
 	public List<Device> obtainDeviceList() {
 		return obtainDataListFromCursor(
@@ -55,9 +68,19 @@ class SqliteManagerExtended extends SqliteManager {
 				Device.class);
 	}
 
-	/** {@link Measurement}로 부터 App 객체를 얻어온다. */
+	/**
+	 * {@link Measurement}로 부터 App 객체를 얻어온다.
+	 * 
+	 * @return {@link App}, 없으면 null
+	 */
 	public App obtainAppByMeasurement(Measurement measurement) {
-		return null;
+		try {
+			return obtainDataListFromCursor(
+					mSQLiteDatabase.rawQuery("SELECT * FROM App WHERE AppId = "
+							+ measurement.AppId, null), App.class).get(0);
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	/** DB에서 모든 App의 List를 얻는다. */
@@ -88,7 +111,7 @@ class SqliteManagerExtended extends SqliteManager {
 	}
 
 	/** DB에서 주어진 App에 속하는 Measurement의 List를 얻는다. */
-	public List<Measurement> obtainMesurementList(App app) {
+	public List<Measurement> obtainMeasurementList(App app) {
 		if (app == null) {
 			return new ArrayList<Measurement>();
 		}
@@ -109,13 +132,21 @@ class SqliteManagerExtended extends SqliteManager {
 				null, null, null), MeasurementData.class);
 	}
 
-	/** DB에서 주어진 Measurement의 MeasuremenData List의 크기를 얻는다. */
+	/**
+	 * DB에서 주어진 Measurement의 MeasuremenData List의 크기를 얻는다.
+	 * 
+	 * @return MeasurementData의 개수, 없으면 -1
+	 */
 	public int obtainMeasurementDataListSize(Measurement measurement) {
-		Cursor cursor = mSQLiteDatabase.query("MeasurementData", null,
-				"MeasurementId=?",
-				new String[] { String.valueOf(measurement.MeasurementId) },
-				null, null, null);
-		int size = cursor.getCount();
+		Cursor cursor = mSQLiteDatabase.rawQuery(
+				"SELECT COUNT(*) AS count FROM MeasurementData WHERE MeasurementId = "
+						+ measurement.MeasurementId, null);
+		int size;
+		if (cursor.moveToFirst()) {
+			size = cursor.getInt(cursor.getColumnIndex("count"));
+		} else {
+			size = -1;
+		}
 		cursor.close();
 		return size;
 	}
@@ -158,6 +189,8 @@ class SqliteManagerExtended extends SqliteManager {
 					.getColumnIndex("Measurement"));
 			measurement.MeasurementId = cursor.getInt(cursor
 					.getColumnIndex("MeasurementId"));
+			// measurement.MeasurementName = cursor.getString(cursor
+			// .getColumnIndex("MeasurementName"));
 			measurement.Type = cursor.getString(cursor.getColumnIndex("Type"));
 		} else if (object instanceof Function) {
 			Function function = (Function) object;
@@ -192,46 +225,6 @@ class SqliteManagerExtended extends SqliteManager {
 		return object;
 	}
 
-	public boolean register(Object... datas) {
-		if (datas == null)
-			return false;
-		boolean result = true;
-		mSQLiteDatabase.beginTransaction();
-		for (Object obj : datas) {
-			if (obj instanceof App) {
-				App app = (App) obj;
-				ContentValues values = new ContentValues();
-				values.put("DeviceId", app.DeviceId);
-				values.put("PackageName", app.PackageName);
-				values.put("AppName", app.AppName);
-				values.put("Version", app.Version);
-				result &= mSQLiteDatabase.insert("App", null, values) == -1;
-			} else if (obj instanceof Measurement) {
-				Measurement measurement = (Measurement) obj;
-				ContentValues values = new ContentValues();
-				values.put("AppId", String.valueOf(measurement.AppId));
-				values.put("Measurement", measurement.Measurement);
-				values.put("Type", "" + measurement.Type);
-				values.put("Description", measurement.Description);
-				result &= mSQLiteDatabase.insert("Measurement", null, values) == -1;
-			} else if (obj instanceof MeasurementData) {
-
-			} else if (obj instanceof Function) {
-
-			} else if (obj instanceof Device) {
-
-			} else
-				continue;
-			if (!result)
-				break;
-		}
-		if (result) {
-			mSQLiteDatabase.setTransactionSuccessful();
-		}
-		mSQLiteDatabase.endTransaction();
-		return result;
-	}
-
 	/**
 	 * Database에서 Device와 App의 관계를 Map으로 나타낸다.
 	 */
@@ -251,7 +244,7 @@ class SqliteManagerExtended extends SqliteManager {
 		List<Measurement> measurementList = new ArrayList<Measurement>();
 
 		for (App app : appList) {
-			measurementList.addAll(obtainMesurementList(app));
+			measurementList.addAll(obtainMeasurementList(app));
 		}
 
 		mSQLiteDatabase.beginTransaction();
@@ -293,7 +286,7 @@ class SqliteManagerExtended extends SqliteManager {
 		if (app == null)
 			return false;
 
-		List<Measurement> measurementList = obtainMesurementList(app);
+		List<Measurement> measurementList = obtainMeasurementList(app);
 
 		mSQLiteDatabase.beginTransaction();
 		try {
@@ -325,24 +318,36 @@ class SqliteManagerExtended extends SqliteManager {
 	/**
 	 * 주어진 시간 이후에 변경이 감지된 {@link Measurement}의 리스트를 반환한다.
 	 * 
-	 * @param lastTime
-	 *            변경을 감지할 기준점이 될 시간
 	 * @param limit
-	 *            반환될 List의 개수의 제한, SQLite의 LIMIT cause, 0 이하의 값인 경우 제한이 없다.
+	 *            반환될 List의 개수의 제한, SQLite의 LIMIT cause, 0 이하의 값인 경우 5개 이다.
 	 */
-	public List<Measurement> obtainRecentModifiedMeasurement(Date lastTime,
-			int limit) {
-		if (lastTime == null)
-			lastTime = new Date();
-		String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-				.format(lastTime);
+	public List<Measurement> obtainRecentModifiedMeasurement(int limit) {
+		if (limit < 0)
+			limit = 5;
 		StringBuilder query = new StringBuilder();
 		query.append("SELECT * FROM Measurement WHERE MeasurementId IN ")
-				.append("( SELECT DISTINCT MeasurementId FROM MeasurementData WHERE DateTime > ? )");
-		if (limit > 0)
-			query.append(" LIMIT ").append(limit);
-		Cursor cursor = mSQLiteDatabase.rawQuery(query.toString(),
-				new String[] { time });
+				.append("( SELECT DISTINCT MeasurementId FROM MeasurementData ORDER BY DateTime DESC ");
+		query.append("LIMIT ").append(limit).append(" )");
+		Cursor cursor = mSQLiteDatabase.rawQuery(query.toString(), null);
 		return obtainDataListFromCursor(cursor, Measurement.class);
+	}
+
+	/**
+	 * 주어진 {@link Measurement}의 {@link MeasurementData}중 에서 가장 최근에 변경된 것의
+	 * DateTime을 가져온다.
+	 */
+	public String obtainMeasurementDataDateTime(Measurement measurement) {
+		Cursor cursor = mSQLiteDatabase.rawQuery(
+				"SELECT MAX(DateTime) AS DateTime FROM MeasurementData WHERE MeasurementId = "
+						+ measurement.MeasurementId, null);
+		String dateTime;
+		if (cursor.moveToNext()) {
+			dateTime = cursor.getString(cursor.getColumnIndex("DateTime"));
+		} else {
+			dateTime = null;
+		}
+		cursor.close();
+		return dateTime;
+
 	}
 }
