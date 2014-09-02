@@ -120,16 +120,16 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	}
 
 	/**
-	 * SystemDatabaseObject를 데이터베이스 등록하는 매서드
+	 * BlinkAppInfo를 데이터베이스 등록하는 매서드
 	 */
 	@Override
-	public void registerSystemDatabase(
-			BlinkAppInfo mSystemDatabaseObject)
+	public void registerBlinkApp(
+			BlinkAppInfo mBlinkAppInfo)
 			throws RemoteException {
 		// TODO Auto-generated method stub
-		Log.i(tag, "registerSystemDatabase");
-		mBlinkDatabaseManager.registerLog(mDeviceName, mPackageName, mBlinkDatabaseManager.LOG_REGISTER_SYSTEMDATABASE, "");
-		mBlinkDatabaseManager.registerSystemDatabase(mSystemDatabaseObject);
+		Log.i(tag, "registerBlinkApp");
+		mBlinkDatabaseManager.registerLog(mDeviceName, mPackageName, mBlinkDatabaseManager.LOG_REGISTER_BLINKAPP, "");
+		mBlinkDatabaseManager.registerBlinkApp(mBlinkAppInfo);
 	}
 
 	@Override

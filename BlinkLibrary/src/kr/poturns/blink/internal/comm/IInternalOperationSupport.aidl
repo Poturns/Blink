@@ -105,7 +105,7 @@ interface IInternalOperationSupport {
 	void setRequestPolicy(int requestPolicy);
 	void registerApplicationInfo(String PackageName,String AppName);
 	BlinkDevice getBlinkDevice();
-	void registerSystemDatabase(inout BlinkAppInfo mBlinkAppInfo);
+	void registerBlinkApp(inout BlinkAppInfo mBlinkAppInfo);
 	void obtainMeasurementData(String ClassName,String DateTimeFrom,String DateTimeTo,int ContainType,int requestCode);
 	void obtainMeasurementDataById(inout List<Measurement> mMeasurementList,String DateTimeFrom,String DateTimeTo,int requestCode);
 	void startFunction(inout Function function,int requestCode);

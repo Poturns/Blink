@@ -4,6 +4,7 @@ import java.util.List;
 
 import kr.poturns.blink.R;
 import kr.poturns.blink.db.BlinkDatabaseManager;
+import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.archive.DatabaseMessage;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
@@ -12,7 +13,11 @@ import kr.poturns.blink.internal.comm.BlinkSupportBinder;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.database.ContentObserver;
+import android.net.Uri;
+import android.os.Handler;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -89,6 +94,8 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 										.build();
 		
 		startForeground(NOTIFICATION_ID, mBlinkNotification);
+		getContentResolver().registerContentObserver(SqliteManager.URI_OBSERVER_BLINKAPP, false, mContentObserver);
+		getContentResolver().registerContentObserver(SqliteManager.URI_OBSERVER_MEASUREMENTDATA, false, mContentObserver);
 	}
 	
 	/**
@@ -125,4 +132,10 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 		else if(function.Type==Function.TYPE_BROADCAST)
 			sendBroadcast(new Intent(function.Action));
 	}
+	
+	private ContentObserver mContentObserver = new ContentObserver(new Handler()){
+		public void onChange(boolean selfChange, Uri uri) {
+			Log.i(NAME, "Uri : "+uri);
+		};
+	};
 }

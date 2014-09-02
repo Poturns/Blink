@@ -26,6 +26,7 @@ public class BlinkDatabase {
 				+ "'DeviceId' INTEGER NOT NULL,"
 				+ "'PackageName' TEXT NOT NULL,"
 				+ "'AppName' TEXT NOT NULL,"
+				+ "'AppIcon' BLOB,"
 				+ "'Version' INTEGER NOT NULL DEFAULT (1),"
 				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime')),"
 				+ "UNIQUE ('DeviceId','PackageName'),"
@@ -37,6 +38,7 @@ public class BlinkDatabase {
 		sql = "create table 'Measurement' ("
 				+ "'AppId' INTEGER NOT NULL,"
 				+ "'MeasurementId' INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ "'MeasurementName' TEXT NOT NULL,"
 				+ "'Measurement' TEXT NOT NULL," + "'Type' TEXT NOT NULL,"
 				+ "'Description' TEXT NOT NULL,"
 				+ "UNIQUE ('AppId','Measurement'),"
@@ -61,9 +63,11 @@ public class BlinkDatabase {
 		
 		sql = "create table 'MeasurementData' ("
 				+ "'MeasurementId' INTEGER NOT NULL,"
+				+ "'MeasurementDataId' INTEGER NOT NULL,"
 				+ "'GroupId' INTEGER,"
 				+ "'Data' TEXT NOT NULL,"
 				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime')),"
+				+ "PRIMARY KEY ('MeasurementId','MeasurementDataId'),"
 				+ "FOREIGN KEY('MeasurementId') REFERENCES Measurement('MeasurementId')"
 				+ ");";
 		db.execSQL(sql);

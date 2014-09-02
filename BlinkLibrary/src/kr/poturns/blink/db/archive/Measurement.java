@@ -9,6 +9,7 @@ public class Measurement implements IDatabaseObject, Parcelable{
 	
 	public int AppId;
 	public int MeasurementId;
+	public String MeasurementName;
 	public String Measurement;
 	public String Type;
 	public String Description;
@@ -17,7 +18,8 @@ public class Measurement implements IDatabaseObject, Parcelable{
 		this.AppId = -1;
 		this.Description = "";
 	}
-	public Measurement(String Measurement,String Type,String Description){
+	public Measurement(String MeasurementName,String Measurement,String Type,String Description){
+		this.Measurement = MeasurementName;
 		this.Measurement = Measurement;
 		this.Type = Type;
 		this.Description = Description;

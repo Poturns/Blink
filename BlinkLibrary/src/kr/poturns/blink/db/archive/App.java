@@ -11,6 +11,7 @@ public class App implements IDatabaseObject,Parcelable{
 	public int DeviceId;
 	public String PackageName;
 	public String AppName;
+	public byte[] AppIcon;
 	public int Version;
 	public String DateTime;
 	
@@ -19,6 +20,7 @@ public class App implements IDatabaseObject,Parcelable{
 		DeviceId = -1;
 		PackageName = "";
 		AppName = "";
+		AppIcon = null;
 		Version = -1;
 	}
 	
@@ -82,6 +84,7 @@ public class App implements IDatabaseObject,Parcelable{
 		this.DeviceId = mApp.DeviceId;
 		this.PackageName = mApp.PackageName;
 		this.AppName = mApp.AppName;
+		this.AppIcon = mApp.AppIcon;
 		this.Version = mApp.Version;
 		this.DateTime = mApp.DateTime;
 	}

@@ -33,8 +33,8 @@ public class BlinkAppInfo implements Parcelable {
 	public void addFunction(String Function,String Description,String Action,int Type){
 		mFunctionList.add(new Function(Function,Description, Action, Type));
 	}
-	public void addMeasurement(String Measurement,String Type,String Description){
-		mMeasurementList.add(new Measurement(Measurement,Type,Description));
+	public void addMeasurement(String MeasurementName,String Measurement,String Type,String Description){
+		mMeasurementList.add(new Measurement(MeasurementName,Measurement,Type,Description));
 	}
 	
 	public MeasurementData obtainMeasurementData(String Measurement){
@@ -51,7 +51,7 @@ public class BlinkAppInfo implements Parcelable {
 		Field[] mFields = obj.getFields();
 		for(int i=0;i<mFields.length;i++){
 			if(mFields[i].getName().contentEquals("DateTime"))continue;
-			Measurement mMeasurement = new Measurement(ClassUtil.obtainFieldSchema(mFields[i]),mFields[i].getType().getName(),"");
+			Measurement mMeasurement = new Measurement(obj.getName(),ClassUtil.obtainFieldSchema(mFields[i]),mFields[i].getType().getName(),"");
 			mMeasurementList.add(mMeasurement);
 		}
 	}
