@@ -1,6 +1,5 @@
 package kr.poturns.blink.db.archive;
 
-import kr.poturns.blink.internal.comm.BlinkMessage;
 
 
 public class DatabaseMessage {

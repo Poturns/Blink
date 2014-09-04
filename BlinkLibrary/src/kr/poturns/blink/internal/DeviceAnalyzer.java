@@ -35,7 +35,7 @@ public class DeviceAnalyzer {
 	public static final int IDENTITY_POINTLINE_MAIN = 1024 * 1024 * 16;
 	public static final int IDENTITY_POINTLINE_PROXY = 1024 * 1024 * 8;
 	private static final int IDENTITY_POINTLINE_CORE = 1024 * 1024 * 1;
-
+	
 	private static final int IDENTITY_POINTLINE_ETHERNET = 1024 * 256;
 	private static final int IDENTITY_POINTLINE_MOBILE = 1024 * 64;
 	private static final int IDENTITY_POINTLINE_WIFIDIRECT = 1024 * 2;

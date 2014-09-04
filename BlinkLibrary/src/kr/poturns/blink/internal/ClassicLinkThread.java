@@ -78,8 +78,9 @@ public class ClassicLinkThread extends Thread {
 	public void run() {
 		Log.d("ClassicLinkThread_run()", "START : " + DEVICE.toString());
 		
-		// 본 디바이스 정보를 전송한다.
-		sendMessageToDevice(BlinkDevice.HOST);
+		ServiceKeeper mKeeper = ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT);
+		mKeeper.requestSyncFromConnection(DEVICE);
+		
 		
 		// Read Operation
 		while (isRunning) {

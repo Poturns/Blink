@@ -8,10 +8,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import kr.poturns.blink.db.archive.App;
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
-import kr.poturns.blink.db.archive.BlinkAppInfo;
 import android.content.ContentValues;
 import android.content.Context;
 import android.util.Log;

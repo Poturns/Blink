@@ -1,7 +1,9 @@
 
 package kr.poturns.blink.internal;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,6 +12,7 @@ import java.util.TreeMap;
 
 import kr.poturns.blink.internal.DeviceAnalyzer.Identity;
 import kr.poturns.blink.internal.comm.BlinkDevice;
+import kr.poturns.blink.internal.comm.BlinkMessage;
 import kr.poturns.blink.internal.comm.BlinkSupportBinder;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import android.bluetooth.BluetoothGatt;
@@ -43,10 +46,7 @@ public class ServiceKeeper {
 	// *** FIELD DECLARATION *** //
 	private final BlinkLocalBaseService KEEPER_CONTEXT;
 	private final HashSet<BlinkDevice> DISCOVERY_SET;
-	
-	private final TreeMap<BlinkDevice, Identity> BLINK_NETWORK_MAP;
-	private final HashMap<BlinkDevice, ClassicLinkThread> CLASSIC_CONN_MAP;
-	private final HashMap<BlinkDevice, BluetoothGatt> LE_CONN_MAP;
+	private final TreeMap<BlinkDevice, Entry<Identity, Object>> BLINK_NETWORK_MAP;
 	
 	private final HashMap<String, BlinkSupportBinder> BINDER_MAP;
 	private final HashMap<String, RemoteCallbackList<IInternalEventCallback>> CALLBACK_MAP;
@@ -55,11 +55,11 @@ public class ServiceKeeper {
 		KEEPER_CONTEXT = context;
 		
 		DISCOVERY_SET = new HashSet<BlinkDevice>();
-		BLINK_NETWORK_MAP = new TreeMap<BlinkDevice, Identity>();
-		CLASSIC_CONN_MAP = new HashMap<BlinkDevice, ClassicLinkThread>();
-		LE_CONN_MAP = new HashMap<BlinkDevice, BluetoothGatt>();
+		BLINK_NETWORK_MAP = new TreeMap<BlinkDevice, Entry<Identity, Object>>();
 		BINDER_MAP = new HashMap<String, BlinkSupportBinder>();
 		CALLBACK_MAP = new HashMap<String,RemoteCallbackList<IInternalEventCallback>>();
+		
+		BLINK_NETWORK_MAP.put(BlinkDevice.HOST, new SimpleEntry<Identity, Object>(BlinkDevice.HOST.getIdentity(), null));
 	}
 	
 	void destroy() {
@@ -96,7 +96,7 @@ public class ServiceKeeper {
 	void addConnection(BlinkDevice device, ClassicLinkThread thread) {
 		if (device != null) {
 			device.setConnected(true);
-			CLASSIC_CONN_MAP.put(device, thread);
+			BLINK_NETWORK_MAP.put(device, new SimpleEntry<Identity, Object>(device.getIdentity(), thread));
 		}
 	}
 	
@@ -108,10 +108,22 @@ public class ServiceKeeper {
 	void addConnection(BlinkDevice device, BluetoothGatt gatt) {
 		if (device != null) {
 			device.setConnected(true);
-			LE_CONN_MAP.put(device, gatt);
+			BLINK_NETWORK_MAP.put(device, new SimpleEntry<Identity, Object>(device.getIdentity(), gatt));
 		}
 	}
 
+	/**
+	 * 
+	 * @param device
+	 */
+	void updateConnection(BlinkDevice device) {
+		if (device != null) {
+			Entry<Identity, Object> mEntry = BLINK_NETWORK_MAP.remove(device);
+			if (mEntry != null) 
+				BLINK_NETWORK_MAP.put(device, new SimpleEntry<Identity, Object>(device.getIdentity(), mEntry.getValue()));
+		}
+	}
+	
 	/**
 	 * 
 	 * @param device
@@ -121,18 +133,12 @@ public class ServiceKeeper {
 			return ;
 
 		device.setConnected(false);
-		
-		if (device.isLESupported()) {
-			BluetoothGatt mGatt = LE_CONN_MAP.remove(device);
-			if (mGatt != null) {
-				mGatt.close();
-			}
-			
-		} else {
-			ClassicLinkThread mLinkThread = CLASSIC_CONN_MAP.remove(device);
-			if (mLinkThread != null) {
-				mLinkThread.destroyThread();
-			}
+		Object mConnObj = BLINK_NETWORK_MAP.remove(device);
+		if (mConnObj != null) {
+			if (device.isLESupported())
+				((BluetoothGatt) mConnObj).close();
+			else
+				((ClassicLinkThread) mConnObj).destroyThread();
 		}
 	}
 	
@@ -145,22 +151,24 @@ public class ServiceKeeper {
 		if (device == null)
 			return null;
 		
-		if (device.isLESupported()) {
-			return LE_CONN_MAP.get(device);
-			
-		} else
-			return CLASSIC_CONN_MAP.get(device);
+		return BLINK_NETWORK_MAP.get(device).getValue();
 	}
 	
 	/**
 	 * 
 	 */
 	void clearConnection() {
-		for (BluetoothGatt gatt : LE_CONN_MAP.values())
-			gatt.close();
-		
-		for (ClassicLinkThread thread : CLASSIC_CONN_MAP.values())
-			thread.destroyThread();
+		for (Entry<Identity, Object> entry : BLINK_NETWORK_MAP.values()) {
+			Object obj = entry.getValue();
+			
+			if (obj != null) {
+				if (obj instanceof BluetoothGatt)
+					((BluetoothGatt) obj).close();
+				
+				else if (obj instanceof ClassicLinkThread) 
+					((ClassicLinkThread) obj).destroyThread();
+			}
+		}
 	}
 	
 	/**
@@ -193,6 +201,39 @@ public class ServiceKeeper {
 			return (BINDER_MAP.remove(packageName) != null);
 		return false;
 	}
+
+	/**
+	 * 
+	 * @param packageName
+	 * @param callback
+	 */
+	public void addRemoteCallbackList(String packageName, IInternalEventCallback callback){
+		if(CALLBACK_MAP.get(packageName)==null)
+			CALLBACK_MAP.put(packageName, new RemoteCallbackList<IInternalEventCallback>());
+		RemoteCallbackList<IInternalEventCallback> mRemoteCallbackList = CALLBACK_MAP.get(packageName);
+		mRemoteCallbackList.register(callback);
+	}
+	
+	/**
+	 * 
+	 * @param packageName
+	 * @param callback
+	 * @return
+	 */
+	public boolean clearRemoteCallbackList(String packageName, IInternalEventCallback callback){
+		if(CALLBACK_MAP.get(packageName)==null)return false;
+		RemoteCallbackList<IInternalEventCallback> mRemoteCallbackList = CALLBACK_MAP.get(packageName);
+		return mRemoteCallbackList.unregister(callback);
+	}
+	
+	/**
+	 * 
+	 * @param packageName
+	 * @return
+	 */
+	public RemoteCallbackList<IInternalEventCallback> obtainRemoteCallbackList(String packageName){
+		return CALLBACK_MAP.get(packageName);
+	}
 	
 	/**
 	 * 
@@ -208,15 +249,8 @@ public class ServiceKeeper {
 	 * @return
 	 */
 	public BlinkDevice[] obtainConnectedDevices() {
-		BlinkDevice[] lists = new BlinkDevice[LE_CONN_MAP.size() + CLASSIC_CONN_MAP.size()];
-		
-		int index = 0; 
-		for (Object device : LE_CONN_MAP.keySet().toArray()) 
-			lists[index++] = (BlinkDevice) device;
-		for (Object device : CLASSIC_CONN_MAP.keySet().toArray())
-			lists[index++] = (BlinkDevice) device;
-		
-		return lists;
+		BlinkDevice[] lists = new BlinkDevice[BLINK_NETWORK_MAP.size()];
+		return BLINK_NETWORK_MAP.keySet().toArray(lists);
 	}
 	
 	/**
@@ -226,8 +260,9 @@ public class ServiceKeeper {
 	 */
 	public BlinkDevice[] obtainIdentityDevices(Identity identity) {
 		ArrayList<BlinkDevice> mDeviceList = new ArrayList<BlinkDevice>();
-		for (Entry<BlinkDevice, Identity> entry : BLINK_NETWORK_MAP.entrySet()) {
-			if (entry.getValue() == identity)
+		for (Entry<BlinkDevice, Entry<Identity, Object>> entry : BLINK_NETWORK_MAP.entrySet()) {
+			Entry<Identity, Object> mValueEntry = entry.getValue();
+			if (mValueEntry != null && mValueEntry.getValue() == identity)
 				mDeviceList.add(entry.getKey());
 		}
 		
@@ -241,7 +276,6 @@ public class ServiceKeeper {
 	 * @return
 	 */
 	public BlinkDevice obtainCurrentCenterDevice() {
-		
 		return BLINK_NETWORK_MAP.lastKey();
 	}
 	
@@ -387,34 +421,49 @@ public class ServiceKeeper {
 	 */
 	public void sendMessageToDevice(BlinkDevice targetDevice, Object msg) {
 		if (targetDevice.isLESupported()) {
-			
+			BluetoothGatt gatt = (BluetoothGatt) BLINK_NETWORK_MAP.get(targetDevice).getValue();
+			if (gatt != null) {
+				
+			}
 			
 		} else {
-			ClassicLinkThread thread = CLASSIC_CONN_MAP.get(targetDevice);
+			ClassicLinkThread thread = (ClassicLinkThread) BLINK_NETWORK_MAP.get(targetDevice).getValue();
 			if (thread != null)
 				thread.sendMessageToDevice(msg);
-			
 		}
 	}
 	
 	/**
-	 * 콜백 리스트 관련 매소드
+	 * 
+	 * @param targetDevice
 	 */
-	public void addRemoteCallbackList(String packageName, IInternalEventCallback callback){
-		if(CALLBACK_MAP.get(packageName)==null)
-			CALLBACK_MAP.put(packageName, new RemoteCallbackList<IInternalEventCallback>());
-		RemoteCallbackList<IInternalEventCallback> mRemoteCallbackList = CALLBACK_MAP.get(packageName);
-		mRemoteCallbackList.register(callback);
+	void requestSyncFromConnection(BlinkDevice targetDevice) {
+		BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
+										.setSourceDevice(BlinkDevice.HOST)
+										.setDestinationDevice(targetDevice)
+										.setType(BlinkMessage.TYPE_REQUEST_IDENTITY_SYNC)
+										.setMessage("")
+										.build();
+		
+		sendMessageToDevice(targetDevice, mBlinkMessage);
 	}
 	
-	public boolean clearRemoteCallbackList(String packageName, IInternalEventCallback callback){
-		if(CALLBACK_MAP.get(packageName)==null)return false;
-		RemoteCallbackList<IInternalEventCallback> mRemoteCallbackList = CALLBACK_MAP.get(packageName);
-		return mRemoteCallbackList.unregister(callback);
-	}
-	
-	public RemoteCallbackList<IInternalEventCallback> obtainRemoteCallbackList(String packageName){
-		return CALLBACK_MAP.get(packageName);
+	/**
+	 * 
+	 * @param message
+	 */
+	void acceptSyncFromConnection(BlinkMessage message) {
+		if (message == null)
+			return;
+		
+		switch (message.getType()) {
+		case BlinkMessage.TYPE_REQUEST_IDENTITY_SYNC:
+			
+			break;
+			
+		case BlinkMessage.TYPE_RESPONSE_IDENTITY_SYNC:
+			break;
+		}
 	}
 }
 

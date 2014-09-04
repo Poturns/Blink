@@ -9,9 +9,7 @@ import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
-import kr.poturns.blink.util.ClassUtil;
 import android.content.Context;
-import android.os.Build;
 import android.util.Log;
 
 /**

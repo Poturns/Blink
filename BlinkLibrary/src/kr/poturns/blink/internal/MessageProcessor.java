@@ -7,8 +7,6 @@ import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
-import kr.poturns.blink.internal.comm.IBlinkMessagable;
-import android.util.Log;
 
 /**
  * 

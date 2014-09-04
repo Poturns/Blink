@@ -14,6 +14,8 @@ public interface IBlinkMessagable {
 	
 	static final int TYPE_REQUEST_IDENTITY_SYNC = 2009920011;
 	
+	static final int TYPE_RESPONSE_IDENTITY_SYNC = 2009920012;
+	
 	
 	
 	/**

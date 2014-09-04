@@ -3,9 +3,9 @@ package kr.poturns.blink.db;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
-import kr.poturns.blink.db.archive.BlinkAppInfo;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
