@@ -51,6 +51,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	
 	public final static Uri URI_OBSERVER_BLINKAPP = Uri.parse("blink://kr.poturns.blink/database/blinkappinfo");
 	public final static Uri URI_OBSERVER_MEASUREMENTDATA = Uri.parse("blink://kr.poturns.blink/database/measurementdata");
+	public final static Uri URI_OBSERVER_SYNC = Uri.parse("blink://kr.poturns.blink/database/blinkappinfo/sync");
 	
 	
 	private final String SQL_SELECT_DEVICE = "SELECT * FROM Device ";
@@ -502,6 +503,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 				}
 			}
 		}
+		CONTEXT.getContentResolver().notifyChange(URI_OBSERVER_MEASUREMENTDATA, null);
 	}
 	
 	/**
@@ -656,8 +658,9 @@ public class SqliteManager extends SQLiteOpenHelper {
 			where += condition.get(i);
 			if(i+1<condition.size())where += " and ";
 		}
-		
-		return mSQLiteDatabase.delete("MeasurementData", where, null);
+		int ret = mSQLiteDatabase.delete("MeasurementData", where, null);
+		CONTEXT.getContentResolver().notifyChange(URI_OBSERVER_BLINKAPP, null);
+		return ret;
 	}
 	
 	
