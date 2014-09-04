@@ -17,18 +17,27 @@ import android.util.Log;
 /**
  * 간편하게 쿼리를 날릴 수 있는 기능 추가
  * SqliteManager는 직접 raw 쿼리를 날린다.
+ * SqliteManager를 상속받아 사용한다.
  * @author Jiwon
  *
  */
 public class BlinkDatabaseManager extends SqliteManager{
 	private static final String tag = "BlinkDatabaseManager";
 	
+	/**
+	 * Database에 검색한 결과를 저장하는 변수들
+	 * 하위 항목을 검색할 때 조건으로 자동으로 추가된다.
+	 */
 	private List<Device> mDeviceList = new ArrayList<Device>();
 	private List<App> mAppList = new ArrayList<App>();
 	private List<Function> mFunctionList = new ArrayList<Function>();
 	private List<Measurement> mMeasurementList = new ArrayList<Measurement>();
 	private List<MeasurementData> mMeasurementDataList = new ArrayList<MeasurementData>();
 	
+	/**
+	 * 테스트 매소드
+	 * 현재 변수들에 저장된 데이터를 로그캣에 보여준다.
+	 */
 	public void testBlinkDatabaseManager(){
 		Log.i(tag,"Device List :");
 		for(int i=0;i<mDeviceList.size();i++){
@@ -56,10 +65,21 @@ public class BlinkDatabaseManager extends SqliteManager{
 		super(context);
 	}
 	
+	/**
+	 * Device를 검색하는 쿼리로 조건을 매개변수로 받는다. 결과는 mDeviceList에 저장된다.
+	 * @param where
+	 * @return
+	 */
 	public BlinkDatabaseManager queryDevice(String where){
 		this.mDeviceList = this.obtainDeviceList(where);
 		return this;
 	}
+	
+	/**
+	 * App을 검색하는 쿼리로 조건을 매개변수로 받는다. 기본적으로 mDeviceList에 저장되어 있는 Device 객체의 Id를 조건으로 설정한다. 결과는 mAppList에 저장된다.
+	 * @param where
+	 * @return
+	 */
 	public BlinkDatabaseManager queryApp(String where){
 		String NewWhere = "";
 		if(mDeviceList.size()>0){
@@ -83,6 +103,12 @@ public class BlinkDatabaseManager extends SqliteManager{
 		testBlinkDatabaseManager();
 		return this;
 	}
+	
+	/**
+	 * Function을 검색하는 쿼리로 조건을 매개변수로 받는다. 기본적으로 mAppList에 저장되어 있는 App 객체의 Id를 조건으로 설정한다. 결과는 mFunctionList에 저장된다.
+	 * @param where
+	 * @return
+	 */
 	public BlinkDatabaseManager queryFunction(String where){
 		String NewWhere = "";
 		if(mAppList.size()>0){
@@ -107,6 +133,12 @@ public class BlinkDatabaseManager extends SqliteManager{
 		testBlinkDatabaseManager();
 		return this;
 	}
+	
+	/**
+	 * Measurement을 검색하는 쿼리로 조건을 매개변수로 받는다. 기본적으로 mAppList에 저장되어 있는 App 객체의 Id를 조건으로 설정한다. 결과는 mMeasurementList에 저장된다
+	 * @param where
+	 * @return
+	 */
 	public BlinkDatabaseManager queryMeasurement(String where){
 		String NewWhere = "";
 		if(mAppList.size()>0){
@@ -131,6 +163,12 @@ public class BlinkDatabaseManager extends SqliteManager{
 		testBlinkDatabaseManager();
 		return this;
 	}
+	
+	/**
+	 * MeasurementData을 검색하는 쿼리로 조건을 매개변수로 받는다. 기본적으로 mMeasurementList에 저장되어 있는 Measurement 객체의 Id를 조건으로 설정한다. 결과는 mMeasurementDataList에 저장된다.
+	 * @param where
+	 * @return
+	 */
 	public BlinkDatabaseManager queryMeasurementData(String where){
 		String NewWhere = "";
 		if(mMeasurementList.size()>0){
@@ -156,19 +194,26 @@ public class BlinkDatabaseManager extends SqliteManager{
 		return this;
 	}
 	
+	/**
+	 * 매개변수로 전달된 Function을 가지고 해당 Funtion에 해당하는 Device를 찾아서 리턴한다.
+	 * @param function
+	 * @return
+	 */
 	public Device obtainDevice(Function function){
-		mDeviceList.clear();
 		//등록된 앱 리스트 확인
-		if(function==null)return null;
-		queryApp("AppId="+function.AppId);
-		if(mAppList.size()==0)return null;
-		//등록된 디바이스 리스트 확인
-		queryDevice("DeviceId="+mAppList.get(0).DeviceId);
+		App mApp = obtainApp(function);
+		if(mApp==null)return null;
+		queryDevice("DeviceId="+mApp.DeviceId);
 		if(mDeviceList.size()==0)return null;
 		//디바이스 이름 비교
 		return mDeviceList.get(0);
 	}
 	
+	/**
+	 * 매개변수로 전달된 Function을 가지고 해당 Funtion에 해당하는 App를 찾아서 리턴한다.
+	 * @param function
+	 * @return
+	 */
 	public App obtainApp(Function function){
 		mDeviceList.clear();
 		if(function==null)return null;
@@ -185,6 +230,12 @@ public class BlinkDatabaseManager extends SqliteManager{
 	 * Check out device has data
 	 */
 	
+	/**
+	 * Measurement 리스트를 기준으로 상위 계층인 Device를 검색하여 디바이스 내에 있는 데이터인지 확인한다. 두 번째로 주어진 String인 MacAddress로 판단하며, 하나라도 주어진 디바이스 외부 데이터가 있으면 true를 리턴한다. 그렇지 않으면 false를 리턴한다.
+	 * @param mMeasurementList
+	 * @param MacAddress
+	 * @return
+	 */
 	public boolean checkOutDevice(List<Measurement> mMeasurementList,String MacAddress){
 		mDeviceList.clear();
 		if(mMeasurementList.size()==0)return false;
@@ -209,6 +260,12 @@ public class BlinkDatabaseManager extends SqliteManager{
 		return false;
 	}
 	
+	/**
+	 * Function을 기준으로 상위 계층인 Device를 검색하여 디바이스 내에 있는 데이터인지 확인한다. 두 번째로 주어진 String인 MacAddress로 판단하며, 하나라도 주어진 디바이스 외부 데이터가 있으면 true를 리턴한다. 그렇지 않으면 false를 리턴한다.
+	 * @param mFunction
+	 * @param MacAddress
+	 * @return
+	 */
 	public boolean checkOutDevice(Function mFunction,String MacAddress){
 		mDeviceList.clear();
 		//등록된 앱 리스트 확인
@@ -224,6 +281,12 @@ public class BlinkDatabaseManager extends SqliteManager{
 		return false;
 	}
 	
+	/**
+	 * Class를 기준으로 상위 계층인 Device를 검색하여 디바이스 내에 있는 데이터인지 확인한다. 두 번째로 주어진 String인 MacAddress로 판단하며, 하나라도 주어진 디바이스 외부 데이터가 있으면 true를 리턴한다. 그렇지 않으면 false를 리턴한다. 
+	 * @param obj
+	 * @param MacAddress
+	 * @return
+	 */
 	public boolean checkOutDevice(Class<?> obj,String MacAddress){
 		mDeviceList.clear();
 		mAppList.clear();
@@ -237,6 +300,16 @@ public class BlinkDatabaseManager extends SqliteManager{
 		return checkOutDevice(mMeasurementList,MacAddress);
 	}
 	
+	/**
+	 * 기존 변수들에 저장되어 있는 것을 모두 초기화한다.
+	 */
+	public void clear(){
+		mDeviceList.clear();
+		mAppList.clear();
+		mFunctionList.clear();
+		mMeasurementList.clear();
+		mMeasurementDataList.clear();
+	}
 	/**
 	 * getter , setter methods
 	 */

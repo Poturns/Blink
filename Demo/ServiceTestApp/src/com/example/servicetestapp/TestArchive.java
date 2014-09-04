@@ -8,19 +8,21 @@ import kr.poturns.blink.db.JsonManager;
 import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.SyncDatabaseManager;
 import kr.poturns.blink.db.archive.App;
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.BlinkLog;
+import kr.poturns.blink.db.archive.DatabaseMessage;
 import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
-import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
-import kr.poturns.blink.internal.comm.BlinkSupportBinder;
 import kr.poturns.blink.schema.Body;
 import kr.poturns.blink.schema.Eye;
 import kr.poturns.blink.schema.Heart;
-import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
+import android.widget.ImageView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -32,12 +34,13 @@ public class TestArchive {
 	JsonManager mJsonManager;
 	BlinkAppInfo mBlinkAppInfo;
 	BlinkServiceInteraction mBlinkServiceInteraction = null;
-	Context context;
-	public TestArchive(BlinkServiceInteraction mBlinkServiceInteraction,Context context){
+	MainActivity context;
+	public TestArchive(BlinkServiceInteraction mBlinkServiceInteraction,MainActivity context){
 		this.mBlinkServiceInteraction = mBlinkServiceInteraction;
 		this.context = context;
 	}
 	public void run(){
+		Log.i(tag, "TestArchive Run!!");
 //		exampleRemoteCall();
 //		exampleRegisterBlinkApp();
 //		exmampleRegisterExternalBlinkApp();
@@ -51,8 +54,27 @@ public class TestArchive {
 //		exampleBlinkDatabaseManager();
 //		exampleRemoteCall();
 //		exampleSyncDatabase();
+		exampleDatabaseMessage();
 	}
 	
+	private void exampleDatabaseMessage() {
+	    // TODO Auto-generated method stub
+		DatabaseMessage mDatabaseMessage = new DatabaseMessage.Builder()
+		.setCondition("Condition1")
+		.setDateTimeFrom("DateTimeFrom1")
+		.setDateTimeTo("DateTimeTo1")
+		.setType(DatabaseMessage.OBTAIN_DATA_BY_CLASS)
+		.build();
+		
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
+		String ret = gson.toJson(mDatabaseMessage);
+		Log.i(tag, ret);
+		mDatabaseMessage = gson.fromJson(ret, DatabaseMessage.class);
+		Log.i(tag, mDatabaseMessage.getCondition());
+		Log.i(tag, mDatabaseMessage.getDateTimeFrom());
+		Log.i(tag, mDatabaseMessage.getDateTimeTo());
+		Log.i(tag, ""+mDatabaseMessage.getType());
+    }
 	private void exampleSyncDatabase() {
 	    // TODO Auto-generated method stub
 		SyncDatabaseManager mSyncDatabaseManager = new SyncDatabaseManager(context);
@@ -224,6 +246,14 @@ public class TestArchive {
 		mBlinkAppInfo = mBlinkServiceInteraction.local.obtainBlinkApp();
 		if(mBlinkAppInfo.isExist){
 			Log.i(tag, "등록된 디바이스와 어플리케이션이 있으면");
+			Log.i(tag, "length : "+mBlinkAppInfo.mApp.AppIcon.length);
+			/**
+			 * 이미지 사용방법
+			 * byte[]를 Bitmap으로 변환 후 ImageView에 설정
+			 */
+			ImageView iv = (ImageView)context.findViewById(R.id.imageview);
+			Bitmap bmp = BitmapFactory.decodeByteArray(mBlinkAppInfo.mApp.AppIcon, 0, mBlinkAppInfo.mApp.AppIcon.length);
+			iv.setImageBitmap(bmp);
 		}else {
 			Log.i(tag, "등록된 디바이스와 어플리케이션이 없으면");
 		}
@@ -268,6 +298,7 @@ public class TestArchive {
 //		mBlinkAppInfo = mBlinkServiceInteraction.local.obtainBlinkApp();
 		List<BlinkAppInfo> mBlinkAppInfoList = mBlinkServiceInteraction.local.obtainBlinkAppAll();
 		for(int j=0;j<mBlinkAppInfoList.size();j++){
+			Log.i(tag, mBlinkAppInfoList.get(j).toString());
 			mBlinkAppInfo = mBlinkAppInfoList.get(j);
 			if(mBlinkAppInfo.isExist){
 				try {
@@ -279,19 +310,19 @@ public class TestArchive {
 						mEye = new Eye();
 						mEye.left_sight = Math.round(random.nextDouble()*10d)/10d;
 						mEye.right_sight = Math.round(random.nextDouble()*10d)/10d;
-						mBlinkServiceInteraction.local.registerMeasurementData(mBlinkAppInfo,mEye);
+						mBlinkServiceInteraction.local.registerMeasurementData(mEye);
 					}
 					for(int i=0;i<10;i++){
 						mBody = new Body();
 						mBody.height = Math.round(random.nextFloat()*10f)/10f+random.nextInt(50)+140;
 						mBody.weight = Math.round(random.nextFloat()*10f)/10f+random.nextInt(50)+40;
-						mBlinkServiceInteraction.local.registerMeasurementData(mBlinkAppInfo,mBody);
+						mBlinkServiceInteraction.local.registerMeasurementData(mBody);
 					}
 					
 					for(int i=0;i<10;i++){
 						mHeart = new Heart();
 						mHeart.beatrate = random.nextInt(20)+60;
-						mBlinkServiceInteraction.local.registerMeasurementData(mBlinkAppInfo,mHeart);
+						mBlinkServiceInteraction.local.registerMeasurementData(mHeart);
 					}
 				
 					

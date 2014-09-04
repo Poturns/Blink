@@ -145,7 +145,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 			Class<?> mClass = Class.forName(ClassName);
 			
 			BlinkMessage mBlinkMessage;
-			//자신의 디바이스가 아니고 다른곳에 function이 존재하면
+			//자신의 디바이스가 아니고 다른곳에 데이터가 존재하면 메인으로 보낸다.
 			if(mBlinkDatabaseManager.checkOutDevice(mClass,mBlinkDevice.getAddress())){
 				//DatabaseMessage 생성
 				DatabaseMessage mDatabaseMessage = new DatabaseMessage.Builder()
@@ -168,8 +168,13 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 					mCallbackData.InDeviceData = mBlinkDatabaseManager.obtainMeasurementData(mClass, DateTimeFrom, DateTimeTo, ContainType);
 					CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
 				}
-				CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
+				//자기 자신이 center 디바이스면 메시지를 보내지 않고 에러코드를 설정한다.
+				if(ServiceKeeper.getInstance(CONTEXT).obtainCurrentCenterDevice().getAddress().contentEquals(mBlinkDevice.getAddress())){
+					mCallbackData.Error = CallbackData.ERROR_CENTER_DEVICE;
+				}
+				else CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
 			}else {
+				mCallbackData.Error = CallbackData.ERROR_NO_OUT_DEVICE;
 				if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
 					mCallbackData.InDeviceData = mBlinkDatabaseManager.obtainMeasurementData(mClass, DateTimeFrom, DateTimeTo, ContainType);
 					CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
@@ -196,7 +201,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		
 		BlinkMessage mBlinkMessage;
 		
-		//자신의 디바이스가 아니고 다른곳에 function이 존재하면
+		//자신의 디바이스가 아니고 다른곳에 MeasurementData가 존재하면
 		if(mBlinkDatabaseManager.checkOutDevice(mMeasurementList,mBlinkDevice.getAddress())){
 			//BlinkMessage 생성
 			DatabaseMessage mDatabaseMessage = new DatabaseMessage.Builder()
@@ -222,10 +227,15 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 				mCallbackData.InDeviceData =  gson.toJson(InDeviceData);
 				CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
 			}
-			
-			CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
+			//자기 자신이 center 디바이스면 메시지를 보내지 않고 에러코드를 설정한다.
+			if(ServiceKeeper.getInstance(CONTEXT).obtainCurrentCenterDevice().getAddress().contentEquals(mBlinkDevice.getAddress())){
+				mCallbackData.Error = CallbackData.ERROR_CENTER_DEVICE;
+			}
+			else CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
 		}else {
+			mCallbackData.Error = CallbackData.ERROR_NO_OUT_DEVICE;
 			if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
+				//외부 디바이스에 데이터가 없으면 에러코드를 설정하고 내부에서 검색한다.
 				List<MeasurementData> InDeviceData = mBlinkDatabaseManager.obtainMeasurementData(mMeasurementList, DateTimeFrom, DateTimeTo);
 				mCallbackData.InDeviceData =  gson.toJson(InDeviceData);
 				CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
@@ -266,6 +276,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 				CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
 			}
 		}else {
+			mCallbackData.Error = CallbackData.ERROR_NO_OUT_DEVICE;
 			if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
 				CONTEXT.startFunction(function);
 				mCallbackData.InDeviceData = "success";

@@ -8,8 +8,13 @@ import kr.poturns.blink.util.ClassUtil;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-
-public class BlinkAppInfo implements Parcelable {
+/**
+ * Blink 라이브러리를 통해 데이터를 저장하는 어플리케이션마다 하나씩 갖는 클래스이다.
+ * Device 정보, App 정보, Function 정보, Measurement 정보를 가지고 있다.
+ * @author Jiwon
+ *
+ */
+public class BlinkAppInfo implements Parcelable, IDatabaseObject {
 	private final String tag = "BlinkAppInfo";
 	
 	public boolean isExist;
@@ -51,7 +56,7 @@ public class BlinkAppInfo implements Parcelable {
 		Field[] mFields = obj.getFields();
 		for(int i=0;i<mFields.length;i++){
 			if(mFields[i].getName().contentEquals("DateTime"))continue;
-			Measurement mMeasurement = new Measurement(obj.getName(),ClassUtil.obtainFieldSchema(mFields[i]),mFields[i].getType().getName(),"");
+			Measurement mMeasurement = new Measurement(obj.getSimpleName(),ClassUtil.obtainFieldSchema(mFields[i]),mFields[i].getType().getName(),"");
 			mMeasurementList.add(mMeasurement);
 		}
 	}
@@ -69,6 +74,20 @@ public class BlinkAppInfo implements Parcelable {
 		}
 		return ret;
 	}
+	
+	/**
+	 * BlinkAppInfo 테이블의 등록 조건을 만족하는지 확인한다.
+	 */
+	@Override
+    public boolean checkIntegrity() {
+	    // TODO Auto-generated method stub
+	    return false;
+    }
+	
+	
+	/**
+	 * Parcelable 구현 매소드들
+	 */
 	
 	@Override
 	public int describeContents() {
@@ -104,4 +123,5 @@ public class BlinkAppInfo implements Parcelable {
 		this.mFunctionList = mSystemDatabaseObject.mFunctionList;
 		this.mMeasurementList = mSystemDatabaseObject.mMeasurementList;
 	}
+
 }

@@ -8,12 +8,16 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import kr.poturns.blink.db.archive.App;
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
-import kr.poturns.blink.db.archive.BlinkAppInfo;
+import kr.poturns.blink.db.archive.MeasurementData;
+import kr.poturns.blink.db.archive.SyncMeasurementData;
+import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.util.Log;
 
 public class SyncDatabaseManager extends BlinkDatabaseManager{
@@ -163,6 +167,21 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		}
 	}
 
+	private void registerSyncMeasurementData(SyncMeasurementData mSyncMeasurementData) {
+		ContentValues values = new ContentValues();
+		values.put("DeviceId", mSyncMeasurementData.DeviceId);
+		values.put("MeasurementDataId", mSyncMeasurementData.MeasurementDataId);
+        mSQLiteDatabase.insert("SyncMeasurementData", null, values);
+	}
+	
+	private void updateSyncMeasurementData(String set,String where){
+		if(set==null||set.equals(""))return;
+		if(where==null||where.equals(""))return;
+				
+		String query = "update MeasurementData set "+set+" where "+where;
+		mSQLiteDatabase.execSQL(query);
+	}
+	
 	/**
 	 * SystemDatabase 테이블을 모두 삭제하는 매소드
 	 * Device,App,Function,Measurement 테이블을 삭제한다.
@@ -231,6 +250,16 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		}
 	}
 	
+	private int obtainSequence(int DeviceId){
+		String[] args = {String.valueOf(DeviceId)};
+		String sql = SQL_SELECT_SYNCMEASUREMENTDATA + "where DeviceId=?";
+		Cursor mCursor = mSQLiteDatabase.rawQuery(sql, args);
+		if(mCursor.moveToNext()){
+			return mCursor.getInt(mCursor.getColumnIndex("MeasurementDataId"));
+		}
+		return 0;
+	}
+	
 	/**
 	 * MeausrmentData 테이블을 업데이트하는 매소드
 	 * @param set
@@ -266,6 +295,35 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 			}
 			return true;
 		}
+		
+		/**
+		 * 해당 디바이스에 보낼 MeasurementData를 얻어온다.
+		 */
+		public List<MeasurementData> obtainMeasurementDatabase(BlinkDevice mBlinkDevice){
+			clear();
+			queryDevice("MacAddress='"+mBlinkDevice.getAddress()+"'");
+			if(getDeviceList().size()==0)return null;
+			queryMeasurementData("MeasurementDataId > "+obtainSequence(getDeviceList().get(0).DeviceId));
+			return getMeasurementDataList();
+		}
+		
+		/**
+		 * syncMeasurementData 테이블을 업데이트한다.
+		 */
+		public void syncMeasurementDatabase(BlinkDevice mBlinkDevice,int seq){
+			clear();
+			queryDevice("MacAddress='"+mBlinkDevice.getAddress()+"'");
+			if(getDeviceList().size()==0)return;
+			int oldSeq = obtainSequence(getDeviceList().get(0).DeviceId);
+			if(oldSeq>0){
+				updateSyncMeasurementData("MeasurementDataId="+seq, "DeviceId="+getDeviceList().get(0).DeviceId);
+			}else {
+				SyncMeasurementData mSyncMeasurementData = new SyncMeasurementData();
+				mSyncMeasurementData.DeviceId = getDeviceList().get(0).DeviceId;
+				mSyncMeasurementData.MeasurementDataId = seq;
+				registerSyncMeasurementData(mSyncMeasurementData);
+			}
+		}
 	}
 	
 	public class Main {
@@ -281,6 +339,17 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 				registerBlinkApp(mBlinkAppInfo);
 			}
 			return true;
+		}
+		
+		public void insertMeasurementData(List<MeasurementData> mMeasurementDataList){
+			for(MeasurementData mMeasurementData : mMeasurementDataList){
+				ContentValues values = new ContentValues();
+				values.put("MeasurementId", mMeasurementData.MeasurementId);
+				values.put("GroupId", mMeasurementData.GroupId);
+				values.put("Data", mMeasurementData.Data);
+				values.put("DateTime", mMeasurementData.DateTime);
+		        mSQLiteDatabase.insert("Function", null, values);
+			}
 		}
 	}
 	

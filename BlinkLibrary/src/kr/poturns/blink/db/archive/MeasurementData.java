@@ -4,8 +4,18 @@ import kr.poturns.blink.db.JsonManager;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+/**
+ * MeasurementData 테이블과 맵핑되는 클래스
+ * @author Jiwon
+ *
+ */
 public class MeasurementData implements IDatabaseObject, Parcelable {
 	public int MeasurementId;
+	public int MeasurementDataId;
+	/**
+	 * GroupId를 통해 같이 등록된 데이터인지 확인할 수 있다.
+	 * 시간상의 일치가 아닌 동일한 객체를 통해 등록된 데이터인지 확인한다.
+	 */
 	public int GroupId;
 	public String Data;
 	public String DateTime;
@@ -17,18 +27,26 @@ public class MeasurementData implements IDatabaseObject, Parcelable {
 	public String toString() {
 		String ret = "";
 		ret += "MeasurementId : " + MeasurementId + "\r\n";
-		ret += "MeasurementDataId : " + GroupId + "\r\n";
+		ret += "MeasurementDataId : " + MeasurementDataId + "\r\n";
+		ret += "GroupId : " + GroupId + "\r\n";
 		ret += "Data : " + Data + "\r\n";
 		ret += "DateTime : " + DateTime + "\r\n";
 		return ret;
 	}
 
+	/**
+	 * MeasurementData 테이블의 등록 조건을 만족하는지 확인한다.
+	 */
 	@Override
 	public boolean checkIntegrity() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
+	/**
+	 * Parcelable 구현 매소드들
+	 */
+	
 	@Override
 	public int describeContents() {
 		// TODO Auto-generated method stub
