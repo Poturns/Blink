@@ -51,7 +51,7 @@ public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDe
 	public static final BlinkDevice HOST;
 	static {
 		BluetoothAdapter mAdapter = BluetoothAdapter.getDefaultAdapter();
-		HOST = (mAdapter != null)? load(mAdapter.getAddress()) : null;
+		HOST = (mAdapter != null)? load(mAdapter.getAddress()) : null;	
 		
 		if (HOST != null && mAdapter != null)
 			HOST.setName(mAdapter.getName());

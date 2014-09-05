@@ -28,8 +28,8 @@ public class BlinkMessage implements Serializable, IBlinkMessagable {
 	private String DestinationAddress;
 	private String DestinationApplication;
 	
-	private int Type;
-	private int Code;
+	private int Type; // BlinkMessage의 메세지 전송 용도 -> IBlinkMessageable Interface의 TYPE_으로 시작하는 변수
+	private int Code; 
 	private boolean Reliable;
 	private long Timestamp;
 	
@@ -199,6 +199,9 @@ public class BlinkMessage implements Serializable, IBlinkMessagable {
 	
 
 	// *** SETTER/GETTER DECLARATION *** //
+	public void setSourceAddress(String sourceAddress){
+		this.SourceAddress = sourceAddress;
+	}
 	public String getSourceAddress() {
 		return SourceAddress;
 	}
