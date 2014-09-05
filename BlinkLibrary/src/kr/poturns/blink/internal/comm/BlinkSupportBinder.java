@@ -5,13 +5,13 @@ import java.util.List;
 
 import kr.poturns.blink.db.BlinkDatabaseManager;
 import kr.poturns.blink.db.archive.App;
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.CallbackData;
 import kr.poturns.blink.db.archive.DatabaseMessage;
 import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
-import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.internal.BlinkLocalService;
 import kr.poturns.blink.internal.ConnectionSupportBinder;
 import kr.poturns.blink.internal.ServiceKeeper;

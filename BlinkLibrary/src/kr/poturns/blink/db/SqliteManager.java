@@ -1,6 +1,5 @@
 package kr.poturns.blink.db;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
@@ -8,12 +7,12 @@ import java.util.HashMap;
 import java.util.List;
 
 import kr.poturns.blink.db.archive.App;
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.BlinkLog;
 import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
-import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.util.ClassUtil;
 import android.content.ContentValues;
 import android.content.Context;

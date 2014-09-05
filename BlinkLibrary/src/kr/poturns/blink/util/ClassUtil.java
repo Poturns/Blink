@@ -1,12 +1,6 @@
 package kr.poturns.blink.util;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
-import kr.poturns.blink.db.archive.Measurement;
-import kr.poturns.blink.db.archive.MeasurementData;
 
 public class ClassUtil {
 	public static String obtainClassName(Class<?> obj){
