@@ -1,6 +1,6 @@
 package kr.poturns.blink.external;
 
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +18,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
@@ -39,7 +40,6 @@ import android.widget.TextView;
  */
 class DataSelectFragment extends Fragment {
 	SqliteManagerExtended mManager;
-	Device mDevice;
 	/** 현재 UI에 보이는 Fragment가 RecentList인지 여부 */
 	boolean mShowRecent = false;
 
@@ -74,7 +74,7 @@ class DataSelectFragment extends Fragment {
 		}
 		Bundle arg = getArguments();
 		if (BundleResolver.obtainApp(arg) != null) {
-			changeFragment(arg);
+			showMeasurementList(arg);
 		}
 	}
 
@@ -109,6 +109,7 @@ class DataSelectFragment extends Fragment {
 		mShowRecent = !mShowRecent;
 	}
 
+	/** {@link DataViewFragment}로 전환한다. */
 	void changeFragment(Bundle arg) {
 		Bundle bundle = new Bundle(arg);
 		Fragment f = new DataViewFragment();
@@ -122,6 +123,18 @@ class DataSelectFragment extends Fragment {
 		arg.clear();
 	}
 
+	void showMeasurementList(Bundle bundle) {
+		Bundle arg = new Bundle(bundle);
+		Fragment f = new MeasurementListFragment();
+		f.setArguments(arg);
+		getFragmentManager().beginTransaction()
+				.add(R.id.activity_main_fragment_content, f, "1").hide(this)
+				.show(f)
+				.addToBackStack(DataSelectFragment.class.getSimpleName())
+				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+				.commit();
+	}
+
 	/** 최근에 변경된 이력이 있는 Device와 App 를 리스트의 형태로 보여준다 */
 	private class RecentListFragment extends Fragment {
 		List<Measurement> mRecentMeasurementList;
@@ -130,18 +143,42 @@ class DataSelectFragment extends Fragment {
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
-			long timeBefore = 1000 * 60 * 60 * 24 * 7; // l week
-			mRecentMeasurementList = mManager.obtainRecentModifiedMeasurement(
-					new Date(System.currentTimeMillis() - timeBefore), -1);
+			mRecentMeasurementList = mManager
+					.obtainRecentModifiedMeasurement(PrivateUtil
+							.isScreenSizeSmall(getActivity()) ? 7 : 5);
 			mRecentListAdapter = new ArrayAdapter<Measurement>(getActivity(),
-					android.R.layout.simple_list_item_1, mRecentMeasurementList) {
+					R.layout.list_recent, android.R.id.text1,
+					mRecentMeasurementList) {
 				@Override
 				public View getView(int position, View convertView,
 						ViewGroup parent) {
 					View v = super.getView(position, convertView, parent);
+					final Measurement measurement = getItem(position);
+					final App app = mManager
+							.obtainAppByMeasurement(measurement);
+					final Device device = mManager.obtainDeviceByApp(app);
+
 					((TextView) v.findViewById(android.R.id.text1))
+							.setText(device.Device);
+					TextView appTextView = (TextView) v
+							.findViewById(R.id.fragment_list_recent_app);
+					appTextView.setText(app.AppName);
+					((TextView) v
+							.findViewById(R.id.fragment_list_recent_measurement))
 							.setText(PrivateUtil
-									.obtainSplitMeasurementSchema(getItem(position)));
+									.obtainSplitMeasurementSchema(measurement));
+					((TextView) v
+							.findViewById(R.id.fragment_list_recent_datetime))
+							.setText(mManager.obtainMeasurementDataDateTime(
+									measurement).replace(" ", "\n"));
+					v.setOnClickListener(new View.OnClickListener() {
+
+						@Override
+						public void onClick(View v) {
+							changeFragment(BundleResolver.toBundle(device, app,
+									measurement));
+						}
+					});
 					return v;
 				}
 			};
@@ -211,7 +248,7 @@ class DataSelectFragment extends Fragment {
 				convertView.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View v) {
-						DataSelectFragment.this.changeFragment(BundleResolver
+						DataSelectFragment.this.showMeasurementList(BundleResolver
 								.toBundle((Device) getGroup(groupPosition),
 										item));
 					}
@@ -225,6 +262,98 @@ class DataSelectFragment extends Fragment {
 					tv = (TextView) v.findViewById(android.R.id.text1);
 				}
 			}
+		}
+	}
+
+	/** 선택된 {@link App}의 {@link Measurement}의 리스트를 보여주는 Fragment */
+	private static class MeasurementListFragment extends Fragment {
+		Device mDevice;
+		App mApp;
+		ArrayList<Measurement> mMeasurementList;
+		ArrayAdapter<Measurement> mAdapter;
+		SqliteManagerExtended mManager;
+
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			mManager = ((IServiceContolActivity) getActivity())
+					.getDatabaseHandler();
+			Bundle bundle = getArguments();
+			mDevice = BundleResolver.obtainDevice(bundle);
+			mApp = BundleResolver.obtainApp(bundle);
+			mMeasurementList = new ArrayList<Measurement>();
+			mMeasurementList.addAll(mManager.obtainMeasurementList(mApp));
+			mAdapter = new ArrayAdapter<Measurement>(getActivity(),
+					android.R.layout.simple_list_item_1, mMeasurementList) {
+				@Override
+				public View getView(int position, View convertView,
+						ViewGroup parent) {
+					View v = super.getView(position, convertView, parent);
+					Measurement item = getItem(position);
+					((TextView) v.findViewById(android.R.id.text1))
+							.setText(item.Measurement);
+					return v;
+				}
+			};
+		}
+
+		@Override
+		public View onCreateView(LayoutInflater inflater, ViewGroup container,
+				Bundle savedInstanceState) {
+			View v = inflater.inflate(
+					R.layout.dialog_fragment_connection_db_info, container,
+					false);
+			ListView listView = (ListView) v.findViewById(android.R.id.list);
+			listView.setAdapter(mAdapter);
+			listView.setEmptyView(v.findViewById(android.R.id.empty));
+			listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+				@Override
+				public void onItemClick(AdapterView<?> parent, View view,
+						int position, long id) {
+					changeFragment(BundleResolver.toBundle(mDevice, mApp,
+							(Measurement) parent.getItemAtPosition(position)));
+				}
+			});
+			return v;
+		}
+
+		@Override
+		public void onResume() {
+			getActivity().getActionBar().setTitle(mDevice.Device);
+			getActivity().getActionBar().setSubtitle(mApp.AppName);
+			super.onResume();
+		}
+
+		@Override
+		public void onPause() {
+			getActivity().getActionBar().setTitle(null);
+			getActivity().getActionBar().setSubtitle(null);
+			super.onPause();
+		}
+
+		@Override
+		public void onDetach() {
+			getActivity().getActionBar().setTitle(
+					getResources().getStringArray(
+							R.array.activity_sercive_control_menu_array)[1]);
+			super.onDetach();
+		}
+
+		/** {@link DataViewFragment}로 전환한다. */
+		void changeFragment(Bundle arg) {
+			Bundle bundle = new Bundle(arg);
+			Fragment f = new DataViewFragment();
+			f.setArguments(bundle);
+			getFragmentManager()
+					.beginTransaction()
+					.add(R.id.activity_main_fragment_content, f, "1")
+					.hide(this)
+					.show(f)
+					.addToBackStack(
+							MeasurementListFragment.class.getSimpleName())
+					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+					.commit();
+			arg.clear();
 		}
 	}
 }

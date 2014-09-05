@@ -1,6 +1,8 @@
 package kr.poturns.blink.external;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
@@ -17,7 +19,6 @@ import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TabHost;
@@ -39,6 +40,7 @@ import com.handstudio.android.hzgrapherlib.vo.circlegraph.CircleGraphVO;
 class DataViewFragment extends Fragment {
 	Device mDevice;
 	App mApp;
+	Measurement mMeasurement;
 	SqliteManagerExtended mManager;
 	private TabHost mTabHost;
 	private ViewPager mViewPager;
@@ -55,9 +57,10 @@ class DataViewFragment extends Fragment {
 
 		mDevice = BundleResolver.obtainDevice(arg);
 		mApp = BundleResolver.obtainApp(arg);
+		mMeasurement = BundleResolver.obtainMeasurement(arg);
 		mFragmentList.add(new DataMeasurementsPieFragment());
 		mFragmentList.add(new DataMeasurementsLineGraphFragment());
-		mFragmentList.add(new DataMeasurementListFragment());
+		mFragmentList.add(new DataMeasurementDataListFragment());
 	}
 
 	@Override
@@ -130,8 +133,8 @@ class DataViewFragment extends Fragment {
 	@Override
 	public void onResume() {
 		super.onResume();
-		getActivity().getActionBar().setTitle(mDevice.Device);
-		getActivity().getActionBar().setSubtitle(mApp.AppName);
+		getActivity().getActionBar().setTitle(mMeasurement.Measurement);
+		getActivity().getActionBar().setSubtitle(mMeasurement.Type);
 	}
 
 	@Override
@@ -142,13 +145,10 @@ class DataViewFragment extends Fragment {
 	}
 
 	@Override
-	public void onDetach() {
+	public void onDestroyView() {
 		mTabHost = null;
 		mViewPager = null;
-		getActivity().getActionBar().setTitle(
-				getResources().getStringArray(
-						R.array.activity_sercive_control_menu_array)[1]);
-		super.onDetach();
+		super.onDestroyView();
 	}
 
 	/** 현재 App의 MeasurementData들이 차지하는 비율을 파이 그래프 형태로 보여준다. */
@@ -168,16 +168,15 @@ class DataViewFragment extends Fragment {
 		private CircleGraphVO makePieGraph() {
 			ArrayList<CircleGraph> graphItemList = new ArrayList<CircleGraph>();
 			Random random = new Random(System.currentTimeMillis());
-			for (Measurement measurement : DataViewFragment.this.mManager
-					.obtainMesurementList(DataViewFragment.this.mApp)) {
-				int r = random.nextInt(256);
-				int g = random.nextInt(256);
-				int b = random.nextInt(256);
-				graphItemList.add(new CircleGraph(PrivateUtil
-						.obtainSplitMeasurementSchema(measurement), Color.rgb(
-						r, g, b), DataViewFragment.this.mManager
-						.obtainMeasurementDataListSize(measurement)));
-			}
+			Measurement measurement = DataViewFragment.this.mMeasurement;
+			int r = random.nextInt(128) + 128;
+			int g = random.nextInt(128) + 128;
+			int b = random.nextInt(128) + 128;
+			graphItemList.add(new CircleGraph(PrivateUtil
+					.obtainSplitMeasurementSchema(measurement), Color.rgb(r, g,
+					b), DataViewFragment.this.mManager
+					.obtainMeasurementDataListSize(measurement)));
+
 			if (graphItemList.isEmpty())
 				return null;
 			CircleGraphVO vo = new CircleGraphVO(graphItemList);
@@ -212,7 +211,7 @@ class DataViewFragment extends Fragment {
 		}
 	}
 
-	/** 해당 Device의 App의 Measurement Data들을 line graph형태로 보여준다. */
+	/** 해당 Device의 App의 Measurement의 Data들을 line graph형태로 보여준다. */
 	class DataMeasurementsLineGraphFragment extends Fragment {
 		private ViewGroup mGraphView;
 
@@ -257,19 +256,16 @@ class DataViewFragment extends Fragment {
 		}
 
 		private BubbleGraphVO createBubbleGraphVO() {
-			List<Measurement> measurementList = DataViewFragment.this.mManager
-					.obtainMesurementList(DataViewFragment.this.mApp);
 			BubbleGraphVO ret = null;
-			if (measurementList.isEmpty())
-				return null;
 			List<MeasurementData> dataList = DataViewFragment.this.mManager
-					.obtainMeasurementDataList(measurementList.get(0));
+					.obtainMeasurementDataList(DataViewFragment.this.mMeasurement);
 			int size = dataList.size();
 			String[] legendArr = new String[size];
 			for (int i = 0; i < size; i++) {
-				legendArr[i] = dataList.get(i).DateTime;
-				if (legendArr[i].length() > 5)
-					legendArr[i] = legendArr[i].substring(0, 4);
+				legendArr[i] = dataList.get(i).DateTime.split(" ")[0]
+						.replaceAll("^.*?-", "");
+				if (legendArr[i].length() > 6)
+					legendArr[i] = legendArr[i].substring(0, 5);
 			}
 			ret = new BubbleGraphVO(legendArr);
 			ret.setAnimationDuration(1000);
@@ -278,17 +274,16 @@ class DataViewFragment extends Fragment {
 			ret.setIsAnimaionShow(true);
 			Random random = new Random(System.currentTimeMillis());
 			int graphCount = 0;
-			for (Measurement measurement : measurementList) {
-				int r = random.nextInt(256);
-				int g = random.nextInt(256);
-				int b = random.nextInt(256);
-				BubbleGraph bg = makeBubbleGraph(measurement,
-						Color.rgb(r, g, b));
-				if (bg != null) {
-					ret.add(bg);
-					graphCount++;
-				}
+
+			int r = random.nextInt(128) + 128;
+			int g = random.nextInt(128) + 128;
+			int b = random.nextInt(128) + 128;
+			BubbleGraph bg = makeBubbleGraph(mMeasurement, Color.rgb(r, g, b));
+			if (bg != null) {
+				ret.add(bg);
+				graphCount++;
 			}
+
 			if (graphCount != 0)
 				return ret;
 			else
@@ -296,25 +291,38 @@ class DataViewFragment extends Fragment {
 		}
 	}
 
-	class DataMeasurementListFragment extends Fragment {
-		List<Measurement> mMeasurementList;
-		ArrayAdapter<Measurement> mAdapter;
+	class DataMeasurementDataListFragment extends Fragment {
+		List<MeasurementData> mMeasurementDataList;
+		ArrayAdapter<MeasurementData> mAdapter;
 
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
-			mMeasurementList = new ArrayList<Measurement>();
-			mMeasurementList.addAll(DataViewFragment.this.mManager
-					.obtainMesurementList(DataViewFragment.this.mApp));
-			mAdapter = new ArrayAdapter<Measurement>(getActivity(),
-					android.R.layout.simple_list_item_1, mMeasurementList) {
+			mMeasurementDataList = new ArrayList<MeasurementData>();
+			mMeasurementDataList
+					.addAll(DataViewFragment.this.mManager
+							.obtainMeasurementDataList(DataViewFragment.this.mMeasurement));
+			Collections.sort(mMeasurementDataList,
+					new Comparator<MeasurementData>() {
+						@Override
+						public int compare(MeasurementData lhs,
+								MeasurementData rhs) {
+							// 시간 기준, 내림차순 정렬
+							return -lhs.DateTime.compareTo(rhs.DateTime);
+						}
+					});
+			mAdapter = new ArrayAdapter<MeasurementData>(getActivity(),
+					android.R.layout.simple_list_item_2, android.R.id.text1,
+					mMeasurementDataList) {
 				@Override
 				public View getView(int position, View convertView,
 						ViewGroup parent) {
 					View v = super.getView(position, convertView, parent);
-					Measurement item = getItem(position);
+					MeasurementData item = getItem(position);
 					((TextView) v.findViewById(android.R.id.text1))
-							.setText(item.Measurement);
+							.setText(item.Data);
+					((TextView) v.findViewById(android.R.id.text2))
+							.setText(item.DateTime);
 					return v;
 				}
 			};
@@ -329,15 +337,6 @@ class DataViewFragment extends Fragment {
 			ListView listView = (ListView) v.findViewById(android.R.id.list);
 			listView.setAdapter(mAdapter);
 			listView.setEmptyView(v.findViewById(android.R.id.empty));
-			listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-				@Override
-				public void onItemClick(AdapterView<?> parent, View view,
-						int position, long id) {
-					Measurement measurement = (Measurement) parent
-							.getItemAtPosition(position);
-					// TODO Measurement data graph 보여주기
-				}
-			});
 			return v;
 		}
 	}

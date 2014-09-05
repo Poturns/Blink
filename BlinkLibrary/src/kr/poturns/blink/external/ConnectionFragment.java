@@ -34,7 +34,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -554,7 +556,7 @@ final class ConnectionFragment extends Fragment {
 			// Dialog의 크기를 결정한다.
 			if (PrivateUtil.isScreenSizeSmall(getActivity())) {
 				getDialog().getWindow().setLayout(size.x / 19 * 16,
-						size.y / 19 * 13);
+						size.y / 19 * 15);
 			} else {
 				getDialog().getWindow().setLayout(size.x / 19 * 11,
 						size.y / 19 * 12);
@@ -580,20 +582,34 @@ final class ConnectionFragment extends Fragment {
 				((TextView) v
 						.findViewById(R.id.dialog_fragment_connection_device_ego))
 						.setText(mDevice.getIdentity().toString());
-				((TextView) v
+				((Switch) v
 						.findViewById(R.id.dialog_fragment_connection_blink_support))
-						.setText(String.valueOf(mDevice.isBlinkSupported()));
-				((TextView) v
-						.findViewById(R.id.dialog_fragment_connection_discoverd))
-						.setText(String.valueOf(mDevice.isDiscovered()));
-				((TextView) v
-						.findViewById(R.id.dialog_fragment_connection_connection))
-						.setText(String.valueOf(mDevice.isConnected()));
-				((TextView) v
-						.findViewById(R.id.dialog_fragment_connection_autoconnect))
-						.setText(String.valueOf(mDevice.isAutoConnect()));
-				((TextView) v.findViewById(R.id.dialog_fragment_connection_ble))
-						.setText(String.valueOf(mDevice.isLESupported()));
+						.setChecked(mDevice.isBlinkSupported());
+				Switch isConnected = (Switch) v
+						.findViewById(R.id.dialog_fragment_connection_connection);
+				isConnected.setChecked(mDevice.isConnected());
+				isConnected.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+					@Override
+					public void onCheckedChanged(
+							CompoundButton buttonView, boolean isChecked) {
+						connectOrDisConnectDevice(mDevice);
+					}
+				});
+				Switch isAutoConnect = (Switch) v
+						.findViewById(R.id.dialog_fragment_connection_autoconnect);
+				isAutoConnect
+						.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+							@Override
+							public void onCheckedChanged(
+									CompoundButton buttonView, boolean isChecked) {
+								mDevice.setAutoConnect(isChecked);
+							}
+						});
+				isAutoConnect.setChecked(mDevice.isAutoConnect());
+				((Switch) v.findViewById(R.id.dialog_fragment_connection_ble))
+						.setChecked(mDevice.isLESupported());
 				return v;
 			}
 		}

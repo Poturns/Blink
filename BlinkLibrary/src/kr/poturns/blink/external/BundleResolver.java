@@ -2,6 +2,7 @@ package kr.poturns.blink.external;
 
 import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.Device;
+import kr.poturns.blink.db.archive.Measurement;
 import android.os.Bundle;
 
 class BundleResolver {
@@ -12,6 +13,16 @@ class BundleResolver {
 		bundle.putParcelable(IServiceContolActivity.EXTRA_DEVICE, device);
 		if (app != null)
 			bundle.putParcelable(IServiceContolActivity.EXTRA_DEVICE_APP, app);
+		return bundle;
+	}
+
+	public static Bundle toBundle(Device device, App app,
+			Measurement measurement) {
+		Bundle bundle = toBundle(device, app);
+		if (bundle != null)
+			bundle.putParcelable(
+					IServiceContolActivity.EXTRA_DEVICE_MEASUREMENT,
+					measurement);
 		return bundle;
 	}
 
@@ -26,4 +37,12 @@ class BundleResolver {
 			return null;
 		return bundle.getParcelable(IServiceContolActivity.EXTRA_DEVICE_APP);
 	}
+
+	public static Measurement obtainMeasurement(Bundle bundle) {
+		if (bundle == null)
+			return null;
+		return bundle
+				.getParcelable(IServiceContolActivity.EXTRA_DEVICE_MEASUREMENT);
+	}
+
 }
