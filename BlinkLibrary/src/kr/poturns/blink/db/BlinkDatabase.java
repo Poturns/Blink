@@ -3,6 +3,11 @@ package kr.poturns.blink.db;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+/**
+ * Sqlite Database 파일을 생성, 수정하는 매소드가 정의되어 있다.
+ * @author Jiwon
+ *
+ */
 public class BlinkDatabase {
 	private final static String tag = "SystemDatabase";
 
@@ -26,6 +31,7 @@ public class BlinkDatabase {
 				+ "'DeviceId' INTEGER NOT NULL,"
 				+ "'PackageName' TEXT NOT NULL,"
 				+ "'AppName' TEXT NOT NULL,"
+				+ "'AppIcon' BLOB,"
 				+ "'Version' INTEGER NOT NULL DEFAULT (1),"
 				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime')),"
 				+ "UNIQUE ('DeviceId','PackageName'),"
@@ -37,6 +43,7 @@ public class BlinkDatabase {
 		sql = "create table 'Measurement' ("
 				+ "'AppId' INTEGER NOT NULL,"
 				+ "'MeasurementId' INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ "'MeasurementName' TEXT NOT NULL,"
 				+ "'Measurement' TEXT NOT NULL," + "'Type' TEXT NOT NULL,"
 				+ "'Description' TEXT NOT NULL,"
 				+ "UNIQUE ('AppId','Measurement'),"
@@ -61,9 +68,11 @@ public class BlinkDatabase {
 		
 		sql = "create table 'MeasurementData' ("
 				+ "'MeasurementId' INTEGER NOT NULL,"
+				+ "'MeasurementDataId' INTEGER PRIMARY KEY AUTOINCREMENT,"
 				+ "'GroupId' INTEGER,"
 				+ "'Data' TEXT NOT NULL,"
 				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime')),"
+				+ "UNIQUE ('MeasurementId','MeasurementDataId'),"
 				+ "FOREIGN KEY('MeasurementId') REFERENCES Measurement('MeasurementId')"
 				+ ");";
 		db.execSQL(sql);
@@ -82,14 +91,15 @@ public class BlinkDatabase {
 		
 		Log.i(tag, "logDatabase ok");
 		
-		sql = "create table 'Synchronize' ("
+		sql = "create table 'SyncMeasurementData' ("
 				+ "'DeviceId' INTEGER PRIMARY KEY ,"
-				+ "'Sequence' INTEGER NOT NULL,"
-				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime'))"
+				+ "'MeasurementDataId' INTEGER NOT NULL,"
+				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime')),"
+				+ "FOREIGN KEY('MeasurementDataId') REFERENCES MeasurementData('MeasurementDataId')"
 				+ ");";
 		db.execSQL(sql);
 
-		Log.i(tag, "logDatabase ok");
+		Log.i(tag, "SynchronizeDatabase ok");
 	}
 
 	public static void updateBlinkDatabase(SQLiteDatabase db) {

@@ -4,6 +4,11 @@ import kr.poturns.blink.db.JsonManager;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+/**
+ * BlinkLog 테이블과 맵핑되는 클래스
+ * @author Jiwon
+ *
+ */
 public class BlinkLog implements IDatabaseObject, Parcelable{
 	public int LogId;
 	public String Device;
@@ -32,6 +37,9 @@ public class BlinkLog implements IDatabaseObject, Parcelable{
 		return ret;
 	}
 
+	/**
+	 * BlinkLog 테이블의 등록 조건을 만족하는지 확인한다.
+	 */
 	@Override
 	public boolean checkIntegrity() {
 		// TODO Auto-generated method stub
@@ -39,8 +47,9 @@ public class BlinkLog implements IDatabaseObject, Parcelable{
 	}
 	
 	/**
-	 * Parcelable implement
+	 * Parcelable 구현 매소드들
 	 */
+
 	@Override
 	public int describeContents() {
 		// TODO Auto-generated method stub

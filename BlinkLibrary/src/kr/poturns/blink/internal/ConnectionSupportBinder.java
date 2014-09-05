@@ -7,6 +7,7 @@ import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.RemoteException;
+import android.util.Log;
 
 /**
  * 
@@ -25,11 +26,11 @@ public abstract class ConnectionSupportBinder extends
 			throws Exception {
 		CONTEXT = context;
 
-		if (context == null)
+		if (context == null){
 			throw new Exception();
-
-		mAssistant = BluetoothAssistant.getInstance(InterDeviceManager
-				.getInstance(context));
+		}
+			
+//		mAssistant = BluetoothAssistant.getInstance(InterDeviceManager.getInstance(context));
 	}
 
 	@Override

@@ -4,19 +4,33 @@ import kr.poturns.blink.db.JsonManager;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public class CallbackData implements Parcelable{	
+public class CallbackData implements Parcelable{
+	/**
+	 * 에러 없이 성공적으로 호출되었을 경우
+	 */
+	public static final int ERROR_NO = 0x00;
+	/**
+	 * 자기 자신이 Cetner 디바이스인 경우
+	 */
+	public static final int ERROR_CENTER_DEVICE = 0x01;
+	/**
+	 * 외부 디바이스에 데이터가 없는데 호출한 경우
+	 */
+	public static final int ERROR_NO_OUT_DEVICE = 0x02;
+	
 	public String InDeviceData;
 	public String OutDeviceData;
 	public int Error;
 	
-	/**
-	 * Parcelable implements
-	 */
 	public CallbackData(){
 		InDeviceData = null;
 		OutDeviceData = null;
-		Error = 0;
+		Error = ERROR_NO;
 	}
+	
+	/**
+	 * Parcelable 구현 매소드들
+	 */
 	
 	@Override
 	public int describeContents() {

@@ -8,9 +8,14 @@ import kr.poturns.blink.util.ClassUtil;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-
-public class SystemDatabaseObject implements Parcelable {
-	private final String tag = "SystemDatabaseObject";
+/**
+ * Blink 라이브러리를 통해 데이터를 저장하는 어플리케이션마다 하나씩 갖는 클래스이다.
+ * Device 정보, App 정보, Function 정보, Measurement 정보를 가지고 있다.
+ * @author Jiwon
+ *
+ */
+public class BlinkAppInfo implements Parcelable, IDatabaseObject {
+	private final String tag = "BlinkAppInfo";
 	
 	public boolean isExist;
 	public Device mDevice;
@@ -18,7 +23,7 @@ public class SystemDatabaseObject implements Parcelable {
 	public ArrayList<Function> mFunctionList;
 	public ArrayList<Measurement> mMeasurementList;
 
-	public SystemDatabaseObject() {
+	public BlinkAppInfo() {
 		onCreate();
 	}
 	
@@ -33,8 +38,8 @@ public class SystemDatabaseObject implements Parcelable {
 	public void addFunction(String Function,String Description,String Action,int Type){
 		mFunctionList.add(new Function(Function,Description, Action, Type));
 	}
-	public void addMeasurement(String Measurement,String Type,String Description){
-		mMeasurementList.add(new Measurement(Measurement,Type,Description));
+	public void addMeasurement(String MeasurementName,String Measurement,String Type,String Description){
+		mMeasurementList.add(new Measurement(MeasurementName,Measurement,Type,Description));
 	}
 	
 	public MeasurementData obtainMeasurementData(String Measurement){
@@ -51,7 +56,7 @@ public class SystemDatabaseObject implements Parcelable {
 		Field[] mFields = obj.getFields();
 		for(int i=0;i<mFields.length;i++){
 			if(mFields[i].getName().contentEquals("DateTime"))continue;
-			Measurement mMeasurement = new Measurement(ClassUtil.obtainFieldSchema(mFields[i]),mFields[i].getType().getName(),"");
+			Measurement mMeasurement = new Measurement(obj.getSimpleName(),ClassUtil.obtainFieldSchema(mFields[i]),mFields[i].getType().getName(),"");
 			mMeasurementList.add(mMeasurement);
 		}
 	}
@@ -70,6 +75,20 @@ public class SystemDatabaseObject implements Parcelable {
 		return ret;
 	}
 	
+	/**
+	 * BlinkAppInfo 테이블의 등록 조건을 만족하는지 확인한다.
+	 */
+	@Override
+    public boolean checkIntegrity() {
+	    // TODO Auto-generated method stub
+	    return false;
+    }
+	
+	
+	/**
+	 * Parcelable 구현 매소드들
+	 */
+	
 	@Override
 	public int describeContents() {
 		// TODO Auto-generated method stub
@@ -81,27 +100,28 @@ public class SystemDatabaseObject implements Parcelable {
 		// TODO Auto-generated method stub
 		dest.writeString(JsonManager.gson.toJson(this));
 	}
-	public static final Parcelable.Creator<SystemDatabaseObject> CREATOR = new Parcelable.Creator<SystemDatabaseObject>() {
-		 public SystemDatabaseObject createFromParcel(Parcel in) {
-		 	return new SystemDatabaseObject(in);
+	public static final Parcelable.Creator<BlinkAppInfo> CREATOR = new Parcelable.Creator<BlinkAppInfo>() {
+		 public BlinkAppInfo createFromParcel(Parcel in) {
+		 	return new BlinkAppInfo(in);
 		 }
 	        
-		 public SystemDatabaseObject[] newArray( int size ) {
-			 return new SystemDatabaseObject[size];
+		 public BlinkAppInfo[] newArray( int size ) {
+			 return new BlinkAppInfo[size];
 		 }
 	};
-	public SystemDatabaseObject(Parcel in){
+	public BlinkAppInfo(Parcel in){
 		readFromParcel(in);
 	}
 	public void readFromParcel(Parcel in){
-		SystemDatabaseObject mSystemDatabaseObject = JsonManager.gson.fromJson(in.readString(),SystemDatabaseObject.class);
+		BlinkAppInfo mSystemDatabaseObject = JsonManager.gson.fromJson(in.readString(),BlinkAppInfo.class);
 		CopyFromOtherObject(mSystemDatabaseObject);
 	}
-	public void CopyFromOtherObject(SystemDatabaseObject mSystemDatabaseObject){
+	public void CopyFromOtherObject(BlinkAppInfo mSystemDatabaseObject){
 		this.isExist = mSystemDatabaseObject.isExist;
 		this.mDevice = mSystemDatabaseObject.mDevice;
 		this.mApp = mSystemDatabaseObject.mApp;
 		this.mFunctionList = mSystemDatabaseObject.mFunctionList;
 		this.mMeasurementList = mSystemDatabaseObject.mMeasurementList;
 	}
+
 }

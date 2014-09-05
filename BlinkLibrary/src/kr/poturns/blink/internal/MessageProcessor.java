@@ -8,10 +8,14 @@ import com.google.gson.reflect.TypeToken;
 
 import kr.poturns.blink.db.JsonManager;
 import kr.poturns.blink.db.SqliteManager;
+
 import kr.poturns.blink.db.SyncDatabaseManager;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
-import kr.poturns.blink.db.archive.SystemDatabaseObject;
+
+
+import kr.poturns.blink.db.archive.BlinkAppInfo;
+
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
 import kr.poturns.blink.internal.comm.BlinkMessage.Builder;
@@ -42,14 +46,7 @@ public class MessageProcessor {
 	}
 
 	
-	@Deprecated
-	public void acceptJsonData(String json, BlinkDevice deviceX) {
-		ArrayList<SystemDatabaseObject> mObjectList = mJsonManager.obtainJsonSystemDatabaseObject(json);
-		
-		for (SystemDatabaseObject object : mObjectList) {
-			
-		}
-	}
+
 	
 	/**
 	 * 블루투스 디바이스로부터 수신한 {@link BlinkDevice} 메세지를 처리한다.
@@ -79,17 +76,17 @@ public class MessageProcessor {
 				builder_success.setType(IBlinkMessagable.TYPE_RESPONSE_BlinkAppInfo_SYNC_SUCCESS);
 				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(null);
 				String jsonRequestMessage = blinkMessage.getMessage();
-				Type systemDatabaseObjectType = new TypeToken<ArrayList<SystemDatabaseObject>>(){}.getType();
-				ArrayList<SystemDatabaseObject> ret = new Gson().fromJson(jsonRequestMessage, systemDatabaseObjectType);
+				Type BlinkAppInfoType = new TypeToken<ArrayList<BlinkAppInfo>>(){}.getType();
+				ArrayList<BlinkAppInfo> ret = new Gson().fromJson(jsonRequestMessage, BlinkAppInfoType);
 				//if(i am main){}
 				//else{}
 					
 				
-				syncDatabaseManager.wearable.syncSystemDatabase(ret);
-				syncDatabaseManager.main.syncSystemDatabase(ret);
-				ArrayList<SystemDatabaseObject> mergedBlinkAppInfo = new ArrayList<SystemDatabaseObject>();
-				mergedBlinkAppInfo = syncDatabaseManager.obtainSystemDatabase();
-				String jsonResponseMessage = mJsonManager.obtainJsonSystemDatabaseObject(mergedBlinkAppInfo);
+				syncDatabaseManager.wearable.syncBlinkDatabase(ret);
+				syncDatabaseManager.main.syncBlinkDatabase(ret);
+				ArrayList<BlinkAppInfo> mergedBlinkAppInfo = new ArrayList<BlinkAppInfo>();
+				mergedBlinkAppInfo = syncDatabaseManager.obtainBlinkApp();
+				String jsonResponseMessage = mJsonManager.obtainJsonBlinkAppInfo(mergedBlinkAppInfo);
 				builder_success.setMessage(jsonResponseMessage);
 				
 			}
@@ -116,9 +113,9 @@ public class MessageProcessor {
 			if(blinkMessage.getType() == IBlinkMessagable.TYPE_RESPONSE_BlinkAppInfo_SYNC_SUCCESS){
 				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(null);
 				String jsonResponseMessage = blinkMessage.getMessage();
-				ArrayList<SystemDatabaseObject>mergedBlinkAppInfo = JsonManager.obtainJsonSystemDatabaseObject(jsonResponseMessage);
-				syncDatabaseManager.main.syncSystemDatabase(mergedBlinkAppInfo);
-				syncDatabaseManager.wearable.syncSystemDatabase(mergedBlinkAppInfo);
+				ArrayList<BlinkAppInfo>mergedBlinkAppInfo = JsonManager.obtainJsonBlinkAppInfo(jsonResponseMessage);
+				syncDatabaseManager.main.syncBlinkDatabase(mergedBlinkAppInfo);
+				syncDatabaseManager.wearable.syncBlinkDatabase(mergedBlinkAppInfo);
 			}
 			else if(blinkMessage.getType() == IBlinkMessagable.TYPE_RESPONSE_IDENTITY_SUCCESS){
 				
@@ -130,7 +127,7 @@ public class MessageProcessor {
 				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(null);
 				String jsonResponseMessage = blinkMessage.getMessage();
 				ArrayList<Measurement>mergedMesarement = JsonManager.obtainJsonMeasurement(jsonResponseMessage);	
-				syncDatabaseManager.setDeviceList();
+				//syncDatabaseManager.
 			}
 			
 		}

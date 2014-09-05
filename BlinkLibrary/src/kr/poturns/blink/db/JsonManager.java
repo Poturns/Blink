@@ -5,7 +5,7 @@ import java.util.ArrayList;
 
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
-import kr.poturns.blink.db.archive.SystemDatabaseObject;
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -21,14 +21,14 @@ public class JsonManager {
 	private final String tag = "JsonManager";
 	public static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	
-	public static String obtainJsonSystemDatabaseObject(ArrayList<SystemDatabaseObject> mSystemDatabaseObjectList){
+	public static String obtainJsonBlinkAppInfo(ArrayList<BlinkAppInfo> mList){
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		String ret = gson.toJson(mSystemDatabaseObjectList);
+		String ret = gson.toJson(mList);
 		return ret;
 	}
-	public static ArrayList<SystemDatabaseObject> obtainJsonSystemDatabaseObject(String json){
-		Type SystemDatabaseObjectType = new TypeToken<ArrayList<SystemDatabaseObject>>(){}.getType();
-		ArrayList<SystemDatabaseObject> ret = new Gson().fromJson(json, SystemDatabaseObjectType);
+	public static ArrayList<BlinkAppInfo> obtainJsonBlinkAppInfo(String json){
+		Type Type = new TypeToken<ArrayList<BlinkAppInfo>>(){}.getType();
+		ArrayList<BlinkAppInfo> ret = new Gson().fromJson(json, Type);
 		return ret;
 	}
 	public static String obtainJsonMeasurement(ArrayList<Measurement> mMeasurement){

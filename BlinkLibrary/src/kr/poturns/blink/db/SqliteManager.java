@@ -2,6 +2,7 @@ package kr.poturns.blink.db;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,7 +13,7 @@ import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
-import kr.poturns.blink.db.archive.SystemDatabaseObject;
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.util.ClassUtil;
 import android.content.ContentValues;
 import android.content.Context;
@@ -20,6 +21,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
 
@@ -34,12 +36,24 @@ import com.google.gson.GsonBuilder;
 public class SqliteManager extends SQLiteOpenHelper {
 	private final String tag = "SqliteManager";
 	
+	/**
+	 * Database 관련 static 변수들
+	 */
+	
+	/**
+	 * obtainMeasurementList나 obtainMeasurementData에서 클래스를 통해 데이터를 얻어올 때 사용되는 타입
+	 * schema를 통해 데이터를 얻어오기 때문에 완전히 일치하는 데이터, 부모 데이터, 필드명 일치 등 세 개의 타입을 사용한다.
+	 */
 	public final static int CONTAIN_DEFAULT = 0;
 	public final static int CONTAIN_PARENT = 1;
 	public final static int CONTAIN_FIELD = 2;
 	
-	public final static int LOG_REGISTER_SYSTEMDATABASE = 1;
-	public final static int LOG_OBTAIN_SYSTEMDATABASE = 2;
+	/**
+	 * BlinkLog에 저장되는 type
+	 * 어떤 행동을 했는지 구분하는 값이다.
+	 */
+	public final static int LOG_REGISTER_BLINKAPP = 1;
+	public final static int LOG_OBTAIN_BLINKAPP = 2;
 	public final static int LOG_REGISTER_Measurement = 3;
 	public final static int LOG_OBTAIN_Measurement = 4;
 	public final static int LOG_REGISTER_Function = 5;
@@ -47,11 +61,26 @@ public class SqliteManager extends SQLiteOpenHelper {
 	public final static int LOG_REGISTER_MEASRUEMENT = 7;
 	public final static int LOG_OBTAIN_MEASUREMENT = 8;
 	
+	/**
+	 * 데이터베이스가 변화했을 때 호출되는 Observer의 Uri
+	 * BlinkApp이 추가되거나, MeasurementData가 추가되거나, BlinkAppInfo가 Sync됐을 때 해당 Uri로 호출된다.
+	 * 옵저버를 등록해야 사용할 수 있다. </br>
+	 * example : {@code getContentResolver().registerContentObserver(SqliteManager.URI_OBSERVER_BLINKAPP, false, mContentObserver);} 
+	 */
+	public final static Uri URI_OBSERVER_BLINKAPP = Uri.parse("blink://kr.poturns.blink/database/blinkappinfo");
+	public final static Uri URI_OBSERVER_MEASUREMENTDATA = Uri.parse("blink://kr.poturns.blink/database/measurementdata");
+	public final static Uri URI_OBSERVER_SYNC = Uri.parse("blink://kr.poturns.blink/database/blinkappinfo/sync");
+	
+	/**
+	 * Sqlite에 쿼리를 날릴 때 사용되는 기본 쿼리문
+	 * 뒤에 조건을 붙여서 사용된다.
+	 */
 	private final String SQL_SELECT_DEVICE = "SELECT * FROM Device ";
 	private final String SQL_SELECT_APP = "SELECT * FROM App ";
 	private final String SQL_SELECT_FUNCTION = "SELECT * FROM Function ";
 	private final String SQL_SELECT_MEASUREMENT = "SELECT * FROM Measurement ";
 	private final String SQL_SELECT_MEASUREMENTDATA =  "SELECT * FROM MeasurementData ";
+	protected final String SQL_SELECT_SYNCMEASUREMENTDATA =  "SELECT * FROM SyncMeasurementData ";
 	private final String SQL_SELECT_GROUPID =  "SELECT max(GroupId) FROM MeasurementData ";
 	private final String SQL_DELETE_DEVICE = "delete from Device ";
 	private final String SQL_DELETE_APP = "delete from App ";
@@ -60,12 +89,18 @@ public class SqliteManager extends SQLiteOpenHelper {
 	private final String SQL_DELETE_MEASUREMENTDATA = "delete from MeasurementData ";
 	private final String SQL_SELECT_LOG =  "SELECT * FROM BlinkLog ";
 	
+	/**
+	 * Sqlite 데이터베이스 위치
+	 */
 	public static final String EXTERNAL_DB_FILE_PATH = Environment.getExternalStorageDirectory() + "/Blink/archive/";
+	/**
+	 * Sqlite 데이터베이스 파일명
+	 */
 	public static final String EXTERNAL_DB_FILE_NAME = "BlinkDatabase.db";
 	
+	Context CONTEXT;
 	SQLiteDatabase mSQLiteDatabase;
 	Gson gson;
-	
 	
 	private SqliteManager(Context context, String name, CursorFactory factory,
 			int version) {
@@ -77,88 +112,94 @@ public class SqliteManager extends SQLiteOpenHelper {
 		super(context, EXTERNAL_DB_FILE_PATH+EXTERNAL_DB_FILE_NAME, null, 1);
 		mSQLiteDatabase = this.getWritableDatabase();
 		gson = new GsonBuilder().setPrettyPrinting().create();
+		CONTEXT = context;
 	}
 
-	/**
-	 * SqliteManager(this, "BlinkDatabase.db", null, 1); 호출시  BlinkDatabase.db가 없으면 호출된다.
-	 * DB가 생성될 때 호출되는 메소드
-	 * Sqlite 초기 설정시 자동으로호출된다.
-	 */
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		// TODO Auto-generated method stub
 		BlinkDatabase.createBlinkDatabase(db);
 	}
 
-	/**
-	 * SqliteManager(this, "BlinkDatabase.db", null, 1); 호출시  버전이 다르면 호출된다.
-	 * DB가 생성될 때 호출되는 메소드
-	 * Sqlite 초기 설정시 자동으로호출된다.
-	 */
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		// TODO Auto-generated method stub
 		BlinkDatabase.updateBlinkDatabase(db);
 	}
 
-	//-------------------------------SystemDatabase---------------------------------------
-	public void registerSystemDatabase(SystemDatabaseObject mSystemDatabaseObject){
-		registerDevice(mSystemDatabaseObject);
-		obtainDeviceList(mSystemDatabaseObject);
-		registerApp(mSystemDatabaseObject);
-		obtainApp(mSystemDatabaseObject);
-		registerFunction(mSystemDatabaseObject);
-		registerMeasurement(mSystemDatabaseObject);
-		Log.i(tag, "registerSystemDatabase OK");
+	/**
+	 * 주어진 파라미터의 BlinkAppInfo를 Database에 등록한다.
+	 * 등록하면서 자동적으로 부여되는 데이터를 얻기 위해 등록 후 다시 obtain- 매소드를 호출한다.
+	 * 등록이 완료될 때 URI_OBSERVER_BLINKAPP에 notifyChange를 호출한다.
+	 * @param mBlinkAppInfo
+	 */
+	public void registerBlinkApp(BlinkAppInfo mBlinkAppInfo){
+		registerDevice(mBlinkAppInfo);
+		obtainDeviceList(mBlinkAppInfo);
+		registerApp(mBlinkAppInfo);
+		obtainApp(mBlinkAppInfo);
+		registerFunction(mBlinkAppInfo);
+		registerMeasurement(mBlinkAppInfo);
+		CONTEXT.getContentResolver().notifyChange(URI_OBSERVER_BLINKAPP, null);
+		Log.i(tag, "registerBlinkApp OK");
 	}
-	public SystemDatabaseObject obtainSystemDatabase(String device,String app){
-		SystemDatabaseObject mSystemDatabaseObject = new SystemDatabaseObject();
-		Device mDevice = mSystemDatabaseObject.mDevice;
-		App mApp = mSystemDatabaseObject.mApp;
+	
+	/**
+	 * 주어진 device, PackageName으로 BlinkAppInfo를 검색한다.
+	 * 없을 경우 기본 값들을 설정하고 isExist에 false를 설정하여 리턴한다.
+	 * 사용자는 isExist를 확인하여 없을 경우 사용할 Function과 Measurement를 추가하고 registerBlinkApp()를 통해 등록 해야한다.
+	 * @param device
+	 * @param app
+	 * @return
+	 */
+	public BlinkAppInfo obtainBlinkApp(String device,String PackageName){
+		BlinkAppInfo mBlinkAppInfo = new BlinkAppInfo();
+		Device mDevice = mBlinkAppInfo.mDevice;
+		App mApp = mBlinkAppInfo.mApp;
 		mDevice.Device = device;
-		mApp.PackageName = app;
+		mApp.PackageName = PackageName;
 		//기존에 등록된 값이 있으면 해당 값을 찾아서 리턴
 
-		if(obtainDeviceList(mSystemDatabaseObject) && obtainApp(mSystemDatabaseObject)){
-			mSystemDatabaseObject.isExist = true;
-			obtainFunction(mSystemDatabaseObject);
-			obtainMeasurement(mSystemDatabaseObject);
+		if(obtainDeviceList(mBlinkAppInfo) && obtainApp(mBlinkAppInfo)){
+			mBlinkAppInfo.isExist = true;
+			obtainFunction(mBlinkAppInfo);
+			obtainMeasurement(mBlinkAppInfo);
 		}
 		//기존에 등록된 값이 없으면		
 		else {
 			mApp.Version = 1;
-			mApp.PackageName = app;
+			mApp.PackageName = PackageName;
 			mApp.DeviceId = mDevice.DeviceId;
-			mApp.AppName = app;
-			mSystemDatabaseObject.isExist = false;
-			return mSystemDatabaseObject;
+			mApp.AppName = "";
+			mBlinkAppInfo.isExist = false;
+			return mBlinkAppInfo;
 		}
-		return mSystemDatabaseObject;
+		return mBlinkAppInfo;
 	}
 	
-	public ArrayList<SystemDatabaseObject> obtainSystemDatabase(){
-		ArrayList<SystemDatabaseObject> mSystemDatabaseObjectList = new ArrayList<SystemDatabaseObject>();
+	public ArrayList<BlinkAppInfo> obtainBlinkApp(){
+		ArrayList<BlinkAppInfo> mBlinkAppInfoList = new ArrayList<BlinkAppInfo>();
 		ArrayList<Device> mDeviceList = obtainDeviceList("");
 		ArrayList<App> mAppList = obtainAppList("");
-		SystemDatabaseObject mServiceDatabaseObject = null;
+		BlinkAppInfo mBlinkAppInfo = null;
 		for(int i=0;i<mDeviceList.size();i++){
 			for(int j=0;j<mAppList.size();j++){
 				if(mDeviceList.get(i).DeviceId==mAppList.get(j).DeviceId){
-					mServiceDatabaseObject = new SystemDatabaseObject();
-					mServiceDatabaseObject.mDevice = mDeviceList.get(i);
-					mServiceDatabaseObject.mApp = mAppList.get(j);
-					obtainFunction(mServiceDatabaseObject);
-					obtainMeasurement(mServiceDatabaseObject);
-					mServiceDatabaseObject.isExist = true;
-					mSystemDatabaseObjectList.add(mServiceDatabaseObject);
+					mBlinkAppInfo = new BlinkAppInfo();
+					mBlinkAppInfo.mDevice = mDeviceList.get(i);
+					mBlinkAppInfo.mApp = mAppList.get(j);
+					obtainFunction(mBlinkAppInfo);
+					obtainMeasurement(mBlinkAppInfo);
+					mBlinkAppInfo.isExist = true;
+					mBlinkAppInfoList.add(mBlinkAppInfo);
 				}
 			}
 		}
-		return mSystemDatabaseObjectList;
+		return mBlinkAppInfoList;
 	}
 	
-	private boolean obtainDeviceList(SystemDatabaseObject mSystemDatabaseObject){
-		Device mDevice = mSystemDatabaseObject.mDevice;
+	private boolean obtainDeviceList(BlinkAppInfo mBlinkAppInfo){
+		Device mDevice = mBlinkAppInfo.mDevice;
 		String query = SQL_SELECT_DEVICE+"where Device=?";
 		String[] args = {mDevice.Device};
 		Cursor mCursor = mSQLiteDatabase.rawQuery(query, args);
@@ -191,16 +232,17 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mDeviceList;
 	}
 	
-	private boolean obtainApp(SystemDatabaseObject mSystemDatabaseObject){
-		App mApp = mSystemDatabaseObject.mApp;
+	private boolean obtainApp(BlinkAppInfo mBlinkAppInfo){
+		App mApp = mBlinkAppInfo.mApp;
 		String query = SQL_SELECT_APP+"where DeviceId=? and PackageName=?";
-		String[] args = {String.valueOf(mSystemDatabaseObject.mDevice.DeviceId),mSystemDatabaseObject.mApp.PackageName};
+		String[] args = {String.valueOf(mBlinkAppInfo.mDevice.DeviceId),mBlinkAppInfo.mApp.PackageName};
 		Cursor mCursor = mSQLiteDatabase.rawQuery(query, args);
 		if(mCursor.moveToNext()){
 			mApp.AppId = mCursor.getInt(mCursor.getColumnIndex("AppId"));
 			mApp.DeviceId = mCursor.getInt(mCursor.getColumnIndex("DeviceId"));
 			mApp.PackageName = mCursor.getString(mCursor.getColumnIndex("PackageName"));
 			mApp.AppName = mCursor.getString(mCursor.getColumnIndex("AppName"));
+			mApp.AppIcon = mCursor.getBlob(mCursor.getColumnIndex("AppIcon"));
 			mApp.Version = mCursor.getInt(mCursor.getColumnIndex("Version"));
 			mApp.DateTime = mCursor.getString(mCursor.getColumnIndex("DateTime"));
 			return true;
@@ -220,6 +262,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 			mApp.DeviceId = mCursor.getInt(mCursor.getColumnIndex("DeviceId"));
 			mApp.PackageName = mCursor.getString(mCursor.getColumnIndex("PackageName"));
 			mApp.AppName = mCursor.getString(mCursor.getColumnIndex("AppName"));
+			mApp.AppIcon = mCursor.getBlob(mCursor.getColumnIndex("AppIcon"));
 			mApp.Version = mCursor.getInt(mCursor.getColumnIndex("Version"));
 			mApp.DateTime = mCursor.getString(mCursor.getColumnIndex("DateTime"));
 			mAppList.add(mApp);
@@ -229,8 +272,8 @@ public class SqliteManager extends SQLiteOpenHelper {
 	
 	
 	
-	private void registerDevice(SystemDatabaseObject mSystemDatabaseObject){
-		Device mDevice = mSystemDatabaseObject.mDevice;
+	private void registerDevice(BlinkAppInfo mBlinkAppInfo){
+		Device mDevice = mBlinkAppInfo.mDevice;
 		ContentValues values = new ContentValues();
 		values.put("Device", mDevice.Device);
 		values.put("UUID", mDevice.UUID);
@@ -238,20 +281,21 @@ public class SqliteManager extends SQLiteOpenHelper {
         mSQLiteDatabase.insert("Device", null, values);
 	}
 	
-	private void registerApp(SystemDatabaseObject mSystemDatabaseObject){
-		Device mDevice = mSystemDatabaseObject.mDevice;
-		App mApp = mSystemDatabaseObject.mApp;
+	private void registerApp(BlinkAppInfo mBlinkAppInfo){
+		Device mDevice = mBlinkAppInfo.mDevice;
+		App mApp = mBlinkAppInfo.mApp;
 		ContentValues values = new ContentValues();
 		values.put("DeviceId", mDevice.DeviceId);
 		values.put("PackageName", mApp.PackageName);
 		values.put("AppName", mApp.AppName);
+		values.put("AppIcon",mApp.AppIcon);
 		values.put("Version", mApp.Version);
         mSQLiteDatabase.insert("App", null, values);
 	}
 	
-	private void registerFunction(SystemDatabaseObject mSystemDatabaseObject){
-		App mApp = mSystemDatabaseObject.mApp;
-		ArrayList<Function> mFunctionList = mSystemDatabaseObject.mFunctionList;
+	private void registerFunction(BlinkAppInfo mBlinkAppInfo){
+		App mApp = mBlinkAppInfo.mApp;
+		ArrayList<Function> mFunctionList = mBlinkAppInfo.mFunctionList;
 		Function mFunction;
 		for(int i=0;i<mFunctionList.size();i++){
 			mFunction = mFunctionList.get(i);
@@ -267,9 +311,9 @@ public class SqliteManager extends SQLiteOpenHelper {
 		}
 	}
 	
-	private void registerMeasurement(SystemDatabaseObject mSystemDatabaseObject){
-		App mApp = mSystemDatabaseObject.mApp;
-		ArrayList<Measurement> mMeasurementList = mSystemDatabaseObject.mMeasurementList;
+	private void registerMeasurement(BlinkAppInfo mBlinkAppInfo){
+		App mApp = mBlinkAppInfo.mApp;
+		ArrayList<Measurement> mMeasurementList = mBlinkAppInfo.mMeasurementList;
 		Measurement mMeasurement;
 		for(int i=0;i<mMeasurementList.size();i++){
 			mMeasurement = mMeasurementList.get(i);
@@ -277,6 +321,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 //			if(mMeasurement.Measurement.endsWith("/DateTime"))continue;
 			ContentValues values = new ContentValues();
 			values.put("AppId", ""+mMeasurement.AppId);
+			values.put("MeasurementName", ""+mMeasurement.MeasurementName);  
 			values.put("Measurement", ""+mMeasurement.Measurement);  
 			values.put("Type", ""+mMeasurement.Type);  
 			values.put("Description", ""+mMeasurement.Description);  
@@ -285,7 +330,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		}
 	}
 	
-	private void obtainFunction(SystemDatabaseObject mServiceDatabaseObject){
+	private void obtainFunction(BlinkAppInfo mServiceDatabaseObject){
 		App mApp = mServiceDatabaseObject.mApp;
 		String sql = SQL_SELECT_FUNCTION + "where AppId=?";
 		String[] args = {String.valueOf(mApp.AppId)};
@@ -320,7 +365,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mFunctionList;
 	}
 	
-	private void obtainMeasurement(SystemDatabaseObject mServiceDatabaseObject){
+	private void obtainMeasurement(BlinkAppInfo mServiceDatabaseObject){
 		App mApp = mServiceDatabaseObject.mApp;
 		String[] args = {String.valueOf(mApp.AppId)};
 		String sql = SQL_SELECT_MEASUREMENT + "where AppId=?";
@@ -330,6 +375,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 			mMeasurement = new Measurement();
 			mMeasurement.AppId = mCursor.getInt(mCursor.getColumnIndex("AppId"));
 			mMeasurement.MeasurementId = mCursor.getInt(mCursor.getColumnIndex("MeasurementId"));
+			mMeasurement.MeasurementName = mCursor.getString(mCursor.getColumnIndex("MeasurementName"));
 			mMeasurement.Measurement = mCursor.getString(mCursor.getColumnIndex("Measurement"));
 			mMeasurement.Type = mCursor.getString(mCursor.getColumnIndex("Type"));
 			mMeasurement.Description = mCursor.getString(mCursor.getColumnIndex("Description"));
@@ -384,7 +430,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mMeasurementList;
 	}
 	
-	//-------------------------------SystemDatabase---------------------------------------
+	//-------------------------------BlinkApp---------------------------------------
 	
 	
 	//-------------------------------MeasurementDatabase----------------------------------
@@ -466,16 +512,16 @@ public class SqliteManager extends SQLiteOpenHelper {
 	}
 	
 	/**
-	 * SystemDatabaseObject와 측정값을 등록할 Object와 비교하여 MeasurementId를 구한 후에 Id가 있으면 각각의 값들을 DB에 등록
+	 * BlinkAppInfo와 측정값을 등록할 Object와 비교하여 MeasurementId를 구한 후에 Id가 있으면 각각의 값들을 DB에 등록
 	 * 한 객체의 필드들을 묶어주기 위해 GroupId를 구해서 +1을 해준 후 등록한다.  
-	 * @param mSystemDatabaseObject
+	 * @param mBlinkAppInfo
 	 * @param obj
 	 * @return 
 	 */
-	public void registerMeasurementData(SystemDatabaseObject mSystemDatabaseObject,Object obj) throws IllegalAccessException, IllegalArgumentException{
+	public void registerMeasurementData(BlinkAppInfo mBlinkAppInfo,Object obj) throws IllegalAccessException, IllegalArgumentException{
 		MeasurementData mMeasurementData = new MeasurementData();
 		ContentValues values = new ContentValues();
-		ArrayList<Measurement> mMeasurementList = mSystemDatabaseObject.mMeasurementList;
+		ArrayList<Measurement> mMeasurementList = mBlinkAppInfo.mMeasurementList;
 		Field[] mFields = obj.getClass().getFields();
 		int GroupId = obtainMeasurementDataGroupId()+1;
 		Log.i(tag, "GroupId : "+GroupId);
@@ -493,6 +539,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 				}
 			}
 		}
+		CONTEXT.getContentResolver().notifyChange(URI_OBSERVER_MEASUREMENTDATA, null);
 	}
 	
 	/**
@@ -647,8 +694,9 @@ public class SqliteManager extends SQLiteOpenHelper {
 			where += condition.get(i);
 			if(i+1<condition.size())where += " and ";
 		}
-		
-		return mSQLiteDatabase.delete("MeasurementData", where, null);
+		int ret = mSQLiteDatabase.delete("MeasurementData", where, null);
+		CONTEXT.getContentResolver().notifyChange(URI_OBSERVER_BLINKAPP, null);
+		return ret;
 	}
 	
 	

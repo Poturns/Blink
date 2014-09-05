@@ -8,12 +8,16 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import kr.poturns.blink.db.archive.App;
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
-import kr.poturns.blink.db.archive.SystemDatabaseObject;
+import kr.poturns.blink.db.archive.MeasurementData;
+import kr.poturns.blink.db.archive.SyncMeasurementData;
+import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.util.Log;
 
 public class SyncDatabaseManager extends BlinkDatabaseManager{
@@ -34,9 +38,9 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 	 * 기존 MeasurementId와 변경된 MeasurementId가 저장된 HashMap을 얻는다.
 	 * @return
 	 */
-	private HashMap<Integer, Integer> obtainMeasurementMap(List<SystemDatabaseObject> SystemDatabaseObjctList){
-		List<SystemDatabaseObject> oldSystemDatabaseObject = obtainSystemDatabase();
-		List<SystemDatabaseObject> newSystemDatabaseObject = SystemDatabaseObjctList;
+	private HashMap<Integer, Integer> obtainMeasurementMap(List<BlinkAppInfo> SystemDatabaseObjctList){
+		List<BlinkAppInfo> oldSystemDatabaseObject = obtainBlinkApp();
+		List<BlinkAppInfo> newSystemDatabaseObject = SystemDatabaseObjctList;
 		
 		List<Measurement> oldMeasurementList;
 		List<Measurement> newMeasurementList;
@@ -46,9 +50,9 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		
 		HashMap<Integer, Integer> MeasurementMap = new HashMap<Integer, Integer>();
 		
-		//새로운 SystemDatabaseObject 리스트의 인덱스
+		//새로운 BlinkAppInfo 리스트의 인덱스
 		for(int i=0;i<newSystemDatabaseObject.size();i++){
-			//기존 SystemDatabaseObject 리스트의 인덱스
+			//기존 BlinkAppInfo 리스트의 인덱스
 			for(int j=0;j<oldSystemDatabaseObject.size();j++){
 				//동일한 systemDatabaseObject 검색
 				if(newSystemDatabaseObject.get(i).mDevice.MacAddress.contentEquals(oldSystemDatabaseObject.get(j).mDevice.MacAddress)
@@ -79,15 +83,15 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 	 * @param SystemDatabaseObjctList
 	 * @return
 	 */
-	private List<SystemDatabaseObject> obtainAddedSystemDatabaseObject(List<SystemDatabaseObject> SystemDatabaseObjctList){
-		List<SystemDatabaseObject> MainSystemDatabaseObjectList = obtainSystemDatabase();
-		List<SystemDatabaseObject> WearableSystemDatabaseObjectList = SystemDatabaseObjctList;
-		List<SystemDatabaseObject> AddedSystemDatabaseObjectList = new ArrayList<SystemDatabaseObject>();
+	private List<BlinkAppInfo> obtainAddedSystemDatabaseObject(List<BlinkAppInfo> SystemDatabaseObjctList){
+		List<BlinkAppInfo> MainSystemDatabaseObjectList = obtainBlinkApp();
+		List<BlinkAppInfo> WearableSystemDatabaseObjectList = SystemDatabaseObjctList;
+		List<BlinkAppInfo> AddedSystemDatabaseObjectList = new ArrayList<BlinkAppInfo>();
 		boolean isAdded = true;
-		//웨어러블 SystemDatabaseObject 리스트의 인덱스
+		//웨어러블 BlinkAppInfo 리스트의 인덱스
 		for(int i=0;i<WearableSystemDatabaseObjectList.size();i++){
 			isAdded = true;
-			//메인 SystemDatabaseObject 리스트의 인덱스
+			//메인 BlinkAppInfo 리스트의 인덱스
 			for(int j=0;j<MainSystemDatabaseObjectList.size();j++){
 				//동일한 systemDatabaseObject 검색
 				if(WearableSystemDatabaseObjectList.get(i).mDevice.MacAddress.contentEquals(MainSystemDatabaseObjectList.get(j).mDevice.MacAddress)
@@ -97,7 +101,7 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 					isAdded = false;
 				}
 			}
-			//추가된 SystemDatabaseObject 리스트에 추가
+			//추가된 BlinkAppInfo 리스트에 추가
 			if(isAdded)AddedSystemDatabaseObjectList.add(WearableSystemDatabaseObjectList.get(i));
 		}
 		
@@ -107,17 +111,17 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 	/**
 	 * SystemDatabaseObject에 있는 값들을 모두 입력한다.
 	 * register는 id값을 sqlite에서 만들어서 SystemDatabaseObject에 변경해주지만 여기서는 있는 그대로 입력된다.
-	 * @param mSystemDatabaseObject
+	 * @param mBlinkAppInfo
 	 */
-	private void insertSystemDatabase(SystemDatabaseObject mSystemDatabaseObject){
-		insertDevice(mSystemDatabaseObject);
-		insertApp(mSystemDatabaseObject);
-		insertFunction(mSystemDatabaseObject);
-		insertMeasurement(mSystemDatabaseObject);
+	private void insertBlinkApp(BlinkAppInfo mBlinkAppInfo){
+		insertDevice(mBlinkAppInfo);
+		insertApp(mBlinkAppInfo);
+		insertFunction(mBlinkAppInfo);
+		insertMeasurement(mBlinkAppInfo);
 	}
 	
-	private void insertDevice(SystemDatabaseObject mSystemDatabaseObject) {
-		Device mDevice = mSystemDatabaseObject.mDevice;
+	private void insertDevice(BlinkAppInfo mBlinkAppInfo) {
+		Device mDevice = mBlinkAppInfo.mDevice;
 		ContentValues values = new ContentValues();
 		values.put("DeviceId", mDevice.DeviceId);
 		values.put("Device", mDevice.Device);
@@ -127,8 +131,8 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
         mSQLiteDatabase.insert("Device", null, values);
 	}
 	
-	private void insertApp(SystemDatabaseObject mSystemDatabaseObject) {
-		App mApp = mSystemDatabaseObject.mApp;
+	private void insertApp(BlinkAppInfo mBlinkAppInfo) {
+		App mApp = mBlinkAppInfo.mApp;
 		ContentValues values = new ContentValues();
 		values.put("AppId", mApp.AppId);
 		values.put("DeviceId", mApp.DeviceId);
@@ -139,8 +143,8 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
         mSQLiteDatabase.insert("App", null, values);
 	}
 	
-	private void insertMeasurement(SystemDatabaseObject mSystemDatabaseObject) {
-		for(Measurement mMeasurement : mSystemDatabaseObject.mMeasurementList){
+	private void insertMeasurement(BlinkAppInfo mBlinkAppInfo) {
+		for(Measurement mMeasurement : mBlinkAppInfo.mMeasurementList){
 			ContentValues values = new ContentValues();
 			values.put("AppId", mMeasurement.AppId);
 			values.put("MeasurementId", mMeasurement.MeasurementId);
@@ -151,8 +155,8 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		}
 	}
 	
-	private void insertFunction(SystemDatabaseObject mSystemDatabaseObject) {
-		for(Function mFunction : mSystemDatabaseObject.mFunctionList){
+	private void insertFunction(BlinkAppInfo mBlinkAppInfo) {
+		for(Function mFunction : mBlinkAppInfo.mFunctionList){
 			ContentValues values = new ContentValues();
 			values.put("AppId", mFunction.AppId);
 			values.put("Function", mFunction.Function);
@@ -163,11 +167,26 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		}
 	}
 
+	private void registerSyncMeasurementData(SyncMeasurementData mSyncMeasurementData) {
+		ContentValues values = new ContentValues();
+		values.put("DeviceId", mSyncMeasurementData.DeviceId);
+		values.put("MeasurementDataId", mSyncMeasurementData.MeasurementDataId);
+        mSQLiteDatabase.insert("SyncMeasurementData", null, values);
+	}
+	
+	private void updateSyncMeasurementData(String set,String where){
+		if(set==null||set.equals(""))return;
+		if(where==null||where.equals(""))return;
+				
+		String query = "update MeasurementData set "+set+" where "+where;
+		mSQLiteDatabase.execSQL(query);
+	}
+	
 	/**
 	 * SystemDatabase 테이블을 모두 삭제하는 매소드
 	 * Device,App,Function,Measurement 테이블을 삭제한다.
 	 */
-	private void removeSystemDatabaseAll(){
+	private void removeBlinkAppAll(){
 		mSQLiteDatabase.delete("Device",null,null);
 		mSQLiteDatabase.delete("App",null,null);
 		mSQLiteDatabase.delete("Function",null,null);
@@ -231,6 +250,16 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		}
 	}
 	
+	private int obtainSequence(int DeviceId){
+		String[] args = {String.valueOf(DeviceId)};
+		String sql = SQL_SELECT_SYNCMEASUREMENTDATA + "where DeviceId=?";
+		Cursor mCursor = mSQLiteDatabase.rawQuery(sql, args);
+		if(mCursor.moveToNext()){
+			return mCursor.getInt(mCursor.getColumnIndex("MeasurementDataId"));
+		}
+		return 0;
+	}
+	
 	/**
 	 * MeausrmentData 테이블을 업데이트하는 매소드
 	 * @param set
@@ -249,22 +278,60 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		 * 주어진 systemDatabaseObjectList로 systemDatabaseObject를 업데이트한다.
 		 * @return
 		 */
-		public boolean syncSystemDatabase(List<SystemDatabaseObject> SystemDatabaseObjctList){
-			//변경해야할 MeasurementId 맵을 가진 HashMap을 얻는다.
-			HashMap<Integer, Integer> MeasurementMap = obtainMeasurementMap(SystemDatabaseObjctList);
-			//MeasurementData 테이블을 동기화한다.
-			SyncMeasurementData(MeasurementMap);
-			
-			//SystemDatabase를 동기화한다.
-			//기존 SystemDatabase삭제 (Device,App,Function,Measurement)
-			removeSystemDatabaseAll();
-			
-			Log.i(tag, "syncSystemDatabase");
-			
-			for(SystemDatabaseObject mSystemDatabaseObject : SystemDatabaseObjctList){
-				insertSystemDatabase(mSystemDatabaseObject);
+		public boolean syncBlinkDatabase(List<BlinkAppInfo> BlinkAppList){
+			mSQLiteDatabase.beginTransaction();
+			try{
+				//변경해야할 MeasurementId 맵을 가진 HashMap을 얻는다.
+				HashMap<Integer, Integer> MeasurementMap = obtainMeasurementMap(BlinkAppList);
+				//MeasurementData 테이블을 동기화한다.
+				SyncMeasurementData(MeasurementMap);
+				
+				//SystemDatabase를 동기화한다.
+				//기존 SystemDatabase삭제 (Device,App,Function,Measurement)
+				removeBlinkAppAll();
+				
+				Log.i(tag, "syncSystemDatabase");
+				
+				for(BlinkAppInfo mBlinkAppInfo : BlinkAppList){
+					insertBlinkApp(mBlinkAppInfo);
+				}
+				mSQLiteDatabase.setTransactionSuccessful();
+			} catch (Exception e){
+				e.printStackTrace();
+				return false;
+			} finally {
+				mSQLiteDatabase.endTransaction();
 			}
 			return true;
+		}
+		
+		/**
+		 * 해당 디바이스에 보낼 MeasurementData를 얻어온다.
+		 */
+		public List<MeasurementData> obtainMeasurementDatabase(BlinkDevice mBlinkDevice){
+			clear();
+			queryDevice("MacAddress='"+mBlinkDevice.getAddress()+"'");
+			if(getDeviceList().size()==0)return null;
+			queryMeasurementData("MeasurementDataId > "+obtainSequence(getDeviceList().get(0).DeviceId));
+			return getMeasurementDataList();
+		}
+		
+		/**
+		 * syncMeasurementData 테이블을 업데이트한다.
+		 */
+		public void syncMeasurementDatabase(BlinkDevice mBlinkDevice,int seq){
+			clear();
+			queryDevice("MacAddress='"+mBlinkDevice.getAddress()+"'");
+			if(getDeviceList().size()==0)return;
+			int oldSeq = obtainSequence(getDeviceList().get(0).DeviceId);
+			if(oldSeq>0){
+				updateSyncMeasurementData("MeasurementDataId="+seq, "DeviceId="+getDeviceList().get(0).DeviceId);
+			}else {
+				SyncMeasurementData mSyncMeasurementData = new SyncMeasurementData();
+				mSyncMeasurementData.DeviceId = getDeviceList().get(0).DeviceId;
+				mSyncMeasurementData.MeasurementDataId = seq;
+				registerSyncMeasurementData(mSyncMeasurementData);
+			}
 		}
 	}
 	
@@ -272,13 +339,43 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		/**
 		 * 주어진 SystemDatabaseObjectList와 비교하여 새로운 부분을 추가한다.
 		 */
-		public boolean syncSystemDatabase(List<SystemDatabaseObject> SystemDatabaseObjctList){
-			//Main Device에 저장되어 있지 않은 SystemDatabaseObject를 검색한다.
-			List<SystemDatabaseObject> AddedSystemDatabaseObjectList = obtainAddedSystemDatabaseObject(SystemDatabaseObjctList);
-			
-			//SystemDatabase에 추가한다.
-			for(SystemDatabaseObject mSystemDatabaseObject : AddedSystemDatabaseObjectList){
-				registerSystemDatabase(mSystemDatabaseObject);
+		public boolean syncBlinkDatabase(List<BlinkAppInfo> BlinkAppList){
+			mSQLiteDatabase.beginTransaction();
+			try{
+				//Main Device에 저장되어 있지 않은 SystemDatabaseObject를 검색한다.
+				List<BlinkAppInfo> AddedBlinkAppList = obtainAddedSystemDatabaseObject(BlinkAppList);
+				
+				//SystemDatabase에 추가한다.
+				for(BlinkAppInfo mBlinkAppInfo : AddedBlinkAppList){
+					registerBlinkApp(mBlinkAppInfo);
+				}
+				mSQLiteDatabase.setTransactionSuccessful();
+			} catch (Exception e){
+				e.printStackTrace();
+				return false;
+			} finally {
+				mSQLiteDatabase.endTransaction();
+			}
+			return true;
+		}
+		
+		public boolean insertMeasurementData(List<MeasurementData> mMeasurementDataList){
+			mSQLiteDatabase.beginTransaction();
+			try{
+				for(MeasurementData mMeasurementData : mMeasurementDataList){
+					ContentValues values = new ContentValues();
+					values.put("MeasurementId", mMeasurementData.MeasurementId);
+					values.put("GroupId", mMeasurementData.GroupId);
+					values.put("Data", mMeasurementData.Data);
+					values.put("DateTime", mMeasurementData.DateTime);
+			        mSQLiteDatabase.insert("Function", null, values);
+				}
+				mSQLiteDatabase.setTransactionSuccessful();
+			} catch (Exception e){
+				e.printStackTrace();
+				return false;
+			} finally {
+				mSQLiteDatabase.endTransaction();
 			}
 			return true;
 		}

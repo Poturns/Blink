@@ -1,17 +1,18 @@
 package kr.poturns.blink.internal.comm;
 
+import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Type;
 import java.util.List;
 
 import kr.poturns.blink.db.BlinkDatabaseManager;
 import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.archive.App;
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.BlinkLog;
 import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
-import kr.poturns.blink.db.archive.SystemDatabaseObject;
 import kr.poturns.blink.internal.BlinkLocalService;
 import kr.poturns.blink.internal.DeviceAnalyzer;
 import android.bluetooth.BluetoothAdapter;
@@ -21,8 +22,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.database.ContentObserver;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -53,7 +62,8 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	// 생성자에서 초기화
 	private String mPackageName = "";
 	private String mAppName = "";
-
+	
+	public BlinkAppInfo mBlinkAppInfo;
 	public Local local;
 	public Remote remote;
 	Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -80,12 +90,18 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		mBlinkEventBroadcast = iBlinkEventBroadcast;
 		mIInternalEventCallback = iInternalEventCallback;
 		mBlinkDatabaseManager = new BlinkDatabaseManager(context);
+		
+		/**
+		 * Database Sync Event 받기
+		 */
+		CONTEXT.getContentResolver().registerContentObserver(SqliteManager.URI_OBSERVER_SYNC, false, mContentObserver);
+		
 		local = new Local();
 		remote = new Remote();
+		
 		/**
 		 * Setting Application Info
 		 */
-
 		mPackageName = context.getPackageName();
 		mAppName = context.getApplicationInfo()
 				.loadLabel(context.getPackageManager()).toString();
@@ -108,8 +124,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 
 			} else {
 				try {
-					mInternalOperationSupport.registerApplicationInfo(
-							mPackageName, mAppName);
+					mInternalOperationSupport.registerApplicationInfo(mPackageName, mAppName);
 					mBlinkDevice = mInternalOperationSupport.getBlinkDevice();
 
 					if (mIInternalEventCallback != null) {
@@ -312,15 +327,44 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	 * Database Interaction
 	 */
 
-	public boolean registerSystemDatabase(
-			SystemDatabaseObject mSystemDatabaseObject) {
-		mSystemDatabaseObject.mDevice.Device = mBlinkDevice.getName();
-		mSystemDatabaseObject.mDevice.MacAddress = mBlinkDevice.getAddress();
-		mSystemDatabaseObject.mApp.PackageName = mPackageName;
-		mSystemDatabaseObject.mApp.AppName = mAppName;
+	/**
+	 * Database Sync가 발생했을 때 호출된다.
+	 * 기존에 가지고 있던 BlinkAppInfo를 변경해야 한다.
+	 */
+	private ContentObserver mContentObserver = new ContentObserver(new Handler()){
+		public void onChange(boolean selfChange, Uri uri) {
+			Log.i(tag, "Uri : "+uri);
+			//새로운 BlinkApp이 추가되면 실행
+			if(uri.equals(SqliteManager.URI_OBSERVER_SYNC)){
+				Log.i(tag, "if : URI_OBSERVER_SYNC");
+				mBlinkAppInfo = local.obtainBlinkApp();
+			}
+		};
+	};
+	
+	public boolean registerBlinkApp(
+			BlinkAppInfo mBlinkAppInfo) {
+		mBlinkAppInfo.mDevice.Device = mBlinkDevice.getName();
+		mBlinkAppInfo.mDevice.MacAddress = mBlinkDevice.getAddress();
+		mBlinkAppInfo.mApp.PackageName = mPackageName;
+		mBlinkAppInfo.mApp.AppName = mAppName;
+		PackageManager mPackageManager = CONTEXT.getPackageManager();
+		
+		try {
+			Bitmap bitmap = ((BitmapDrawable)mPackageManager.getApplicationIcon(mPackageName)).getBitmap();
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+			mBlinkAppInfo.mApp.AppIcon = stream.toByteArray();
+		} catch (NameNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			mBlinkAppInfo.mApp.AppIcon = null;
+		}
+		
 		try {
 			mInternalOperationSupport
-					.registerSystemDatabase(mSystemDatabaseObject);
+					.registerBlinkApp(mBlinkAppInfo);
+			mBlinkAppInfo = local.obtainBlinkApp();
 			return true;
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
@@ -330,11 +374,11 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	}
 
 	// 예제를 위한 테스트 코드
-	public boolean registerExternalSystemDatabase(
-			SystemDatabaseObject mSystemDatabaseObject) {
+	public boolean registerExternalBlinkApp(
+			BlinkAppInfo mBlinkAppInfo) {
 		try {
 			mInternalOperationSupport
-					.registerSystemDatabase(mSystemDatabaseObject);
+					.registerBlinkApp(mBlinkAppInfo);
 			return true;
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
@@ -350,25 +394,25 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	 * 
 	 */
 	public class Local {
-		public SystemDatabaseObject obtainSystemDatabase() {
-			return obtainSystemDatabase(mBlinkDevice.getName(), mPackageName);
+		public BlinkAppInfo obtainBlinkApp() {
+			mBlinkAppInfo = obtainBlinkApp(mBlinkDevice.getName(), mPackageName);
+			return mBlinkAppInfo;
 		}
 
-		public SystemDatabaseObject obtainSystemDatabase(String DeviceName,
+		public BlinkAppInfo obtainBlinkApp(String DeviceName,
 				String PackageName) {
-			return mBlinkDatabaseManager.obtainSystemDatabase(DeviceName,
+			return mBlinkDatabaseManager.obtainBlinkApp(DeviceName,
 					PackageName);
 		}
 
-		public List<SystemDatabaseObject> obtainSystemDatabaseAll() {
-			return mBlinkDatabaseManager.obtainSystemDatabase();
+		public List<BlinkAppInfo> obtainBlinkAppAll() {
+			return mBlinkDatabaseManager.obtainBlinkApp();
 		}
 
-		public void registerMeasurementData(
-				SystemDatabaseObject mSystemDatabaseObject, Object obj) {
+		public void registerMeasurementData(Object obj) {
 			try {
 				mBlinkDatabaseManager.registerMeasurementData(
-						mSystemDatabaseObject, obj);
+						mBlinkAppInfo, obj);
 			} catch (IllegalAccessException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -554,7 +598,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	 * 
 	 */
 	public class Remote {
-		public void setRequestPolicy(int requestPolicy) {
+		private void setRequestPolicy(int requestPolicy) {
 			try {
 				mInternalOperationSupport.setRequestPolicy(requestPolicy);
 			} catch (RemoteException e) {

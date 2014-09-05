@@ -3,7 +3,7 @@ package kr.poturns.blink.internal.comm;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 
-import kr.poturns.blink.db.archive.SystemDatabaseObject;
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.BlinkLog;
@@ -105,7 +105,7 @@ interface IInternalOperationSupport {
 	void setRequestPolicy(int requestPolicy);
 	void registerApplicationInfo(String PackageName,String AppName);
 	BlinkDevice getBlinkDevice();
-	void registerSystemDatabase(inout SystemDatabaseObject mSystemDatabaseObject);
+	void registerBlinkApp(inout BlinkAppInfo mBlinkAppInfo);
 	void obtainMeasurementData(String ClassName,String DateTimeFrom,String DateTimeTo,int ContainType,int requestCode);
 	void obtainMeasurementDataById(inout List<Measurement> mMeasurementList,String DateTimeFrom,String DateTimeTo,int requestCode);
 	void startFunction(inout Function function,int requestCode);

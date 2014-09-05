@@ -37,6 +37,7 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
 			@Override
             public void onServiceConnected(IInternalOperationSupport iSupport) {
 	            // TODO Auto-generated method stub
+				Log.i(tag, "onServiceConnected!!");
 				mTestArchive.run();
             }
 

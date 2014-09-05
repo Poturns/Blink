@@ -4,11 +4,16 @@ import kr.poturns.blink.db.JsonManager;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-
+/**
+ * Measurement 테이블과 맵핑되는 클래스
+ * @author Jiwon
+ *
+ */
 public class Measurement implements IDatabaseObject, Parcelable{
 	
 	public int AppId;
 	public int MeasurementId;
+	public String MeasurementName;
 	public String Measurement;
 	public String Type;
 	public String Description;
@@ -17,7 +22,8 @@ public class Measurement implements IDatabaseObject, Parcelable{
 		this.AppId = -1;
 		this.Description = "";
 	}
-	public Measurement(String Measurement,String Type,String Description){
+	public Measurement(String MeasurementName,String Measurement,String Type,String Description){
+		this.MeasurementName = MeasurementName;
 		this.Measurement = Measurement;
 		this.Type = Type;
 		this.Description = Description;
@@ -38,12 +44,9 @@ public class Measurement implements IDatabaseObject, Parcelable{
 		ret += "Description : "+Description+"\r\n";
 		return ret;
 	}
+
 	/**
-	 * Measurement 테이블에 등록하기 위한 최소한의 조건을 만족하는지 확인
-	 * 테이블 구조대로 Measurement와 Type 필드가 null이 아니여야한다.
-	 * param	:	void
-	 * return	:	boolean (Measurement와 Type 변수가 null이 아니고 길이가 0보다 클 경우) 
-	 * 				false (Measurement와 Type 변수가 null이거나 길이가 0인 경우)
+	 * Measurement 테이블의 등록 조건을 만족하는지 확인한다.
 	 */
 	@Override
 	public boolean checkIntegrity() {
@@ -52,6 +55,10 @@ public class Measurement implements IDatabaseObject, Parcelable{
 		return false;
 	}
 	
+	/**
+	 * Parcelable 구현 매소드들
+	 */
+
 	@Override
 	public int describeContents() {
 		// TODO Auto-generated method stub
