@@ -13,7 +13,6 @@ import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
-import kr.poturns.blink.db.archive.SyncMeasurementData;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.content.ContentValues;
 import android.content.Context;

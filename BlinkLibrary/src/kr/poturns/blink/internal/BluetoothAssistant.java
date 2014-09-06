@@ -128,7 +128,7 @@ class BluetoothAssistant extends Handler{
 		}
 		
 		mServiceKeeper.clearDiscovery();
-		mServiceKeeper.clearConnection();
+		mServiceKeeper.disconnectAllConnection();
 	}
 	
 	/**

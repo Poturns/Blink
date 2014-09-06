@@ -32,14 +32,15 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 /**
  * 
- * @author Yeonho.Kim
  * @author Jiwon.Kim
+ * @author Yeonho.Kim
  * @since 2014.08.19
  * 
  */
@@ -75,10 +76,8 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		EVENT_BR = new EventBroadcastReceiver();
 		FILTER = new IntentFilter();
 
-		FILTER.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED); // 블루투스 탐색
-																		// 시작
-		FILTER.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED); // 블루투스 탐색
-																		// 종료
+		FILTER.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED); // 블루투스 탐색 시작
+		FILTER.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED); // 블루투스 탐색 종료
 
 		FILTER.addAction(BROADCAST_DEVICE_DISCOVERED);
 		FILTER.addAction(BROADCAST_DEVICE_CONNECTED);
@@ -86,6 +85,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		FILTER.addAction(BROADCAST_DEVICE_IDENTITY_CHANGED);
 
 		FILTER.addAction(BROADCAST_CONFIGURATION_CHANGED);
+		FILTER.addAction(BROADCAST_MESSAGE_RECEIVED_FOR_TEST);	// FOR TEST
 
 		mBlinkEventBroadcast = iBlinkEventBroadcast;
 		mIInternalEventCallback = iInternalEventCallback;
@@ -162,6 +162,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		intent.putExtra(BlinkLocalService.INTENT_EXTRA_SOURCE_PACKAGE,
 				CONTEXT.getPackageName());
 
+		CONTEXT.unregisterReceiver(EVENT_BR);
 		CONTEXT.unbindService(this);
 		// CONTEXT.stopService(intent);
 	}
@@ -223,6 +224,8 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 
 			} else if (BROADCAST_CONFIGURATION_CHANGED.equals(action)) {
 
+			} else if (BROADCAST_MESSAGE_RECEIVED_FOR_TEST.equals(action)) {
+				Toast.makeText(CONTEXT, intent.getStringExtra("content"), Toast.LENGTH_LONG).show();
 			}
 		}
 	}

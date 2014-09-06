@@ -56,7 +56,7 @@ public interface IBlinkEventBroadcast {
 	public static final String BROADCAST_CONFIGURATION_CHANGED = "kr.poturns.blink.internal.event.configuration_changed";
 	
 	
-	
+	public static final String BROADCAST_MESSAGE_RECEIVED_FOR_TEST = "kr.poturns.blink.internal.event.message_received";
 	
 	
 	

@@ -157,7 +157,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 				
 				//BlinkMessage 생성
 				mBlinkMessage = new BlinkMessage.Builder()
-										.setDestinationDevice(null)
+										.setDestinationDevice((String) null)
 										.setDestinationApplication(null)
 										.setSourceDevice(mBlinkDevice)
 										.setSourceApplication(mPackageName)
@@ -214,7 +214,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 			String temp = gson.toJson(mDatabaseMessage);
 			Log.i("test",temp);
 			mBlinkMessage = new BlinkMessage.Builder()
-									.setDestinationDevice(null)
+									.setDestinationDevice((String) null)
 									.setDestinationApplication(null)
 									.setSourceDevice(mBlinkDevice)
 									.setSourceApplication(mPackageName)

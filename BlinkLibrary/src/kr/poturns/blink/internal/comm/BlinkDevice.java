@@ -36,6 +36,7 @@ public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDe
 	 * 
 	 */
 	private static final long serialVersionUID = 1515234603753308973L;
+	
 
 	/**
 	 * Blink Device 객체에 대한 Cache.
@@ -62,7 +63,6 @@ public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDe
 	public static BlinkDevice update(BlinkDevice device) {
 		BlinkDevice mDevice = BlinkDevice.load(device.Address);
 		mDevice.BlinkSupported = true;
-		mDevice.Connected = true;
 		
 		mDevice.Name = (device.Name == null)? mDevice.Name : device.Name;
 		mDevice.Identity = device.getIdentity().ordinal();
@@ -198,7 +198,7 @@ public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDe
 		CACHE_MAP.clear();
 	}
 	
-
+	
 	// *** FIELD DECLARATION *** //
 	private String Address;
 	private String Name;
@@ -311,7 +311,7 @@ public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDe
 	public BluetoothDevice obtainBluetoothDevice() {
 		return BluetoothAdapter.getDefaultAdapter().getRemoteDevice(Address);
 	}
-
+	
 	
 	/**
 	 * System Repository에 해당 디바이스 정보를 기록한다.
@@ -514,7 +514,7 @@ public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDe
 	}
 	
 	public boolean isCenterDevice() {
-		return IdentityPoint > DeviceAnalyzer.IDENTITY_POINTLINE_PROXY;
+		return Identity >= DeviceAnalyzer.Identity.PROXY.ordinal();
 	}
 
 }

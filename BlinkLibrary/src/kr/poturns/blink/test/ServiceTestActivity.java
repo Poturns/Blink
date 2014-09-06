@@ -193,18 +193,18 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 				dialog.show();
 
 			} else if (v.getId() == R.id.button7) {
-				iSupport.sendBlinkMessages(Xdevice,
-						"Hello " + Xdevice.getName());
+				//iSupport.sendBlinkMessages(Xdevice, "Hello " + Xdevice.getName());
 
 			} else if (v.getId() == R.id.button8) {
 
 			} else if (v.getId() == R.id.button9) {
-				final BlinkDevice[] devices = iSupport
-						.obtainConnectedDeviceList();
-
+				final BlinkDevice[] devices = iSupport.obtainConnectedDeviceList();
+				
+				
 				final ArrayList<String> addresses = new ArrayList<String>();
-				for (BlinkDevice device : devices)
-					addresses.add(device.getAddress());
+				if (devices != null)
+					for (BlinkDevice device : devices)
+						addresses.add(device.getAddress());
 
 				ListView listView = new ListView(this);
 

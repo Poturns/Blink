@@ -3,7 +3,6 @@ package kr.poturns.blink.internal;
 import java.util.List;
 
 import kr.poturns.blink.R;
-import kr.poturns.blink.db.BlinkDatabaseManager;
 import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.SyncDatabaseManager;
 import kr.poturns.blink.db.archive.BlinkAppInfo;
@@ -22,13 +21,13 @@ import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
-import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 /**
+ * Blink의 로컬 디바이스에서 내부 애플리케이션간 바인더 통신 기능을 베이스로 하는 백그라운드 서비스 Part.
  * 
  * @author Yeonho.Kim
  *
@@ -174,7 +173,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 				
 				//BlinkMessage 생성
 				BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
-										.setDestinationDevice(null)
+										.setDestinationDevice((String) null)
 										.setDestinationApplication(null)
 										.setSourceDevice(BlinkDevice.HOST)
 										.setSourceApplication("kr.poturns.blink.internal.BlinkLocalService")
@@ -197,7 +196,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 				
 				//BlinkMessage 생성
 				BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
-										.setDestinationDevice(null)
+										.setDestinationDevice((String) null)
 										.setDestinationApplication(null)
 										.setSourceDevice(BlinkDevice.HOST)
 										.setSourceApplication("kr.poturns.blink.internal.BlinkLocalService")

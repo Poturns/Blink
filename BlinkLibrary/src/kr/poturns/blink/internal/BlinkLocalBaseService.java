@@ -7,7 +7,8 @@ import android.content.res.Configuration;
 import android.util.Log;
 
 /**
- * Blink의 로컬 디바이스에서 베이스기능을 수행하는 백그라운드 서비스 Part.
+ * Blink의 로컬 디바이스에서 디바이스간 통신 기능을 베이스로 하는 백그라운드 서비스 Part.
+ * 
  * 블루투스 통신으로 전달받은 데이터들을 다루는 가교역할을 한다({@link InterDeviceManager}).
  * 
  * 
@@ -46,7 +47,7 @@ abstract class BlinkLocalBaseService extends Service {
 		initiatate();
 		
 		// Blink 서비스를 위한 본 디바이스 정보 파악.
-//		DeviceAnalyzer.getInstance(this);
+		DeviceAnalyzer.getInstance(this);
 //		if (DeviceAnalyzer.Identity.UNKNOWN.equals(mIdentity)) {
 //			// Identity를 확인하고, 서비스가 정상적으로 동작할 수 없는 환경이면 종료한다.
 //			//Toast.makeText(this, R.string.internal_baseservice_unable_alert, Toast.LENGTH_LONG).show();
@@ -55,7 +56,7 @@ abstract class BlinkLocalBaseService extends Service {
 //		}
 		
 		// Device간 통신 모듈을 연결한다. 
-//		InterDeviceManager.getInstance(this);
+		InterDeviceManager.getInstance(this);
 	}
 
 	@Override

@@ -2,6 +2,8 @@ package kr.poturns.blink.internal.comm;
 
 import java.io.Serializable;
 
+import android.bluetooth.BluetoothAdapter;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -21,14 +23,19 @@ public class BlinkMessage implements Serializable, IBlinkMessagable {
 	
 
 	// *** FIELD DECLARATION *** //
-	private final Gson JSON_CREATOR;
+	private static final Gson JSON_CREATOR = new GsonBuilder().setPrettyPrinting().create();
 	
 	private String SourceAddress;
 	private String SourceApplication;
 	private String DestinationAddress;
 	private String DestinationApplication;
 	
-	private int Type; // BlinkMessage의 메세지 전송 용도 -> IBlinkMessageable Interface의 TYPE_으로 시작하는 변수
+	/**
+	 * BlinkMessage의 메세지 전송 용도 -> IBlinkMessageable Interface의 TYPE_으로 시작하는 변수 
+	 * 
+	 * @see {@link IBlinkMessageable}
+	 */
+	private int Type;
 	private int Code; 
 	private boolean Reliable;
 	private long Timestamp;
@@ -36,8 +43,6 @@ public class BlinkMessage implements Serializable, IBlinkMessagable {
 	private String message;
 	
 	private BlinkMessage() {
-		JSON_CREATOR = new GsonBuilder().setPrettyPrinting().create();
-		
 		Type = 0;
 		Code = 0;
 		Reliable = false;
@@ -89,6 +94,18 @@ public class BlinkMessage implements Serializable, IBlinkMessagable {
 		}
 		
 		/**
+		 * 송신 디바이스를 설정한다.
+		 * 
+		 * @param device
+		 * @return
+		 */
+		public Builder setSourceDevice(String deviceAddress) {
+			if (deviceAddress == null || BluetoothAdapter.checkBluetoothAddress(deviceAddress))
+				mBlinkMessage.SourceAddress = deviceAddress;
+			return this;
+		}
+		
+		/**
 		 * 송신 애플리케이션을 설정한다.
 		 * 
 		 * @param packageName
@@ -110,6 +127,18 @@ public class BlinkMessage implements Serializable, IBlinkMessagable {
 		public Builder setDestinationDevice(BlinkDevice device) {
 			if (device != null)
 				mBlinkMessage.DestinationAddress = device.getAddress();
+			return this;
+		}
+		/**
+		 * 수신 디바이스를 설정한다.
+		 * <br> device가 null일 경우, Explicit Mode.
+		 * 
+		 * @param device
+		 * @return
+		 */
+		public Builder setDestinationDevice(String deviceAddress) {
+			if (deviceAddress == null || BluetoothAdapter.checkBluetoothAddress(deviceAddress))
+				mBlinkMessage.DestinationAddress = deviceAddress;
 			return this;
 		}
 		
@@ -176,6 +205,16 @@ public class BlinkMessage implements Serializable, IBlinkMessagable {
 		}
 		
 		/**
+		 * 
+		 * @param object
+		 * @return
+		 */
+		public Builder setMessage(Object object) {
+			mBlinkMessage.message = JSON_CREATOR.toJson(object);
+			return this;
+		}
+		
+		/**
 		 * {@link BlinkMessage} 객체를 반환한다.
 		 * @return
 		 */
@@ -232,6 +271,10 @@ public class BlinkMessage implements Serializable, IBlinkMessagable {
 
 	public String getMessage() {
 		return message;
+	}
+	
+	public <T> T getMessage(Class<T> classType) {
+		return JSON_CREATOR.fromJson(message, classType);
 	}
 
 	public int getCode() {

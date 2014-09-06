@@ -6,7 +6,9 @@ import java.io.ObjectOutputStream;
 
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
+import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
 import android.bluetooth.BluetoothSocket;
+import android.content.Intent;
 import android.util.Log;
 
 /**
@@ -57,6 +59,7 @@ public class ClassicLinkThread extends Thread {
 	
 	private void init() {
 		Log.d("ClassicLinkThread_init()", "");
+		// TODO : ObjectStream을 Reader/Writer로 바꿀 것... (JSON String 교환)
 		try {
 			if (isClient) {
 				mOutputStream = new ObjectOutputStream(mBluetoothSocket.getOutputStream());
@@ -78,9 +81,7 @@ public class ClassicLinkThread extends Thread {
 	public void run() {
 		Log.d("ClassicLinkThread_run()", "START : " + DEVICE.toString());
 		
-		ServiceKeeper mKeeper = ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT);
-		mKeeper.requestSyncFromConnection(DEVICE);
-		
+		ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).transferSystemSync(DEVICE, true);
 		
 		// Read Operation
 		while (isRunning) {
@@ -91,18 +92,9 @@ public class ClassicLinkThread extends Thread {
 					BlinkMessage msg = (BlinkMessage) obj;
 					MSG_PROCESSOR.acceptBlinkMessage(msg, DEVICE);
 					
-				} else if (obj instanceof BlinkDevice) {
-					BlinkDevice opposite = (BlinkDevice) obj;
-					//ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).updateBlinkNetwork(opposite);
-					
-				} else if (obj instanceof String) {
-					String json = (String) obj;
-					
-					BlinkMessage mBlinkMessage = BlinkMessage.Builder.restore(json);
-					if (mBlinkMessage != null)
-						MSG_PROCESSOR.acceptBlinkMessage(mBlinkMessage, DEVICE);
-
-					Log.d("ClassicLinkThread_run()", "Read : " + json);
+					Intent intent = new Intent(IBlinkEventBroadcast.BROADCAST_MESSAGE_RECEIVED_FOR_TEST);
+					intent.putExtra("content", msg.getMessage());
+					INTER_DEV_MANAGER.MANAGER_CONTEXT.sendBroadcast(intent);
 				}
 				
 			} catch (IOException e) {
@@ -218,5 +210,5 @@ public class ClassicLinkThread extends Thread {
 			}
 		}
 	}
-	
+
 }
