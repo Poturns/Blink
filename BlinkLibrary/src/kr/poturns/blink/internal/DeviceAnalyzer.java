@@ -186,8 +186,11 @@ public class DeviceAnalyzer {
 	
 	/**
 	 * User로 부터 현 디바이스의 MAIN Identity를 설정한다.
+<<<<<<< HEAD
 	 * <p>※ Identity.CORE 이상부터 MAIN Identity가 될 수 있다.
 	 * 
+=======
+>>>>>>> branch 'service' of https://github.com/Poturns/Blink.git
 	 * @param enable
 	 */
 	synchronized boolean grantMainIdentityFromUser(boolean enable) {

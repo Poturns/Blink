@@ -129,6 +129,7 @@ public class BlinkMessage implements Serializable, IBlinkMessagable {
 				mBlinkMessage.DestinationAddress = device.getAddress();
 			return this;
 		}
+		
 		/**
 		 * 수신 디바이스를 설정한다.
 		 * <br> device가 null일 경우, Explicit Mode.
