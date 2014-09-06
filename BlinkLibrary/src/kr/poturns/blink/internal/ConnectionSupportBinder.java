@@ -7,7 +7,6 @@ import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.RemoteException;
-import android.util.Log;
 
 /**
  * 

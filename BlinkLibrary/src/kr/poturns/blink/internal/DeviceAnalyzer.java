@@ -9,10 +9,11 @@ import android.net.NetworkInfo;
 import android.util.Log;
 
 /**
+ * 자신의 디바이스를 분석하여, {@link Identity}를 도출하는 모듈.
+ * <br>Identity 관련 계산을 수행하는 메소드들을 제공한다.
  * 
  * @author Yeonho.Kim
  * @since 2014.07.17
- *
  */
 public class DeviceAnalyzer {
 	
@@ -20,14 +21,42 @@ public class DeviceAnalyzer {
 	/**
 	 * 디바이스의 역할 코드.
 	 * 
-	 * @author Yeonho.Kim
+	 * <p>{@link #UNKNOWN} : 디바이스에 대한 Identity를 파악할 수 없거나, Blink 기능을 수행하기에 부적합.
+	 * <br>{@link #PERIHERAL} : 주변부 디바이스. PROXY는 가능하지만, MAIN의 역할을 수행할 수 없다.
+	 * <br>{@link #CORE} : 일반 디바이스. PROXY & MAIN의 역할을 모두 수행할 수 있다.
+	 * <br>{@link #PROXY} : 현재 네트워크 그룹에서 임시적으로 중심부 역할을 대리한다.
+	 * <br>{@link #MAIN} : 현재 네트워크 그룹에서 중심부 역할을 담당한다. 
+	 * 
+	 * @author Yeonho.Kim 
 	 *
 	 */
 	public enum Identity {
+		/**
+		 * 
+		 */
 		UNKNOWN,
-		PERIPHERALS,
+		/**
+		 * 
+		 */
+		PERIPHERAL,
+		/**
+		 * 
+		 */
 		CORE,
+		/**
+		 * <b>[ CENTER ]</b> 
+		 * <br>: 네트워크 그룹에서의 중심부. 연결된 각 디바이스간의 데이터를 중개하고, 연결해준다.
+		 * 
+		 * <p>
+		 */
 		PROXY,
+		/**
+		 * <b>[ CENTER ]</b> 
+		 * <br>: 네트워크 그룹에서의 중심부. 연결된 각 디바이스간의 데이터를 중개하고, 연결해준다.
+		 * 
+		 * <p>
+		 * 서버와의 연결 작업을 수행한다.
+		 */
 		MAIN
 	}
 
@@ -49,9 +78,17 @@ public class DeviceAnalyzer {
 	
 	
 	// *** STATIC DECLARATION *** //
-
+	/**
+	 * Singleton Instance.
+	 */
 	private static DeviceAnalyzer sInstance = null;
 	
+	/**
+	 * Singleton Instance를 반환한다.
+	 * 
+	 * @param service
+	 * @return
+	 */
 	public static DeviceAnalyzer getInstance(BlinkLocalBaseService service) {
 		if (sInstance == null)
 			sInstance = new DeviceAnalyzer(service);
@@ -76,7 +113,7 @@ public class DeviceAnalyzer {
 	}
 	
 	/**
-	 * Device Features 및 상태를 분석한다.
+	 * 자신의 디바이스 Feature를 분석하여, IdentityPoint를 도출한다.
 	 * 
 	 * @return
 	 */
@@ -128,7 +165,9 @@ public class DeviceAnalyzer {
 	}
 	
 	/**
-	 * 현 IdentityPoint를 시스템에 적용한다.
+	 * IdentityPoint를 계산하여 {@link Identity}를 결정한다.
+	 * 
+	 * @see {@link Identity}
 	 * @return
 	 */
 	Identity calculate(int identityPoint) {
@@ -144,7 +183,7 @@ public class DeviceAnalyzer {
 			mIdentity = Identity.CORE;
 		
 		else if (identityPoint > IDENTITY_POINTLINE_NONE) 
-			mIdentity = Identity.PERIPHERALS;
+			mIdentity = Identity.PERIPHERAL;
 		
 		else
 			mIdentity = Identity.UNKNOWN;
@@ -154,13 +193,16 @@ public class DeviceAnalyzer {
 	
 	
 	/**
-	 * 
+	 * User로 부터 현 디바이스의 MAIN Identity를 설정한다.
 	 * @param enable
 	 */
 	synchronized boolean grantMainIdentityFromUser(boolean enable) {
 		if (BlinkDevice.HOST != null) {
 			
 			int mIdentityPoint = BlinkDevice.HOST.getIdentityPoint();
+			if (mIdentityPoint < IDENTITY_POINTLINE_CORE)
+				return false;
+			
 			mIdentityPoint = enable? 
 					(mIdentityPoint | IDENTITY_POINTLINE_USER) 
 					: (mIdentityPoint ^ IDENTITY_POINTLINE_USER);

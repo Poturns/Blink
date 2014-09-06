@@ -3,24 +3,19 @@ package kr.poturns.blink.internal;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
 import kr.poturns.blink.db.JsonManager;
 import kr.poturns.blink.db.SqliteManager;
-
 import kr.poturns.blink.db.SyncDatabaseManager;
-import kr.poturns.blink.db.archive.Measurement;
-import kr.poturns.blink.db.archive.MeasurementData;
-
-
 import kr.poturns.blink.db.archive.BlinkAppInfo;
-
+import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
 import kr.poturns.blink.internal.comm.BlinkMessage.Builder;
 import kr.poturns.blink.internal.comm.IBlinkMessagable;
 import android.util.Log;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * 
