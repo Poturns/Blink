@@ -17,15 +17,21 @@ public class CallbackData implements Parcelable{
 	 * 외부 디바이스에 데이터가 없는데 호출한 경우
 	 */
 	public static final int ERROR_NO_OUT_DEVICE = 0x02;
+	/**
+	 *  디바이스에 데이터가 없는데 호출한 경우
+	 */
+	public static final int ERROR_CONNECT_FAIL = 0x03;
 	
 	public String InDeviceData;
 	public String OutDeviceData;
-	public int Error;
+	public boolean Result;
+	public int ResultDetail;
 	
 	public CallbackData(){
 		InDeviceData = null;
 		OutDeviceData = null;
-		Error = ERROR_NO;
+		Result = true;
+		ResultDetail = ERROR_NO;
 	}
 	
 	/**
@@ -67,6 +73,7 @@ public class CallbackData implements Parcelable{
 	public void CopyFromOtherObject(CallbackData mCallbackData) {
 		this.InDeviceData = mCallbackData.InDeviceData;
 		this.OutDeviceData = mCallbackData.OutDeviceData;
-		this.Error = mCallbackData.Error;
+		this.Result = mCallbackData.Result;
+		this.ResultDetail = mCallbackData.ResultDetail;
 	}
 }

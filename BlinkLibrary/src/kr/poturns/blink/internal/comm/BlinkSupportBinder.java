@@ -98,7 +98,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	 * @param ClassName
 	 * @param data
 	 */
-	public void callbackData(int responseCode,String data){
+	public void callbackData(int responseCode,String data,boolean result){
 		ServiceKeeper mServiceKeeper = ServiceKeeper.getInstance(CONTEXT);
 		RemoteCallbackList<IInternalEventCallback> mRemoteCallbackList = mServiceKeeper.obtainRemoteCallbackList(mPackageName);
 		if(mRemoteCallbackList==null)return;
@@ -107,6 +107,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 			mCallbackData = new CallbackData();
 		}
 		mCallbackData.OutDeviceData = data;
+		mCallbackData.Result = result;
 		
 		int N = mRemoteCallbackList.beginBroadcast();
 		for(int i=0;i<N;i++){
@@ -170,21 +171,22 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 				}
 				//자기 자신이 center 디바이스면 메시지를 보내지 않고 에러코드를 설정한다.
 				if(ServiceKeeper.getInstance(CONTEXT).obtainCurrentCenterDevice().getAddress().contentEquals(mBlinkDevice.getAddress())){
-					mCallbackData.Error = CallbackData.ERROR_CENTER_DEVICE;
+					mCallbackData.ResultDetail = CallbackData.ERROR_CENTER_DEVICE;
+					callbackData(requestCode, null,false);
 				}
 				else CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
 			}else {
-				mCallbackData.Error = CallbackData.ERROR_NO_OUT_DEVICE;
+				mCallbackData.ResultDetail = CallbackData.ERROR_NO_OUT_DEVICE;
 				if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
 					mCallbackData.InDeviceData = mBlinkDatabaseManager.obtainMeasurementData(mClass, DateTimeFrom, DateTimeTo, ContainType);
 					CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
 				}
-				callbackData(requestCode, null);
+				callbackData(requestCode, null,false);
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			callbackData(requestCode, null);
+			callbackData(requestCode, null,false);
 		}
 		
 	}
@@ -229,18 +231,19 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 			}
 			//자기 자신이 center 디바이스면 메시지를 보내지 않고 에러코드를 설정한다.
 			if(ServiceKeeper.getInstance(CONTEXT).obtainCurrentCenterDevice().getAddress().contentEquals(mBlinkDevice.getAddress())){
-				mCallbackData.Error = CallbackData.ERROR_CENTER_DEVICE;
+				mCallbackData.ResultDetail = CallbackData.ERROR_CENTER_DEVICE;
+				callbackData(requestCode, null,false);
 			}
 			else CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
 		}else {
-			mCallbackData.Error = CallbackData.ERROR_NO_OUT_DEVICE;
+			mCallbackData.ResultDetail = CallbackData.ERROR_NO_OUT_DEVICE;
 			if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
 				//외부 디바이스에 데이터가 없으면 에러코드를 설정하고 내부에서 검색한다.
 				List<MeasurementData> InDeviceData = mBlinkDatabaseManager.obtainMeasurementData(mMeasurementList, DateTimeFrom, DateTimeTo);
 				mCallbackData.InDeviceData =  gson.toJson(InDeviceData);
 				CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
 			}
-			callbackData(requestCode, null);
+			callbackData(requestCode, null,false);
 		}
 	}
 
@@ -276,13 +279,13 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 				CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
 			}
 		}else {
-			mCallbackData.Error = CallbackData.ERROR_NO_OUT_DEVICE;
+			mCallbackData.ResultDetail = CallbackData.ERROR_NO_OUT_DEVICE;
 			if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
 				CONTEXT.startFunction(function);
 				mCallbackData.InDeviceData = "success";
 				CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
 			}
-			callbackData(requestCode, null);
+			callbackData(requestCode, null,false);
 		}
 	}
 

@@ -24,14 +24,14 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 	private final static String tag = "SyncDatabaseManager";
 	
 	public Wearable wearable;
-	public Main main;
+	public Center center;
 	
 	private static final int TEMP_MEASUREMENT_ID = 999999;
 	
 	public SyncDatabaseManager(Context context) {
 	    super(context);
 	    wearable = new Wearable();
-	    main = new Main();
+	    center = new Center();
     }
 	
 	/**
@@ -335,7 +335,7 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		}
 	}
 	
-	public class Main {
+	public class Center {
 		/**
 		 * 주어진 SystemDatabaseObjectList와 비교하여 새로운 부분을 추가한다.
 		 */

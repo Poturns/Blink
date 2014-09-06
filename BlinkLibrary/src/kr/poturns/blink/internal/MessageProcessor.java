@@ -83,7 +83,7 @@ public class MessageProcessor {
 					
 				
 				syncDatabaseManager.wearable.syncBlinkDatabase(ret);
-				syncDatabaseManager.main.syncBlinkDatabase(ret);
+				syncDatabaseManager.center.syncBlinkDatabase(ret);
 				ArrayList<BlinkAppInfo> mergedBlinkAppInfo = new ArrayList<BlinkAppInfo>();
 				mergedBlinkAppInfo = syncDatabaseManager.obtainBlinkApp();
 				String jsonResponseMessage = mJsonManager.obtainJsonBlinkAppInfo(mergedBlinkAppInfo);
@@ -114,7 +114,7 @@ public class MessageProcessor {
 				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(null);
 				String jsonResponseMessage = blinkMessage.getMessage();
 				ArrayList<BlinkAppInfo>mergedBlinkAppInfo = JsonManager.obtainJsonBlinkAppInfo(jsonResponseMessage);
-				syncDatabaseManager.main.syncBlinkDatabase(mergedBlinkAppInfo);
+				syncDatabaseManager.center.syncBlinkDatabase(mergedBlinkAppInfo);
 				syncDatabaseManager.wearable.syncBlinkDatabase(mergedBlinkAppInfo);
 			}
 			else if(blinkMessage.getType() == IBlinkMessagable.TYPE_RESPONSE_IDENTITY_SUCCESS){
