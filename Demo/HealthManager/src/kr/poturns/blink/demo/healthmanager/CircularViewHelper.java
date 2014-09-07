@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import kr.poturns.blink.R;
+import kr.poturns.blink.demo.healthmanager.R;
 import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.Context;

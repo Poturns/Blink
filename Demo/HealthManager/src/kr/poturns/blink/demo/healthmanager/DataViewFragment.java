@@ -133,15 +133,17 @@ class DataViewFragment extends Fragment {
 	@Override
 	public void onResume() {
 		super.onResume();
-		getActivity().getActionBar().setTitle(mMeasurement.Measurement);
+		getActivity().getActionBar().setTitle(mMeasurement.MeasurementName);
 		getActivity().getActionBar().setSubtitle(mMeasurement.Type);
 	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
-		getActivity().getActionBar().setTitle(null);
-		getActivity().getActionBar().setSubtitle(null);
+		Bundle arg = getArguments();
+		getActivity().getActionBar().setTitle(arg.getCharSequence("title"));
+		getActivity().getActionBar().setSubtitle(
+				arg.getCharSequence("subTitle"));
 	}
 
 	@Override

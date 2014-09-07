@@ -1,6 +1,6 @@
 package kr.poturns.blink.demo.healthmanager;
 
-import kr.poturns.blink.R;
+import kr.poturns.blink.demo.healthmanager.R;
 import kr.poturns.blink.demo.healthmanager.ConnectionFragment.BaseConnectionFragment;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.os.Bundle;

@@ -3,9 +3,10 @@ package kr.poturns.blink.demo.healthmanager;
 import java.util.ArrayList;
 import java.util.List;
 
-import kr.poturns.blink.R;
+import kr.poturns.blink.demo.healthmanager.R;
 import kr.poturns.blink.demo.healthmanager.ConnectionFragment.BaseConnectionFragment;
 import kr.poturns.blink.demo.healthmanager.CircularViewHelper.OnDragAndDropListener;
+import kr.poturns.blink.demo.healthmanager.ConnectionFragment.DeviceConnectionResultListener;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.content.Context;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.SlidingDrawer;
 import android.widget.TextView;
+import android.widget.Toast;
 
 @SuppressWarnings("deprecation")
 final class ConnectionCircularFragment extends BaseConnectionFragment {
@@ -147,8 +149,32 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 
 		@Override
 		public void onDrop(View view) {
-			connectOrDisConnectDevice((BlinkDevice) mCircularHelper
-					.getViewTag(view));
+			connectOrDisConnectDevice(
+					(BlinkDevice) mCircularHelper.getViewTag(view),
+					new DeviceConnectionResultListener() {
+						@Override
+						public void onResult(BlinkDevice device,
+								boolean connectionResult, boolean isTaskFailed) {
+							if (isTaskFailed)
+								Toast.makeText(getActivity(),
+										"connection task was failed!",
+										Toast.LENGTH_SHORT).show();
+							else {
+								if (connectionResult)
+									Toast.makeText(
+											getActivity(),
+											device.getName()
+													+ " was connected!",
+											Toast.LENGTH_SHORT).show();
+								else
+									Toast.makeText(
+											getActivity(),
+											device.getName()
+													+ " was disconnected!",
+											Toast.LENGTH_SHORT).show();
+							}
+						}
+					});
 		}
 
 		@Override
