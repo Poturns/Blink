@@ -2,14 +2,13 @@ package kr.poturns.blink.internal;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import kr.poturns.blink.db.JsonManager;
 import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.SyncDatabaseManager;
-import kr.poturns.blink.db.archive.Function;
-import kr.poturns.blink.db.archive.Measurement;
-import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.BlinkAppInfo;
+import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
@@ -19,6 +18,9 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 
 /**
@@ -103,13 +105,20 @@ public class MessageProcessor {
 				builder_success.setMessage("");	
 				
 			}
-			else if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA){//
-				String message = OPERATOR_CONTEXT.receiveMessageFromProcessor(blinkMessage.getMessage());
-				builder_success.setMessage(message);
-				builder_success.setType(IBlinkMessagable.TYPE_RESPONSE_FUNCTION_SUCCESS);
-			}
-			else if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_IDENTITY_SYNC){//
-				//연호꺼 메서드 호출.
+			else if(blinkMessage.getType() == IBlinkMessagable.TYPE_REQUEST_IDENTITY_SYNC){
+				BlinkDevice device = blinkMessage.getMessage(BlinkDevice.class);
+				ServiceKeeper.getInstance(OPERATOR_CONTEXT).handleIdentitySync(device);
+			} 
+			else if (blinkMessage.getType() == IBlinkMessagable.TYPE_REQUEST_NETWORK_SYNC) {
+				JsonArray mJsonArray = new JsonParser().parse(blinkMessage.getMessage()).getAsJsonArray();
+				
+				HashSet<BlinkDevice> mHashSet = new HashSet<BlinkDevice>();
+				Gson gson = new Gson();
+				for (JsonElement element : mJsonArray)
+					mHashSet.add(gson.fromJson(element, BlinkDevice.class));
+				
+				ServiceKeeper.getInstance(OPERATOR_CONTEXT).handleNetworkSync(mHashSet);
+				
 			}/* -> 일단 fromdevice로 보내면 되겠네
 			if (i am main) {
 			BlinkDevice = 
@@ -119,7 +128,7 @@ public class MessageProcessor {
 				
 			}*/
 			BlinkMessage responseMessage = builder_success.build();
-			sendBlinkMessageTo(responseMessage, fromDevice);
+			//sendBlinkMessageTo(responseMessage, fromDevice);
 			/*위 까지는 TYPE_REQUEST에 대한 처리*/
 			
 			if(blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_BlinkAppInfo_SYNC_SUCCESS){
