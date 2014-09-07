@@ -88,7 +88,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	public final boolean unregisterCallback(IInternalEventCallback callback) throws RemoteException {
 		ServiceKeeper mServiceKeeper = ServiceKeeper.getInstance(CONTEXT);
 		if (callback != null){
-			return mServiceKeeper.clearRemoteCallbackList(mPackageName,callback);
+			return mServiceKeeper.removeRemoteCallbackList(mPackageName,callback);
 		}
 		return false;
 	}

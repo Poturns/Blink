@@ -33,7 +33,7 @@ import android.util.Log;
  * @since 2014.07.17
  *
  */
-class BluetoothAssistant extends Handler{
+class BluetoothAssistant extends Handler {
 	
 	// *** CONSTANT DECLARATION *** //
 	public final static String TAG = "BluetoothAssistant";
@@ -63,26 +63,25 @@ class BluetoothAssistant extends Handler{
 	}
 
 	/**
-	 * 블루투스 통신에서 BroadcastReceiver가 감지해야하는 IntentFilter를 얻어온다.
+	 * 블루투스 통신에서 {@link InterDeviceManager}가 감지해야하는 IntentFilter를 얻어온다.
 	 * 
 	 * @return 
 	 */
 	public static IntentFilter obtainIntentFilter() {
 		IntentFilter mIntentFilter = new IntentFilter();
 		mIntentFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);				// 블루투스 상태 변화 
-		//mIntentFilter.addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);			// 블루투스 탐색 모드 변화
+		mIntentFilter.addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);			// 블루투스 탐색 모드 변화
 		mIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);			// 블루투스 탐색 시작
 		mIntentFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);		// 블루투스 탐색 종료
 		mIntentFilter.addAction(BluetoothDevice.ACTION_FOUND);						// 블루투스 탐색시 디바이스 발견
 		mIntentFilter.addAction(BluetoothDevice.ACTION_UUID);						// 블루투스 UUID 발견
 
-		mIntentFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);			// 블루투스 Pairing 상태 변화
+		mIntentFilter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);			// 블루투스 페어링 상태 변화
 		mIntentFilter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);				// 블루투스 ACL 연결
 		mIntentFilter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);			// 블루투스 ACL 해제
 		
 		mIntentFilter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);	// 블루투스 LE 연결 상태 변화
 
-		
 		return mIntentFilter;
 	}
 
@@ -98,23 +97,19 @@ class BluetoothAssistant extends Handler{
 	}
 	
 	private BluetoothManager mBluetoothManager;
-	private MessageProcessor mMessageProcessor;
-	private DeviceAnalyzer mDeviceAnalyzer;
 	private ServiceKeeper mServiceKeeper;
 	private boolean isLeSupported;
 	
 	/**
-	 * 현 객체를 초기화한다.
+	 * BluetoothAssistant를 초기화한다.
 	 */
 	void inititiate() {
 		BlinkLocalBaseService mContext = INTER_DEV_MANAGER.MANAGER_CONTEXT;
 		
 		mBluetoothManager = (BluetoothManager) mContext.getSystemService(Context.BLUETOOTH_SERVICE);
-		mMessageProcessor = new MessageProcessor(mContext);
-		mDeviceAnalyzer = DeviceAnalyzer.getInstance(mContext);
 		mServiceKeeper = ServiceKeeper.getInstance(mContext);
 		
-		isLeSupported = mDeviceAnalyzer.isAvailableBluetoothLE();
+		isLeSupported = DeviceAnalyzer.getInstance(mContext).isAvailableBluetoothLE();
 		
 		int state = BluetoothAdapter.getDefaultAdapter().getState();
 		switch (state) {
@@ -128,16 +123,18 @@ class BluetoothAssistant extends Handler{
 		}
 		
 		mServiceKeeper.clearDiscovery();
-		mServiceKeeper.disconnectAllConnection();
+		//mServiceKeeper.disconnectAllConnection();
 	}
 	
 	/**
-	 * 현 객체를 파괴한다.
+	 * BluetoothAssistant를 파괴한다.
+	 * 블루투스 사용 상태를 정리하고, 서비스 종료 절차를 밟는다.
+	 * 
+	 * <p><b>(직접 호출하지 말것 ! Service 종료시 자동으로 호출됨.)</b>
 	 */
 	void destroy() {
 		stopDiscovery();
 		stopListeningServer();
-		BlinkDevice.clearAllCache();
 	}
 
 	/**
@@ -151,11 +148,9 @@ class BluetoothAssistant extends Handler{
 	 * 블루투스가 Off상태가 되었을 때, 수행할 기능을 정의한다.
 	 */
 	void onBluetoothStateOff() {
-		// TODO :
-		Intent mIntent = (true)? 
+		Intent mIntent = (BlinkDevice.HOST.isCenterDevice())? 
 				new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE) : 
 					new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE) ;
-					
 		mIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		INTER_DEV_MANAGER.MANAGER_CONTEXT.startActivity(mIntent);
 	}
@@ -168,12 +163,13 @@ class BluetoothAssistant extends Handler{
 	}
 	
 	
-	private boolean isServerActivated = false;
-	private Thread mServerThread = null;
+	private boolean isClassicServerActivated = false;
+	private Thread mClassicServerThread = null;
 	private BluetoothServerSocket mServerSocket = null;
 	private BluetoothGattServer mGattServer;
 	
 	/**
+	 * Bluetooth 서버를 실행한다.
 	 * 
 	 * @param secure
 	 */
@@ -187,7 +183,7 @@ class BluetoothAssistant extends Handler{
 	}
 	
 	/**
-	 * 
+	 * Bluetooth 서버를 중지한다.
 	 */
 	public void stopListeningServer() {
 		stopClassicServer();
@@ -198,18 +194,19 @@ class BluetoothAssistant extends Handler{
 	}
 	
 	/**
+	 * Bluetooth Classic 서버를 실행한다.
 	 * 
 	 * @param uuid
 	 * @param secure
 	 */
 	public synchronized void startClassicServer(final UUID uuid, final boolean secure) {
-		if (mServerThread != null) 
-			if (mServerThread.isAlive())
+		if (mClassicServerThread != null) 
+			if (mClassicServerThread.isAlive())
 				return;
 		
-		isServerActivated = true;
+		isClassicServerActivated = true;
 		
-		mServerThread = new Thread(new Runnable() {
+		mClassicServerThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				String name = BlinkProfile.SERVICE_NAME;
@@ -220,7 +217,7 @@ class BluetoothAssistant extends Handler{
 							adapter.listenUsingRfcommWithServiceRecord(name, uuid) :
 								adapter.listenUsingInsecureRfcommWithServiceRecord(name, uuid);
 							
-					while (isServerActivated) {
+					while (isClassicServerActivated) {
 						try {
 							if (mServerSocket == null)
 								return;
@@ -238,39 +235,44 @@ class BluetoothAssistant extends Handler{
 					Log.d("BluetoothAssistant_ServerThread", "OUT!!");
 					mServerSocket.close();
 					
-				} catch (IOException e) {
+				} catch (Exception e) {
+					try {
+						if (mServerSocket != null)
+							mServerSocket.close();
+						
+					} catch (IOException ee) { }
 					
 				} finally {
 					mServerSocket = null;
 				}
-				
 			}	
 		}, "ClassicServerThread");
-		mServerThread.start();
+		mClassicServerThread.start();
 	}
 	
 	/**
-	 * 
+	 * Bluetooth Classic 서버를 중지한다.
 	 */
 	public synchronized void stopClassicServer() {
-		isServerActivated = false;
+		isClassicServerActivated = false;
 
 		Log.d("BluetoothAssistant_ServerThread", "STOP!!");
-		if (mServerThread != null && mServerSocket != null) {
+		if (mClassicServerThread != null && mServerSocket != null) {
 			try {
 				mServerSocket.close();
-				mServerThread.join(JOIN_TIMEOUT);
+				mClassicServerThread.join(JOIN_TIMEOUT);
 				
 			} catch (IOException e) {
 			} catch (InterruptedException e) {
 			} finally {
-				mServerThread = null;
+				mClassicServerThread = null;
 				mServerSocket = null;
 			}
 		}
 	}
 
 	/**
+	 * Bluetooth LE 서버를 실행한다.
 	 * 
 	 * @param service
 	 */
@@ -289,7 +291,7 @@ class BluetoothAssistant extends Handler{
 	}
 	
 	/**
-	 * 
+	 * Bluetooth LE 서버를 중지한다.
 	 */
 	public void stopLeServer() {
 		if (mGattServer != null) {
@@ -308,7 +310,9 @@ class BluetoothAssistant extends Handler{
 	private boolean isLeScanning = false;
 	
 	/**
-	 * {@link #startDiscovery(type, clear)}의 [ clear = true ] Default 값을 같는다. 
+	 * startDiscovery(type, true).
+	 * 
+	 * @see #startDiscovery(int, boolean)
 	 * @param type
 	 */
 	public void startDiscovery(int type) {
@@ -333,20 +337,19 @@ class BluetoothAssistant extends Handler{
 		if (clear && !isLeScanning && !mAdapter.isDiscovering()) 
 			mServiceKeeper.clearDiscovery();
 		
-
 		// New Discovery Start.
 		if (BluetoothDevice.DEVICE_TYPE_LE == type && !isLeScanning) {
 			postDelayed(new Runnable() {
 				@Override
 				public void run() {
 					// 10초간 LE Discovery
-					isLeScanning = false;
 					mAdapter.stopLeScan(INTER_DEV_MANAGER);
+					isLeScanning = false;
 				}
 			}, DISCOVERY_TIMEOUT);
 			
-			isLeScanning = true;
 			mAdapter.startLeScan(INTER_DEV_MANAGER);
+			isLeScanning = true;
 			
 		} else if (BluetoothDevice.DEVICE_TYPE_CLASSIC == type && !mAdapter.isDiscovering()) {
 			isLeScanning = false;
@@ -358,18 +361,23 @@ class BluetoothAssistant extends Handler{
 	 * 현재 수행 중인 Discovery를 중지한다.
 	 */
 	public void stopDiscovery() {
-		BluetoothAdapter mAdapter = mBluetoothManager.getAdapter();
 		removeCallbacksAndMessages(null);
-
-		if (isLeScanning && (isLeScanning = false))
+		
+		BluetoothAdapter mAdapter = mBluetoothManager.getAdapter();
+		if (isLeScanning)
 			mAdapter.stopLeScan(INTER_DEV_MANAGER);	
 		
 		if (mAdapter.isDiscovering())
 			mAdapter.cancelDiscovery();
+		
+		isLeScanning = false;
 	}
 
 	/**
+	 * 해당 BlinkDevice에 BLINK 서비스 연결을 요청한다.
+	 * <br>connectToDeviceFromClient(BlinkDevice, BlinkProfile.UUID_BLINK)
 	 * 
+	 * @see #connectToDeviceFromClient(BlinkDevice, UUID)
 	 * @param device
 	 */
 	public void connectToDeviceFromClient(BlinkDevice device) {
@@ -377,6 +385,7 @@ class BluetoothAssistant extends Handler{
 	}
 	
 	/**
+	 * 해당 BlinkDevice에 다음의 UUID로 연결을 요청한다.
 	 * 
 	 * @param device
 	 * @param uuid
@@ -409,12 +418,13 @@ class BluetoothAssistant extends Handler{
 	}
 	
 	/**
+	 * 해당 디바이스와의 연결을 해제한다.
 	 * 
+	 * @see {@link ServiceKeeper#removeConnection(BlinkDevice)}
 	 * @param device
 	 */
 	public void disconnectDevice(BlinkDevice device) {
 		Log.d("InterDeviceManager_disconnectFromDeviceAsClient()", "Disconnect");
-		
 		mServiceKeeper.removeConnection(device);
 	}
 	

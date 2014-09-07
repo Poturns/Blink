@@ -23,14 +23,14 @@ import android.bluetooth.BluetoothGatt;
 class NetworkMap {
 
 	// *** FIELD DECLARATION *** //
-	private int GroupID;
+	private String GroupID;
 	private String GroupName;
 	
 	private final ArrayList<BlinkDevice> LINKED_LIST;
 	private final HashMap<BlinkDevice, Object> CONNECTED_MAP;
 	private final HashMap<BlinkDevice, Object> LINKED_MAP;
 
-	public NetworkMap(int groupID) {
+	public NetworkMap(String groupID) {
 		GroupID = groupID;
 		
 		LINKED_LIST = new ArrayList<BlinkDevice>();
@@ -182,7 +182,7 @@ class NetworkMap {
 	
 
 	// *** Getter & Setter *** //
-	public final int getGroupID() {
+	public final String getGroupID() {
 		return GroupID;
 	}
 	

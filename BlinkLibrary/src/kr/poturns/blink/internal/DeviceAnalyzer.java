@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
+import kr.poturns.blink.util.EncryptionUtil;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -58,10 +59,12 @@ public class DeviceAnalyzer {
 		 * <p>
 		 * 서버와의 연결 작업을 수행한다.
 		 */
-		MAIN
+		MAIN;
+
+		public static final int SIZE = 5;
 	}
 
-	private static final int IDENTITY_POINTLINE_USER = 1024 * 1024 * 32;
+	static final int IDENTITY_POINTLINE_USER = 1024 * 1024 * 32;
 	static final int IDENTITY_POINTLINE_MAIN = 1024 * 1024 * 16;
 	static final int IDENTITY_POINTLINE_PROXY = 1024 * 1024 * 8;
 	static final int IDENTITY_POINTLINE_CORE = 1024 * 1;
@@ -71,7 +74,6 @@ public class DeviceAnalyzer {
 	private static final int IDENTITY_POINTLINE_WIFI = 1024 * 2;
 	private static final int IDENTITY_POINTLINE_ETHERNET = 1024 * 1;
 	
-	//private static final int IDENTITY_POINTLINE_STORAGE = 64;
 	private static final int IDENTITY_POINTLINE_BLUETOOTH_LE = 2;
 	private static final int IDENTITY_POINTLINE_BLUETOOTH_CLASSIC = 1;
 	private static final int IDENTITY_POINTLINE_NONE = 0;
@@ -109,7 +111,6 @@ public class DeviceAnalyzer {
 		if (BlinkDevice.HOST != null) {
 			BlinkDevice.HOST.setIdentityPoint(mIdentityPoint);
 			BlinkDevice.HOST.setIdentity(mIdentity.ordinal());
-			//BlinkDevice.removeDeviceCache(BlinkDevice.HOST.getAddress());
 		}
 	}
 	
@@ -186,11 +187,8 @@ public class DeviceAnalyzer {
 	
 	/**
 	 * User로 부터 현 디바이스의 MAIN Identity를 설정한다.
-<<<<<<< HEAD
 	 * <p>※ Identity.CORE 이상부터 MAIN Identity가 될 수 있다.
 	 * 
-=======
->>>>>>> branch 'service' of https://github.com/Poturns/Blink.git
 	 * @param enable
 	 */
 	synchronized boolean grantMainIdentityFromUser(boolean enable) {
@@ -274,9 +272,8 @@ public class DeviceAnalyzer {
 	}
 	
 	/**
-	 * 
-	 * 결과값은 device1 - device2에 해당하는 차이 값이다. 
-	 * 따라서 결과값이 양수일 경우 device1이 더 크고, 음수일 경우 device2가 더 크다. 
+	 * 결과값은 (device1 - device2)에 해당하는 차이 값이다. 
+	 * 따라서 결과값이 양수일 경우 device1이 더 크고, 음수일 경우 device2가 더 큰 경우이다. 
 	 * 
 	 * @param device1
 	 * @param device2
@@ -367,12 +364,12 @@ public class DeviceAnalyzer {
 	 * 
 	 * @return
 	 */
-	int generateGroupId() {
+	String generateGroupId() {
 		if (BlinkDevice.HOST == null)
-			return 0;
+			return null;
 		
 		String strID = BlinkDevice.HOST.getAddress() + "@" + System.currentTimeMillis();
-		return strID.toUpperCase().hashCode();
+		return EncryptionUtil.grantHashMessage(strID.toUpperCase()).substring(1, 40);
 	}
 
 }

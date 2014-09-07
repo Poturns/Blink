@@ -54,9 +54,10 @@ public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDe
 		BluetoothAdapter mAdapter = BluetoothAdapter.getDefaultAdapter();
 		HOST = (mAdapter != null)? load(mAdapter.getAddress()) : null;	
 		
-		if (HOST != null && mAdapter != null)
+		if (HOST != null && mAdapter != null) {
 			HOST.setName(mAdapter.getName());
-		
+			HOST.setConnected(true);
+		}
 	}
 
 	
@@ -180,6 +181,7 @@ public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDe
 	 * 
 	 */
 	public static void removeUnnecessaryCache() {
+		// TODO : java.util.ConcurrentModificationException
 		for (BlinkDevice device : CACHE_MAP.values()) {
 			if (device.Connected || device.Discovered)
 				continue;
@@ -208,7 +210,7 @@ public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDe
 	// Group-dependent
 	private int Identity;
 	private int IdentityPoint;
-	private int GroupID;
+	private String GroupID;
 
 	// Device-dependent
 	private boolean AutoConnect;
@@ -228,7 +230,7 @@ public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDe
 		
 		Identity = DeviceAnalyzer.Identity.UNKNOWN.ordinal();
 		IdentityPoint = 0;
-		GroupID = 0;
+		GroupID = null;
 		
 		AutoConnect = false;
 		SecureConnect = true;
@@ -251,7 +253,7 @@ public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDe
 		
 		Identity = parcel.readInt();
 		IdentityPoint = parcel.readInt();
-		GroupID = parcel.readInt();
+		GroupID = parcel.readString();
 		
 		boolean[] bools = new boolean[5];
 		parcel.readBooleanArray(bools);
@@ -366,7 +368,7 @@ public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDe
 		
 		dest.writeInt(Identity);
 		dest.writeInt(IdentityPoint);
-		dest.writeInt(GroupID);
+		dest.writeString(GroupID);
 		
 		dest.writeBooleanArray(new boolean[]{
 			AutoConnect, SecureConnect, BlinkSupported, Connected, Discovered 	
@@ -451,8 +453,7 @@ public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDe
 	}
 
 	public DeviceAnalyzer.Identity getIdentity() {
-		DeviceAnalyzer.Identity[] identities = DeviceAnalyzer.Identity.values();
-		if (Identity < 0 || Identity > identities.length)
+		if (Identity < 0 || Identity >= DeviceAnalyzer.Identity.SIZE)
 			return DeviceAnalyzer.Identity.UNKNOWN;
 		
 		return DeviceAnalyzer.Identity.values()[Identity];
@@ -462,11 +463,11 @@ public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDe
 		Identity = identity;
 	}
 	
-	public void setGroupID(int id) {
+	public void setGroupID(String id) {
 		GroupID = id;
 	}
 	
-	public int getGroupID() {
+	public String getGroupID() {
 		return GroupID;
 	}
 	

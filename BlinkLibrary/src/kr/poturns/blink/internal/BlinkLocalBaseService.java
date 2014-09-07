@@ -1,10 +1,15 @@
 package kr.poturns.blink.internal;
+import kr.poturns.blink.internal.DeviceAnalyzer.Identity;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.util.FileUtil;
 import android.app.Service;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.PixelFormat;
+import android.graphics.Point;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.WindowManager;
 
 /**
  * Blink의 로컬 디바이스에서 디바이스간 통신 기능을 베이스로 하는 백그라운드 서비스 Part.
@@ -33,30 +38,37 @@ abstract class BlinkLocalBaseService extends Service {
 	
 	
 	
+	// *** FIELD DECLARATION *** //
+	private BlinkTopView mBlinkTopView;
+	
+	private InterDeviceManager INTER_DEVICE_MANAGER;
+	private ServiceKeeper SERVICE_KEEPER;
+	
+	
 	
 	// *** LIFE CYCLE DECLARATION *** //
-
 	@Override
 	public void onCreate() {
 		Log.e("BlinkLocalBaseService", "onCreate()");
 		super.onCreate();
-		
 		// For Service Debugging... 
 		//android.os.Debug.waitForDebugger();
-		
+
 		initiatate();
 		
 		// Blink 서비스를 위한 본 디바이스 정보 파악.
 		DeviceAnalyzer.getInstance(this);
-//		if (DeviceAnalyzer.Identity.UNKNOWN.equals(mIdentity)) {
-//			// Identity를 확인하고, 서비스가 정상적으로 동작할 수 없는 환경이면 종료한다.
-//			//Toast.makeText(this, R.string.internal_baseservice_unable_alert, Toast.LENGTH_LONG).show();
-//			stopSelf();
-//			return;
-//		}
+		if (BlinkDevice.HOST.getIdentity() == Identity.UNKNOWN) {
+			// Identity를 확인하고, 서비스가 정상적으로 동작할 수 없는 환경이면 종료한다.
+			stopSelf();		// TODO: 제대로 동작 안함...
+			return;
+		}
 		
 		// Device간 통신 모듈을 연결한다. 
-		InterDeviceManager.getInstance(this);
+		INTER_DEVICE_MANAGER = InterDeviceManager.getInstance(this);
+		
+		// Blink 서비스 리소스 관리 모듈을 연결한다.
+		SERVICE_KEEPER = ServiceKeeper.getInstance(this);
 	}
 
 	@Override
@@ -112,19 +124,55 @@ abstract class BlinkLocalBaseService extends Service {
 	@Override
 	public void onDestroy() {
 		Log.e("BlinkLocalBaseService", "onDestroy()");
+
+		WindowManager mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+		mWindowManager.removeView(mBlinkTopView);
 		
-		InterDeviceManager.getInstance(this).destroy();
-		ServiceKeeper.getInstance(this).destroy();
+		if (INTER_DEVICE_MANAGER != null)
+			INTER_DEVICE_MANAGER.destroy();
+		
+		if (SERVICE_KEEPER != null)
+			SERVICE_KEEPER.destroy();
 	}
 	
 	/**
-	 * 초기화
+	 * 서비스에 구동에 필요한 기본 환경 요소를 초기화한다.
+	 * Blink 디렉토리 생성 및 BlinkTopView 생성.
 	 */
 	private void initiatate() {
 		
 		// Blink 서비스에 필요한 기본 디렉토리 생성.
 		FileUtil.createExternalDirectory();
 		
+		
+		// Blink Top View
+		mBlinkTopView = new BlinkTopView(this);
+		
+		WindowManager mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+		Point mPoint = new Point();
+		mWindowManager.getDefaultDisplay().getSize(mPoint);
+		
+		WindowManager.LayoutParams mLayoutParams = new WindowManager.LayoutParams(
+				WindowManager.LayoutParams.WRAP_CONTENT,
+				WindowManager.LayoutParams.WRAP_CONTENT,
+				mPoint.x/2,
+				mPoint.y/2,
+				WindowManager.LayoutParams.TYPE_PHONE,
+				WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+				PixelFormat.TRANSPARENT );
+		mLayoutParams.gravity = Gravity.CENTER;
+		mLayoutParams.verticalMargin = 0.1f;
+		mLayoutParams.horizontalMargin = 0.1f;
+		
+		mWindowManager.addView(mBlinkTopView, mLayoutParams);
 	}
 	
+	/**
+	 * {@link BlinkTopView}를 반환한다.
+	 * 
+	 * @return
+	 */
+	final BlinkTopView getTopView() {
+		return mBlinkTopView;
+	}
 }

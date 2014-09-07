@@ -3,6 +3,7 @@ package kr.poturns.blink.internal;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
@@ -39,13 +40,19 @@ public class ClassicLinkThread extends Thread {
 	
 	public ClassicLinkThread(BluetoothAssistant assistant, BlinkDevice device, BluetoothSocket socket, boolean client) {
 		this(assistant, device);
-		
-		isClient =  client;
-		mBluetoothSocket = socket;
+		this.mBluetoothSocket = socket;
+		this.isClient =  client;
 		
 		init();
 		
-		ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).addConnection(device, this);
+		// Connection Broadcasting...
+		BlinkLocalBaseService mContext = INTER_DEV_MANAGER.MANAGER_CONTEXT;
+		
+		Intent mActionConnected = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);
+		mActionConnected.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
+		mContext.sendBroadcast(mActionConnected, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
+		
+		ServiceKeeper.getInstance(mContext).addConnection(device, this);
 	}
 	
 	private ClassicLinkThread(BluetoothAssistant assistant, BlinkDevice device) {
@@ -81,6 +88,7 @@ public class ClassicLinkThread extends Thread {
 	public void run() {
 		Log.d("ClassicLinkThread_run()", "START : " + DEVICE.toString());
 		
+		// 연결 성립시, 상대의 디바이스로 자신의  BlinkDevice를 넣어 Identity 동기화 요청 메세지를 전송한다.
 		ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).transferSystemSync(DEVICE, true);
 		
 		// Read Operation
@@ -159,7 +167,7 @@ public class ClassicLinkThread extends Thread {
 	public void destroy() { }
 	
 	/**
-	 * 본 스레드를 파괴한다.
+	 * 본 스레드를 파괴하고, 해당 디바이스와의 연결을 해제한다.
 	 */
 	void destroyThread() {
 		Log.d("ClassicLinkThread_destroy()", "DESTROY");
