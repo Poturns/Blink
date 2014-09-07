@@ -659,31 +659,15 @@ final class ConnectionFragment extends Fragment {
 							ViewGroup parent) {
 						final App app = getItem(position);
 						View v = super.getView(position, convertView, parent);
-						if (v.getTag(R.id.list_app_linearlayout) == null)
-							v.setTag(R.id.list_app_linearlayout,
-									v.findViewById(R.id.list_app_linearlayout));
 
 						TextView tv = (TextView) v
 								.findViewById(android.R.id.text1);
-						tv.setText("<App> " + getItem(position).AppName);
-						v.setOnClickListener(new View.OnClickListener() {
+						tv.setText(app.AppName);
+						tv.setCompoundDrawablesRelativeWithIntrinsicBounds(
+								PrivateUtil.obtainAppIcon(app, getResources()),
+								null, null, null);
 
-							@Override
-							public void onClick(View v) {
-								View linearLayout = (View) v
-										.getTag(R.id.list_app_linearlayout);
-								int visible = linearLayout.getVisibility();
-								if (visible == View.VISIBLE) {
-									linearLayout.setVisibility(View.GONE);
-								} else {
-									linearLayout.setVisibility(View.VISIBLE);
-								}
-								linearLayout.postInvalidate();
-							}
-						});
-						View viewGroup = (View) v
-								.getTag(R.id.list_app_linearlayout);
-						viewGroup.findViewById(android.R.id.text1)
+						v.findViewById(R.id.fragment_connection_db_info)
 								.setOnClickListener(new View.OnClickListener() {
 
 									@Override
@@ -695,7 +679,7 @@ final class ConnectionFragment extends Fragment {
 												.getParentFragment()).dismiss();
 									}
 								});
-						viewGroup.findViewById(android.R.id.text2)
+						v.findViewById(R.id.fragment_connection_log_info)
 								.setOnClickListener(new View.OnClickListener() {
 
 									@Override

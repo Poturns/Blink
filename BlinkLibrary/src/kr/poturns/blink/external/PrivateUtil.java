@@ -54,7 +54,7 @@ class PrivateUtil {
 	}
 
 	/** {@link App}의 {@link App#AppIcon}을 나타내는 {@link Drawable}객체를 얻는다. */
-	public Drawable obtainAppIcon(App app, Resources resources) {
+	public static Drawable obtainAppIcon(App app, Resources resources) {
 		Drawable drawable = null;
 		if (app.AppIcon != null) {
 			try {
