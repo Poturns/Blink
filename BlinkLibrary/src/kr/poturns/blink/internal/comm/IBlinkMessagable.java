@@ -12,9 +12,9 @@ public interface IBlinkMessagable {
 	public static final int TYPE_RESPONSE_FUNCTION_SUCCESS = 0x2;
 	public static final int TYPE_RESPONSE_FUNCTION_FAIL = 0x3;
 	
-	public static final int TYPE_REQUEST_MEASUREMENT = 0x4;
-	public static final int TYPE_RESPONSE_MEASUREMENT_SUCCESS = 0x5;
-	public static final int TYPE_RESPONSE_MEASUREMENT_FAIL = 0x6;
+	public static final int TYPE_REQUEST_MEASUREMENTDATA = 0x4;
+	public static final int TYPE_RESPONSE_MEASUREMENTDATA_SUCCESS = 0x5;
+	public static final int TYPE_RESPONSE_MEASUREMENTDATA_FAIL = 0x6;
 	
 	public static final int TYPE_REQUEST_BlinkAppInfo_SYNC = 0x7;
 	public static final int TYPE_RESPONSE_BlinkAppInfo_SYNC_SUCCESS = 0x8;

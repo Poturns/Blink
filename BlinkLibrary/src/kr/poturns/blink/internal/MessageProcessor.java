@@ -2,29 +2,29 @@ package kr.poturns.blink.internal;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashSet;
 
 import kr.poturns.blink.db.JsonManager;
 import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.SyncDatabaseManager;
+import kr.poturns.blink.db.archive.Function;
+import kr.poturns.blink.db.archive.Measurement;
+import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
 import kr.poturns.blink.internal.comm.BlinkMessage.Builder;
 import kr.poturns.blink.internal.comm.IBlinkMessagable;
+import android.content.Intent;
 import android.util.Log;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 
 /**
  * 
- * @author Ho.Kwon
  * @author YeonHo.Kim
+ * @author Ho.Kwon
  * @since 2014.07.12
  *
  */
@@ -66,49 +66,50 @@ public class MessageProcessor {
 		}
 		
 		if(blinkMessage.getDestinationAddress().equals(currentAddress)){// Message의 최종 목적지가 현재 디바이스 일 때
+			
 			BlinkMessage.Builder builder_success = new Builder();
 			builder_success.setDestinationDevice(BlinkDevice.load(blinkMessage.getSourceAddress()));// 이 시점에서 못불러오는 경우는 없는가??
 			builder_success.setDestinationApplication(blinkMessage.getSourceApplication());
-			
-				
-			if(blinkMessage.getType() == IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){//
+			builder_success.setCode(blinkMessage.getCode());
+			int blinkMessage_type = blinkMessage.getType();
+			if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){//
 				builder_success.setType(IBlinkMessagable.TYPE_RESPONSE_BlinkAppInfo_SYNC_SUCCESS);
-				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(null);
+				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(OPERATOR_CONTEXT);
 				String jsonRequestMessage = blinkMessage.getMessage();
 				Type BlinkAppInfoType = new TypeToken<ArrayList<BlinkAppInfo>>(){}.getType();
 				ArrayList<BlinkAppInfo> ret = new Gson().fromJson(jsonRequestMessage, BlinkAppInfoType);
 				//if(i am main){}
 				//else{}
-					
+			      if(BlinkDevice.HOST.getAddress().contentEquals(SERVICE_KEEPER.obtainCurrentCenterDevice().getAddress())){
+			    		syncDatabaseManager.center.syncBlinkDatabase(ret);
+			      }
+			      else{
+			    	  syncDatabaseManager.wearable.syncBlinkDatabase(ret);
+			      }
 				
-				syncDatabaseManager.wearable.syncBlinkDatabase(ret);
-				syncDatabaseManager.center.syncBlinkDatabase(ret);
-				ArrayList<BlinkAppInfo> mergedBlinkAppInfo = new ArrayList<BlinkAppInfo>();
-				mergedBlinkAppInfo = syncDatabaseManager.obtainBlinkApp();
-				String jsonResponseMessage = mJsonManager.obtainJsonBlinkAppInfo(mergedBlinkAppInfo);
+				
+			
+				ArrayList<BlinkAppInfo> mergedBlinkAppInfoList = new ArrayList<BlinkAppInfo>();
+				mergedBlinkAppInfoList = syncDatabaseManager.obtainBlinkApp();
+				String jsonResponseMessage = mJsonManager.obtainJsonBlinkAppInfo(mergedBlinkAppInfoList);
 				builder_success.setMessage(jsonResponseMessage);
 				
 			}
-			else if(blinkMessage.getType() == IBlinkMessagable.TYPE_REQUEST_FUNCTION){//
+			else if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_FUNCTION){//
 				//call back
-			}
-			else if(blinkMessage.getType() == IBlinkMessagable.TYPE_REQUEST_MEASUREMENT){//
+				Function function = JsonManager.obtainJsonFunction(blinkMessage.getMessage());
+				startFunction(function);
+				builder_success.setType(IBlinkMessagable.TYPE_RESPONSE_FUNCTION_SUCCESS);
+				builder_success.setMessage("");	
 				
 			}
-			else if(blinkMessage.getType() == IBlinkMessagable.TYPE_REQUEST_IDENTITY_SYNC){
-				BlinkDevice device = blinkMessage.getMessage(BlinkDevice.class);
-				ServiceKeeper.getInstance(OPERATOR_CONTEXT).handleIdentitySync(device);
-			} 
-			else if (blinkMessage.getType() == IBlinkMessagable.TYPE_REQUEST_NETWORK_SYNC) {
-				JsonArray mJsonArray = new JsonParser().parse(blinkMessage.getMessage()).getAsJsonArray();
-				
-				HashSet<BlinkDevice> mHashSet = new HashSet<BlinkDevice>();
-				Gson gson = new Gson();
-				for (JsonElement element : mJsonArray)
-					mHashSet.add(gson.fromJson(element, BlinkDevice.class));
-				
-				ServiceKeeper.getInstance(OPERATOR_CONTEXT).handleNetworkSync(mHashSet);
-				
+			else if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA){//
+				String message = OPERATOR_CONTEXT.receiveMessageFromProcessor(blinkMessage.getMessage());
+				builder_success.setMessage(message);
+				builder_success.setType(IBlinkMessagable.TYPE_RESPONSE_FUNCTION_SUCCESS);
+			}
+			else if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_IDENTITY_SYNC){//
+				//연호꺼 메서드 호출.
 			}/* -> 일단 fromdevice로 보내면 되겠네
 			if (i am main) {
 			BlinkDevice = 
@@ -118,23 +119,23 @@ public class MessageProcessor {
 				
 			}*/
 			BlinkMessage responseMessage = builder_success.build();
-			//sendBlinkMessageTo(responseMessage, fromDevice);
+			sendBlinkMessageTo(responseMessage, fromDevice);
 			/*위 까지는 TYPE_REQUEST에 대한 처리*/
 			
-			if(blinkMessage.getType() == IBlinkMessagable.TYPE_RESPONSE_BlinkAppInfo_SYNC_SUCCESS){
-				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(null);
+			if(blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_BlinkAppInfo_SYNC_SUCCESS){
+				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(OPERATOR_CONTEXT);
 				String jsonResponseMessage = blinkMessage.getMessage();
 				ArrayList<BlinkAppInfo>mergedBlinkAppInfo = JsonManager.obtainJsonBlinkAppInfo(jsonResponseMessage);
 				syncDatabaseManager.center.syncBlinkDatabase(mergedBlinkAppInfo);
 				syncDatabaseManager.wearable.syncBlinkDatabase(mergedBlinkAppInfo);
 			}
-			else if(blinkMessage.getType() == IBlinkMessagable.TYPE_RESPONSE_IDENTITY_SUCCESS){
+			else if(blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_IDENTITY_SUCCESS){
 				
 			}
-			else if(blinkMessage.getType() == IBlinkMessagable.TYPE_RESPONSE_FUNCTION_SUCCESS){
+			else if(blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_FUNCTION_SUCCESS){
 				
 			}
-			else if(blinkMessage.getType() == IBlinkMessagable.TYPE_RESPONSE_MEASUREMENT_SUCCESS){
+			else if(blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SUCCESS){
 				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(null);
 				String jsonResponseMessage = blinkMessage.getMessage();
 				ArrayList<Measurement>mergedMesarement = JsonManager.obtainJsonMeasurement(jsonResponseMessage);	
@@ -150,14 +151,16 @@ public class MessageProcessor {
 				  // 차후 : 현재는 그룹 간 통신을 고려하지 않아 Source Device가 Main에서 한 단계만 떨어져있다는 가정하에 보내준다. 만약
 				  //      그룹별 연결되어있을 시에는 해당 Source로 향하는 next hop을 검색해서 BlinkDevice를 설정한다던지의 처리가 필요함.
 				BlinkMessage.Builder builder = new BlinkMessage.Builder(); // Set the type_response on type.
-				if(blinkMessage.getType()==IBlinkMessagable.TYPE_REQUEST_FUNCTION){
+				int blinkMessage_type = blinkMessage.getType();
+				
+				if(blinkMessage_type==IBlinkMessagable.TYPE_REQUEST_FUNCTION){
 					builder.setType(IBlinkMessagable.TYPE_RESPONSE_FUNCTION_FAIL);
 					
-				}else if(blinkMessage.getType()==IBlinkMessagable.TYPE_REQUEST_MEASUREMENT){
-					builder.setType(IBlinkMessagable.TYPE_RESPONSE_MEASUREMENT_FAIL);
-				}else if(blinkMessage.getType()==IBlinkMessagable.TYPE_REQUEST_IDENTITY_SYNC){
+				}else if(blinkMessage_type==IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA){
+					builder.setType(IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_FAIL);
+				}else if(blinkMessage_type==IBlinkMessagable.TYPE_REQUEST_IDENTITY_SYNC){
 					//
-				}else if(blinkMessage.getType()==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
+				}else if(blinkMessage_type==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
 					builder.setType(IBlinkMessagable.TYPE_RESPONSE_BlinkAppInfo_SYNC_FAIL);
 				}
 				builder.setSourceDevice(currentDevice);
@@ -298,5 +301,18 @@ public class MessageProcessor {
 			break;
 			
 		}
+	}
+	/**
+	 * 함수를 실행시켜주는 매소드
+	 * 바인더나 MessageProcessor로부터 호출된다.
+	 * @param function
+	 */
+	public void startFunction(Function function){
+		if(function .Type==Function.TYPE_ACTIVITY)
+			OPERATOR_CONTEXT.startActivity(new Intent(function.Action).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+		else if(function .Type==Function.TYPE_SERIVCE)
+			OPERATOR_CONTEXT.startService(new Intent(function.Action));
+		else if(function.Type==Function.TYPE_BROADCAST)
+			OPERATOR_CONTEXT.sendBroadcast(new Intent(function.Action));
 	}
 }

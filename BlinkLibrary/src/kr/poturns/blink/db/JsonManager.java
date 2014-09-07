@@ -4,6 +4,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import kr.poturns.blink.db.archive.BlinkAppInfo;
+import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 
@@ -54,4 +55,10 @@ public class JsonManager {
 		ArrayList<MeasurementData> ret = new Gson().fromJson(json, MeasurementDataType);
 		return ret;
 	}
+	
+	public static Function obtainJsonFunction(String jsonFunction){
+	      Type FunctionType = new TypeToken<Function>(){}.getType();
+	      Function ret = new Gson().fromJson(jsonFunction, FunctionType);
+	      return ret;
+	   }
 }
