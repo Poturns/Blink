@@ -1,10 +1,17 @@
 package kr.poturns.blink.external;
 
+import kr.poturns.blink.R;
+import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 
 class PrivateUtil {
 	/**
@@ -44,5 +51,28 @@ class PrivateUtil {
 		if (parsed.length > 1)
 			name = parsed[1];
 		return name;
+	}
+
+	/** {@link App}의 {@link App#AppIcon}을 나타내는 {@link Drawable}객체를 얻는다. */
+	public Drawable obtainAppIcon(App app, Resources resources) {
+		Drawable drawable = null;
+		if (app.AppIcon != null) {
+			try {
+				BitmapFactory.Options opt = new BitmapFactory.Options();
+				opt.inSampleSize = 2;
+				Bitmap bitmap = BitmapFactory.decodeByteArray(app.AppIcon, 0,
+						app.AppIcon.length, opt);
+				drawable = new BitmapDrawable(resources, bitmap);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		if (drawable == null) {
+			drawable = resources.getDrawableForDensity(
+					R.drawable.ic_action_android,
+					resources.getDisplayMetrics().densityDpi * 96);
+		}
+
+		return drawable;
 	}
 }
