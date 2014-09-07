@@ -389,7 +389,20 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 			return false;
 		}
 	}
-
+	
+	public BlinkAppInfo obtainBlinkApp() {
+		mBlinkAppInfo = local.obtainBlinkApp(mBlinkDevice.getName(), mPackageName);
+		return mBlinkAppInfo;
+	}
+	
+	public void openControlActivity(){
+		try {
+			mInternalOperationSupport.openControlActivity();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 	/**
 	 * Local로 동작하는 매소드
 	 * 

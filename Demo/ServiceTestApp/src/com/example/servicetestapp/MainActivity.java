@@ -3,7 +3,6 @@ package com.example.servicetestapp;
 import java.util.List;
 
 import kr.poturns.blink.db.archive.CallbackData;
-import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
@@ -16,6 +15,7 @@ import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -38,7 +38,12 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
             public void onServiceConnected(IInternalOperationSupport iSupport) {
 	            // TODO Auto-generated method stub
 				Log.i(tag, "onServiceConnected!!");
-				mTestArchive.run();
+				Button btn = (Button)findViewById(R.id.btn_test);
+				btn.setEnabled(true);
+				btn = (Button)findViewById(R.id.btn_test2);
+				btn.setEnabled(true);
+				btn = (Button)findViewById(R.id.btn_test3);
+				btn.setEnabled(true);
             }
 
 			@Override
@@ -72,9 +77,14 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
 	public void onClick(View v){
 		switch (v.getId()) {
 		case R.id.btn_test:
-			mBlinkServiceInteraction.local.startFunction(new Function("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY));
+			mTestArchive.exampleShowActivity();
 			break;
-
+		case R.id.btn_test2:
+			mTestArchive.exampleRegisterBlinkApp();
+			break;
+		case R.id.btn_test3:
+			mTestArchive.exampleRegisterMeasurementDatabase();
+			break;
 		default:
 			break;
 		}

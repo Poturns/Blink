@@ -41,6 +41,7 @@ public class TestArchive {
 	}
 	public void run(){
 		Log.i(tag, "TestArchive Run!!");
+//		exampleShowActivity();
 //		exampleRemoteCall();
 //		exampleRegisterBlinkApp();
 //		exmampleRegisterExternalBlinkApp();
@@ -54,9 +55,13 @@ public class TestArchive {
 //		exampleBlinkDatabaseManager();
 //		exampleRemoteCall();
 //		exampleSyncDatabase();
-		exampleDatabaseMessage();
+//		exampleDatabaseMessage();
 	}
 	
+	public void exampleShowActivity() {
+		// TODO Auto-generated method stub
+		mBlinkServiceInteraction.openControlActivity();
+	}
 	private void exampleDatabaseMessage() {
 	    // TODO Auto-generated method stub
 		DatabaseMessage mDatabaseMessage = new DatabaseMessage.Builder()
