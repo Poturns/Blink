@@ -7,6 +7,7 @@ import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import kr.poturns.blink.util.FileUtil;
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
@@ -48,6 +49,16 @@ public final class ServiceControlActivity extends Activity implements
 	Fragment mConnectionFragment;
 	/** {@link android.R.attr}에 정의되어있는 ListView의 ChildView의 padding */
 	int mListViewChildPaddingStart, mListViewChildPaddingEnd;
+	/**
+	 * {@link FragmentManager}의 BackStack을 삭제하기 위한 boolean 값 <br>
+	 * <br>
+	 * {@link Activity}의 처음 실행시에는(
+	 * {@link ServiceControlActivity#transitFragment(int, Bundle)}가 최초로 호출됨)
+	 * BackStack을 삭제하지 않고, <br>
+	 * 나중에 {@link ServiceControlActivity#transitFragment(int, Bundle)}가 호출 될 때
+	 * BackStack을 삭제한다.
+	 */
+	boolean mStartActivity = true;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -103,6 +114,14 @@ public final class ServiceControlActivity extends Activity implements
 			f = mConnectionFragment;
 			break;
 		}
+
+		if (mStartActivity)
+			mStartActivity = !mStartActivity;
+		else {
+			getFragmentManager().popBackStackImmediate(null,
+					FragmentManager.POP_BACK_STACK_INCLUSIVE);
+		}
+
 		FragmentTransaction transaction = getFragmentManager()
 				.beginTransaction();
 		// Fragment가 바뀌기 전 activity에 표시되고 있던 Fragment
@@ -111,6 +130,7 @@ public final class ServiceControlActivity extends Activity implements
 
 		// 바뀌는 Fragment가 ConnectionFragment가 아닌 경우
 		if (position != 0) {
+
 			// 현재 Fragment가 ConnectionFragment가 아닌 경우,
 			// FragmentTransaction에서 prevFragment를 삭제한다.
 			if (mCurrentPageSelection != 0 && prevFragment != null)
