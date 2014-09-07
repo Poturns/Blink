@@ -93,6 +93,8 @@ public class MessageProcessor {
 				mergedBlinkAppInfoList = syncDatabaseManager.obtainBlinkApp();
 				String jsonResponseMessage = mJsonManager.obtainJsonBlinkAppInfo(mergedBlinkAppInfoList);
 				builder_success.setMessage(jsonResponseMessage);
+				BlinkMessage successBlinkMessage = builder_success.build();
+				sendBlinkMessageTo(successBlinkMessage, BlinkDevice.load(blinkMessage.getSourceAddress()));
 				
 			}
 			else if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_FUNCTION){//
@@ -101,14 +103,19 @@ public class MessageProcessor {
 				startFunction(function);
 				builder_success.setType(IBlinkMessagable.TYPE_RESPONSE_FUNCTION_SUCCESS);
 				builder_success.setMessage("");	
-				
+				BlinkMessage successBlinkMessage = builder_success.build();
+				sendBlinkMessageTo(successBlinkMessage, BlinkDevice.load(blinkMessage.getSourceAddress()));
 			}
 			else if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA){//
 				String message = OPERATOR_CONTEXT.receiveMessageFromProcessor(blinkMessage.getMessage());
 				builder_success.setMessage(message);
 				builder_success.setType(IBlinkMessagable.TYPE_RESPONSE_FUNCTION_SUCCESS);
+				BlinkMessage successBlinkMessage = builder_success.build();
+				sendBlinkMessageTo(successBlinkMessage, BlinkDevice.load(blinkMessage.getSourceAddress()));
 			}
 			else if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_IDENTITY_SYNC){//
+				BlinkMessage successBlinkMessage = builder_success.build();
+				sendBlinkMessageTo(successBlinkMessage, BlinkDevice.load(blinkMessage.getSourceAddress()));
 				//연호꺼 메서드 호출.
 			}/* -> 일단 fromdevice로 보내면 되겠네
 			if (i am main) {
@@ -126,8 +133,12 @@ public class MessageProcessor {
 				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(OPERATOR_CONTEXT);
 				String jsonResponseMessage = blinkMessage.getMessage();
 				ArrayList<BlinkAppInfo>mergedBlinkAppInfo = JsonManager.obtainJsonBlinkAppInfo(jsonResponseMessage);
-				syncDatabaseManager.center.syncBlinkDatabase(mergedBlinkAppInfo);
-				syncDatabaseManager.wearable.syncBlinkDatabase(mergedBlinkAppInfo);
+			      if(BlinkDevice.HOST.getAddress().contentEquals(SERVICE_KEEPER.obtainCurrentCenterDevice().getAddress())){
+			    		syncDatabaseManager.center.syncBlinkDatabase(mergedBlinkAppInfo);
+			      }
+			      else{
+			    	  syncDatabaseManager.wearable.syncBlinkDatabase(mergedBlinkAppInfo);
+			      }
 			}
 			else if(blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_IDENTITY_SUCCESS){
 				
@@ -141,7 +152,7 @@ public class MessageProcessor {
 				ArrayList<Measurement>mergedMesarement = JsonManager.obtainJsonMeasurement(jsonResponseMessage);	
 				//syncDatabaseManager.
 			}
-			
+		
 		}
 		else{ // message의 최종 목적지가 현재 디바이스가 아니여서 다른 디바이스로 Pass해야 할 때
 			if(BlinkDevice.load(blinkMessage.getDestinationAddress()).isConnected()){
@@ -291,7 +302,7 @@ public class MessageProcessor {
 		 * SendRemote시에만 발생하고
 		 * 여기서 추가 json을 붙여줘야 하나??
 		 */
-//		SERVICE_KEEPER.sendMessageToDevice(toDevice, message);
+		SERVICE_KEEPER.sendMessageToDevice(toDevice, message);
 	}
 	
 	private void handleSystemMessage(BlinkMessage message) {
