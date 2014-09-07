@@ -85,7 +85,7 @@
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/dialog_fragment_connection_title_blink_support"
             android:layout_alignLeft="@+id/dialog_fragment_connection_device_ego"
-            android:enabled="false"
+            android:enabled="true"
             android:textOff="@android:string/no"
             android:textOn="@android:string/yes" />
 
@@ -115,7 +115,7 @@
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/dialog_fragment_connection_title_ble"
             android:layout_alignLeft="@+id/dialog_fragment_connection_autoconnect"
-            android:enabled="false"
+            android:enabled="true"
             android:textOff="@android:string/no"
             android:textOn="@android:string/yes" />
     </RelativeLayout>

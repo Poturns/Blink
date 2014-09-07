@@ -592,9 +592,10 @@ final class ConnectionFragment extends Fragment {
 				((TextView) v
 						.findViewById(R.id.dialog_fragment_connection_device_ego))
 						.setText(mDevice.getIdentity().toString());
-				((Switch) v
-						.findViewById(R.id.dialog_fragment_connection_blink_support))
-						.setChecked(mDevice.isBlinkSupported());
+				Switch isBlinkSupport = (Switch) v
+						.findViewById(R.id.dialog_fragment_connection_blink_support);
+				isBlinkSupport.setClickable(false);
+				isBlinkSupport.setChecked(mDevice.isBlinkSupported());
 				Switch isConnected = (Switch) v
 						.findViewById(R.id.dialog_fragment_connection_connection);
 				isConnected.setChecked(mDevice.isConnected());
@@ -634,8 +635,10 @@ final class ConnectionFragment extends Fragment {
 							}
 						});
 				isAutoConnect.setChecked(mDevice.isAutoConnect());
-				((Switch) v.findViewById(R.id.dialog_fragment_connection_ble))
-						.setChecked(mDevice.isLESupported());
+				Switch isLESupported = (Switch) v
+						.findViewById(R.id.dialog_fragment_connection_ble);
+				isLESupported.setClickable(false);
+				isLESupported.setChecked(mDevice.isLESupported());
 				return v;
 			}
 		}

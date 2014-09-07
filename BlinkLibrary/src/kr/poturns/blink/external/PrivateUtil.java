@@ -68,9 +68,9 @@ class PrivateUtil {
 			}
 		}
 		if (drawable == null) {
+			int density = (int) resources.getDisplayMetrics().density;
 			drawable = resources.getDrawableForDensity(
-					R.drawable.ic_action_android,
-					resources.getDisplayMetrics().densityDpi * 96);
+					R.drawable.ic_action_android, density * 96);
 		}
 
 		return drawable;
