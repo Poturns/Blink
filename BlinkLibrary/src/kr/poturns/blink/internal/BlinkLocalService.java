@@ -128,7 +128,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 			List<BlinkAppInfo> mBlinkAppInfoList = gson.fromJson(mDatabaseMessage.getData(),new TypeToken<List<BlinkAppInfo>>(){}.getType());
 			//자기 자신이 메인 디바이스일 경우
 			if(BlinkDevice.HOST.getAddress().contentEquals(mServiceKeeper.obtainCurrentCenterDevice().getAddress())){
-				return ""+mSyncDatabaseManager.main.syncBlinkDatabase(mBlinkAppInfoList);
+				return ""+mSyncDatabaseManager.center.syncBlinkDatabase(mBlinkAppInfoList);
 			}
 			//메인 디바이스가 아닐 경우
 			else {
@@ -138,7 +138,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 		//MeasurementData 저장일 경우
 		else if(mDatabaseMessage.getType()==DatabaseMessage.SYNC_MEASUREMENT){
 			List<MeasurementData> mMeasurementDataList = gson.fromJson(mDatabaseMessage.getData(),new TypeToken<List<MeasurementData>>(){}.getType());
-			mSyncDatabaseManager.main.insertMeasurementData(mMeasurementDataList);
+			mSyncDatabaseManager.center.insertMeasurementData(mMeasurementDataList);
 			return "true";
 		}
 		return null;
