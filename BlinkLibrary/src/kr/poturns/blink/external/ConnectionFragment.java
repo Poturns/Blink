@@ -91,14 +91,28 @@ final class ConnectionFragment extends Fragment {
 		/** Device 리스트가 변경되었을 때 호출된다. */
 		void onDeviceListChanged();
 
-		/** Device연결이 실패하였을 때 호출된다. */
-		void onDeviceConnectionFailed(BlinkDevice device);
-
 		/** Bluetooth Discovery가 종료되었을 때, 호출된다. */
 		void onDiscoveryFinished();
 
 		/** Bluetooth Discovery가 시작되었을 때, 호출된다. */
 		void onDiscoveryStarted();
+	}
+
+	/** {@link BlinkDevice}의 연결/연결해제 요청의 결과를 전달해주는 리스너 */
+	public static interface DeviceConnectionResultListener {
+		/**
+		 * 연결 요청의 결과를 전달한다.
+		 * 
+		 * @param device
+		 *            작업을 실시한 {@link BlinkDevice}
+		 * @param connectionResult
+		 *            연결 된 경우 true, 연결 해제된 경우 false
+		 * @param isTaskFailed
+		 *            작업의 실패 여부
+		 */
+		void onResult(BlinkDevice device, boolean connectionResult,
+				boolean isTaskFailed);
+
 	}
 
 	/** Android 기기의 Bluetooth 연결 상태를 감지하기 위한 {@link BroadcastReceiver} */
@@ -230,8 +244,9 @@ final class ConnectionFragment extends Fragment {
 	 * 작업이 완료되면 {@link #onDeviceConnected(BlinkDevice)}또는
 	 * {@link #onDeviceDisconnected(BlinkDevice)}가 호출된다.
 	 */
-	final void connectOrDisConnectDevice(BlinkDevice device) {
-		new ConnectionTask(getActivity(), device, !device.isConnected())
+	final void connectOrDisConnectDevice(BlinkDevice device,
+			DeviceConnectionResultListener l) {
+		new ConnectionTask(getActivity(), device, !device.isConnected(), l)
 				.forceLoad();
 		mConnectionTasking = true;
 		onPreLoading();
@@ -410,7 +425,7 @@ final class ConnectionFragment extends Fragment {
 		private boolean mIsConnectTask;
 
 		public ConnectionTask(Context context, BlinkDevice device,
-				boolean isConnectTask) {
+				boolean isConnectTask, final DeviceConnectionResultListener l) {
 			super(context);
 			this.mIsConnectTask = isConnectTask;
 			this.mDevice = device;
@@ -425,18 +440,13 @@ final class ConnectionFragment extends Fragment {
 							// 작업의 성공이라고 판단한다.
 							if (result
 									&& (mIsConnectTask ^ mDevice.isConnected())) {
-								if (mIsConnectTask) {
-									mCurrentChildFragmentInterface
-											.onDeviceConnected(mDevice);
-								} else {
-									mCurrentChildFragmentInterface
-											.onDeviceDisconnected(mDevice);
-								}
+								// 연결 요청 이었을 경우 두 번째 인자에 true가
+								// 해제 요청 이었을 경우 false가 전달된다.
+								l.onResult(mDevice, mIsConnectTask, false);
 								mCurrentChildFragmentInterface
 										.onDeviceListChanged();
 							} else {
-								mCurrentChildFragmentInterface
-										.onDeviceConnectionFailed(mDevice);
+								l.onResult(mDevice, false, true);
 							}
 							loader.abandon();
 						}
@@ -588,14 +598,30 @@ final class ConnectionFragment extends Fragment {
 				Switch isConnected = (Switch) v
 						.findViewById(R.id.dialog_fragment_connection_connection);
 				isConnected.setChecked(mDevice.isConnected());
-				isConnected.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+				isConnected
+						.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
-					@Override
-					public void onCheckedChanged(
-							CompoundButton buttonView, boolean isChecked) {
-						connectOrDisConnectDevice(mDevice);
-					}
-				});
+							@Override
+							public void onCheckedChanged(
+									final CompoundButton buttonView,
+									boolean isChecked) {
+								connectOrDisConnectDevice(mDevice,
+										new DeviceConnectionResultListener() {
+
+											@Override
+											public void onResult(
+													BlinkDevice device,
+													boolean connectionResult,
+													boolean isTaskFailed) {
+												if (connectionResult)
+													buttonView.setChecked(true);
+												else
+													buttonView
+															.setChecked(false);
+											}
+										});
+							}
+						});
 				Switch isAutoConnect = (Switch) v
 						.findViewById(R.id.dialog_fragment_connection_autoconnect);
 				isAutoConnect
@@ -775,8 +801,9 @@ final class ConnectionFragment extends Fragment {
 		 * @param device
 		 *            연결/연결 해제할 Device
 		 */
-		void connectOrDisConnectDevice(BlinkDevice device) {
-			mParentFragment.connectOrDisConnectDevice(device);
+		void connectOrDisConnectDevice(BlinkDevice device,
+				DeviceConnectionResultListener l) {
+			mParentFragment.connectOrDisConnectDevice(device, l);
 		}
 
 		@Override
@@ -813,13 +840,6 @@ final class ConnectionFragment extends Fragment {
 		public void onDeviceDiscovered(BlinkDevice device) {
 			getDeviceList().add(device);
 			onDeviceListChanged();
-		}
-
-		@Override
-		public void onDeviceConnectionFailed(BlinkDevice device) {
-			Toast.makeText(getActivity(),
-					device.getName() + " (Dis)connection failed!",
-					Toast.LENGTH_SHORT).show();
 		}
 
 		/** 다른 Fragment로 UI를 변경한다. */
