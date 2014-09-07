@@ -77,8 +77,8 @@ public abstract class ConnectionSupportBinder extends IInternalOperationSupport.
 	public void connectDevice(BlinkDevice device) throws RemoteException {
 		BluetoothDevice origin = device.obtainBluetoothDevice();
 
-		if (origin.getBondState() == BluetoothDevice.BOND_NONE)
-			origin.createBond();
+//		if (origin.getBondState() == BluetoothDevice.BOND_NONE)
+//			origin.createBond();
 
 		if (mAssistant != null)
 			mAssistant.connectToDeviceFromClient(device,

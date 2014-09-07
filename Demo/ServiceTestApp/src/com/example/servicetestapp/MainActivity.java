@@ -142,7 +142,8 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
 			Log.i(tag, "Code : "+arg0);
 			Log.i(tag, "InDeviceData : "+arg1.InDeviceData);
 			Log.i(tag, "OutDeviceData : "+arg1.OutDeviceData);
-			Log.i(tag, "Error : "+arg1.Error);
+			Log.i(tag, "Result : "+arg1.Result);
+			Log.i(tag, "ResultDetail : "+arg1.ResultDetail);
 			
 			if(arg0==0){
 				if(arg1.InDeviceData!=null){

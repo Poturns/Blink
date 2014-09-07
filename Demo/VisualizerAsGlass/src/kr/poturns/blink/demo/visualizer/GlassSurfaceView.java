@@ -67,8 +67,8 @@ public class GlassSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		// TODO Auto-generated method stub
-		
+		mCamera.stopPreview();
+        mCamera = null;
 	}
 
 }

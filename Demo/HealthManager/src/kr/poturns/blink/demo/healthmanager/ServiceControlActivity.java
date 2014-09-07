@@ -1,4 +1,4 @@
-package kr.poturns.blink.external;
+package kr.poturns.blink.demo.healthmanager;
 
 import kr.poturns.blink.R;
 import kr.poturns.blink.internal.comm.BlinkDevice;
@@ -165,9 +165,9 @@ public final class ServiceControlActivity extends Activity implements
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
-//		mActionBarToggle.onConfigurationChanged(newConfig);
-//		getActionBar().setDisplayHomeAsUpEnabled(
-//				mActionBarToggle.isDrawerIndicatorEnabled());
+		mActionBarToggle.onConfigurationChanged(newConfig);
+		getActionBar().setDisplayHomeAsUpEnabled(
+				mActionBarToggle.isDrawerIndicatorEnabled());
 	}
 
 	@Override
