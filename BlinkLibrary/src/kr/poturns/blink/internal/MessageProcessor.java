@@ -118,28 +118,27 @@ public class MessageProcessor {
 			else if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_IDENTITY_SYNC){//
 				 BlinkDevice device = blinkMessage.getMessage(BlinkDevice.class);
 		            ServiceKeeper.getInstance(OPERATOR_CONTEXT).handleIdentitySync(device);
-		         } 
-		         else if (blinkMessage.getType() == IBlinkMessagable.TYPE_REQUEST_NETWORK_SYNC) {
-		            JsonArray mJsonArray = new JsonParser().parse(blinkMessage.getMessage()).getAsJsonArray();
 		            
-		            HashSet<BlinkDevice> mHashSet = new HashSet<BlinkDevice>();
-		            Gson gson = new Gson();
-		            for (JsonElement element : mJsonArray)
-		               mHashSet.add(gson.fromJson(element, BlinkDevice.class));
-		            
-		            ServiceKeeper.getInstance(OPERATOR_CONTEXT).handleNetworkSync(mHashSet);
-		            
-				BlinkMessage successBlinkMessage = builder_success.build();
-				sendBlinkMessageTo(successBlinkMessage, BlinkDevice.load(blinkMessage.getSourceAddress()));
-				//연호꺼 메서드 호출.
-			}/* -> 일단 fromdevice로 보내면 되겠네
-			if (i am main) {
-			BlinkDevice = 
-			}
-			else if (i am wearable)
-			{
+			} else if (blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_NETWORK_SYNC) {
+				JsonArray mJsonArray = new JsonParser().parse(blinkMessage.getMessage()).getAsJsonArray();
+
+				HashSet<BlinkDevice> mHashSet = new HashSet<BlinkDevice>();
+				Gson gson = new Gson();
+				for (JsonElement element : mJsonArray)
+					mHashSet.add(gson.fromJson(element, BlinkDevice.class));
+
+				BlinkDevice device = BlinkDevice.load(blinkMessage.getSourceAddress());
+				ServiceKeeper.getInstance(OPERATOR_CONTEXT).handleNetworkSync(mHashSet, device.getGroupID());
 				
-			}*/
+				ServiceKeeper.getInstance(OPERATOR_CONTEXT).transferSystemSync(device, IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC);
+				//BlinkMessage successBlinkMessage = builder_success.build();
+				//sendBlinkMessageTo(successBlinkMessage, device);
+			}/*
+			 * -> 일단 fromdevice로 보내면 되겠네 if (i am main) { BlinkDevice = } else
+			 * if (i am wearable) {
+			 * 
+			 * }
+			 */
 			/*위 까지는 TYPE_REQUEST에 대한 처리*/
 			
 			if(blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_BlinkAppInfo_SYNC_SUCCESS){
@@ -256,7 +255,7 @@ public class MessageProcessor {
 		 */
 		// obtainCurrentCenterDevice => 현재 연결된 네트워크 중 CenterDevice를 가져온다 없을 시 null.
 		BlinkDevice centerDevice = null;
-		if(SERVICE_KEEPER.obtainCurrentCenterDevice()!=null){
+		if(SERVICE_KEEPER.obtainCurrentCenterDevice()!=BlinkDevice.HOST){
 		centerDevice = SERVICE_KEEPER.obtainCurrentCenterDevice();}
 		else{
 			// 그냥 fail to Send Message 보내야 함. (현재 프레임워크 구조상 Center가 없을 수가 없다.)
@@ -268,7 +267,7 @@ public class MessageProcessor {
 			
 		}
 		
-		if(SERVICE_KEEPER.obtainCurrentCenterDevice()!= null){
+		if(SERVICE_KEEPER.obtainCurrentCenterDevice()!= BlinkDevice.HOST){
 			sendBlinkMessageTo(message, centerDevice);
 			// 스마트폰과 연결된 경우 -> toDevice = main
 		}else{ // 스마트폰과 연결되지 않은 경우 -> toDevice = 연결 원하는 다바이스

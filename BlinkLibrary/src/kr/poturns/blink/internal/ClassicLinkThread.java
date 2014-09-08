@@ -8,6 +8,7 @@ import java.io.Serializable;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
 import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
+import kr.poturns.blink.internal.comm.IBlinkMessagable;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.util.Log;
@@ -89,7 +90,8 @@ public class ClassicLinkThread extends Thread {
 		Log.d("ClassicLinkThread_run()", "START : " + DEVICE.toString());
 		
 		// 연결 성립시, 상대의 디바이스로 자신의  BlinkDevice를 넣어 Identity 동기화 요청 메세지를 전송한다.
-		ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT).transferSystemSync(DEVICE, true);
+		ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT)
+						.transferSystemSync(DEVICE, IBlinkMessagable.TYPE_REQUEST_IDENTITY_SYNC);
 		
 		// Read Operation
 		while (isRunning) {

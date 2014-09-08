@@ -4,10 +4,12 @@ package kr.poturns.blink.internal;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import kr.poturns.blink.db.SyncDatabaseManager;
 import kr.poturns.blink.internal.DeviceAnalyzer.Identity;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
 import kr.poturns.blink.internal.comm.BlinkSupportBinder;
+import kr.poturns.blink.internal.comm.IBlinkMessagable;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import android.bluetooth.BluetoothGatt;
 import android.os.RemoteCallbackList;
@@ -47,6 +49,8 @@ public class ServiceKeeper {
 	// *** FIELD DECLARATION *** //
 	private final BlinkLocalBaseService KEEPER_CONTEXT;
 	
+	private final SyncDatabaseManager SYNC_DB_MANAGER;
+	
 	/**
 	 * 탐색된 디바이스들을 담는 HashSet.
 	 */
@@ -75,11 +79,11 @@ public class ServiceKeeper {
 	 */
 	private ServiceKeeper(BlinkLocalBaseService context) {
 		KEEPER_CONTEXT = context;
+		SYNC_DB_MANAGER = new SyncDatabaseManager(context);
 		
 		DISCOVERY_SET = new HashSet<BlinkDevice>();
 		BLINK_NETWORK_MAP = new HashMap<String, NetworkMap>();
 		BLINK_NETWORK_MAP.put(null, new NetworkMap(null));
-		
 		BINDER_MAP = new HashMap<String, BlinkSupportBinder>();
 		CALLBACK_MAP = new HashMap<String,RemoteCallbackList<IInternalEventCallback>>();
 	}
@@ -122,9 +126,19 @@ public class ServiceKeeper {
 	 * @param thread
 	 */
 	void addConnection(BlinkDevice device, ClassicLinkThread thread) {
-		if (device != null && device.isConnected()) 
+		if (device != null) {
 			// TODO : GroupID 가 복수 일 때??
-			BLINK_NETWORK_MAP.get(device.getGroupID()).addConnection(device, thread);
+			String devGroupID = device.getGroupID();
+			if (BLINK_NETWORK_MAP.containsKey(devGroupID)) 
+				BLINK_NETWORK_MAP.get(devGroupID).addConnection(device, thread);
+			
+			else {
+				NetworkMap mNetworkMap = new NetworkMap(devGroupID);
+				mNetworkMap.addConnection(device, thread);
+				
+				BLINK_NETWORK_MAP.put(devGroupID, mNetworkMap);
+			}
+		}
 	}
 	
 	/**
@@ -134,9 +148,19 @@ public class ServiceKeeper {
 	 * @param gatt
 	 */
 	void addConnection(BlinkDevice device, BluetoothGatt gatt) {
-		if (device != null && device.isConnected()) 
+		if (device != null && device.isConnected()) {
 			// TODO : GroupID 가 복수 일 때??
-			BLINK_NETWORK_MAP.get(device.getGroupID()).addConnection(device, gatt);
+			String devGroupID = device.getGroupID();
+			if (BLINK_NETWORK_MAP.containsKey(devGroupID)) 
+				BLINK_NETWORK_MAP.get(devGroupID).addConnection(device, gatt);
+			
+			else {
+				NetworkMap mNetworkMap = new NetworkMap(devGroupID);
+				mNetworkMap.addConnection(device, gatt);
+				
+				BLINK_NETWORK_MAP.put(devGroupID, mNetworkMap);
+			}
+		}
 	}
 
 	/**
@@ -146,7 +170,7 @@ public class ServiceKeeper {
 	 * @return true : 제거 성공, false : 제거 못함.
 	 */
 	boolean removeConnection(BlinkDevice device) {
-		if (device == null)
+		if (device == null || !BLINK_NETWORK_MAP.containsKey(device.getGroupID()))
 			return false;
 
 		Object mConnObj = BLINK_NETWORK_MAP.get(device.getGroupID()).removeConnection(device);
@@ -320,132 +344,124 @@ public class ServiceKeeper {
 
 	/**
 	 * 시스템 동기화 메세지를 전송한다.
+	 * SystemSync Message는 Passing되지 않는다.
 	 * 
 	 * @param targetDevice
 	 * @param identity
 	 */
-	void transferSystemSync(BlinkDevice targetDevice, boolean identity) {
-		if (!identity && !BlinkDevice.HOST.isCenterDevice())
-			return;
+	void transferSystemSync(BlinkDevice targetDevice, int type) {
 		
-		Log.e("ServiceKeeper_transferSystemSync", targetDevice.getAddress() + " // " + identity);
+		Log.e("ServiceKeeper_transferSystemSync", targetDevice.getAddress() + " // " + type);
+		
+		Object message = null;
+		switch (type) {
+		case BlinkMessage.TYPE_REQUEST_IDENTITY_SYNC:
+			message = BlinkDevice.HOST;
+			break;
+			
+		case BlinkMessage.TYPE_REQUEST_NETWORK_SYNC:
+			if (BlinkDevice.HOST.isCenterDevice())
+				message = BLINK_NETWORK_MAP.get(targetDevice.getGroupID()).obtainLinkedDevices();
+			break;
+			
+		case BlinkMessage.TYPE_REQUEST_BlinkAppInfo_SYNC:
+			if (!BlinkDevice.HOST.isCenterDevice())
+				message = SYNC_DB_MANAGER.obtainBlinkApp();
+			break;
+			
+		default:
+			return;
+		}
 		
 		BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
 										.setSourceDevice(BlinkDevice.HOST)
 										.setDestinationDevice(targetDevice)
-										.setType(identity? 
-												BlinkMessage.TYPE_REQUEST_IDENTITY_SYNC : 
-													BlinkMessage.TYPE_REQUEST_NETWORK_SYNC)
-										.setMessage(identity?
-												BlinkDevice.HOST : 
-													//OLD_NETWORK_MAP)
-													BLINK_NETWORK_MAP.get(targetDevice.getGroupID()).obtainLinkedDevices())
+										.setType(type)
+										.setMessage(message)
 										.build();
 
-		Log.e("ServiceKeeper_transferSystemSync", mBlinkMessage.getMessage());
-		
 		sendMessageToDevice(targetDevice, mBlinkMessage);
+		Log.e("ServiceKeeper_transferSystemSync", mBlinkMessage.getMessage());
 	}
 	
 	/**
 	 * 상대 디바이스와 Identity 동기화를 수행한다.
 	 * 
-	 * @param otherDevice
+	 * @param otherDevice (Separate-Instance)
 	 */
 	void handleIdentitySync(BlinkDevice otherDevice) {
 		String myDevGroupID = BlinkDevice.HOST.getGroupID();
 		String otherDevGroupID = otherDevice.getGroupID();
 
+		// Identity 정보 동기화
+		otherDevice = BlinkDevice.update(otherDevice);
 		DeviceAnalyzer mAnalyzer = DeviceAnalyzer.getInstance(KEEPER_CONTEXT);
-		
+
 		if (BLINK_NETWORK_MAP.containsKey(otherDevGroupID)) {
-			// otherDevice와 이전에 연결되어 Group을 형성한 적이 있음.
+			// otherDevice와 이전에 연결되어 Group을 형성한 적이 있거나, OpenGroup으로 연결.
 			NetworkMap mNetworkMap = BLINK_NETWORK_MAP.get(otherDevGroupID);
 			
-			int compare = mAnalyzer.compareForIdentity(BlinkDevice.HOST, otherDevice);
-			if (compare > 0) {
-				switch (BlinkDevice.HOST.getIdentity()) {
-				case MAIN:
-				case PROXY: {
-					// TODO : 그룹별 관리를 할 경우로 변경 작업 필요.
-					// 하나의 그룹만 다룸. 향후 그룹별 관리가 적용될 때, 삭제해야함.
-					otherDevice.setGroupID(myDevGroupID);
-					mNetworkMap.addConnection(BlinkDevice.update(otherDevice), BLINK_NETWORK_MAP.get(myDevGroupID).removeConnection(otherDevice));
-
-					transferSystemSync(otherDevice, false);
-				} break;
-				
-//				case CORE: 
-//				case PERIPHERAL: {
-//					// 네트워크 형성한적이 없을 경우,
-//					// TODO : 그룹별 관리를 할 경우로 변경 작업 필요.
-//					otherDevice.setGroupID(myDevGroupID);
-//					mNetworkMap.addConnection(BlinkDevice.update(otherDevice), NETWORK_MAP.removeConnection(otherDevice));
-//					
-//				} break;
-					
-				default:
+			// 상대 디바이스는 OpenGroup으로서 연결 요청, 자신의 디바이스는 OpenGroup 연결을 원치 않을 때..
+			if (myDevGroupID != otherDevGroupID) {
+				if (myDevGroupID != null) {
+					// 연결 종료
+					mNetworkMap.removeConnection(otherDevice);
 				}
+				return;
+			}
 				
-				
-			} else if (BlinkDevice.HOST.getIdentity() == Identity.PROXY)
-				mAnalyzer.grantProxyIdentity(false);
 			
-			
-		} else {
-			// otherDevice와 이전에 연결되어 Group을 형성한 적이 없음!
-			int compare = mAnalyzer.compareForIdentity(BlinkDevice.HOST, otherDevice);
+			// 형성된 그룹이 존재하거나, OpenGroup으로 연결.
+			// TODO : 그룹 동기화 문제 분리... 그룹 동기화의 경우 [그룹 초대]를 통하여 별도의 메세지를 통해 그룹을 형성하도록 한다.
+			// TODO : Default 기능으로는 OpenGroup을 형성하여, BLINK 네트워크를 형성하는 모든 디바이스가 연결 될 수 있도록 함. (단, OpenGroup Mode일 경우, Data보호 문제 필요..)
+			long compare = mAnalyzer.compareForIdentity(BlinkDevice.HOST, otherDevice);
 			if (compare > 0) {
+				// 상대 디바이스보다 우위에 있는 경우.
 				switch (BlinkDevice.HOST.getIdentity()) {
 				case MAIN:
 				case PROXY: {
-					// TODO : 그룹별 관리를 할 경우로 변경 작업 필요.
-					// 하나의 그룹만 다룸. 향후 그룹별 관리가 적용될 때, 삭제해야함.
-					NetworkMap mNetworkMap = BLINK_NETWORK_MAP.get(myDevGroupID);
-					otherDevice.setGroupID(myDevGroupID);
-					mNetworkMap.addConnection(BlinkDevice.update(otherDevice), BLINK_NETWORK_MAP.get(myDevGroupID).removeConnection(otherDevice));
-
-					transferSystemSync(otherDevice, false);
+					transferSystemSync(otherDevice, IBlinkMessagable.TYPE_REQUEST_NETWORK_SYNC);
+					
 				} break;
 				
 				case CORE: 
 				case PERIPHERAL: {
-					// 네트워크 형성한적이 없을 경우,
-					// TODO : 그룹별 관리를 할 경우로 변경 작업 필요.
-					if (BLINK_NETWORK_MAP.isEmpty()) {
-						if (BlinkDevice.HOST.getIdentity() == Identity.CORE)	
+					BlinkDevice mCenterDevice = mNetworkMap.getLinkedCenterDevice();
+					if (mCenterDevice.equals(BlinkDevice.HOST)) {
+						// 현재 GroupNetwork에서 첫 연결이 성립되는 경우..
+						if (Identity.CORE.equals(mCenterDevice.getIdentity()))
 							mAnalyzer.grantMainIdentity(true);
 						else
 							mAnalyzer.grantProxyIdentity(true);
-						
-						String mGroupID = mAnalyzer.generateGroupId();
-						BlinkDevice.HOST.setGroupID(mGroupID);
-						otherDevice.setGroupID(mGroupID);
-						
-						NetworkMap mNetworkMap = new NetworkMap(mGroupID);
-						mNetworkMap.addConnection(BlinkDevice.update(otherDevice), BLINK_NETWORK_MAP.get(myDevGroupID).removeConnection(otherDevice));
 
-						BLINK_NETWORK_MAP.put(mGroupID, mNetworkMap);
-
-						transferSystemSync(otherDevice, false);
+						transferSystemSync(otherDevice, IBlinkMessagable.TYPE_REQUEST_NETWORK_SYNC);
 						
-					// 네트워크 형성한 적이 있을 경우,
-					// TODO : 그룹별 관리를 할 경우로 변경 작업 필요.
 					} else {
-						// 하나의 그룹만 다룸. 향후 그룹별 관리가 적용될 때, 삭제해야함.
-						//NetworkMap mNetworkMap = (NetworkMap)BLINK_NETWORK_MAP.values().toArray()[0];
-//						NetworkMap mNetworkMap = BLINK_NETWORK_MAP.get(myDevGroupID);
-//						otherDevice.setGroupID(myDevGroupID);
-//						mNetworkMap.addConnection(BlinkDevice.update(otherDevice), NETWORK_MAP.removeConnection(otherDevice));
-						((ClassicLinkThread) BLINK_NETWORK_MAP.get(otherDevGroupID).getConnectionObject(otherDevice)).destroyThread();
+						// Center 디바이스와 다른 루트로 연결되어 있는 경우,
+						// TODO : 1. Center 디바이스로 리다이렉트, 2. 자신이 Center Device에게 알려주기..
 					}
 				} break;
 					
 				default:
 				}
 				
-			} else if (BlinkDevice.HOST.getIdentity() == Identity.PROXY)
-				mAnalyzer.grantProxyIdentity(false);
+			} else if (BlinkDevice.HOST.isCenterDevice()) {
+				// 상대 디바이스보다 낮지만 Center역할을 하고 있었을 경우.. Center 역할 반납.
+				switch (BlinkDevice.HOST.getIdentity()) {
+				case MAIN:
+					mAnalyzer.grantMainIdentity(false);
+					break;
+					
+				case PROXY:
+					mAnalyzer.grantProxyIdentity(false);
+					break;
+					
+				default:
+				}	
+			}
+			
+			
+		} else {
 			
 		}
 	}
@@ -453,12 +469,17 @@ public class ServiceKeeper {
 	/**
 	 * 상대 디바이스와 Network 동기화를 수행한다.
 	 * 
-	 * @param device
+	 * @param set (Separate-Instance)
+	 * @param groupID
 	 */
-	void handleNetworkSync(HashSet<BlinkDevice> set) {
+	void handleNetworkSync(HashSet<BlinkDevice> set, String groupID) {
+		NetworkMap mNetworkMap = BLINK_NETWORK_MAP.get(groupID);
+		if (mNetworkMap == null)
+			return;
+		
 		for(BlinkDevice device : set) {
 			BlinkDevice mDevice = BlinkDevice.update(device);
-			
+			mNetworkMap.addLink(mDevice);
 		}
 	}
 	

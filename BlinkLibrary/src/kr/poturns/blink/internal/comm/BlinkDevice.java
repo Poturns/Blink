@@ -69,7 +69,7 @@ public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDe
 		mDevice.Identity = device.getIdentity().ordinal();
 		mDevice.IdentityPoint = device.getIdentityPoint();
 		mDevice.GroupID = device.getGroupID();
-		mDevice.Timestamp = System.currentTimeMillis();
+		mDevice.Timestamp = device.Timestamp;
 		
 		return mDevice;
 	}
@@ -210,6 +210,9 @@ public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDe
 	// Group-dependent
 	private int Identity;
 	private int IdentityPoint;
+	/**
+	 * Null일 경우, OpenGroup.
+	 */
 	private String GroupID;
 
 	// Device-dependent

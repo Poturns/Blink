@@ -210,15 +210,16 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			BlinkDevice device = BlinkDevice.load(origin);
-			device.setConnected(false);
 
-			if (mServiceKeeper.removeConnection(device)) {
+			mServiceKeeper.removeConnection(device);
+
+			if (device.isConnected()) {
 				// Broadcasting...
 				Intent mActionConnected = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_DISCONNECTED);
 				mActionConnected.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
 				MANAGER_CONTEXT.sendBroadcast(mActionConnected, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
 			}
-			
+			device.setConnected(false);
 			Log.d("InterDeviceManager", "ACTION_ACL_DISCONNECTED : " + origin.getAddress());
 			
 			

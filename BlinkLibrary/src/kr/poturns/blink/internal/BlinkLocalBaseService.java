@@ -52,7 +52,7 @@ abstract class BlinkLocalBaseService extends Service {
 		Log.e("BlinkLocalBaseService", "onCreate()");
 		super.onCreate();
 		// For Service Debugging... 
-		//android.os.Debug.waitForDebugger();
+		android.os.Debug.waitForDebugger();
 
 		initiatate();
 		

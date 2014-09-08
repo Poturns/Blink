@@ -45,8 +45,8 @@ class NetworkMap {
 	 * @param device
 	 * @param thread
 	 */
-	void addLink(BlinkDevice device, ClassicLinkThread thread) {
-		LINKED_MAP.put(device, thread);
+	void addLink(BlinkDevice device) {
+		LINKED_MAP.put(device, CONNECTED_MAP.get(device));
 		
 		if (LINKED_LIST.add(device))
 			Collections.sort(LINKED_LIST);
@@ -55,15 +55,15 @@ class NetworkMap {
 	/**
 	 * 
 	 * @param device
-	 * @param gatt
+	 * @param passage
 	 */
-	void addLink(BlinkDevice device, BluetoothGatt gatt) {
-		LINKED_MAP.put(device, gatt);
-		
+	void addLink(BlinkDevice device, BlinkDevice passage) {
+		LINKED_MAP.put(device, CONNECTED_MAP.get(passage));
+
 		if (LINKED_LIST.add(device))
 			Collections.sort(LINKED_LIST);
 	}
-
+	
 	/**
 	 * 
 	 * @param device

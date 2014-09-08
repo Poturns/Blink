@@ -279,7 +279,7 @@ public class DeviceAnalyzer {
 	 * @param device2
 	 * @return
 	 */
-	int compareForIdentity(BlinkDevice device1, BlinkDevice device2) {
+	long compareForIdentity(BlinkDevice device1, BlinkDevice device2) {
 		int mIdentityPointDev1 = device1.getIdentityPoint() ^ IDENTITY_POINTLINE_PROXY;
 		int mIdentityPointDev2 = device2.getIdentityPoint() ^ IDENTITY_POINTLINE_PROXY;
 		
@@ -298,7 +298,7 @@ public class DeviceAnalyzer {
 				
 			}
 			
-			return (int)(mTimestampDev1 - mTimestampDev2);
+			return (long)(mTimestampDev1 - mTimestampDev2);
 		}
 	}
 	
