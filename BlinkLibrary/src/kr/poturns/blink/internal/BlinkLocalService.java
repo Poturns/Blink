@@ -146,61 +146,47 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 	}
 	
 	/**
-	 * 함수를 실행시켜주는 매소드
-	 * 바인더나 MessageProcessor로부터 호출된다.
-	 * @param function
-	 */
-	public void startFunction(Function function){
-		if(function .Type==Function.TYPE_ACTIVITY)
-			startActivity(new Intent(function.Action).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-		else if(function .Type==Function.TYPE_SERIVCE)
-			startService(new Intent(function.Action));
-		else if(function.Type==Function.TYPE_BROADCAST)
-			sendBroadcast(new Intent(function.Action));
-	}
-	
-	/**
 	 * 서비스에서 Database 변경에 대한 Observer 이벤트를 받으면 관련 기능을 호출한다.
 	 */
-	private ContentObserver mContentObserver = new ContentObserver(new Handler()){
+	public ContentObserver mContentObserver = new ContentObserver(new Handler()){
 		public void onChange(boolean selfChange, Uri uri) {
 			//새로운 BlinkApp이 추가되면 메인에 Sync 요청
-			if(uri.equals(SqliteManager.URI_OBSERVER_BLINKAPP)){
-				//BlinkMessage 생성
-				BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
-										.setDestinationDevice((String) null)
-										.setDestinationApplication(null)
-										.setSourceDevice(BlinkDevice.HOST)
-										.setSourceApplication("kr.poturns.blink.internal.BlinkLocalService")
-										.setMessage(gson.toJson(mSyncDatabaseManager.obtainBlinkApp()))
-										.setType(IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC)
-										.setCode(0)
-										.build();
-				mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
-			}
-			
-			//새로운 MeasruementData가 추가되면 메인에 데이터 전송
-			else if(uri.equals(SqliteManager.URI_OBSERVER_MEASUREMENTDATA)){
-				//DatabaseMessage 생성
-				BlinkDevice CenterDevice = mServiceKeeper.obtainCurrentCenterDevice();
-				BlinkDevice HostDevice = BlinkDevice.HOST; 
-				if(CenterDevice.getAddress().contentEquals(HostDevice.getAddress())){
-					List<MeasurementData> mMeasurementDataList = mSyncDatabaseManager.wearable.obtainMeasurementDatabase(CenterDevice);
-					
-					//BlinkMessage 생성
-					BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
-											.setDestinationDevice((String) null)
-											.setDestinationApplication(null)
-											.setSourceDevice(BlinkDevice.HOST)
-											.setSourceApplication("kr.poturns.blink.internal.BlinkLocalService")
-											.setMessage(gson.toJson(mMeasurementDataList))
-											.setType(IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA)
-											.setCode(0)
-											.build();
-					mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
-				}
-				
-			}
+//			if(uri.equals(SqliteManager.URI_OBSERVER_BLINKAPP)){
+//				//BlinkMessage 생성
+//				BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
+//										.setDestinationDevice((String) null)
+//										.setDestinationApplication(null)
+//										.setSourceDevice(BlinkDevice.HOST)
+//										.setSourceApplication("kr.poturns.blink.internal.BlinkLocalService")
+//										.setMessage(gson.toJson(mSyncDatabaseManager.obtainBlinkApp()))
+//										.setType(IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC)
+//										.setCode(0)
+//										.build();
+//				mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
+//			}
+//			
+//			//새로운 MeasruementData가 추가되면 메인에 데이터 전송
+//			else if(uri.equals(SqliteManager.URI_OBSERVER_MEASUREMENTDATA)){
+//				//DatabaseMessage 생성
+//				BlinkDevice CenterDevice = mServiceKeeper.obtainCurrentCenterDevice();
+//				BlinkDevice HostDevice = BlinkDevice.HOST; 
+//				if(CenterDevice.getAddress().contentEquals(HostDevice.getAddress())){
+//					List<MeasurementData> mMeasurementDataList = mSyncDatabaseManager.wearable.obtainMeasurementDatabase(CenterDevice);
+//					
+//					//BlinkMessage 생성
+//					BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
+//											.setDestinationDevice((String) null)
+//											.setDestinationApplication(null)
+//											.setSourceDevice(BlinkDevice.HOST)
+//											.setSourceApplication("kr.poturns.blink.internal.BlinkLocalService")
+//											.setMessage(gson.toJson(mMeasurementDataList))
+//											.setType(IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA)
+//											.setCode(0)
+//											.build();
+//					mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
+//				}
+//				
+//			}
 			
 		};
 	};

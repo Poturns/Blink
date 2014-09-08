@@ -10,28 +10,28 @@
 
     <Button android:layout_height="wrap_content"
     android:layout_width="wrap_content"
-    android:text="button"
-    android:id="@+id/btn_test"
+    android:text="동기화 메시지"
+    android:id="@+id/btn_sendMessage"
     android:onClick="onClick"
     android:enabled="false"
     android:layout_gravity="center_horizontal"/>
     
     <Button android:layout_height="wrap_content"
     android:layout_width="wrap_content"
-    android:text="button"
-    android:id="@+id/btn_test2"
+    android:text="앱 등록"
+    android:id="@+id/btn_registerBlinkApp"
     android:onClick="onClick"
     android:enabled="false"
-    android:layout_toRightOf="@id/btn_test"
+    android:layout_toRightOf="@id/btn_sendMessage"
     android:layout_gravity="center_horizontal"/>
     
     <Button android:layout_height="wrap_content"
     android:layout_width="wrap_content"
-    android:text="button"
-    android:id="@+id/btn_test3"
+    android:text="데이터 등록"
+    android:id="@+id/btn_registerMeasurementData"
     android:onClick="onClick"
     android:enabled="false"
-    android:layout_toRightOf="@id/btn_test2"
+    android:layout_toRightOf="@id/btn_registerBlinkApp"
     android:layout_gravity="center_horizontal"/>
     
     <ImageView

@@ -38,11 +38,11 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
             public void onServiceConnected(IInternalOperationSupport iSupport) {
 	            // TODO Auto-generated method stub
 				Log.i(tag, "onServiceConnected!!");
-				Button btn = (Button)findViewById(R.id.btn_test);
+				Button btn = (Button)findViewById(R.id.btn_sendMessage);
 				btn.setEnabled(true);
-				btn = (Button)findViewById(R.id.btn_test2);
+				btn = (Button)findViewById(R.id.btn_registerBlinkApp);
 				btn.setEnabled(true);
-				btn = (Button)findViewById(R.id.btn_test3);
+				btn = (Button)findViewById(R.id.btn_registerMeasurementData);
 				btn.setEnabled(true);
             }
 
@@ -76,13 +76,14 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
 	
 	public void onClick(View v){
 		switch (v.getId()) {
-		case R.id.btn_test:
-			mTestArchive.exampleShowActivity();
+		case R.id.btn_sendMessage:
+			Log.i("test", "btn_sendMessage");
+			mBlinkServiceInteraction.sendSyncMessage();
 			break;
-		case R.id.btn_test2:
+		case R.id.btn_registerBlinkApp:
 			mTestArchive.exampleRegisterBlinkApp();
 			break;
-		case R.id.btn_test3:
+		case R.id.btn_registerMeasurementData:
 			mTestArchive.exampleRegisterMeasurementDatabase();
 			break;
 		default:
@@ -118,33 +119,6 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
 	 * public IBinder asBinder()
 	 */
 	IInternalEventCallback mInternalEventCallback = new IInternalEventCallback.Stub(){
-
-		@Override
-        public void onDeviceConnected(BlinkDevice arg0) throws RemoteException {
-	        // TODO Auto-generated method stub
-	        
-        }
-
-		@Override
-        public void onDeviceConnectionFailed(BlinkDevice arg0)
-                throws RemoteException {
-	        // TODO Auto-generated method stub
-	        
-        }
-
-		@Override
-        public void onDeviceDisconnected(BlinkDevice arg0)
-                throws RemoteException {
-	        // TODO Auto-generated method stub
-	        
-        }
-
-		@Override
-        public void onDeviceDiscovered(BlinkDevice arg0) throws RemoteException {
-	        // TODO Auto-generated method stub
-	        
-        }
-
 		@Override
 		public void onReceiveData(int arg0, CallbackData arg1)
 				throws RemoteException {
@@ -155,30 +129,30 @@ public class MainActivity extends Activity implements android.view.View.OnClickL
 			Log.i(tag, "Result : "+arg1.Result);
 			Log.i(tag, "ResultDetail : "+arg1.ResultDetail);
 			
-			if(arg0==0){
-				if(arg1.InDeviceData!=null){
-					List<Eye> mEyeList = gson.fromJson(arg1.InDeviceData, new TypeToken<List<Eye>>(){}.getType());
-					for(int i=0;i<mEyeList.size();i++){
-						Log.i(tag, "Eye - left_sight : "+mEyeList.get(i).left_sight+" right_sight : "+mEyeList.get(i).right_sight+ " DateTime : "+mEyeList.get(i).DateTime);
-					}
-				}
-				if(arg1.OutDeviceData!=null){
-					List<Eye> mEyeList = gson.fromJson(arg1.OutDeviceData, new TypeToken<List<Eye>>(){}.getType());
-					for(int i=0;i<mEyeList.size();i++){
-						Log.i(tag, "Eye - left_sight : "+mEyeList.get(i).left_sight+" right_sight : "+mEyeList.get(i).right_sight+ " DateTime : "+mEyeList.get(i).DateTime);
-					}
-				}
-			}
-			else if(arg0==1){
-				if(arg1.InDeviceData!=null){
-					List<MeasurementData> mMeasurementList = gson.fromJson(arg1.InDeviceData, new TypeToken<List<MeasurementData>>(){}.getType());
-					Log.i(tag, mMeasurementList.toString());
-				}
-				if(arg1.OutDeviceData!=null){
-					List<MeasurementData> mMeasurementList = gson.fromJson(arg1.OutDeviceData, new TypeToken<List<MeasurementData>>(){}.getType());
-					Log.i(tag, mMeasurementList.toString());
-				}
-			}
+//			if(arg0==0){
+//				if(arg1.InDeviceData!=null){
+//					List<Eye> mEyeList = gson.fromJson(arg1.InDeviceData, new TypeToken<List<Eye>>(){}.getType());
+//					for(int i=0;i<mEyeList.size();i++){
+//						Log.i(tag, "Eye - left_sight : "+mEyeList.get(i).left_sight+" right_sight : "+mEyeList.get(i).right_sight+ " DateTime : "+mEyeList.get(i).DateTime);
+//					}
+//				}
+//				if(arg1.OutDeviceData!=null){
+//					List<Eye> mEyeList = gson.fromJson(arg1.OutDeviceData, new TypeToken<List<Eye>>(){}.getType());
+//					for(int i=0;i<mEyeList.size();i++){
+//						Log.i(tag, "Eye - left_sight : "+mEyeList.get(i).left_sight+" right_sight : "+mEyeList.get(i).right_sight+ " DateTime : "+mEyeList.get(i).DateTime);
+//					}
+//				}
+//			}
+//			else if(arg0==1){
+//				if(arg1.InDeviceData!=null){
+//					List<MeasurementData> mMeasurementList = gson.fromJson(arg1.InDeviceData, new TypeToken<List<MeasurementData>>(){}.getType());
+//					Log.i(tag, mMeasurementList.toString());
+//				}
+//				if(arg1.OutDeviceData!=null){
+//					List<MeasurementData> mMeasurementList = gson.fromJson(arg1.OutDeviceData, new TypeToken<List<MeasurementData>>(){}.getType());
+//					Log.i(tag, mMeasurementList.toString());
+//				}
+//			}
 		}
 
 	};

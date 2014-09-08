@@ -427,6 +427,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 
 		public void registerMeasurementData(Object obj) {
 			try {
+				if(mBlinkAppInfo==null)obtainBlinkApp();
 				mBlinkDatabaseManager.registerMeasurementData(
 						mBlinkAppInfo, obj);
 			} catch (IllegalAccessException e) {
@@ -539,21 +540,6 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 			mBlinkDatabaseManager.queryMeasurementData(where);
 			return this;
 		}
-
-//		public boolean checkInDevice(List<Measurement> mMeasurementList) {
-//			// TODO Auto-generated method stub
-//			return mBlinkDatabaseManager.checkInDevice(mMeasurementList);
-//		}
-//
-//		public boolean checkInDevice(Function mFunction) {
-//			// TODO Auto-generated method stub
-//			return mBlinkDatabaseManager.checkInDevice(mFunction);
-//		}
-//
-//		public boolean checkInDevice(Class<?> obj) {
-//			// TODO Auto-generated method stub
-//			return mBlinkDatabaseManager.checkInDevice(obj);
-//		}
 
 		public List<Device> getDeviceList() {
 			// TODO Auto-generated method stub
@@ -682,4 +668,16 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		}
 	}
 
+	/**
+	 * Sync 메시지 전송을 위한 임시 매소드
+	 */
+	public void sendSyncMessage(){
+		try {
+			Log.i("test", "btn_sendMessage");
+			mInternalOperationSupport.sendSyncMessage();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }
