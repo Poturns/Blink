@@ -109,4 +109,10 @@ interface IInternalOperationSupport {
 	void obtainMeasurementData(String ClassName,String DateTimeFrom,String DateTimeTo,int ContainType,int requestCode);
 	void obtainMeasurementDataById(inout List<Measurement> mMeasurementList,String DateTimeFrom,String DateTimeTo,int requestCode);
 	void startFunction(inout Function function,int requestCode);
+	
+	/**
+	 * 통신 테스트를 위핸 임시 매소드
+	 */
+	 
+	void sendSyncMessage();
 }

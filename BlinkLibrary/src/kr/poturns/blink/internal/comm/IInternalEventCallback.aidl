@@ -15,14 +15,5 @@ import kr.poturns.blink.db.archive.CallbackData;
  *
  */
 interface IInternalEventCallback {
-
-	oneway void onDeviceDiscovered(inout BlinkDevice device);
-	
-	oneway void onDeviceConnected(inout BlinkDevice device);
-	
-	oneway void onDeviceDisconnected(inout BlinkDevice device);
-
-	oneway void onDeviceConnectionFailed(inout BlinkDevice device);
-
 	oneway void onReceiveData(int responseCode,inout CallbackData data);
 }

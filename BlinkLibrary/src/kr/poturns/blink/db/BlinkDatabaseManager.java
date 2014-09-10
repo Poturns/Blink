@@ -14,8 +14,8 @@ import android.util.Log;
 
 /**
  * 간편하게 쿼리를 날릴 수 있는 기능 추가
- * SqliteManager는 직접 raw 쿼리를 날린다.
- * SqliteManager를 상속받아 사용한다.
+ * SqliteManager를 상속받아 사용하며
+ * 여러 조건들을 조합하여 SqliteManager에 있는 매소드를 호출한다.
  * @author Jiwon
  *
  */
@@ -36,7 +36,7 @@ public class BlinkDatabaseManager extends SqliteManager{
 	 * 테스트 매소드
 	 * 현재 변수들에 저장된 데이터를 로그캣에 보여준다.
 	 */
-	public void testBlinkDatabaseManager(){
+	private void testBlinkDatabaseManager(){
 		Log.i(tag,"Device List :");
 		for(int i=0;i<mDeviceList.size();i++){
 			Log.i(tag,mDeviceList.get(i).toString());
@@ -59,6 +59,11 @@ public class BlinkDatabaseManager extends SqliteManager{
 		}
 	}
 	
+	/**
+	 * 생성자로 별다른 기능은 없다.
+	 * SqliteManager의 생성자를 호출한다.
+	 * @param context
+	 */
 	public BlinkDatabaseManager(Context context) {
 		super(context);
 	}
@@ -308,6 +313,7 @@ public class BlinkDatabaseManager extends SqliteManager{
 		mMeasurementList.clear();
 		mMeasurementDataList.clear();
 	}
+	
 	/**
 	 * getter , setter methods
 	 */

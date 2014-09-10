@@ -74,7 +74,8 @@ class DataSelectFragment extends Fragment {
 		}
 		Bundle arg = getArguments();
 		if (BundleResolver.obtainApp(arg) != null) {
-			showMeasurementList(arg);
+			showMeasurementList(arg, getActivity().getActionBar().getTitle(),
+					getActivity().getActionBar().getSubtitle());
 		}
 	}
 
@@ -110,8 +111,10 @@ class DataSelectFragment extends Fragment {
 	}
 
 	/** {@link DataViewFragment}로 전환한다. */
-	void changeFragment(Bundle arg) {
+	void changeFragment(Bundle arg, CharSequence title, CharSequence subTitle) {
 		Bundle bundle = new Bundle(arg);
+		bundle.putCharSequence("title", title);
+		bundle.putCharSequence("sub", subTitle);
 		Fragment f = new DataViewFragment();
 		f.setArguments(bundle);
 		getFragmentManager().beginTransaction()
@@ -123,8 +126,11 @@ class DataSelectFragment extends Fragment {
 		arg.clear();
 	}
 
-	void showMeasurementList(Bundle bundle) {
+	void showMeasurementList(Bundle bundle, CharSequence title,
+			CharSequence subTitle) {
 		Bundle arg = new Bundle(bundle);
+		arg.putCharSequence("title", title);
+		arg.putCharSequence("subTitle", subTitle);
 		Fragment f = new MeasurementListFragment();
 		f.setArguments(arg);
 		getFragmentManager().beginTransaction()
@@ -163,6 +169,10 @@ class DataSelectFragment extends Fragment {
 					TextView appTextView = (TextView) v
 							.findViewById(R.id.fragment_list_recent_app);
 					appTextView.setText(app.AppName);
+					appTextView
+							.setCompoundDrawablesRelativeWithIntrinsicBounds(
+									PrivateUtil.obtainAppIcon(app,
+											getResources()), null, null, null);
 					((TextView) v
 							.findViewById(R.id.fragment_list_recent_measurement))
 							.setText(PrivateUtil
@@ -176,7 +186,9 @@ class DataSelectFragment extends Fragment {
 						@Override
 						public void onClick(View v) {
 							changeFragment(BundleResolver.toBundle(device, app,
-									measurement));
+									measurement), getActivity().getActionBar()
+									.getTitle(), getActivity().getActionBar()
+									.getSubtitle());
 						}
 					});
 					return v;
@@ -245,12 +257,17 @@ class DataSelectFragment extends Fragment {
 				Holder holder = (Holder) h;
 				final App item = (App) getChild(groupPosition, childPosition);
 				holder.tv.setText(item.AppName);
+				holder.tv.setCompoundDrawablesRelativeWithIntrinsicBounds(
+						PrivateUtil.obtainAppIcon(item, getResources()), null,
+						null, null);
 				convertView.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View v) {
-						DataSelectFragment.this.showMeasurementList(BundleResolver
-								.toBundle((Device) getGroup(groupPosition),
-										item));
+						DataSelectFragment.this.showMeasurementList(
+								BundleResolver.toBundle(
+										(Device) getGroup(groupPosition), item),
+								getActivity().getActionBar().getTitle(),
+								getActivity().getActionBar().getSubtitle());
 					}
 				});
 			}
@@ -291,7 +308,7 @@ class DataSelectFragment extends Fragment {
 					View v = super.getView(position, convertView, parent);
 					Measurement item = getItem(position);
 					((TextView) v.findViewById(android.R.id.text1))
-							.setText(item.Measurement);
+							.setText(item.MeasurementName);
 					return v;
 				}
 			};
@@ -311,7 +328,9 @@ class DataSelectFragment extends Fragment {
 				public void onItemClick(AdapterView<?> parent, View view,
 						int position, long id) {
 					changeFragment(BundleResolver.toBundle(mDevice, mApp,
-							(Measurement) parent.getItemAtPosition(position)));
+							(Measurement) parent.getItemAtPosition(position)),
+							getActivity().getActionBar().getTitle(),
+							getActivity().getActionBar().getSubtitle());
 				}
 			});
 			return v;
@@ -326,22 +345,19 @@ class DataSelectFragment extends Fragment {
 
 		@Override
 		public void onPause() {
-			getActivity().getActionBar().setTitle(null);
-			getActivity().getActionBar().setSubtitle(null);
+			Bundle arg = getArguments();
+			getActivity().getActionBar().setTitle(arg.getCharSequence("title"));
+			getActivity().getActionBar().setSubtitle(
+					arg.getCharSequence("subTitle"));
 			super.onPause();
 		}
 
-		@Override
-		public void onDetach() {
-			getActivity().getActionBar().setTitle(
-					getResources().getStringArray(
-							R.array.activity_sercive_control_menu_array)[1]);
-			super.onDetach();
-		}
-
 		/** {@link DataViewFragment}로 전환한다. */
-		void changeFragment(Bundle arg) {
+		void changeFragment(Bundle arg, CharSequence title,
+				CharSequence subTitle) {
 			Bundle bundle = new Bundle(arg);
+			bundle.putCharSequence("title", title);
+			bundle.putCharSequence("sub", subTitle);
 			Fragment f = new DataViewFragment();
 			f.setArguments(bundle);
 			getFragmentManager()

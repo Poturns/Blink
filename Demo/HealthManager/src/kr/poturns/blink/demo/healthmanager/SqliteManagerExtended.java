@@ -189,8 +189,8 @@ class SqliteManagerExtended extends SqliteManager {
 					.getColumnIndex("Measurement"));
 			measurement.MeasurementId = cursor.getInt(cursor
 					.getColumnIndex("MeasurementId"));
-			// measurement.MeasurementName = cursor.getString(cursor
-			// .getColumnIndex("MeasurementName"));
+			//measurement.MeasurementName = cursor.getString(cursor
+			//		.getColumnIndex("MeasurementName"));
 			measurement.Type = cursor.getString(cursor.getColumnIndex("Type"));
 		} else if (object instanceof Function) {
 			Function function = (Function) object;
@@ -218,6 +218,7 @@ class SqliteManagerExtended extends SqliteManager {
 					.getColumnIndex("PackageName"));
 			app.AppName = cursor.getString(cursor.getColumnIndex("AppName"));
 			app.Version = cursor.getInt(cursor.getColumnIndex("Version"));
+			//app.AppIcon = cursor.getBlob(cursor.getColumnIndex("AppIcon"));
 			app.DateTime = cursor.getString(cursor.getColumnIndex("DateTime"));
 		} else {
 			return null;
