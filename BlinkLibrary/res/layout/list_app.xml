@@ -21,6 +21,7 @@
         android:layout_height="wrap_content"
         android:layout_marginRight="5dp"
         android:layout_toLeftOf="@+id/fragment_connection_log_info"
+        android:background="@drawable/selector_button"
         android:gravity="center"
         android:text="@string/show_db_info"
         android:textSize="13dp" />
@@ -30,6 +31,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
+        android:background="@drawable/selector_button"
         android:gravity="center"
         android:text="@string/show_log_info"
         android:textSize="13dp" />
