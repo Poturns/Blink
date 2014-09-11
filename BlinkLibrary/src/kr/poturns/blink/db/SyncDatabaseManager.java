@@ -157,6 +157,7 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		values.put("DeviceId", mApp.DeviceId);
 		values.put("PackageName", mApp.PackageName);
 		values.put("AppName", mApp.AppName);
+		values.put("AppIcon", mApp.AppIcon);
 		values.put("Version", mApp.Version);
 		values.put("DateTime", mApp.DateTime);
         mSQLiteDatabase.insert("App", null, values);
@@ -173,6 +174,7 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 			ContentValues values = new ContentValues();
 			values.put("AppId", mMeasurement.AppId);
 			values.put("MeasurementId", mMeasurement.MeasurementId);
+			values.put("MeasurementName", mMeasurement.MeasurementName);
 			values.put("Measurement", mMeasurement.Measurement);
 			values.put("Type", mMeasurement.Type);
 			values.put("Description", mMeasurement.Description);
