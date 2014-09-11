@@ -3,18 +3,9 @@ package kr.poturns.blink.external;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.os.Bundle;
-/** ServiceControlActivity의 interface*/
+
+/** ServiceControlActivity가 관리하는 자원을 다른 Fragment 클래스가 참조할 수 있게 하는 Interface 클래스. */
 interface IServiceContolActivity {
-	/*
-	 * Bundle을 통해 전달되어 올 가능성이 있는 데이터를 나타내는 이름, bundle에 이러한 이름의 데이터가 존재한다면, 이
-	 * 데이터와 관련된 사항을 우선적으로 보여주어야 한다.
-	 */
-	/** Device를 나타내는 Extra name */
-	public static final String EXTRA_DEVICE = "EXTRA_DEVICE";
-	/** App을 나타내는 Extra name */
-	public static final String EXTRA_DEVICE_APP = "EXTRA_DEVICE_APP";
-	/** Measurement를 나타내는 Extra name*/
-	public static final String EXTRA_DEVICE_MEASUREMENT = "EXTRA_MEASUREMENT";
 	/**
 	 * Fragment를 전환한다.
 	 * 

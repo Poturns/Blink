@@ -2,6 +2,7 @@ package kr.poturns.blink.external;
 
 import kr.poturns.blink.R;
 import kr.poturns.blink.db.archive.App;
+import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.bluetooth.BluetoothAdapter;
@@ -12,7 +13,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
 
+/** external package 내부에서 사용 될 Util Class */
 class PrivateUtil {
 	/**
 	 * 구동중인 장비의 화면의 크기가 작은 크기인지의 여부를 반환한다. <br>
@@ -53,7 +56,16 @@ class PrivateUtil {
 		return name;
 	}
 
-	/** {@link App}의 {@link App#AppIcon}을 나타내는 {@link Drawable}객체를 얻는다. */
+	/**
+	 * {@link App}의 {@link App#AppIcon}을 나타내는 {@link Drawable}객체를 얻는다.
+	 * 
+	 * @param app
+	 *            Icon을 가져올 App
+	 * @param resources
+	 *            display metric 정보를 가져올 resources
+	 * @return App Icon이 존재하면 해당 App Icon을 나타내는 Drawable,<br>
+	 *         없거나 가져오는데 실패하면 {@link R.drawable#ic_action_android}을 가져온다.
+	 */
 	public static Drawable obtainAppIcon(App app, Resources resources) {
 		Drawable drawable = null;
 		if (app.AppIcon != null) {
@@ -74,5 +86,101 @@ class PrivateUtil {
 		}
 
 		return drawable;
+	}
+
+	/*
+	 * Bundle을 통해 전달되어 올 가능성이 있는 데이터를 나타내는 이름, bundle에 이러한 이름의 데이터가 존재한다면, 이
+	 * 데이터와 관련된 사항을 우선적으로 보여주어야 한다.
+	 */
+	/** Device를 나타내는 Extra name */
+	public static final String EXTRA_DEVICE = "EXTRA_DEVICE";
+	/** App을 나타내는 Extra name */
+	public static final String EXTRA_DEVICE_APP = "EXTRA_DEVICE_APP";
+	/** Measurement를 나타내는 Extra name */
+	public static final String EXTRA_DEVICE_MEASUREMENT = "EXTRA_MEASUREMENT";
+
+	/**
+	 * 주어진 {@link Device}와 {@link App}을 {@link Bundle}에 저장한다.
+	 * 
+	 * @param device
+	 *            Bundle에 저장할 Device
+	 * @param app
+	 *            Bundle에 저장할 App
+	 * @return Device와 App이 저장되어있는 Bundle<br>
+	 * <br>
+	 *         * 각각 저장된 이름은 {@link PrivateUtil#EXTRA_DEVICE},
+	 *         {@link PrivateUtil#EXTRA_DEVICE_APP}이다.
+	 */
+	public static Bundle toBundle(Device device, App app) {
+		if (device == null)
+			return null;
+		Bundle bundle = new Bundle();
+		bundle.putParcelable(EXTRA_DEVICE, device);
+		if (app != null)
+			bundle.putParcelable(EXTRA_DEVICE_APP, app);
+		return bundle;
+	}
+
+	/**
+	 * 주어진 {@link Device}와 {@link App}, {@link Measurement}를 {@link Bundle}에
+	 * 저장한다.
+	 * 
+	 * @param device
+	 *            Bundle에 저장할 Device
+	 * @param app
+	 *            Bundle에 저장할 App
+	 * @param measurement
+	 *            Bundle에 저장할 Measurement
+	 * @return Device와 App, Measurement가 저장되어있는 Bundle<br>
+	 * <br>
+	 *         * 각각 저장된 이름은 {@link PrivateUtil#EXTRA_DEVICE},
+	 *         {@link PrivateUtil#EXTRA_DEVICE_APP},
+	 *         {@link PrivateUtil#EXTRA_DEVICE_MEASUREMENT}이다
+	 * */
+	public static Bundle toBundle(Device device, App app,
+			Measurement measurement) {
+		Bundle bundle = toBundle(device, app);
+		if (bundle != null)
+			bundle.putParcelable(EXTRA_DEVICE_MEASUREMENT, measurement);
+		return bundle;
+	}
+
+	/**
+	 * 주어진 Bundle에서 Device를 가져온다.
+	 * 
+	 * @param bundle
+	 *            Device 정보를 가져올 Bundle
+	 * @return Bundle안에 Device가 저장되어 있다면 해당 Device객체, 없으면 null
+	 */
+	public static Device obtainDevice(Bundle bundle) {
+		if (bundle == null)
+			return null;
+		return bundle.getParcelable(EXTRA_DEVICE);
+	}
+
+	/**
+	 * 주어진 Bundle에서 App을 가져온다.
+	 * 
+	 * @param bundle
+	 *            App 정보를 가져올 Bundle
+	 * @return Bundle안에 App이 저장되어 있다면 해당 App객체, 없으면 null
+	 */
+	public static App obtainApp(Bundle bundle) {
+		if (bundle == null)
+			return null;
+		return bundle.getParcelable(EXTRA_DEVICE_APP);
+	}
+
+	/**
+	 * 주어진 Bundle에서 Measurement를 가져온다.
+	 * 
+	 * @param bundle
+	 *            Measurement 정보를 가져올 Bundle
+	 * @return Bundle안에 Measurement가 저장되어 있다면 해당 Measurement객체, 없으면 null
+	 */
+	public static Measurement obtainMeasurement(Bundle bundle) {
+		if (bundle == null)
+			return null;
+		return bundle.getParcelable(EXTRA_DEVICE_MEASUREMENT);
 	}
 }

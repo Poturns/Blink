@@ -28,11 +28,11 @@ import android.widget.TextView;
 /** Blink Database에 기록된 Log를 보여주는 Fragment */
 class LogViewFragment extends Fragment {
 	/** ListAdapter */
-	ArrayAdapter<ExternalDeviceAppLog> mArrayAdapter;
+	ArrayAdapter<ExternalBlinkLog> mArrayAdapter;
 	/** Log 정렬하는 {@link Comparator} */
-	ExternalDeviceAppLog.LogComparator mLogComparator;
+	ExternalBlinkLog.LogComparator mLogComparator;
 	/** Log 리스트 */
-	ArrayList<ExternalDeviceAppLog> mLogList;
+	ArrayList<ExternalBlinkLog> mLogList;
 	/** 현재 정렬 기준이 되는 Device, App */
 	Device mDevice;
 	App mApp;
@@ -50,13 +50,13 @@ class LogViewFragment extends Fragment {
 		if (savedInstanceState != null) {
 			mLogList = savedInstanceState.getParcelableArrayList("list");
 		} else {
-			mLogList = new ArrayList<ExternalDeviceAppLog>();
+			mLogList = new ArrayList<ExternalBlinkLog>();
 		}
 		checkArgumentsFromOtherFragment();
 
 		mArrayAdapter = new LogArrayAdapter(getActivity(),
 				R.layout.list_fragment_logview, mLogList);
-		mLogComparator = new ExternalDeviceAppLog.LogComparator();
+		mLogComparator = new ExternalBlinkLog.LogComparator();
 	}
 
 	/** Fragment의 Argument를 확인하여 값이 있다면 해당 값에 적절한 Log를 불러온다. */
@@ -64,11 +64,11 @@ class LogViewFragment extends Fragment {
 		checkArgumentAndResolveData();
 		if (mLogList.isEmpty()) {
 			getLoader(
-					new Loader.OnLoadCompleteListener<List<ExternalDeviceAppLog>>() {
+					new Loader.OnLoadCompleteListener<List<ExternalBlinkLog>>() {
 						@Override
 						public void onLoadComplete(
-								Loader<List<ExternalDeviceAppLog>> loader,
-								List<ExternalDeviceAppLog> data) {
+								Loader<List<ExternalBlinkLog>> loader,
+								List<ExternalBlinkLog> data) {
 							mArrayAdapter.clear();
 							mArrayAdapter.addAll(data);
 							mArrayAdapter.notifyDataSetChanged();
@@ -81,8 +81,8 @@ class LogViewFragment extends Fragment {
 	void checkArgumentAndResolveData() {
 		Bundle arg = getArguments();
 		if (arg != null && !arg.isEmpty()) {
-			mDevice = BundleResolver.obtainDevice(arg);
-			mApp = BundleResolver.obtainApp(arg);
+			mDevice = PrivateUtil.obtainDevice(arg);
+			mApp = PrivateUtil.obtainApp(arg);
 			StringBuilder subTitle = new StringBuilder(mDevice.Device);
 			if (mApp != null)
 				subTitle.append(" / ").append(mApp.AppName);
@@ -150,11 +150,11 @@ class LogViewFragment extends Fragment {
 		if (id == R.id.action_refresh) {
 			// Log 새로고침
 			getLoader(
-					new Loader.OnLoadCompleteListener<List<ExternalDeviceAppLog>>() {
+					new Loader.OnLoadCompleteListener<List<ExternalBlinkLog>>() {
 						@Override
 						public void onLoadComplete(
-								Loader<List<ExternalDeviceAppLog>> loader,
-								List<ExternalDeviceAppLog> data) {
+								Loader<List<ExternalBlinkLog>> loader,
+								List<ExternalBlinkLog> data) {
 							mArrayAdapter.clear();
 							mArrayAdapter.addAll(data);
 							mArrayAdapter.notifyDataSetChanged();
@@ -179,7 +179,7 @@ class LogViewFragment extends Fragment {
 					// 현재 정렬 순서의 역순으로 정렬시킨다.
 					// (정렬을 처음으로 시도하는 경우, mComparatorField 값이 0이므로 무조건 오름차순으로
 					// 정렬한다.)
-					if (mLogComparator.getComparatorField() == ExternalDeviceAppLog
+					if (mLogComparator.getComparatorField() == ExternalBlinkLog
 							.getFieldConstantByOrder(i))
 						mLogComparator.setOrder(!mLogComparator.getOrder());
 					else
@@ -192,26 +192,26 @@ class LogViewFragment extends Fragment {
 		}
 	};
 
-	private class LogArrayAdapter extends ArrayAdapter<ExternalDeviceAppLog> {
+	private class LogArrayAdapter extends ArrayAdapter<ExternalBlinkLog> {
 		private int mResource;
 		private Filter mFilter;
 
 		public LogArrayAdapter(Context context, int resource,
-				List<ExternalDeviceAppLog> objects) {
+				List<ExternalBlinkLog> objects) {
 			super(context, resource, objects);
 			this.mResource = resource;
 		}
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			TextView[] textViewArray = new TextView[ExternalDeviceAppLog.FIELD_SIZE];
-			ExternalDeviceAppLog item = getItem(position);
+			TextView[] textViewArray = new TextView[ExternalBlinkLog.FIELD_SIZE];
+			ExternalBlinkLog item = getItem(position);
 			if (convertView == null) {
 				convertView = View.inflate(getContext(), mResource, null);
 				for (int i = 0; i < mTitleViewsIdArray.length; i++) {
 					int id = mTitleViewsIdArray[i];
 					textViewArray[i] = (TextView) convertView.findViewById(id);
-					textViewArray[i].setText(item.getField(ExternalDeviceAppLog
+					textViewArray[i].setText(item.getField(ExternalBlinkLog
 							.getFieldConstantByOrder(i)));
 					convertView.setTag(id, textViewArray[i]);
 				}
@@ -219,7 +219,7 @@ class LogViewFragment extends Fragment {
 				for (int i = 0; i < mTitleViewsIdArray.length; i++) {
 					textViewArray[i] = (TextView) convertView
 							.getTag(mTitleViewsIdArray[i]);
-					textViewArray[i].setText(item.getField(ExternalDeviceAppLog
+					textViewArray[i].setText(item.getField(ExternalBlinkLog
 							.getFieldConstantByOrder(i)));
 				}
 			}
@@ -238,12 +238,12 @@ class LogViewFragment extends Fragment {
 
 			@Override
 			protected FilterResults performFiltering(CharSequence constraint) {
-				ArrayList<ExternalDeviceAppLog> filteringList = new ArrayList<ExternalDeviceAppLog>();
+				ArrayList<ExternalBlinkLog> filteringList = new ArrayList<ExternalBlinkLog>();
 				final int size = getCount();
 				for (int i = 0; i < size; i++) {
-					ExternalDeviceAppLog item = getItem(i);
+					ExternalBlinkLog item = getItem(i);
 					// TODO 여기서 특정한 항목에 대한 Filtering을 할 수 있음
-					for (int j = 0; j < ExternalDeviceAppLog.FIELD_SIZE; j++) {
+					for (int j = 0; j < ExternalBlinkLog.FIELD_SIZE; j++) {
 						if (item.fieldArray[j]
 								.startsWith(constraint.toString()))
 							filteringList.add(item);
@@ -262,7 +262,7 @@ class LogViewFragment extends Fragment {
 
 				if (results.count > 0) {
 					clear();
-					addAll((List<ExternalDeviceAppLog>) results.values);
+					addAll((List<ExternalBlinkLog>) results.values);
 					notifyDataSetChanged();
 				} else {
 					notifyDataSetInvalidated();
@@ -279,15 +279,15 @@ class LogViewFragment extends Fragment {
 	 *            작업이 끝난 후, 실행 될 리스너
 	 * @return {@link Loader}
 	 */
-	Loader<List<ExternalDeviceAppLog>> getLoader(
-			Loader.OnLoadCompleteListener<List<ExternalDeviceAppLog>> l) {
-		Loader<List<ExternalDeviceAppLog>> loader = new LogLoader(
-				getActivity(), mDevice, mApp);
+	Loader<List<ExternalBlinkLog>> getLoader(
+			Loader.OnLoadCompleteListener<List<ExternalBlinkLog>> l) {
+		Loader<List<ExternalBlinkLog>> loader = new LogLoader(getActivity(),
+				mDevice, mApp);
 		loader.registerListener(0, l);
 		return loader;
 	}
 
-	class LogLoader extends AsyncTaskLoader<List<ExternalDeviceAppLog>> {
+	class LogLoader extends AsyncTaskLoader<List<ExternalBlinkLog>> {
 		Device device;
 		App app;
 
@@ -298,18 +298,17 @@ class LogViewFragment extends Fragment {
 		}
 
 		@Override
-		public List<ExternalDeviceAppLog> loadInBackground() {
+		public List<ExternalBlinkLog> loadInBackground() {
 			if (app != null) {
-				return ExternalDeviceAppLog.convert(mManager.obtainLog(
+				return ExternalBlinkLog.convert(mManager.obtainLog(
 						device.Device, app.AppName, null, null));
 			} else if (device != null) {
-				return ExternalDeviceAppLog.convert(mManager.obtainLog(
+				return ExternalBlinkLog.convert(mManager.obtainLog(
 						device.Device, null, null));
 			} else {
-				return ExternalDeviceAppLog.convert(mManager.obtainLog());
+				return ExternalBlinkLog.convert(mManager.obtainLog());
 			}
 		}
 
 	}
-
 }
