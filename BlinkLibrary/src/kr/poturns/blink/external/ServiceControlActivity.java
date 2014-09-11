@@ -206,7 +206,12 @@ public final class ServiceControlActivity extends Activity implements
 
 	@Override
 	public void onBackPressed() {
-		// 화면이 작고 / 화면 방향이 '세로 (portrait)' 이며 / 왼쪽 메뉴가 열려 있을 때, 메뉴를 닫는다.
+		// 1.화면이 작다.
+		// 2. 화면 방향이 '세로 (portrait)' 이다.
+		// 3. 왼쪽 메뉴가 열려 있다.
+		// 위 세 조건을 모두 만족할 때, 왼쪽메뉴는 닫는다.
+		// 위 조건을 하나라도 만족하지 않는 경우는 대개 왼쪽 메뉴가 항시 열려있는 상태이므로
+		// 왼쪽 메뉴를 닫을 필요가 없다.
 		if (PrivateUtil.isScreenSizeSmall(this)
 				&& getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT
 				&& mSlidingPaneLayout.isOpen())

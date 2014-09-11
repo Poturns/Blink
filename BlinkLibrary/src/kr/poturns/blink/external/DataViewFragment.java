@@ -55,9 +55,9 @@ class DataViewFragment extends Fragment {
 		// 이 fragment에 진입했다는 것은, argument가 존재한다는 의미이다.
 		Bundle arg = getArguments();
 
-		mDevice = BundleResolver.obtainDevice(arg);
-		mApp = BundleResolver.obtainApp(arg);
-		mMeasurement = BundleResolver.obtainMeasurement(arg);
+		mDevice = PrivateUtil.obtainDevice(arg);
+		mApp = PrivateUtil.obtainApp(arg);
+		mMeasurement = PrivateUtil.obtainMeasurement(arg);
 		// mFragmentList.add(new DataMeasurementsPieFragment());
 		mFragmentList.add(new DataMeasurementsLineGraphFragment());
 		mFragmentList.add(new DataMeasurementDataListFragment());

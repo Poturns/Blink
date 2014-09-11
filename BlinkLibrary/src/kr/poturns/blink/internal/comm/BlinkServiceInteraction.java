@@ -120,7 +120,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	}
 
 	/**
-	 *  Boradcast와 Callback을 등록하지 않는 생성자
+	 *  Broadcast와 Callback을 등록하지 않는 생성자
 	 * @param context
 	 */
 	public BlinkServiceInteraction(Context context) {

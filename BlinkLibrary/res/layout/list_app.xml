@@ -9,31 +9,35 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@+id/fragment_connection_db_info"
         android:gravity="center_vertical"
         android:minHeight="?android:attr/listPreferredItemHeightSmall"
         android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
         android:paddingStart="?android:attr/listPreferredItemPaddingStart"
         android:textAppearance="?android:attr/textAppearanceListItemSmall" />
 
-    <Button
+    <TextView
         android:id="@+id/fragment_connection_db_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginRight="5dp"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="10dp"
         android:layout_toLeftOf="@+id/fragment_connection_log_info"
         android:background="@drawable/selector_button"
         android:gravity="center"
-        android:text="@string/show_db_info"
-        android:textSize="13dp" />
+        android:paddingRight="10dp"
+        android:text="@string/show_db_info" />
 
-    <Button
+    <TextView
         android:id="@+id/fragment_connection_log_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="20dp"
         android:background="@drawable/selector_button"
         android:gravity="center"
-        android:text="@string/show_log_info"
-        android:textSize="13dp" />
+        android:text="@string/show_log_info" />
 
 </RelativeLayout>

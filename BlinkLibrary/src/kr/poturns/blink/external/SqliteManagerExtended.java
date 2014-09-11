@@ -16,6 +16,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+/** UI에서만 사용되는 추가적인 Database 쿼리가 적용된, Database에 접근하는 클래스. */
 class SqliteManagerExtended extends SqliteManager {
 	private SQLiteDatabase mSQLiteDatabase;
 
@@ -135,7 +136,7 @@ class SqliteManagerExtended extends SqliteManager {
 	/**
 	 * DB에서 주어진 Measurement의 MeasuremenData List의 크기를 얻는다.
 	 * 
-	 * @return MeasurementData의 개수, 없으면 -1
+	 * @return MeasurementData의 개수, 없으면 0
 	 */
 	public int obtainMeasurementDataListSize(Measurement measurement) {
 		Cursor cursor = mSQLiteDatabase.rawQuery(
@@ -145,7 +146,7 @@ class SqliteManagerExtended extends SqliteManager {
 		if (cursor.moveToFirst()) {
 			size = cursor.getInt(cursor.getColumnIndex("count"));
 		} else {
-			size = -1;
+			size = 0;
 		}
 		cursor.close();
 		return size;
@@ -189,8 +190,13 @@ class SqliteManagerExtended extends SqliteManager {
 					.getColumnIndex("Measurement"));
 			measurement.MeasurementId = cursor.getInt(cursor
 					.getColumnIndex("MeasurementId"));
-			//measurement.MeasurementName = cursor.getString(cursor
-			//		.getColumnIndex("MeasurementName"));
+			try {
+				measurement.MeasurementName = cursor.getString(cursor
+						.getColumnIndex("MeasurementName"));
+			} catch (Exception e) {
+				measurement.MeasurementName = PrivateUtil
+						.obtainSplitMeasurementSchema(measurement);
+			}
 			measurement.Type = cursor.getString(cursor.getColumnIndex("Type"));
 		} else if (object instanceof Function) {
 			Function function = (Function) object;
@@ -218,7 +224,11 @@ class SqliteManagerExtended extends SqliteManager {
 					.getColumnIndex("PackageName"));
 			app.AppName = cursor.getString(cursor.getColumnIndex("AppName"));
 			app.Version = cursor.getInt(cursor.getColumnIndex("Version"));
-			//app.AppIcon = cursor.getBlob(cursor.getColumnIndex("AppIcon"));
+			try {
+				app.AppIcon = cursor.getBlob(cursor.getColumnIndex("AppIcon"));
+			} catch (Exception e) {
+				app.AppIcon = null;
+			}
 			app.DateTime = cursor.getString(cursor.getColumnIndex("DateTime"));
 		} else {
 			return null;
