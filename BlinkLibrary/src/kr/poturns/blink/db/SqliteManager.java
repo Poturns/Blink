@@ -95,19 +95,20 @@ public class SqliteManager extends SQLiteOpenHelper {
 	 * Sqlite에 쿼리를 날릴 때 사용되는 기본 쿼리문
 	 * 뒤에 조건을 붙여서 사용된다.
 	 */
-	private final String SQL_SELECT_DEVICE = "SELECT * FROM Device ";
-	private final String SQL_SELECT_APP = "SELECT * FROM App ";
-	private final String SQL_SELECT_FUNCTION = "SELECT * FROM Function ";
-	private final String SQL_SELECT_MEASUREMENT = "SELECT * FROM Measurement ";
-	private final String SQL_SELECT_MEASUREMENTDATA =  "SELECT * FROM MeasurementData ";
+	protected final String SQL_SELECT_DEVICE = "SELECT * FROM Device ";
+	protected final String SQL_SELECT_APP = "SELECT * FROM App ";
+	protected final String SQL_SELECT_FUNCTION = "SELECT * FROM Function ";
+	protected final String SQL_SELECT_MEASUREMENT = "SELECT * FROM Measurement ";
+	protected final String SQL_SELECT_MEASUREMENTDATA =  "SELECT * FROM MeasurementData ";
 	protected final String SQL_SELECT_SYNCMEASUREMENTDATA =  "SELECT * FROM SyncMeasurementData ";
-	private final String SQL_SELECT_GROUPID =  "SELECT max(GroupId) FROM MeasurementData ";
-	private final String SQL_DELETE_DEVICE = "delete from Device ";
-	private final String SQL_DELETE_APP = "delete from App ";
-	private final String SQL_DELETE_FUNCTION = "delete from Function ";
-	private final String SQL_DELETE_MEASUREMENT = "delete from Measurement ";
-	private final String SQL_DELETE_MEASUREMENTDATA = "delete from MeasurementData ";
-	private final String SQL_SELECT_LOG =  "SELECT * FROM BlinkLog ";
+	protected final String SQL_SELECT_GROUPID =  "SELECT max(GroupId) FROM MeasurementData ";
+	protected final String SQL_SELECT_MEASUREMENTDATAID =  "SELECT max(MeasurementId) FROM MeasurementData ";
+	protected final String SQL_DELETE_DEVICE = "delete from Device ";
+	protected final String SQL_DELETE_APP = "delete from App ";
+	protected final String SQL_DELETE_FUNCTION = "delete from Function ";
+	protected final String SQL_DELETE_MEASUREMENT = "delete from Measurement ";
+	protected final String SQL_DELETE_MEASUREMENTDATA = "delete from MeasurementData ";
+	protected final String SQL_SELECT_LOG =  "SELECT * FROM BlinkLog ";
 	
 	/**
 	 * Sqlite 데이터베이스 위치

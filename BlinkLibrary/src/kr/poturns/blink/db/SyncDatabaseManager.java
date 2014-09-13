@@ -20,6 +20,11 @@ import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
 
+/**
+ * 디바이스간 데이터베이스 동기화를 하기 위한 매소드를 가지고 있는 클래스
+ * @author mementohora
+ *
+ */
 public class SyncDatabaseManager extends BlinkDatabaseManager{
 	private final static String tag = "SyncDatabaseManager";
 	
@@ -225,6 +230,20 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		mSQLiteDatabase.execSQL(query);
 	}
 	
+	/**
+	 * MeasurementData 테이블의 MeasurementDataId 칼럼에서 가장 큰 값을 찾아준다.
+	 * 만약 없으면 0을 리턴한다.
+	 * MeasurementData 동기화에 사용되는 매소드이다.
+	 * @return
+	 */
+	private int obtainMeasurementDataId(){
+		String sql = SQL_SELECT_MEASUREMENTDATAID;
+		Cursor mCursor = mSQLiteDatabase.rawQuery(sql, null);
+		if(mCursor.moveToNext()){
+			return mCursor.getInt(0);
+		}
+		return 0;
+	}
 	/**
 	 * SystemDatabase 테이블을 모두 삭제하는 매소드
 	 * Device,App,Function,Measurement 테이블을 삭제한다.
