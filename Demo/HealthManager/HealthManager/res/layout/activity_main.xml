@@ -15,13 +15,21 @@
     <com.beardedhen.androidbootstrap.BootstrapButton
         	android:id="@+id/btnBig"
              android:layout_width="fill_parent"
-             android:layout_height="200dp"
+             android:layout_height="150dp"
              android:layout_margin="10dp"
              android:text="Primary"
              bootstrapbutton:bb_icon_right="fa-cloud"
              bootstrapbutton:bb_roundedCorners="true"
              bootstrapbutton:bb_type="primary"
              bootstrapbutton:bb_text_gravity="right" />
+    
+    <include layout="@layout/health_recent" />
+    
+    <include layout="@layout/health_info" />
+    
+    <include layout="@layout/health_graph" />
+    
+    <include layout="@layout/health_open_controller" />
     
     <include layout="@layout/font_awesome_text_example" />
     
