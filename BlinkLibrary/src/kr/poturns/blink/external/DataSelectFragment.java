@@ -7,6 +7,8 @@ import java.util.Map;
 import kr.poturns.blink.R;
 import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.Device;
+import kr.poturns.blink.db.archive.Function;
+import kr.poturns.blink.db.archive.IDatabaseObject;
 import kr.poturns.blink.db.archive.Measurement;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -73,7 +75,7 @@ class DataSelectFragment extends Fragment {
 							new DeviceMapFragment()).commit();
 		}
 		Bundle arg = getArguments();
-		if (BundleResolver.obtainApp(arg) != null) {
+		if (PrivateUtil.obtainApp(arg) != null) {
 			showMeasurementList(arg, getActivity().getActionBar().getTitle(),
 					getActivity().getActionBar().getSubtitle());
 		}
@@ -185,7 +187,7 @@ class DataSelectFragment extends Fragment {
 
 						@Override
 						public void onClick(View v) {
-							changeFragment(BundleResolver.toBundle(device, app,
+							changeFragment(PrivateUtil.toBundle(device, app,
 									measurement), getActivity().getActionBar()
 									.getTitle(), getActivity().getActionBar()
 									.getSubtitle());
@@ -263,11 +265,11 @@ class DataSelectFragment extends Fragment {
 				convertView.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View v) {
-						DataSelectFragment.this.showMeasurementList(
-								BundleResolver.toBundle(
-										(Device) getGroup(groupPosition), item),
-								getActivity().getActionBar().getTitle(),
-								getActivity().getActionBar().getSubtitle());
+						DataSelectFragment.this.showMeasurementList(PrivateUtil
+								.toBundle((Device) getGroup(groupPosition),
+										item), getActivity().getActionBar()
+								.getTitle(), getActivity().getActionBar()
+								.getSubtitle());
 					}
 				});
 			}
@@ -282,12 +284,15 @@ class DataSelectFragment extends Fragment {
 		}
 	}
 
-	/** 선택된 {@link App}의 {@link Measurement}의 리스트를 보여주는 Fragment */
+	/**
+	 * 선택된 {@link App}의 {@link Measurement}와 {@link Function}의 리스트를 보여주는
+	 * Fragment
+	 */
 	private static class MeasurementListFragment extends Fragment {
 		Device mDevice;
 		App mApp;
-		ArrayList<Measurement> mMeasurementList;
-		ArrayAdapter<Measurement> mAdapter;
+		ArrayList<IDatabaseObject> mDatabaseObjectList;
+		ArrayAdapter<IDatabaseObject> mAdapter;
 		SqliteManagerExtended mManager;
 
 		@Override
@@ -296,19 +301,41 @@ class DataSelectFragment extends Fragment {
 			mManager = ((IServiceContolActivity) getActivity())
 					.getDatabaseHandler();
 			Bundle bundle = getArguments();
-			mDevice = BundleResolver.obtainDevice(bundle);
-			mApp = BundleResolver.obtainApp(bundle);
-			mMeasurementList = new ArrayList<Measurement>();
-			mMeasurementList.addAll(mManager.obtainMeasurementList(mApp));
-			mAdapter = new ArrayAdapter<Measurement>(getActivity(),
-					android.R.layout.simple_list_item_1, mMeasurementList) {
+			mDevice = PrivateUtil.obtainDevice(bundle);
+			mApp = PrivateUtil.obtainApp(bundle);
+			mDatabaseObjectList = new ArrayList<IDatabaseObject>();
+			mDatabaseObjectList.addAll(mManager.obtainFunctionList(mApp));
+			mDatabaseObjectList.addAll(mManager.obtainMeasurementList(mApp));
+			mAdapter = new ArrayAdapter<IDatabaseObject>(getActivity(),
+					android.R.layout.simple_list_item_2, android.R.id.text1,
+					mDatabaseObjectList) {
 				@Override
 				public View getView(int position, View convertView,
 						ViewGroup parent) {
 					View v = super.getView(position, convertView, parent);
-					Measurement item = getItem(position);
-					((TextView) v.findViewById(android.R.id.text1))
-							.setText(item.MeasurementName);
+					IDatabaseObject item = getItem(position);
+					TextView head = (TextView) v
+							.findViewById(android.R.id.text1);
+					TextView tail = (TextView) v
+							.findViewById(android.R.id.text2);
+					if (item instanceof Measurement) {
+						Measurement measurement = (Measurement) item;
+						head.setText(measurement.MeasurementName);
+						head.setCompoundDrawablesRelativeWithIntrinsicBounds(
+								R.drawable.ic_action_device_access_storage_1,
+								0, 0, 0);
+						tail.setText(measurement.Measurement
+								+ "\n측정 데이터 갯수 : "
+								+ mManager
+										.obtainMeasurementDataListSize(measurement));
+					} else if (item instanceof Function) {
+						Function function = (Function) item;
+						head.setText(function.Function);
+						head.setCompoundDrawablesRelativeWithIntrinsicBounds(
+								R.drawable.ic_action_av_play_over_video, 0, 0,
+								0);
+						tail.setText(function.Description);
+					}
 					return v;
 				}
 			};
@@ -327,10 +354,13 @@ class DataSelectFragment extends Fragment {
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view,
 						int position, long id) {
-					changeFragment(BundleResolver.toBundle(mDevice, mApp,
-							(Measurement) parent.getItemAtPosition(position)),
-							getActivity().getActionBar().getTitle(),
-							getActivity().getActionBar().getSubtitle());
+					Object item = parent.getItemAtPosition(position);
+					if (item instanceof Measurement) {
+						changeFragment(PrivateUtil.toBundle(mDevice, mApp,
+								(Measurement) item), getActivity()
+								.getActionBar().getTitle(), getActivity()
+								.getActionBar().getSubtitle());
+					}
 				}
 			});
 			return v;

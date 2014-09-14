@@ -55,10 +55,10 @@ class DataViewFragment extends Fragment {
 		// 이 fragment에 진입했다는 것은, argument가 존재한다는 의미이다.
 		Bundle arg = getArguments();
 
-		mDevice = BundleResolver.obtainDevice(arg);
-		mApp = BundleResolver.obtainApp(arg);
-		mMeasurement = BundleResolver.obtainMeasurement(arg);
-		mFragmentList.add(new DataMeasurementsPieFragment());
+		mDevice = PrivateUtil.obtainDevice(arg);
+		mApp = PrivateUtil.obtainApp(arg);
+		mMeasurement = PrivateUtil.obtainMeasurement(arg);
+		// mFragmentList.add(new DataMeasurementsPieFragment());
 		mFragmentList.add(new DataMeasurementsLineGraphFragment());
 		mFragmentList.add(new DataMeasurementDataListFragment());
 	}
@@ -122,6 +122,14 @@ class DataViewFragment extends Fragment {
 		return v;
 	}
 
+	/**
+	 * {@link ViewPager}또는 {@link TabHost}의 page를 이동한다.
+	 * 
+	 * @param position
+	 *            움직일 page또는 tab의 인덱스
+	 * @param isFromPager
+	 *            이동 요청이 {@link ViewPager}로 부터 왔는지 여부
+	 */
 	protected void navigateTab(int position, boolean isFromPager) {
 		if (isFromPager) {
 			mTabHost.setCurrentTab(position);
@@ -154,7 +162,7 @@ class DataViewFragment extends Fragment {
 	}
 
 	/** 현재 App의 MeasurementData들이 차지하는 비율을 파이 그래프 형태로 보여준다. */
-	class DataMeasurementsPieFragment extends Fragment {
+	private class DataMeasurementsPieFragment extends Fragment {
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
@@ -174,10 +182,9 @@ class DataViewFragment extends Fragment {
 			int r = random.nextInt(128) + 128;
 			int g = random.nextInt(128) + 128;
 			int b = random.nextInt(128) + 128;
-			graphItemList.add(new CircleGraph(PrivateUtil
-					.obtainSplitMeasurementSchema(measurement), Color.rgb(r, g,
-					b), DataViewFragment.this.mManager
-					.obtainMeasurementDataListSize(measurement)));
+			graphItemList.add(new CircleGraph(measurement.MeasurementName,
+					Color.rgb(r, g, b), DataViewFragment.this.mManager
+							.obtainMeasurementDataListSize(measurement)));
 
 			if (graphItemList.isEmpty())
 				return null;
@@ -214,14 +221,14 @@ class DataViewFragment extends Fragment {
 	}
 
 	/** 해당 Device의 App의 Measurement의 Data들을 line graph형태로 보여준다. */
-	class DataMeasurementsLineGraphFragment extends Fragment {
+	private class DataMeasurementsLineGraphFragment extends Fragment {
 		private ViewGroup mGraphView;
 
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View fragmentLayout = inflater.inflate(
-					R.layout.fragment_sample_graph, container, false);
+			View fragmentLayout = inflater.inflate(R.layout.fragment_graph,
+					container, false);
 			mGraphView = (ViewGroup) fragmentLayout
 					.findViewById(R.id.fragment_sample_GraphView);
 			View graph = makeGraph();
@@ -293,7 +300,7 @@ class DataViewFragment extends Fragment {
 		}
 	}
 
-	class DataMeasurementDataListFragment extends Fragment {
+	private class DataMeasurementDataListFragment extends Fragment {
 		List<MeasurementData> mMeasurementDataList;
 		ArrayAdapter<MeasurementData> mAdapter;
 

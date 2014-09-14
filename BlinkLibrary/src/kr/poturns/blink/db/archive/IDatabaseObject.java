@@ -6,6 +6,6 @@ package kr.poturns.blink.db.archive;
  * @author Jiwon
  *
  */
-interface IDatabaseObject {
+public interface IDatabaseObject {
 	public boolean checkIntegrity();
 }

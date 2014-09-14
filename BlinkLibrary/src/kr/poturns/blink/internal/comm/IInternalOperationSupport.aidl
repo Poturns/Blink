@@ -111,8 +111,7 @@ interface IInternalOperationSupport {
 	void startFunction(inout Function function,int requestCode);
 	
 	/**
-	 * 통신 테스트를 위핸 임시 매소드
+	 * 테스트를 위한 임시 매소드
 	 */
-	 
-	void sendSyncMessage();
+	 void sendSyncMessage();
 }

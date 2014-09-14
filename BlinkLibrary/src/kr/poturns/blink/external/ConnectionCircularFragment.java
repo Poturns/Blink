@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import kr.poturns.blink.R;
-import kr.poturns.blink.external.CircularViewHelper.OnDragAndDropListener;
-import kr.poturns.blink.external.ConnectionFragment.BaseConnectionFragment;
-import kr.poturns.blink.external.ConnectionFragment.DeviceConnectionResultListener;
+import kr.poturns.blink.external.CircularViewHelper.*;
+import kr.poturns.blink.external.ConnectionFragment.*;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.content.Context;
 import android.os.Bundle;
@@ -21,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 @SuppressWarnings("deprecation")
+/** Bluetooth Device의 연결 상태를 그래픽으로 나타내는 Fragment 클래스*/
 final class ConnectionCircularFragment extends BaseConnectionFragment {
 	/** layout 하단의 submenu 역할을 하는 SlidingDrawer */
 	private SlidingDrawer mSlidingDrawer;

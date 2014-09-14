@@ -20,10 +20,7 @@ import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.AsyncTaskLoader;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -69,8 +66,6 @@ final class ConnectionFragment extends Fragment {
 	boolean mBluetoothEnabled = true;
 	/** BlinkDevice Discovery 작업 여부 */
 	boolean mFetchTasking = false;
-	/** Bluetooth 연결을 감지하는 {@link BroadcastReceiver} */
-	BroadcastReceiver mConnectionDetectReceiver = new BluetoothConnectionReceiver();
 	/** UI를 표시하는 ChildFragment */
 	IConnectionCallback mCurrentChildFragmentInterface;
 
@@ -115,34 +110,10 @@ final class ConnectionFragment extends Fragment {
 
 	}
 
-	/** Android 기기의 Bluetooth 연결 상태를 감지하기 위한 {@link BroadcastReceiver} */
-	class BluetoothConnectionReceiver extends BroadcastReceiver {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			if (BluetoothAdapter.ACTION_STATE_CHANGED
-					.equals(intent.getAction())) {
-				int state = intent.getExtras().getInt(
-						BluetoothAdapter.EXTRA_STATE);
-				switch (state) {
-				case BluetoothAdapter.STATE_ON:
-					mBluetoothEnabled = true;
-					fetchDeviceListFromBluetooth();
-					break;
-				default:
-					mBluetoothEnabled = false;
-					break;
-				}
-			}
-		}
-	}
-
 	@Override
 	public void onAttach(final Activity activity) {
 		super.onAttach(activity);
 		setHasOptionsMenu(true);
-		IntentFilter filter = new IntentFilter();
-		filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
-		activity.registerReceiver(mConnectionDetectReceiver, filter);
 		if (activity instanceof IServiceContolActivity) {
 			mActivityInterface = (IServiceContolActivity) activity;
 		}
@@ -169,8 +140,7 @@ final class ConnectionFragment extends Fragment {
 				@Override
 				public void onServiceDisconnected() {
 					// Service와 연결이 끊기면 현재 Activity를 종료한다.
-					Toast.makeText(activity,
-							"Blink Service was disconnected!!",
+					Toast.makeText(activity, R.string.blink_service_disabled,
 							Toast.LENGTH_SHORT).show();
 					mBlinkOperation = null;
 					activity.finish();
@@ -179,8 +149,7 @@ final class ConnectionFragment extends Fragment {
 				@Override
 				public void onServiceFailed() {
 					// Service의 binding이 실패하면 현재 Activity를 종료한다.
-					Toast.makeText(activity,
-							"Blink Service connection was failed!!",
+					Toast.makeText(activity, R.string.blink_service_failed,
 							Toast.LENGTH_SHORT).show();
 					mBlinkOperation = null;
 					activity.finish();
@@ -213,8 +182,6 @@ final class ConnectionFragment extends Fragment {
 	public void onDestroy() {
 		mInteraction.setOnBlinkEventBroadcast(null);
 		getActivity().setProgressBarIndeterminateVisibility(false);
-		getActivity().unregisterReceiver(mConnectionDetectReceiver);
-		mConnectionDetectReceiver = null;
 		mBlinkOperation = null;
 		mManager = null;
 		mDeviceList = null;
@@ -256,16 +223,19 @@ final class ConnectionFragment extends Fragment {
 	 * 주변에 발견된 BlinkDevice의 list를 가져온다. <br>
 	 * <br>
 	 * 작업에 성공하면 {@link #onDeviceListChanged()}, 실패하면
-	 * {@link #onDeviceListLoadFailed()}가 호출된다.
+	 * {@link #onDeviceListLoadFailed()}가 호출된다. <br>
+	 * <br>
+	 * 작업이 이미 진행 중 이거나, Bluetooth가 비활성화 되어있으면 {@link Toast}를 띄운다.
 	 */
 	final void fetchDeviceListFromBluetooth() {
-		if (!mBluetoothEnabled) {
-			Toast.makeText(getActivity(), "Bluetooth was not enabled.",
+		if (!mBluetoothEnabled
+				|| BluetoothAdapter.getDefaultAdapter().getState() != BluetoothAdapter.STATE_ON) {
+			Toast.makeText(getActivity(), R.string.bluetooth_disabled,
 					Toast.LENGTH_SHORT).show();
 			return;
 		}
 		if (mFetchTasking) {
-			Toast.makeText(getActivity(), "Discovery is already running.",
+			Toast.makeText(getActivity(), R.string.discovery_is_running,
 					Toast.LENGTH_SHORT).show();
 			return;
 		}
@@ -356,12 +326,14 @@ final class ConnectionFragment extends Fragment {
 	/** 비동기 작업 후 호출된다. */
 	void onPostLoading() {
 		if (mConnectionTasking) {
-			mProgressDialog.dismiss();
+			if (mProgressDialog != null)
+				mProgressDialog.dismiss();
 			mConnectionTasking = false;
 		} else if (getActivity() != null) {
 			getActivity().setProgressBarIndeterminateVisibility(false);
 		}
-		mCurrentChildFragmentInterface.onPostLoading();
+		if (mCurrentChildFragmentInterface != null)
+			mCurrentChildFragmentInterface.onPostLoading();
 	}
 
 	/** Device 리스트의 변경이 실패하였을 때 호출된다. */
@@ -480,7 +452,8 @@ final class ConnectionFragment extends Fragment {
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
 			mBlinkDevice = getArguments().getParcelable("blinkDevice");
-			mDevice = mManager.obtainDevice(mBlinkDevice);
+			mDevice = ConnectionFragment.this.mManager
+					.obtainDevice(mBlinkDevice);
 		}
 
 		@Override
@@ -550,6 +523,14 @@ final class ConnectionFragment extends Fragment {
 			return v;
 		}
 
+		/**
+		 * {@link ViewPager}또는 {@link TabHost}의 page를 이동한다.
+		 * 
+		 * @param position
+		 *            움직일 page또는 tab의 인덱스
+		 * @param isFromPager
+		 *            이동 요청이 {@link ViewPager}로 부터 왔는지 여부
+		 */
 		protected void navigateTab(int position, boolean isFromPager) {
 			if (isFromPager) {
 				mTabHost.setCurrentTab(position);
@@ -606,21 +587,24 @@ final class ConnectionFragment extends Fragment {
 							public void onCheckedChanged(
 									final CompoundButton buttonView,
 									boolean isChecked) {
-								connectOrDisConnectDevice(mDevice,
-										new DeviceConnectionResultListener() {
+								ConnectionFragment.this
+										.connectOrDisConnectDevice(
+												mDevice,
+												new DeviceConnectionResultListener() {
 
-											@Override
-											public void onResult(
-													BlinkDevice device,
-													boolean connectionResult,
-													boolean isTaskFailed) {
-												if (connectionResult)
-													buttonView.setChecked(true);
-												else
-													buttonView
-															.setChecked(false);
-											}
-										});
+													@Override
+													public void onResult(
+															BlinkDevice device,
+															boolean connectionResult,
+															boolean isTaskFailed) {
+														if (connectionResult)
+															buttonView
+																	.setChecked(true);
+														else
+															buttonView
+																	.setChecked(false);
+													}
+												});
 							}
 						});
 				Switch isAutoConnect = (Switch) v
@@ -654,7 +638,8 @@ final class ConnectionFragment extends Fragment {
 			@Override
 			public void onCreate(Bundle savedInstanceState) {
 				super.onCreate(savedInstanceState);
-				mAppList = mManager.obtainAppList(mDevice);
+				mAppList = ConnectionFragment.this.mManager
+						.obtainAppList(mDevice);
 				mDialogListAdapter = new ArrayAdapter<App>(getActivity(),
 						R.layout.list_app, android.R.id.text1, mAppList) {
 					@Override
@@ -675,8 +660,8 @@ final class ConnectionFragment extends Fragment {
 
 									@Override
 									public void onClick(View v) {
-										mActivityInterface.transitFragment(1,
-												BundleResolver.toBundle(
+										ConnectionFragment.this.mActivityInterface.transitFragment(
+												1, PrivateUtil.toBundle(
 														mDevice, app));
 										((DialogFragment) DatabaseDeviceInfoFragment.this
 												.getParentFragment()).dismiss();
@@ -687,8 +672,8 @@ final class ConnectionFragment extends Fragment {
 
 									@Override
 									public void onClick(View v) {
-										mActivityInterface.transitFragment(2,
-												BundleResolver.toBundle(
+										ConnectionFragment.this.mActivityInterface.transitFragment(
+												2, PrivateUtil.toBundle(
 														mDevice, app));
 										((DialogFragment) DatabaseDeviceInfoFragment.this
 												.getParentFragment()).dismiss();
@@ -731,7 +716,8 @@ final class ConnectionFragment extends Fragment {
 
 		@Override
 		public void onPostLoading() {
-			getActivity().setProgressBarIndeterminateVisibility(false);
+			if (getActivity() != null)
+				getActivity().setProgressBarIndeterminateVisibility(false);
 		}
 
 		@Override
@@ -818,9 +804,13 @@ final class ConnectionFragment extends Fragment {
 
 		@Override
 		public void onDeviceDisconnected(BlinkDevice device) {
-			Toast.makeText(getActivity(),
-					device.getName() + getString(R.string.device_disconnected),
-					Toast.LENGTH_SHORT).show();
+			if (getActivity() != null)
+				Toast.makeText(
+						getActivity(),
+						device.getName()
+								+ getString(R.string.device_disconnected),
+						Toast.LENGTH_SHORT).show();
+			onDeviceListChanged();
 		}
 
 		@Override
