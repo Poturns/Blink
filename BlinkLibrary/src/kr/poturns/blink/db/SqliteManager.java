@@ -28,11 +28,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 
-/**
- * Sqlite에 직접 쿼리를 날리는 클래스
- * 또한 여러 Sqlite 쿼리와 DB 변경에 관한 URI, 몇 가지 TYPE, DB경로를 정의하고 있다.
- * @author mementohora
- *
+/*
+ * DB 생성 및 업그레이드를 도와주는 도우미 클래스 만들기
+ *  - SQLiteOpenHelper 추상 클래스를 상속받아서 만든다. - 
  */
 public class SqliteManager extends SQLiteOpenHelper {
 	private final String tag = "SqliteManager";
@@ -43,22 +41,15 @@ public class SqliteManager extends SQLiteOpenHelper {
 	
 	/**
 	 * obtainMeasurementList나 obtainMeasurementData에서 클래스를 통해 데이터를 얻어올 때 사용되는 타입
-	 * schema를 통해 데이터를 얻어올 때 완전히 일치하는 데이터를 가져온다.
+	 * schema를 통해 데이터를 얻어오기 때문에 완전히 일치하는 데이터, 부모 데이터, 필드명 일치 등 세 개의 타입을 사용한다.
 	 */
 	public final static int CONTAIN_DEFAULT = 0;
-	/**
-	 * obtainMeasurementList나 obtainMeasurementData에서 클래스를 통해 데이터를 얻어올 때 사용되는 타입
-	 * schema를 통해 데이터를 얻어올 때 부모 클래스가 일치하는 데이터를 가져온다.
-	 */
 	public final static int CONTAIN_PARENT = 1;
-	/**
-	 * obtainMeasurementList나 obtainMeasurementData에서 클래스를 통해 데이터를 얻어올 때 사용되는 타입
-	 * schema를 통해 데이터를 얻어올 때 필드명이 일치하는 데이터를 가져온다.
-	 */
 	public final static int CONTAIN_FIELD = 2;
 	
 	/**
-	 * BlinkLog에 저장되는 type으로 어떤 행동을 했는지 구분하는 값이다.
+	 * BlinkLog에 저장되는 type
+	 * 어떤 행동을 했는지 구분하는 값이다.
 	 */
 	public final static int LOG_REGISTER_BLINKAPP = 1;
 	public final static int LOG_OBTAIN_BLINKAPP = 2;
@@ -71,44 +62,31 @@ public class SqliteManager extends SQLiteOpenHelper {
 	
 	/**
 	 * 데이터베이스가 변화했을 때 호출되는 Observer의 Uri
-	 * BlinkApp이 추가됐을 때 해당 Uri로 호출된다.
+	 * BlinkApp이 추가되거나, MeasurementData가 추가되거나, BlinkAppInfo가 Sync됐을 때 해당 Uri로 호출된다.
 	 * 옵저버를 등록해야 사용할 수 있다. </br>
 	 * example : {@code getContentResolver().registerContentObserver(SqliteManager.URI_OBSERVER_BLINKAPP, false, mContentObserver);} 
 	 */
 	public final static Uri URI_OBSERVER_BLINKAPP = Uri.parse("blink://kr.poturns.blink/database/blinkappinfo");
-	/**
-	 * 데이터베이스가 변화했을 때 호출되는 Observer의 Uri
-	 * MeasurementData가 추가됐을 때 해당 Uri로 호출된다.
-	 * 옵저버를 등록해야 사용할 수 있다. </br>
-	 * example : {@code getContentResolver().registerContentObserver(SqliteManager.URI_OBSERVER_MEASUREMENTDATA, false, mContentObserver);} 
-	 */
 	public final static Uri URI_OBSERVER_MEASUREMENTDATA = Uri.parse("blink://kr.poturns.blink/database/measurementdata");
-	/**
-	 * 데이터베이스가 변화했을 때 호출되는 Observer의 Uri
-	 * BlinkAppInfo가 Sync됐을 때 해당 Uri로 호출된다.
-	 * 옵저버를 등록해야 사용할 수 있다. </br>
-	 * example : {@code getContentResolver().registerContentObserver(SqliteManager.URI_OBSERVER_SYNC, false, mContentObserver);} 
-	 */
 	public final static Uri URI_OBSERVER_SYNC = Uri.parse("blink://kr.poturns.blink/database/blinkappinfo/sync");
 	
 	/**
 	 * Sqlite에 쿼리를 날릴 때 사용되는 기본 쿼리문
 	 * 뒤에 조건을 붙여서 사용된다.
 	 */
-	protected final String SQL_SELECT_DEVICE = "SELECT * FROM Device ";
-	protected final String SQL_SELECT_APP = "SELECT * FROM App ";
-	protected final String SQL_SELECT_FUNCTION = "SELECT * FROM Function ";
-	protected final String SQL_SELECT_MEASUREMENT = "SELECT * FROM Measurement ";
-	protected final String SQL_SELECT_MEASUREMENTDATA =  "SELECT * FROM MeasurementData ";
+	private final String SQL_SELECT_DEVICE = "SELECT * FROM Device ";
+	private final String SQL_SELECT_APP = "SELECT * FROM App ";
+	private final String SQL_SELECT_FUNCTION = "SELECT * FROM Function ";
+	private final String SQL_SELECT_MEASUREMENT = "SELECT * FROM Measurement ";
+	private final String SQL_SELECT_MEASUREMENTDATA =  "SELECT * FROM MeasurementData ";
 	protected final String SQL_SELECT_SYNCMEASUREMENTDATA =  "SELECT * FROM SyncMeasurementData ";
-	protected final String SQL_SELECT_GROUPID =  "SELECT max(GroupId) FROM MeasurementData ";
-	protected final String SQL_SELECT_MEASUREMENTDATAID =  "SELECT max(MeasurementId) FROM MeasurementData ";
-	protected final String SQL_DELETE_DEVICE = "delete from Device ";
-	protected final String SQL_DELETE_APP = "delete from App ";
-	protected final String SQL_DELETE_FUNCTION = "delete from Function ";
-	protected final String SQL_DELETE_MEASUREMENT = "delete from Measurement ";
-	protected final String SQL_DELETE_MEASUREMENTDATA = "delete from MeasurementData ";
-	protected final String SQL_SELECT_LOG =  "SELECT * FROM BlinkLog ";
+	private final String SQL_SELECT_GROUPID =  "SELECT max(GroupId) FROM MeasurementData ";
+	private final String SQL_DELETE_DEVICE = "delete from Device ";
+	private final String SQL_DELETE_APP = "delete from App ";
+	private final String SQL_DELETE_FUNCTION = "delete from Function ";
+	private final String SQL_DELETE_MEASUREMENT = "delete from Measurement ";
+	private final String SQL_DELETE_MEASUREMENTDATA = "delete from MeasurementData ";
+	private final String SQL_SELECT_LOG =  "SELECT * FROM BlinkLog ";
 	
 	/**
 	 * Sqlite 데이터베이스 위치
@@ -129,10 +107,6 @@ public class SqliteManager extends SQLiteOpenHelper {
 		mSQLiteDatabase = this.getWritableDatabase();
 	}
 	
-	/**
-	 * SQLiteOpenHelper의 생성자에 기본적인 버전(1), DB 경로를 지정하여 호출한다.
-	 * @param context
-	 */
 	public SqliteManager(Context context){
 		super(context, EXTERNAL_DB_FILE_PATH+EXTERNAL_DB_FILE_NAME, null, 1);
 		mSQLiteDatabase = this.getWritableDatabase();
@@ -202,10 +176,6 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mBlinkAppInfo;
 	}
 	
-	/**
-	 * 모든 BlinkAppInfo를 검색하여 리턴한다. 
-	 * @return
-	 */
 	public ArrayList<BlinkAppInfo> obtainBlinkApp(){
 		ArrayList<BlinkAppInfo> mBlinkAppInfoList = new ArrayList<BlinkAppInfo>();
 		ArrayList<Device> mDeviceList = obtainDeviceList("");
@@ -227,13 +197,6 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mBlinkAppInfoList;
 	}
 	
-	/**
-	 * Device을 검색한다. 검색 조건과 결과는 매개변수로 넘긴 BlinkAppInfo 객체에 저장된다.
-	 * Device를 등록했을 때 ID를 비롯한 자동 생성되는 데이터를 얻어오기 위해 사용된다.
-	 * 사용자가 직접 호출할 일은 없다.
-	 * @param mBlinkAppInfo
-	 * @return
-	 */
 	private boolean obtainDeviceList(BlinkAppInfo mBlinkAppInfo){
 		Device mDevice = mBlinkAppInfo.mDevice;
 		String query = SQL_SELECT_DEVICE+"where Device=?";
@@ -250,11 +213,6 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return false;
 	}
 	
-	/**
-	 * where 조건에 일치하는 Device의 리스트를 얻어온다.
-	 * @param where
-	 * @return
-	 */
 	public ArrayList<Device> obtainDeviceList(String where){
 		if(where==null||where.equals(""))where=""; 
 		else where = "where " + where;
@@ -273,13 +231,6 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mDeviceList;
 	}
 	
-	/**
-	 * App을 검색한다. 검색 조건과 결과는 매개변수로 넘긴 BlinkAppInfo 객체에 저장된다.
-	 * App을 등록했을 때 ID를 비롯한 자동 생성되는 데이터를 얻어오기 위해 사용된다.
-	 * 사용자가 직접 호출할 일은 없다.
-	 * @param mBlinkAppInfo
-	 * @return
-	 */
 	private boolean obtainApp(BlinkAppInfo mBlinkAppInfo){
 		App mApp = mBlinkAppInfo.mApp;
 		String query = SQL_SELECT_APP+"where DeviceId=? and PackageName=?";
@@ -298,11 +249,6 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return false;
 	}
 	
-	/**
-	 * where 조건에 일치하는 App의 리스트를 얻어온다.
-	 * @param where
-	 * @return
-	 */
 	public ArrayList<App> obtainAppList(String where){
 		if(where==null||where.equals(""))where=""; 
 		else where = "where " + where;
@@ -323,11 +269,8 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mAppList;
 	}
 	
-	/**
-	 * Device를 등록한다. 
-	 * registerBlinkApp()에서 호출된다.
-	 * @param mBlinkAppInfo
-	 */
+	
+	
 	private void registerDevice(BlinkAppInfo mBlinkAppInfo){
 		Device mDevice = mBlinkAppInfo.mDevice;
 		ContentValues values = new ContentValues();
@@ -337,11 +280,6 @@ public class SqliteManager extends SQLiteOpenHelper {
         mSQLiteDatabase.insert("Device", null, values);
 	}
 	
-	/**
-	 * App를 등록한다. 
-	 * registerBlinkApp()에서 호출된다.
-	 * @param mBlinkAppInfo
-	 */
 	private void registerApp(BlinkAppInfo mBlinkAppInfo){
 		Device mDevice = mBlinkAppInfo.mDevice;
 		App mApp = mBlinkAppInfo.mApp;
@@ -354,11 +292,6 @@ public class SqliteManager extends SQLiteOpenHelper {
         mSQLiteDatabase.insert("App", null, values);
 	}
 	
-	/**
-	 * Function를 등록한다. 
-	 * registerBlinkApp()에서 호출된다.
-	 * @param mBlinkAppInfo
-	 */
 	private void registerFunction(BlinkAppInfo mBlinkAppInfo){
 		App mApp = mBlinkAppInfo.mApp;
 		ArrayList<Function> mFunctionList = mBlinkAppInfo.mFunctionList;
@@ -377,11 +310,6 @@ public class SqliteManager extends SQLiteOpenHelper {
 		}
 	}
 	
-	/**
-	 * Measurement를 등록한다. 
-	 * registerBlinkApp()에서 호출된다.
-	 * @param mBlinkAppInfo
-	 */
 	private void registerMeasurement(BlinkAppInfo mBlinkAppInfo){
 		App mApp = mBlinkAppInfo.mApp;
 		ArrayList<Measurement> mMeasurementList = mBlinkAppInfo.mMeasurementList;
@@ -401,15 +329,8 @@ public class SqliteManager extends SQLiteOpenHelper {
 		}
 	}
 	
-	/**
-	 * Function을 검색한다. 검색 조건과 결과는 매개변수로 넘긴 BlinkAppInfo 객체에 저장된다.
-	 * Function을 등록했을 때 ID를 비롯한 자동 생성되는 데이터를 얻어오기 위해 사용된다.
-	 * 사용자가 직접 호출할 일은 없다.
-	 * @param mBlinkAppInfo
-	 * @return
-	 */
-	private void obtainFunction(BlinkAppInfo mBlinkAppInfo){
-		App mApp = mBlinkAppInfo.mApp;
+	private void obtainFunction(BlinkAppInfo mServiceDatabaseObject){
+		App mApp = mServiceDatabaseObject.mApp;
 		String sql = SQL_SELECT_FUNCTION + "where AppId=?";
 		String[] args = {String.valueOf(mApp.AppId)};
 		Cursor mCursor = mSQLiteDatabase.rawQuery(sql, args);
@@ -421,15 +342,10 @@ public class SqliteManager extends SQLiteOpenHelper {
 			mFunction.Description = mCursor.getString(mCursor.getColumnIndex("Description"));
 			mFunction.Action = mCursor.getString(mCursor.getColumnIndex("Action"));
 			mFunction.Type = mCursor.getInt(mCursor.getColumnIndex("Type"));
-			mBlinkAppInfo.mFunctionList.add(mFunction);
+			mServiceDatabaseObject.mFunctionList.add(mFunction);
 		}
 	}
 	
-	/**
-	 * where 조건에 일치하는 Function의 리스트를 얻어온다.
-	 * @param where
-	 * @return
-	 */
 	public ArrayList<Function> obtainFunctionList(String where){
 		if(where==null||where.equals(""))where=""; 
 		else where = "where " + where;
@@ -448,15 +364,8 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mFunctionList;
 	}
 	
-	/**
-	 * Measurement을 검색한다. 검색 조건과 결과는 매개변수로 넘긴 BlinkAppInfo 객체에 저장된다.
-	 * Measurement을 등록했을 때 ID를 비롯한 자동 생성되는 데이터를 얻어오기 위해 사용된다.
-	 * 사용자가 직접 호출할 일은 없다.
-	 * @param mBlinkAppInfo
-	 * @return
-	 */
-	private void obtainMeasurement(BlinkAppInfo mBlinkAppInfo){
-		App mApp = mBlinkAppInfo.mApp;
+	private void obtainMeasurement(BlinkAppInfo mServiceDatabaseObject){
+		App mApp = mServiceDatabaseObject.mApp;
 		String[] args = {String.valueOf(mApp.AppId)};
 		String sql = SQL_SELECT_MEASUREMENT + "where AppId=?";
 		Cursor mCursor = mSQLiteDatabase.rawQuery(sql, args);
@@ -469,17 +378,10 @@ public class SqliteManager extends SQLiteOpenHelper {
 			mMeasurement.Measurement = mCursor.getString(mCursor.getColumnIndex("Measurement"));
 			mMeasurement.Type = mCursor.getString(mCursor.getColumnIndex("Type"));
 			mMeasurement.Description = mCursor.getString(mCursor.getColumnIndex("Description"));
-			mBlinkAppInfo.mMeasurementList.add(mMeasurement);
+			mServiceDatabaseObject.mMeasurementList.add(mMeasurement);
 		}
 	}
 	
-	/**
-	 * 매개변수로 주어진 mClass의 필드와 CotainType으로 일치하는 Measurement 리스트를 검색하여 리턴한다.
-	 * 타입은 CONTAIN_DEFAULT, CONTAIN_PARENT, CONTAIN_FIELD 세 종류이다.
-	 * @param mClass
-	 * @param ContainType
-	 * @return
-	 */
 	public ArrayList<Measurement> obtainMeasurementList(Class<?> mClass,int ContainType){
 		ArrayList<Measurement> mMeasurementList = new ArrayList<Measurement>();
 		
@@ -490,13 +392,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mMeasurementList;
 	}
 	
-	/**
-	 * 매개변수로 주어진 필드와 CotainType으로 일치하는 Measurement 리스트를 검색하여 리턴한다.
-	 * 타입은 CONTAIN_DEFAULT, CONTAIN_PARENT, CONTAIN_FIELD 세 종류이다.
-	 * @param Measurement
-	 * @param ContainType
-	 * @return
-	 */
+	
 	public ArrayList<Measurement> obtainMeasurementList(Field Measurement,int ContainType){
 		String where = "";
 		switch (ContainType) {
@@ -515,11 +411,6 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return obtainMeasurementList(where);
 	}
 	
-	/**
-	 * where 조건과 일치하는 Measurement 리스트를 검색하여 리턴한다.
-	 * @param where
-	 * @return
-	 */
 	public ArrayList<Measurement> obtainMeasurementList(String where){
 		if(where==null||where.equals(""))where="";
 		else where = "where " + where;
@@ -538,11 +429,11 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mMeasurementList;
 	}
 	
-	/**
-	 * where 조건과 일치하는 MeasurementData 리스트를 검색하여 리턴한다.
-	 * @param where
-	 * @return
-	 */
+	//-------------------------------BlinkApp---------------------------------------
+	
+	
+	//-------------------------------MeasurementDatabase----------------------------------
+	
 	public ArrayList<MeasurementData> obtainMeasurementDataList(String where){
 		if(where==null||where.equals(""))where="";
 		else where = "where " + where;
@@ -604,10 +495,10 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mMeasurementDataList;
 	}
 	
+	//-------------------------------reflect 적용----------------------------------
 	/**
 	 * MeasurementData 테이블의 GroupId 칼럼에서 가장 큰 값을 찾아준다.
 	 * 만약 없으면 0을 리턴한다.
-	 * MeasurementData를 새로 등록할 때 사용되는 값으로 사용자가 호출할 일은 없다.
 	 * @return
 	 */
 	private int obtainMeasurementDataGroupId(){
@@ -620,9 +511,8 @@ public class SqliteManager extends SQLiteOpenHelper {
 	}
 	
 	/**
-	 * BlinkAppInfo와 측정값을 등록할 Object와 비교하여 MeasurementId를 구한 후에 Id가 있으면 각각의 값들을 DB에 등록한다.
-	 * 한 객체의 필드들을 동일한 객체(그룹)으로 묶어주기 위해 GroupId를 이용한다. 즉 GroupId가 같으면 동일한 객체에 속한 데이터이다.
-	 * 데이터가 모두 등록된 후에  URI_OBSERVER_MEASUREMENTDATA로  notifyChange를 호출한다.
+	 * BlinkAppInfo와 측정값을 등록할 Object와 비교하여 MeasurementId를 구한 후에 Id가 있으면 각각의 값들을 DB에 등록
+	 * 한 객체의 필드들을 묶어주기 위해 GroupId를 구해서 +1을 해준 후 등록한다.  
 	 * @param mBlinkAppInfo
 	 * @param obj
 	 * @return 
@@ -654,8 +544,8 @@ public class SqliteManager extends SQLiteOpenHelper {
 	/**
 	 * obj 클래스를 Measurement에서 obj의 필드와 일치하는 데이터를 검색한 후 
 	 * 클래스와 일치하는 데이터가 있으면 데이터를 읽어온 후 해당 클래스에 데이터를 대입하여 ArrayList로 돌려준다.
-	 * 해당 매소드를 사용할 때 대입되는쪽에 타입을 ArrayList로 해주어야 한다.</br>
-	 * {@code example : ArrayList<Eye> mEyeList = mSqliteManager.obtainMeasurementData(Eye.class);}
+	 * 해당 매소드를 사용할 때 대입되는쪽에 타입을 ArrayList로 해주어야 한다.
+	 * example : ArrayList<Eye> mEyeList = mSqliteManager.obtainMeasurementData(Eye.class);   
 	 * @param obj
 	 * @return
 	 * @throws InstantiationException : ins = c.newInstance(); 부분에서 인스턴스화하지 못했을 경우
@@ -665,35 +555,19 @@ public class SqliteManager extends SQLiteOpenHelper {
 	public String obtainMeasurementData(Class<?> obj) throws InstantiationException, IllegalAccessException, ClassNotFoundException{
 		return obtainMeasurementData(obj,null,null,CONTAIN_DEFAULT);
 	}
-	
-	/**
-	 * obj 클래스를 Measurement에서 obj의 필드와 일치하는 데이터를 검색한 후 
-	 * 클래스와 일치하는 데이터가 있으면 데이터를 읽어온 후 해당 클래스에 데이터를 대입하여 ArrayList로 돌려준다.
-	 * 해당 매소드를 사용할 때 대입되는쪽에 타입을 ArrayList로 해주어야 한다. 시간 조건의 경우 null을 넣으면 조건에 추가되지 않는다.
-	 * 시간 조건의 경우 "yyyy-mm-dd HH:MM:SS" 형식이어야 한다.</br>
-	 * {@code example : ArrayList<Eye> mEyeList = mSqliteManager.obtainMeasurementData(Eye.class,"2014-01-01 00:00:00:00","2014-01-02 00:00:00");}
-	 * @param obj
-	 * @return
-	 * @throws InstantiationException : ins = c.newInstance(); 부분에서 인스턴스화하지 못했을 경우
-	 * @throws IllegalAccessException : private 타입에 데이터를 대입할때 생기는 오류
-	 * @throws ClassNotFoundException : Class c = Class.forName(obj.getName());에서 해당 클래스를 얻어오지 못했을 경우
-	 */
 	public String obtainMeasurementData(Class<?> obj,String DateTimeFrom,String DateTimeTo) throws InstantiationException, IllegalAccessException, ClassNotFoundException{
 		return obtainMeasurementData(obj,DateTimeFrom,DateTimeTo,CONTAIN_DEFAULT);
 	}
-	
 	/**
-	 * obj 클래스를 Measurement에서 obj의 필드와 일치하는 데이터를 검색한 후 
-	 * 클래스와 일치하는 데이터가 있으면 데이터를 읽어온 후 해당 클래스에 데이터를 대입하여 ArrayList로 돌려준다.
-	 * 해당 매소드를 사용할 때 대입되는쪽에 타입을 ArrayList로 해주어야 한다. 시간 조건의 경우 null을 넣으면 조건에 추가되지 않는다.
-	 * 시간 조건의 경우 "yyyy-mm-dd HH:MM:SS" 형식이어야 한다.
-	 * 타입의 경우 CONTAIN_DEFAULT, CONTAIN_PARENT, CONTAIN_FIELD 세 가지가 있다.</br>
-	 * {@code example : ArrayList<Eye> mEyeList = mSqliteManager.obtainMeasurementData(Eye.class,"2014-01-01 00:00:00:00","2014-01-02 00:00:00",CONTAIN_DEFAULT);}
+	 * obtainMeasurementData 함수에서 추가적으로 시간을 검색 조건에 줄 수 있으며
+	 * 시간이 null일 경우 조건에 포함되지 않는다.
 	 * @param obj
+	 * @param DateTimeFrom
+	 * @param DateTimeTo
 	 * @return
-	 * @throws InstantiationException : ins = c.newInstance(); 부분에서 인스턴스화하지 못했을 경우
-	 * @throws IllegalAccessException : private 타입에 데이터를 대입할때 생기는 오류
-	 * @throws ClassNotFoundException : Class c = Class.forName(obj.getName());에서 해당 클래스를 얻어오지 못했을 경우
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 * @throws ClassNotFoundException
 	 */
 	public String obtainMeasurementData(Class<?> obj,String DateTimeFrom,String DateTimeTo,int ContainType) throws InstantiationException, IllegalAccessException, ClassNotFoundException{
 		ArrayList<java.lang.Object> retObject = new ArrayList<java.lang.Object>();
@@ -752,7 +626,6 @@ public class SqliteManager extends SQLiteOpenHelper {
 	
 	/**
 	 * mField의 타입에 따라서 mData를 타입 캐스팅 한 후 obj의 필드에 해당 데이터를 넣어준다.
-	 * obtainMeasurementData()에서 사용되며 사용자가 직접 호출할 일은 없다. 
 	 * @param mField
 	 * @param mData
 	 * @param obj
@@ -827,7 +700,7 @@ public class SqliteManager extends SQLiteOpenHelper {
 	
 	
 	/**
-	 * 로그를 등록한다. String을 기준으로 등록되며 BlinkAppInfo와는 별개로 저장된다. 
+	 * Register log to Log table. 
 	 * @param Device
 	 * @param App
 	 * @param Type
@@ -845,11 +718,13 @@ public class SqliteManager extends SQLiteOpenHelper {
 	}
 	
 	/**
-	 * 로그를 얻어온다. String을 기준으로 등록되며 BlinkAppInfo와는 별개로 저장된다. 
+	 * Search log from Log table
 	 * @param Device
 	 * @param App
 	 * @param Type
-	 * @param Content
+	 * @param DateTimeFrom
+	 * @param DateTimeTo
+	 * @return
 	 */
 	public List<BlinkLog> obtainLog(String Device,String App,int Type,String DateTimeFrom,String DateTimeTo){
 		String where = "";
@@ -883,46 +758,15 @@ public class SqliteManager extends SQLiteOpenHelper {
 		return mBlinkLogList;
 	}
 	
-	/**
-	 * 로그를 얻어온다. String을 기준으로 등록되며 BlinkAppInfo와는 별개로 저장된다. 
-	 * @param Device
-	 * @param App
-	 * @param Type
-	 * @param Content
-	 */
 	public List<BlinkLog> obtainLog(String Device,String App,String DateTimeFrom,String DateTimeTo){
 		return obtainLog(Device,App,-1,DateTimeFrom,DateTimeTo);
 	}
-	
-	/**
-	 * 로그를 얻어온다. String을 기준으로 등록되며 BlinkAppInfo와는 별개로 저장된다. 
-	 * @param Device
-	 * @param App
-	 * @param Type
-	 * @param Content
-	 */
 	public List<BlinkLog> obtainLog(String Device,String DateTimeFrom,String DateTimeTo){
 		return obtainLog(Device,null,-1,DateTimeFrom,DateTimeTo);
 	}
-	
-	/**
-	 * 로그를 얻어온다. String을 기준으로 등록되며 BlinkAppInfo와는 별개로 저장된다. 
-	 * @param Device
-	 * @param App
-	 * @param Type
-	 * @param Content
-	 */
 	public List<BlinkLog> obtainLog(String DateTimeFrom,String DateTimeTo){
 		return obtainLog(null,null,-1,DateTimeFrom,DateTimeTo);
 	}
-	
-	/**
-	 * 로그를 얻어온다. String을 기준으로 등록되며 BlinkAppInfo와는 별개로 저장된다. 
-	 * @param Device
-	 * @param App
-	 * @param Type
-	 * @param Content
-	 */
 	public List<BlinkLog> obtainLog(){
 		return obtainLog(null,null,-1,null,null);
 	}

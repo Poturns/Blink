@@ -7,9 +7,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 import kr.poturns.blink.internal.DeviceAnalyzer;
 import kr.poturns.blink.util.EncryptionUtil;
@@ -41,7 +41,7 @@ public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDe
 	/**
 	 * Blink Device 객체에 대한 Cache.
 	 */
-	private static final ConcurrentHashMap<String, BlinkDevice> CACHE_MAP = new ConcurrentHashMap<String, BlinkDevice>();
+	private static final HashMap<String, BlinkDevice> CACHE_MAP = new HashMap<String, BlinkDevice>();
 
 	
 	
@@ -171,11 +171,6 @@ public class BlinkDevice implements Parcelable, Serializable, Comparable<BlinkDe
 	 * @param address
 	 */
 	public static void removeDeviceCache(String address) {
-		if (BlinkDevice.HOST.getAddress().equals(address)) {
-			BlinkDevice.HOST.writeToRepository();
-			return;
-		}
-			
 		if (CACHE_MAP.containsKey(address)) {
 			CACHE_MAP.get(address).writeToRepository();
 			CACHE_MAP.remove(address);

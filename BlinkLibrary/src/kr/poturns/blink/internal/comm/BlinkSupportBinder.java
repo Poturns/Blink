@@ -23,37 +23,21 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 /**
- * 서비스에 어떻게 요청할 지 정하며 Log를 남긴다.</br>
- * 만약 다른 디바이스에 해당하는 데이터면 블루투스쪽으로 넘겨야 한다.</br>
- * 다른 디바이스와 통신이 필요한 매서드는 세 가지이다.</br>
- * 1. obtainMeasurementData : class 이름을 통해 데이터를 검색하는 매소드 </br>
- * 2. obtainMeasurementDataById : Measurement 리스트를 통해 데이터를 검색하는 매소드</br>
- * 3. startFunction : 기능을 호출하는 매소드
+ * 서비스에 어떻게 요청할 지 정하며 Log를 남긴다.
+ * 만약 다른 디바이스에 해당하는 데이터면 블루투스쪽으로 넘겨야 한다.
+ * 다른 디바이스와 통신이 필요한 매서드는 두 가지이다.
+ * 1. obtainMeasurementData
+ * 2. startFunction
  * 
  * @author Jiwon.Kim
  */
 public class BlinkSupportBinder extends ConnectionSupportBinder {
 	private final String tag = "BlinkDatabaseBinder";
 	
-	/**
-	 * 데이터 요청 정책 타입이다.
-	 * 현재 쓰이지 않는다.
-	 */
 	private static final int REQUEST_TYPE_IN_DEVICE = 1;
-	/**
-	 * 데이터 요청 정책 타입이다.
-	 * 현재 쓰이지 않는다.
-	 */
 	public static final int REQUEST_TYPE_OUT_DEVICE = 2;
-	/**
-	 * 데이터 요청 정책 타입이다.
-	 * 현재 쓰이지 않는다.
-	 */
 	public static final int REQUEST_TYPE_DUAL_DEVICE = 3;
 	
-	/**
-	 * 바인더와 연결된 어플리케이션의 디바이스명, 패키지명, 앱 이름
-	 */
 	String mDeviceName, mPackageName, mAppName;
 	
 	int requestPolicy = REQUEST_TYPE_DUAL_DEVICE;
@@ -62,10 +46,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	BlinkDatabaseManager mBlinkDatabaseManager;
 	BlinkDevice mBlinkDevice;
 	
-	/**
-	 * 어플리케이션에 돌려줘야 할 콜백 데이터를 가지고 있는 해쉬맵</br>
-	 * 요청코드별로 가지고 있으며 후에 다른 디바이스로부터 데이터가 오면 내부에서 검색한 데이터와 합치기 위해 임시 저장해둔다.
-	 */
 	HashMap<Integer, CallbackData> CALLBACK_DATA_MAP = new HashMap<Integer, CallbackData>();
 	
 	public BlinkSupportBinder(BlinkLocalService context) throws Exception {
@@ -75,9 +55,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		if(mBlinkDevice==null)Log.i(tag, "BlinkDevice.HOST : null");
 	}
 
-	/**
-	 * 어플리케이션의 패키지명과 앱이름을 바인더에 저장한다.
-	 */
 	@Override
 	public void registerApplicationInfo(String PackageName, String AppName)
 			throws RemoteException {
@@ -86,10 +63,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		this.mAppName = AppName;
 	}
 	
-	/**
-	 * 데이터 요청 정책을 설정한다.
-	 * 현재 사용하지 않는다.
-	 */
 	@Override
 	public void setRequestPolicy(int requestPolicy){
 		this.requestPolicy = requestPolicy;
@@ -101,10 +74,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		return mBlinkDevice;
 	}
 	
-	/**
-	 * 어플리케이션으로부터 콜백을 받아서 등록한다.
-	 * 콜백은 ServiceKeeper에 저장된다.
-	 */
 	@Override
 	public final boolean registerCallback(IInternalEventCallback callback) throws RemoteException {
 		ServiceKeeper mServiceKeeper = ServiceKeeper.getInstance(CONTEXT);
@@ -115,10 +84,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		return false;
 	}
 	
-	/**
-	 * 어플리케이션으로부터 콜백을 제거한다.
-	 * 콜백은 ServiceKeeper에 저장되어 있다.
-	 */
 	@Override
 	public final boolean unregisterCallback(IInternalEventCallback callback) throws RemoteException {
 		ServiceKeeper mServiceKeeper = ServiceKeeper.getInstance(CONTEXT);
@@ -129,10 +94,9 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	}
 	
 	/**
-	 * 클라이언트로 콜백해주는 매소드이다. registerCallback()을 통헤 어플리케이션에서 등록한 콜백을 호출해준다.
-	 * @param responseCode : 어플리케이션으로부터 받은 requestCode와 동일한 값으로 어떤 요청인지 구분하기 위한 값
-	 * @param data : 외부 디바이스로부터 온 데이터
-	 * @param result : 통신이 정상적으로 되었는지 결과
+	 * 클라이언트로 콜백해주는 함수
+	 * @param ClassName
+	 * @param data
 	 */
 	public void callbackData(int responseCode,String data,boolean result){
 		ServiceKeeper mServiceKeeper = ServiceKeeper.getInstance(CONTEXT);
@@ -169,11 +133,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		mBlinkDatabaseManager.registerBlinkApp(mBlinkAppInfo);
 	}
 
-	/**
-	 * ClassName을 통해 데이터 검색을 요청한다.
-	 * 콜백으로 데이터가 반환되며 내부 디바이스에서도 데이터를 검색한다.
-	 * 만약 자신이 Center 디바이스면 에러코드를 설정한 후 내부 디바이스의 데이터를 설정하고 콜백을 호출한다. 
-	 */
 	@Override
 	public void obtainMeasurementData(String ClassName,
 			String DateTimeFrom, String DateTimeTo, int ContainType,int requestCode)
@@ -232,11 +191,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		
 	}
 	
-	/**
-	 * MeasurementList를 통해 데이터 검색을 요청한다.
-	 * 콜백으로 데이터가 반환되며 내부 디바이스에서도 데이터를 검색한다.
-	 * 만약 자신이 Center 디바이스면 에러코드를 설정한 후 내부 디바이스의 데이터를 설정하고 콜백을 호출한다. 
-	 */
+	
 	@Override
 	public void obtainMeasurementDataById(
 			List<Measurement> mMeasurementList,
@@ -292,9 +247,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		}
 	}
 
-	/**
-	 * 외부 디바이스로 기능을 호출하는 메시지를 보낸다.
-	 */
 	@Override
 	public void startFunction(Function function,int requestCode) throws RemoteException {
 		// TODO Auto-generated method stub
@@ -317,30 +269,24 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 									.setMessage(gson.toJson(function))
 									.setCode(requestCode)
 									.build();
-			CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, BlinkDevice.load(device.MacAddress));
+			//Remote Call
+			if(requestPolicy==REQUEST_TYPE_OUT_DEVICE){
+				CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, BlinkDevice.load(device.MacAddress));
+			}
+			else if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
+				CONTEXT.startFunction(function);
+				mCallbackData.InDeviceData = "success";
+				CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
+			}
 		}else {
 			mCallbackData.ResultDetail = CallbackData.ERROR_NO_OUT_DEVICE;
+			if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
+				CONTEXT.startFunction(function);
+				mCallbackData.InDeviceData = "success";
+				CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
+			}
 			callbackData(requestCode, null,false);
 		}
-	}
-
-	/**
-	 * 통신 테스트를 위핸 임시 매소드, sync 메시지를 만들어 보낸다.
-	 */
-	@Override
-	public void sendSyncMessage() throws RemoteException {
-		Log.i("test", "sendSyncMessage");
-		// TODO Auto-generated method stub
-		BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
-		.setDestinationDevice((String) null)
-		.setDestinationApplication(null)
-		.setSourceDevice(BlinkDevice.HOST)
-		.setSourceApplication("kr.poturns.blink.internal.BlinkLocalService")
-		.setMessage(gson.toJson(mBlinkDatabaseManager.obtainBlinkApp()))
-		.setType(IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC)
-		.setCode(0)
-		.build();
-		CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
 	}
 
 }

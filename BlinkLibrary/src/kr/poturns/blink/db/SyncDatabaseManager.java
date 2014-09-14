@@ -13,29 +13,16 @@ import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
-import kr.poturns.blink.db.archive.SyncMeasurementData;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.util.Log;
 
-/**
- * 디바이스간 데이터베이스 동기화를 하기 위한 매소드를 가지고 있는 클래스
- * @author mementohora
- *
- */
 public class SyncDatabaseManager extends BlinkDatabaseManager{
 	private final static String tag = "SyncDatabaseManager";
 	
-	/**
-	 * 디바이스가 wearable일 경우에 호출되야 할 매소드를 가지고 있다.
-	 */
 	public Wearable wearable;
-	
-	/**
-	 * 디바이스가 center일 경우에 호출되야 할 매소드를 가지고 있다.
-	 */
 	public Center center;
 	
 	private static final int TEMP_MEASUREMENT_ID = 999999;
@@ -91,38 +78,38 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 	}
 	
 	/**
-	 * DB에 저장되어 있는 데이터와 비교하여 추가된 BlinkAppInfo 리스트를 얻는다.
-	 * @param BlinkAppInfoList
+	 * DB에 저장되어 있는 데이터와 비교하여 추가된 SystemDatabaseObject를 얻는다.
+	 * @param SystemDatabaseObjctList
 	 * @return
 	 */
-	private List<BlinkAppInfo> obtainAddedBlinkAppInfo(List<BlinkAppInfo> BlinkAppInfoList){
-		List<BlinkAppInfo> MainBlinkAppInfoList = obtainBlinkApp();
-		List<BlinkAppInfo> WearableBlinkAppInfoList = BlinkAppInfoList;
-		List<BlinkAppInfo> AddedBlinkAppInfoList = new ArrayList<BlinkAppInfo>();
+	private List<BlinkAppInfo> obtainAddedSystemDatabaseObject(List<BlinkAppInfo> SystemDatabaseObjctList){
+		List<BlinkAppInfo> MainSystemDatabaseObjectList = obtainBlinkApp();
+		List<BlinkAppInfo> WearableSystemDatabaseObjectList = SystemDatabaseObjctList;
+		List<BlinkAppInfo> AddedSystemDatabaseObjectList = new ArrayList<BlinkAppInfo>();
 		boolean isAdded = true;
 		//웨어러블 BlinkAppInfo 리스트의 인덱스
-		for(int i=0;i<WearableBlinkAppInfoList.size();i++){
+		for(int i=0;i<WearableSystemDatabaseObjectList.size();i++){
 			isAdded = true;
 			//메인 BlinkAppInfo 리스트의 인덱스
-			for(int j=0;j<MainBlinkAppInfoList.size();j++){
+			for(int j=0;j<MainSystemDatabaseObjectList.size();j++){
 				//동일한 systemDatabaseObject 검색
-				if(WearableBlinkAppInfoList.get(i).mDevice.MacAddress.contentEquals(MainBlinkAppInfoList.get(j).mDevice.MacAddress)
-						&& WearableBlinkAppInfoList.get(i).mApp.PackageName.contentEquals(MainBlinkAppInfoList.get(j).mApp.PackageName)
-						&& WearableBlinkAppInfoList.get(i).mApp.Version==MainBlinkAppInfoList.get(j).mApp.Version){
+				if(WearableSystemDatabaseObjectList.get(i).mDevice.MacAddress.contentEquals(MainSystemDatabaseObjectList.get(j).mDevice.MacAddress)
+						&& WearableSystemDatabaseObjectList.get(i).mApp.PackageName.contentEquals(MainSystemDatabaseObjectList.get(j).mApp.PackageName)
+						&& WearableSystemDatabaseObjectList.get(i).mApp.Version==MainSystemDatabaseObjectList.get(j).mApp.Version){
 					//동일한 SystemDatabaseObject가 존재하면 추가된게 아니기 때문에 isAdded 값 false로 변경
 					isAdded = false;
 				}
 			}
 			//추가된 BlinkAppInfo 리스트에 추가
-			if(isAdded)AddedBlinkAppInfoList.add(WearableBlinkAppInfoList.get(i));
+			if(isAdded)AddedSystemDatabaseObjectList.add(WearableSystemDatabaseObjectList.get(i));
 		}
 		
-		return AddedBlinkAppInfoList;
+		return AddedSystemDatabaseObjectList;
 	}
 	
 	/**
-	 * BlinkAppInfo에 있는 정보들을 모두 입력한다.
-	 * register는 id값을 sqlite에서 만들어서 BlinkAppInfo에 변경해주지만 여기서는 있는 그대로 입력된다.
+	 * SystemDatabaseObject에 있는 값들을 모두 입력한다.
+	 * register는 id값을 sqlite에서 만들어서 SystemDatabaseObject에 변경해주지만 여기서는 있는 그대로 입력된다.
 	 * @param mBlinkAppInfo
 	 */
 	private void insertBlinkApp(BlinkAppInfo mBlinkAppInfo){
@@ -132,12 +119,6 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		insertMeasurement(mBlinkAppInfo);
 	}
 	
-	/**
-	 * BlinkAppInfo에 있는 Device 정보를 입력한다.
-	 * ID, DateTime도 그대로 입력된다.
-	 * insertBlinkApp()에서 호출된다.
-	 * @param mBlinkAppInfo
-	 */
 	private void insertDevice(BlinkAppInfo mBlinkAppInfo) {
 		Device mDevice = mBlinkAppInfo.mDevice;
 		ContentValues values = new ContentValues();
@@ -149,12 +130,6 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
         mSQLiteDatabase.insert("Device", null, values);
 	}
 	
-	/**
-	 * BlinkAppInfo에 있는 App 정보를 입력한다.
-	 * ID, DateTime도 그대로 입력된다.
-	 * insertBlinkApp()에서 호출된다.
-	 * @param mBlinkAppInfo
-	 */
 	private void insertApp(BlinkAppInfo mBlinkAppInfo) {
 		App mApp = mBlinkAppInfo.mApp;
 		ContentValues values = new ContentValues();
@@ -162,24 +137,16 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		values.put("DeviceId", mApp.DeviceId);
 		values.put("PackageName", mApp.PackageName);
 		values.put("AppName", mApp.AppName);
-		values.put("AppIcon", mApp.AppIcon);
 		values.put("Version", mApp.Version);
 		values.put("DateTime", mApp.DateTime);
         mSQLiteDatabase.insert("App", null, values);
 	}
 	
-	/**
-	 * BlinkAppInfo에 있는 Measurement 정보를 입력한다.
-	 * ID, DateTime도 그대로 입력된다.
-	 * insertBlinkApp()에서 호출된다.
-	 * @param mBlinkAppInfo
-	 */
 	private void insertMeasurement(BlinkAppInfo mBlinkAppInfo) {
 		for(Measurement mMeasurement : mBlinkAppInfo.mMeasurementList){
 			ContentValues values = new ContentValues();
 			values.put("AppId", mMeasurement.AppId);
 			values.put("MeasurementId", mMeasurement.MeasurementId);
-			values.put("MeasurementName", mMeasurement.MeasurementName);
 			values.put("Measurement", mMeasurement.Measurement);
 			values.put("Type", mMeasurement.Type);
 			values.put("Description", mMeasurement.Description);
@@ -187,12 +154,6 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		}
 	}
 	
-	/**
-	 * BlinkAppInfo에 있는Function 정보를 입력한다.
-	 * ID, DateTime도 그대로 입력된다.
-	 * insertBlinkApp()에서 호출된다.
-	 * @param mBlinkAppInfo
-	 */
 	private void insertFunction(BlinkAppInfo mBlinkAppInfo) {
 		for(Function mFunction : mBlinkAppInfo.mFunctionList){
 			ContentValues values = new ContentValues();
@@ -205,11 +166,6 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		}
 	}
 
-	/**
-	 * SyncMeasurementData를 DB에 저장한다.
-	 * SyncMeasurementData가 기존에 저장되어 있지 않을 경우에 호출된다.
-	 * @param mSyncMeasurementData
-	 */
 	private void registerSyncMeasurementData(SyncMeasurementData mSyncMeasurementData) {
 		ContentValues values = new ContentValues();
 		values.put("DeviceId", mSyncMeasurementData.DeviceId);
@@ -217,11 +173,6 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
         mSQLiteDatabase.insert("SyncMeasurementData", null, values);
 	}
 	
-	/**
-	 * SyncMeasurementData를 변경한다.
-	 * SyncMeasurementData가 기존에 저장되어 있을 경우에 호출된다.
-	 * @param mSyncMeasurementData
-	 */
 	private void updateSyncMeasurementData(String set,String where){
 		if(set==null||set.equals(""))return;
 		if(where==null||where.equals(""))return;
@@ -231,23 +182,8 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 	}
 	
 	/**
-	 * MeasurementData 테이블의 MeasurementDataId 칼럼에서 가장 큰 값을 찾아준다.
-	 * 만약 없으면 0을 리턴한다.
-	 * MeasurementData 동기화에 사용되는 매소드이다.
-	 * @return
-	 */
-	private int obtainMeasurementDataId(){
-		String sql = SQL_SELECT_MEASUREMENTDATAID;
-		Cursor mCursor = mSQLiteDatabase.rawQuery(sql, null);
-		if(mCursor.moveToNext()){
-			return mCursor.getInt(0);
-		}
-		return 0;
-	}
-	/**
 	 * SystemDatabase 테이블을 모두 삭제하는 매소드
 	 * Device,App,Function,Measurement 테이블을 삭제한다.
-	 * wearable 디바이스에서 center로부터 받은 BlinkAppInfo를 입력하기 전에 호출된다.
 	 */
 	private void removeBlinkAppAll(){
 		mSQLiteDatabase.delete("Device",null,null);
@@ -313,11 +249,6 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		}
 	}
 	
-	/**
-	 * main으로 보내야 할 MeasurementData의 Sequence를 얻어온다.
-	 * @param DeviceId
-	 * @return
-	 */
 	private int obtainSequence(int DeviceId){
 		String[] args = {String.valueOf(DeviceId)};
 		String sql = SQL_SELECT_SYNCMEASUREMENTDATA + "where DeviceId=?";
@@ -330,7 +261,6 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 	
 	/**
 	 * MeausrmentData 테이블을 업데이트하는 매소드
-	 * Center로부터 받은 BlinkAppInfo에서 MeasurementId 변경 될 값을 확인 후 해당 데이터들의 Id를 업데이트한다.
 	 * @param set
 	 * @param where
 	 */
@@ -342,14 +272,9 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		mSQLiteDatabase.execSQL(query);
 	}
 	
-	/**
-	 * Wearable 디바이스일 경우에 동기화를 위해 호출해야 할 매소드를 정의한 클래스
-	 * @author mementohora
-	 *
-	 */
 	public class Wearable {
 		/**
-		 * 주어진 BlinkDatabaseList로 BlinkDatabase를 업데이트한다.
+		 * 주어진 systemDatabaseObjectList로 systemDatabaseObject를 업데이트한다.
 		 * @return
 		 */
 		public boolean syncBlinkDatabase(List<BlinkAppInfo> BlinkAppList){
@@ -381,7 +306,6 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		
 		/**
 		 * 해당 디바이스에 보낼 MeasurementData를 얻어온다.
-		 * 기존에 보냈던 데이터가 있으면 이후 데이터를 보낸다.
 		 */
 		public List<MeasurementData> obtainMeasurementDatabase(BlinkDevice mBlinkDevice){
 			clear();
@@ -393,7 +317,6 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		
 		/**
 		 * syncMeasurementData 테이블을 업데이트한다.
-		 * 기존에 SyncMeasurementData에 등록된 값이 없으면 새로 추가하고, 그렇지 않으면 업데이트한다.
 		 */
 		public void syncMeasurementDatabase(BlinkDevice mBlinkDevice,int seq){
 			clear();
@@ -411,23 +334,15 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		}
 	}
 	
-	/**
-	 * Center 디바이스일 경우에 동기화를 위해 호출해야 할 매소드를 정의한 클래스
-	 * @author mementohora
-	 *
-	 */
 	public class Center {
-		
 		/**
-		 * Wearable로부터 받은 BlinkAppInfoList와 비교하여 새로운 부분을 추가한다.
-		 * @param BlinkAppList
-		 * @return
+		 * 주어진 SystemDatabaseObjectList와 비교하여 새로운 부분을 추가한다.
 		 */
 		public boolean syncBlinkDatabase(List<BlinkAppInfo> BlinkAppList){
 			mSQLiteDatabase.beginTransaction();
 			try{
 				//Main Device에 저장되어 있지 않은 SystemDatabaseObject를 검색한다.
-				List<BlinkAppInfo> AddedBlinkAppList = obtainAddedBlinkAppInfo(BlinkAppList);
+				List<BlinkAppInfo> AddedBlinkAppList = obtainAddedSystemDatabaseObject(BlinkAppList);
 				
 				//SystemDatabase에 추가한다.
 				for(BlinkAppInfo mBlinkAppInfo : AddedBlinkAppList){
@@ -443,11 +358,6 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 			return true;
 		}
 		
-		/**
-		 * Wearable로부터 받은 MeasurementData를 등록한다.
-		 * @param mMeasurementDataList
-		 * @return
-		 */
 		public boolean insertMeasurementData(List<MeasurementData> mMeasurementDataList){
 			mSQLiteDatabase.beginTransaction();
 			try{

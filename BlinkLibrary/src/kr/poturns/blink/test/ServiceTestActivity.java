@@ -251,6 +251,42 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 	}
 
 	IInternalEventCallback.Stub eventCallback = new IInternalEventCallback.Stub() {
+
+		@Override
+		public void onDeviceDiscovered(final BlinkDevice deviceX)
+				throws RemoteException {
+			runOnUiThread(new Runnable() {
+
+				@Override
+				public void run() {
+					resultView.append("DISCOVERED : " + deviceX.getAddress()
+							+ "\n");
+				}
+
+			});
+		}
+
+		@Override
+		public void onDeviceConnected(BlinkDevice deviceX)
+				throws RemoteException {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onDeviceDisconnected(BlinkDevice deviceX)
+				throws RemoteException {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public void onDeviceConnectionFailed(BlinkDevice deviceX)
+				throws RemoteException {
+			Xdevice = null;
+
+		}
+
 		@Override
         public void onReceiveData(int responseCode, CallbackData data)
                 throws RemoteException {

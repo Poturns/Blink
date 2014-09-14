@@ -5,8 +5,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
- * Device 테이블과 맵핑되는 클래스이다. 
- * Device 테이블의 칼럼과 동일한 명칭과 타입의 필드를 가지고 있다.
+ * Device 테이블과 맵핑되는 클래스
  * @author Jiwon
  *
  */
