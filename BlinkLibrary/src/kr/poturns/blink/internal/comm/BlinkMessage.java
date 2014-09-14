@@ -239,6 +239,9 @@ public class BlinkMessage implements Serializable, IBlinkMessagable {
 	
 
 	// *** SETTER/GETTER DECLARATION *** //
+	public void setDestinationAddress(String desinationAddress){
+		this.DestinationAddress = desinationAddress;
+	}
 	public void setSourceAddress(String sourceAddress){
 		this.SourceAddress = sourceAddress;
 	}

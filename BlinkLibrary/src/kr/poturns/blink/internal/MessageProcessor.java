@@ -57,6 +57,7 @@ public class MessageProcessor {
 	 * @param fromDevice
 	 */
 	public void acceptBlinkMessage(BlinkMessage blinkMessage, BlinkDevice fromDevice) {
+		Log.d("acceptBlinkMessage in Blink", "start!!");
 		String currentAddress = null;
 		BlinkDevice currentDevice = null;
 		
@@ -245,7 +246,7 @@ public class MessageProcessor {
 	 * @param toDevice
 	 */
 	public void sendBlinkMessageTo(BlinkMessage message, BlinkDevice toDevice) {
-		Log.i("test", "source app : "+message.getSourceApplication()+" type : "+message.getType());
+		Log.d("sendBlinkMessageTo in Blink", "Send!!");
 //<<<<<<< HEAD
 		/*1. Destination MAC = null -> Hop:Main, Node:Main
 		 *
@@ -257,65 +258,27 @@ public class MessageProcessor {
 		// obtainCurrentCenterDevice => 현재 연결된 네트워크 중 CenterDevice를 가져온다 없을 시 null.
 		BlinkDevice centerDevice = null;
 		if(SERVICE_KEEPER.obtainCurrentCenterDevice()!=BlinkDevice.HOST){
-		centerDevice = SERVICE_KEEPER.obtainCurrentCenterDevice();}
+			Log.d("sendBlinkMessage in Blink", "i am not center");
+			centerDevice = SERVICE_KEEPER.obtainCurrentCenterDevice();
+			if(message.getDestinationAddress() == null){ // Hop : Main, Node : Main
+				message.setDestinationAddress(centerDevice.getAddress());
+				toDevice = centerDevice;
+			
+			}else{ //Node : Wearable, Hop : 1. Main 2. X(Wearable 1 to 1 Connect)-> 이 경우도 무조건 Center로 보내면 된다.
+				
+			}
+			}
 		else{
+			Log.d("sendBlinkMessage in Blink", "i am center");
+			//center일 때도 2가지로 나눠 1. Accept에서 send할 때. 2 send할 때 -> Accept에서 걸러야함.
 			// 그냥 fail to Send Message 보내야 함. (현재 프레임워크 구조상 Center가 없을 수가 없다.)
 		}
-		
-		if(message.getDestinationAddress() == null){ // Hop : Main, Node : Main
-			message.setSourceAddress(centerDevice.getAddress());
-		}else{ //Node : Wearable, Hop : 1. Main 2. X(Wearable 1 to 1 Connect)-> 이 경우도 무조건 Center로 보내면 된다.
-			
-		}
-		
-		if(SERVICE_KEEPER.obtainCurrentCenterDevice()!= BlinkDevice.HOST){
-			sendBlinkMessageTo(message, centerDevice);
-			// 스마트폰과 연결된 경우 -> toDevice = main
-		}else{ // 스마트폰과 연결되지 않은 경우 -> toDevice = 연결 원하는 다바이스
-				
-		}
-		/*
-		 * main 연결되어있을 시 무조건 main 으로
-		 * 없을 시 해당 타겟 디바이스로 곧바로 send
-		 * */
-		
-		
-		//toDevice== null 일때 main으로 고.
-		
-		/* 
-		 * Connection 시 동기화 -> 단 main일 때만 MearuementData를 보낸다.
-		 * 자신이 wearable일 때 동기화 요청하고 main에서 저장한 후 전체 데이터 보낸다. -> 이 때 MeasruementDAta 총 정보는 Main만 가지고 있다. + 자기데이터
-		 * 
-		 * 2. BlinkAppInfo가 변경될 때는 Wearable-Wearable 연결사이에서도 동기화 시켜준다.(MeasurementData 제외)
-		 * 3. Function 일 때는 하면되고.
-		 * 4. 데이터 요청 -> MeasurementData -> 두 종류 다 그냥 response.
-		 * 
-		 * SendBlinkMEssage할 때 main이 연결되 있으면 무조건 main으로 보내고. main이 연결안되있으면 Connection 여부 따져서 보내든지 아니면 null return.
-		 * 	
-		 * 
-		 * 
-		 * 1.BlinkAppInfo -> wearable, main 상관없이 동기화.
-		 * 2. Mesarementdata -> main이면 저장, wearable 저장안함. call은 가능한데 db에 저장은 안함. 1회용.
-		 * 내가 메인인지 아닌지, 타겟이 나인지 아닌지.
-		 * toDevice를 지정해주는데
-		 * 
-		 * Main 연결되있으면 Main으로
-		 * 
-		 */
-		/*
-=======
-		Log.i("test", "sendBlinkMessageTo");
-		acceptBlinkMessage(message,null);
->>>>>>> refs/remotes/origin/service
-		*/
-		
-		
-		/*
-		 * 
-		 * SendRemote시에만 발생하고
-		 * 여기서 추가 json을 붙여줘야 하나??
-		 */
+	
+	
 		SERVICE_KEEPER.sendMessageToDevice(toDevice, message);
+	
+
+		
 	}
 	
 	private void handleSystemMessage(BlinkMessage message) {
