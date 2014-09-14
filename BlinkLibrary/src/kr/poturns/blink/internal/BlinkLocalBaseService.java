@@ -127,8 +127,6 @@ abstract class BlinkLocalBaseService extends Service {
 
 		WindowManager mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 		mWindowManager.removeView(mBlinkTopView);
-
-		BlinkDevice.clearAllCache();
 		
 		if (INTER_DEVICE_MANAGER != null)
 			INTER_DEVICE_MANAGER.destroy();

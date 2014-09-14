@@ -245,7 +245,6 @@ public class MessageProcessor {
 	 * @param toDevice
 	 */
 	public void sendBlinkMessageTo(BlinkMessage message, BlinkDevice toDevice) {
-		Log.i("test", "source app : "+message.getSourceApplication()+" type : "+message.getType());
 //<<<<<<< HEAD
 		/*1. Destination MAC = null -> Hop:Main, Node:Main
 		 *
