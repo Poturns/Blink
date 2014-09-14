@@ -1,5 +1,6 @@
 package kr.poturns.blink.fitnessapp;
 
+import kr.poturns.blink.fitnessapp.MainActivity.DirectionEventListener.Direction;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
@@ -11,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
@@ -33,20 +33,23 @@ public class MainActivity extends Activity {
 						if (Math.abs(e1.getX() - e2.getX()) < 100) {
 							// 아래서 위로 스크롤 하는 경우
 							if (e1.getY() - e2.getY() > 50) {
-								mCurrentFragment.onSwipeUpEvent();
+								mCurrentFragment.onDirectionEvent(Direction.UP);
 								return true;
 								// 위에서 아래로 스크롤
 							} else if (e2.getY() - e1.getY() > 50) {
-								mCurrentFragment.onSwipeDownEvent();
+								mCurrentFragment
+										.onDirectionEvent(Direction.DOWN);
 								return true;
 							}
 							// 세로로 움직인 폭이 일정 이상이면 무시
 						} else if (Math.abs(e1.getY() - e2.getY()) < 100) {
 							if (e1.getX() - e2.getX() > 50) {
-								mCurrentFragment.onSwipeLeftEvent();
+								mCurrentFragment
+										.onDirectionEvent(Direction.LEFT);
 								return true;
 							} else if (e2.getX() - e1.getX() > 50) {
-								mCurrentFragment.onSwipeRightEvent();
+								mCurrentFragment
+										.onDirectionEvent(Direction.RIGHT);
 								return true;
 							}
 						}
@@ -89,14 +92,17 @@ public class MainActivity extends Activity {
 				.commit();
 	}
 
-	public static abstract class MotionEventFragment extends Fragment {
-		abstract boolean onSwipeDownEvent();
+	public static interface DirectionEventListener {
+		public enum Direction {
+			UP, DOWN, LEFT, RIGHT
+		}
 
-		abstract boolean onSwipeLeftEvent();
+		public boolean onDirectionEvent(Direction direction);
+	}
 
-		abstract boolean onSwipeUpEvent();
+	public static abstract class MotionEventFragment extends Fragment implements
+			DirectionEventListener {
 
-		abstract boolean onSwipeRightEvent();
 	}
 
 	class SampleFragment extends MotionEventFragment {
@@ -108,27 +114,23 @@ public class MainActivity extends Activity {
 		}
 
 		@Override
-		boolean onSwipeDownEvent() {
-			getView().setBackgroundColor(Color.BLACK);
-			return false;
-		}
-
-		@Override
-		boolean onSwipeLeftEvent() {
-			getView().setBackgroundColor(Color.BLUE);
-			return false;
-		}
-
-		@Override
-		boolean onSwipeRightEvent() {
-			getView().setBackgroundColor(Color.CYAN);
-			return false;
-		}
-
-		@Override
-		boolean onSwipeUpEvent() {
-			getView().setBackgroundColor(Color.GRAY);
-			return false;
+		public boolean onDirectionEvent(Direction direction) {
+			switch (direction) {
+			case DOWN:
+				getView().setBackgroundColor(Color.BLACK);
+				return true;
+			case LEFT:
+				getView().setBackgroundColor(Color.BLUE);
+				return true;
+			case UP:
+				getView().setBackgroundColor(Color.GRAY);
+				return true;
+			case RIGHT:
+				getView().setBackgroundColor(Color.CYAN);
+				return true;
+			default:
+				return false;
+			}
 		}
 	}
 }
