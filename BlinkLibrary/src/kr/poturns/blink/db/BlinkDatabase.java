@@ -11,6 +11,10 @@ import android.util.Log;
 public class BlinkDatabase {
 	private final static String tag = "SystemDatabase";
 
+	/**
+	 * SQLiteDatabase에 테이블을 생성한다.
+	 * @param db
+	 */
 	public static void createBlinkDatabase(SQLiteDatabase db) {
 		// DB에 테이블 생성하기
 		String sql = "";
@@ -44,7 +48,8 @@ public class BlinkDatabase {
 				+ "'AppId' INTEGER NOT NULL,"
 				+ "'MeasurementId' INTEGER PRIMARY KEY AUTOINCREMENT,"
 				+ "'MeasurementName' TEXT NOT NULL,"
-				+ "'Measurement' TEXT NOT NULL," + "'Type' TEXT NOT NULL,"
+				+ "'Measurement' TEXT NOT NULL,"
+				+ "'Type' TEXT NOT NULL,"
 				+ "'Description' TEXT NOT NULL,"
 				+ "UNIQUE ('AppId','Measurement'),"
 				+ "FOREIGN KEY('AppId') REFERENCES App('AppId')"
@@ -102,6 +107,10 @@ public class BlinkDatabase {
 		Log.i(tag, "SynchronizeDatabase ok");
 	}
 
+	/**
+	 * 기존 테이블을 모두 삭제한 후 다시 생성한다.
+	 * @param db
+	 */
 	public static void updateBlinkDatabase(SQLiteDatabase db) {
 		// TODO Auto-generated method stub
 		db.execSQL("DROP TABLE IF EXSITS Device");

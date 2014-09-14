@@ -4,6 +4,14 @@ import kr.poturns.blink.db.JsonManager;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+/**
+ * 외부 디바이스로 데이터를 요청했을 때 반환되는 형식이다. 
+ * 내부 데이터, 외부 데이터, 호출 결과, 호출 상세 결과의 정보를 갖는다.
+ * 데이터 반환 형식은 Json이다.
+ * 
+ * @author mementohora
+ *
+ */
 public class CallbackData implements Parcelable{
 	/**
 	 * 에러 없이 성공적으로 호출되었을 경우
