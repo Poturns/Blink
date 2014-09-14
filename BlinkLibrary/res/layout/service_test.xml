@@ -125,6 +125,33 @@
                 android:text="Button" />
             
         </TableRow>
+        <TableRow
+            android:id="@+id/tableRow5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <Button
+                android:id="@+id/btn_sendMessage"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Sync sendMessage" />
+
+            <Button
+                android:id="@+id/btn_registerBlinkApp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="registerBlinkApp" />
+
+            <Button
+                android:id="@+id/btn_registerMeasurementData"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="registerMeasurementData" />
+            
+        </TableRow>
     </TableLayout>
 
 </LinearLayout>

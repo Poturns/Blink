@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import kr.poturns.blink.db.BlinkDatabaseManager;
+import kr.poturns.blink.db.SyncDatabaseManager;
 import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.CallbackData;
@@ -59,7 +60,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	int requestPolicy = REQUEST_TYPE_DUAL_DEVICE;
 	Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	
-	BlinkDatabaseManager mBlinkDatabaseManager;
+	SyncDatabaseManager mBlinkDatabaseManager;
 	BlinkDevice mBlinkDevice;
 	
 	/**
@@ -70,7 +71,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	
 	public BlinkSupportBinder(BlinkLocalService context) throws Exception {
 		super(context);
-		mBlinkDatabaseManager = new BlinkDatabaseManager(context);
+		mBlinkDatabaseManager = new SyncDatabaseManager(context);
 		mBlinkDevice = BlinkDevice.HOST;
 		if(mBlinkDevice==null)Log.i(tag, "BlinkDevice.HOST : null");
 	}
@@ -330,17 +331,20 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	@Override
 	public void sendSyncMessage() throws RemoteException {
 		Log.i("test", "sendSyncMessage");
-		// TODO Auto-generated method stub
-		BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
-		.setDestinationDevice((String) null)
-		.setDestinationApplication(null)
-		.setSourceDevice(BlinkDevice.HOST)
-		.setSourceApplication("kr.poturns.blink.internal.BlinkLocalService")
-		.setMessage(gson.toJson(mBlinkDatabaseManager.obtainBlinkApp()))
-		.setType(IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC)
-		.setCode(0)
-		.build();
-		CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
+		ServiceKeeper sk = ServiceKeeper.getInstance(CONTEXT);
+		if(sk.obtainCurrentCenterDevice().getAddress().equals(BlinkDevice.HOST.getAddress())){
+			// TODO Auto-generated method stub
+			BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
+			.setDestinationDevice((String) null)
+			.setDestinationApplication(null)
+			.setSourceDevice(BlinkDevice.HOST)
+			.setSourceApplication("kr.poturns.blink.internal.BlinkLocalService")
+			.setMessage(gson.toJson(mBlinkDatabaseManager.wearable.obtainMeasurementDatabase(sk.obtainCurrentCenterDevice())))
+			.setType(IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC)
+			.setCode(0)
+			.build();
+			CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
+		}
 	}
 
 }

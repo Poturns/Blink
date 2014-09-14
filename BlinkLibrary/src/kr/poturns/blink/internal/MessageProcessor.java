@@ -10,6 +10,7 @@ import kr.poturns.blink.db.SyncDatabaseManager;
 import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
+import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
 import kr.poturns.blink.internal.comm.BlinkMessage.Builder;
@@ -99,7 +100,27 @@ public class MessageProcessor {
 				sendBlinkMessageTo(successBlinkMessage, BlinkDevice.load(blinkMessage.getSourceAddress()));
 				
 			}
+			if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC){//
+				Log.i("Blink", "TYPE_REQUEST_MEASUREMENTDATA_SYNC");
+				builder_success.setType(IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SYNC_SUCCESS);
+				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(OPERATOR_CONTEXT);
+				String jsonRequestMessage = blinkMessage.getMessage();
+				Type MeasurementDataType = new TypeToken<ArrayList<MeasurementData>>(){}.getType();
+				ArrayList<MeasurementData> ret = new Gson().fromJson(jsonRequestMessage, MeasurementDataType);
+
+				if(BlinkDevice.HOST.getAddress().contentEquals(SERVICE_KEEPER.obtainCurrentCenterDevice().getAddress())){
+			    	syncDatabaseManager.center.insertMeasurementData(ret);
+			    }
+			    else{
+			    	
+			    }
+				
+				builder_success.setMessage("");
+				BlinkMessage successBlinkMessage = builder_success.build();
+				sendBlinkMessageTo(successBlinkMessage, BlinkDevice.load(blinkMessage.getSourceAddress()));
+			}
 			else if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_FUNCTION){//
+				Log.i("Blink", "TYPE_REQUEST_FUNCTION");
 				//call back
 				Function function = JsonManager.obtainJsonFunction(blinkMessage.getMessage());
 				startFunction(function);
@@ -109,9 +130,10 @@ public class MessageProcessor {
 				sendBlinkMessageTo(successBlinkMessage, BlinkDevice.load(blinkMessage.getSourceAddress()));
 			}
 			else if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA){//
+				Log.i("Blink", "TYPE_REQUEST_MEASUREMENTDATA");
 				String message = OPERATOR_CONTEXT.receiveMessageFromProcessor(blinkMessage.getMessage());
 				builder_success.setMessage(message);
-				builder_success.setType(IBlinkMessagable.TYPE_RESPONSE_FUNCTION_SUCCESS);
+				builder_success.setType(IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SUCCESS);
 				BlinkMessage successBlinkMessage = builder_success.build();
 				sendBlinkMessageTo(successBlinkMessage, BlinkDevice.load(blinkMessage.getSourceAddress()));
 			}
@@ -156,13 +178,17 @@ public class MessageProcessor {
 				
 			}
 			else if(blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_FUNCTION_SUCCESS){
-				
+				Log.i("Blink", "TYPE_RESPONSE_FUNCTION_SUCCESS");
+				SERVICE_KEEPER.obtainBinder(blinkMessage.getDestinationApplication()).callbackData(blinkMessage.getCode(), blinkMessage.getMessage(), true);
 			}
 			else if(blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SUCCESS){
-				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(null);
-				String jsonResponseMessage = blinkMessage.getMessage();
-				ArrayList<Measurement>mergedMesarement = JsonManager.obtainJsonMeasurement(jsonResponseMessage);	
-				//syncDatabaseManager.
+				Log.i("Blink", "TYPE_RESPONSE_MEASUREMENTDATA_SUCCESS");
+				SERVICE_KEEPER.obtainBinder(blinkMessage.getDestinationApplication()).callbackData(blinkMessage.getCode(), blinkMessage.getMessage(), true);
+			}
+			else if(blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SYNC_SUCCESS){
+				Log.i("Blink", "TYPE_RESPONSE_MEASUREMENTDATA_SYNC_SUCCESS");
+//				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(OPERATOR_CONTEXT);
+//				syncDatabaseManager.wearable.syncMeasurementDatabase(SERVICE_KEEPER.obtainCurrentCenterDevice(), seq);
 			}
 		
 		}
@@ -197,9 +223,6 @@ public class MessageProcessor {
 				
 				BlinkMessage failBlinkMessage = builder.build();
 				sendBlinkMessageTo(failBlinkMessage, BlinkDevice.load(blinkMessage.getSourceAddress()));
-				
-				
-				
 				
 			}
 		}
@@ -251,6 +274,10 @@ public class MessageProcessor {
 		 *
 		* 2.1 Destination Mac != null -> Hop:Main, Node:Wearable (w-m-w)
 		* 2.2 Destination Mac != null -> Hop:Wearble, Node:Wearble(w-w)
+		 * 
+		 * 
+		 * 목적지 디바이스가 연결이 되어 있지 않으면 fail로 보냄
+		 * 
 		 * 
 		 *원래 send쪽에서는 처리안하려 했는데 동기화 때문에......  
 		 */
