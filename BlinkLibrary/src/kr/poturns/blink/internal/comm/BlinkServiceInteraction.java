@@ -73,6 +73,8 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	public Remote remote;
 	Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
+	private boolean isRegisteredBR = false;
+	
 	/**
 	 * 생성자로 Boradcast와 Callback을 등록할 수 있다. 등록하고 싶지 않을 경우 null을 매개변수로 넘기면 된다.
 	 * @param context : Android Context 객체
@@ -127,7 +129,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 
 	@Override
 	public final void onServiceConnected(ComponentName name, IBinder service) {
-		CONTEXT.registerReceiver(EVENT_BR, FILTER);
+		startBroadcastReceiver();
 
 		if (service == null)
 			onServiceFailed();
@@ -158,7 +160,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 
 	@Override
 	public final void onServiceDisconnected(ComponentName name) {
-		CONTEXT.unregisterReceiver(EVENT_BR);
+		stopBroadcastReceiver();
 		onServiceDisconnected();
 	}
 
@@ -185,16 +187,22 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 				CONTEXT.getPackageName());
 
 		CONTEXT.unbindService(this);
-		CONTEXT.unregisterReceiver(EVENT_BR);
+		stopBroadcastReceiver();
 		// CONTEXT.stopService(intent);
 	}
 
 	public final void startBroadcastReceiver() {
-		CONTEXT.registerReceiver(EVENT_BR, FILTER);
+		if (!isRegisteredBR) {
+			CONTEXT.registerReceiver(EVENT_BR, FILTER);
+			isRegisteredBR = true;
+		}
 	}
 
 	public final void stopBroadcastReceiver() {
-		CONTEXT.unregisterReceiver(EVENT_BR);
+		if (isRegisteredBR) {
+			CONTEXT.unregisterReceiver(EVENT_BR);
+			isRegisteredBR = false;
+		}
 	}
 
 	public final void requestConfigurationChange(String... keys) {
