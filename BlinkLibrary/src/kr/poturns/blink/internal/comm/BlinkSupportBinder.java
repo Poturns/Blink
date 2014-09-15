@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import kr.poturns.blink.db.BlinkDatabaseManager;
+import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.SyncDatabaseManager;
 import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.BlinkAppInfo;
@@ -326,25 +327,62 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	}
 
 	/**
+	 * 타겟 어플리케이션에 단일 데이터를 전송한다.
+	 * @param targetBlinkAppInfo : 전송할 타겟 어플리케이션
+	 * @param mMeasurementData : 전송할 MeasurementData
+	 */
+	@Override
+    public void sendMeasurementData(BlinkAppInfo targetBlinkAppInfo,
+            MeasurementData mMeasurementData,int requestCode) throws RemoteException {
+	    // TODO Auto-generated method stub
+		CallbackData mCallbackData = new CallbackData();
+		
+		CALLBACK_DATA_MAP.remove(requestCode);
+		
+		BlinkMessage mBlinkMessage;
+		
+		//해당 BlinkApp이 없을 경우
+		if(targetBlinkAppInfo.isExist){
+			mCallbackData.ResultDetail = CallbackData.ERROR_CONNECT_FAIL;
+			callbackData(requestCode, null,false);
+		}
+		//타겟 디바이스가 자신이 아니면 메시지를 보낸다.
+		else if(!targetBlinkAppInfo.mDevice.MacAddress.contentEquals(mBlinkDevice.getAddress())){
+			//BlinkMessage 생성
+			mBlinkMessage = new BlinkMessage.Builder()
+									.setDestinationDevice(BlinkDevice.load(targetBlinkAppInfo.mDevice.MacAddress))
+									.setDestinationApplication(targetBlinkAppInfo.mApp.PackageName)
+									.setSourceDevice(BlinkDevice.update(mBlinkDevice))
+									.setSourceApplication(mPackageName)
+									.setMessage(gson.toJson(mMeasurementData))
+									.setCode(requestCode)
+									.build();
+			CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, BlinkDevice.load(targetBlinkAppInfo.mDevice.MacAddress));
+		}
+		//타겟 디바이스가 자기 자신이면 직접 콜백을 호출한다.
+		else if(targetBlinkAppInfo.mDevice.MacAddress.contentEquals(mBlinkDevice.getAddress())) {
+			//다른 어플리케이션의 콜백 호출
+			ServiceKeeper.getInstance(CONTEXT).obtainBinder(targetBlinkAppInfo.mApp.PackageName).callbackData(requestCode, gson.toJson(mMeasurementData), true);
+			//자기 자신에게 reponse를 보냄
+			mCallbackData.ResultDetail = CallbackData.ERROR_NO_OUT_DEVICE;
+			callbackData(requestCode, null,true);
+		}
+    }
+	
+	/**
 	 * 통신 테스트를 위핸 임시 매소드, sync 메시지를 만들어 보낸다.
 	 */
 	@Override
-	public void sendSyncMessage() throws RemoteException {
-		Log.i("test", "sendSyncMessage");
-		ServiceKeeper sk = ServiceKeeper.getInstance(CONTEXT);
-		if(sk.obtainCurrentCenterDevice().getAddress().equals(BlinkDevice.HOST.getAddress())){
-			// TODO Auto-generated method stub
-			BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
-			.setDestinationDevice((String) null)
-			.setDestinationApplication(null)
-			.setSourceDevice(BlinkDevice.HOST)
-			.setSourceApplication("kr.poturns.blink.internal.BlinkLocalService")
-			.setMessage(gson.toJson(mBlinkDatabaseManager.wearable.obtainMeasurementDatabase(sk.obtainCurrentCenterDevice())))
-			.setType(IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC)
-			.setCode(0)
-			.build();
-			CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
-		}
+	public void SyncBlinkApp() throws RemoteException {
+		Log.i("Blink", "SyncBlinkApp");
+		CONTEXT.mContentObserver.onChange(true, SqliteManager.URI_OBSERVER_BLINKAPP);
+		
+	}
+	@Override
+	public void SyncMeasurementData() throws RemoteException {
+		Log.i("Blink", "SyncMeasurementData");
+		CONTEXT.mContentObserver.onChange(true, SqliteManager.URI_OBSERVER_MEASUREMENTDATA);
 	}
 
+	
 }

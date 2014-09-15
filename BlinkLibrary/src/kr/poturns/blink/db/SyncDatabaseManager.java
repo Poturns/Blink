@@ -448,7 +448,8 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 		 * @param mMeasurementDataList
 		 * @return
 		 */
-		public boolean insertMeasurementData(List<MeasurementData> mMeasurementDataList){
+		public int insertMeasurementData(List<MeasurementData> mMeasurementDataList){
+			int MaxId = 0;
 			mSQLiteDatabase.beginTransaction();
 			try{
 				for(MeasurementData mMeasurementData : mMeasurementDataList){
@@ -458,15 +459,18 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 					values.put("Data", mMeasurementData.Data);
 					values.put("DateTime", mMeasurementData.DateTime);
 			        mSQLiteDatabase.insert("Function", null, values);
+			        if(MaxId<mMeasurementData.MeasurementId){
+			        	MaxId = mMeasurementData.MeasurementId; 
+			        }
 				}
 				mSQLiteDatabase.setTransactionSuccessful();
 			} catch (Exception e){
 				e.printStackTrace();
-				return false;
+				return -1;
 			} finally {
 				mSQLiteDatabase.endTransaction();
 			}
-			return true;
+			return MaxId;
 		}
 	}
 	

@@ -38,6 +38,7 @@ public class MessageProcessor {
 	
 	private JsonManager mJsonManager;
 	private SqliteManager mSqliteManager;
+	private boolean Synchronizing = false;
 	
 	public MessageProcessor(BlinkLocalBaseService context) {
 		OPERATOR_CONTEXT = (BlinkLocalService)context;
@@ -76,7 +77,9 @@ public class MessageProcessor {
 			builder_success.setDestinationApplication(blinkMessage.getSourceApplication());
 			builder_success.setCode(blinkMessage.getCode());
 			int blinkMessage_type = blinkMessage.getType();
+			//동기화 시작할때 Sync 플래그를 true로, 끝날 때 false로 설정하여 추가 동기화를 막는다.
 			if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){//
+				setSynchronizing(true);
 				builder_success.setType(IBlinkMessagable.TYPE_RESPONSE_BlinkAppInfo_SYNC_SUCCESS);
 				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(OPERATOR_CONTEXT);
 				String jsonRequestMessage = blinkMessage.getMessage();
@@ -99,9 +102,11 @@ public class MessageProcessor {
 				builder_success.setMessage(jsonResponseMessage);
 				BlinkMessage successBlinkMessage = builder_success.build();
 				sendBlinkMessageTo(successBlinkMessage, BlinkDevice.load(blinkMessage.getSourceAddress()));
-				
+				setSynchronizing(false);
 			}
-			if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC){//
+			//동기화 시작할때 Sync 플래그를 true로, 끝날 때 false로 설정하여 추가 동기화를 막는다.
+			if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC){
+				setSynchronizing(true);
 				Log.i("Blink", "TYPE_REQUEST_MEASUREMENTDATA_SYNC");
 				builder_success.setType(IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SYNC_SUCCESS);
 				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(OPERATOR_CONTEXT);
@@ -110,15 +115,15 @@ public class MessageProcessor {
 				ArrayList<MeasurementData> ret = new Gson().fromJson(jsonRequestMessage, MeasurementDataType);
 
 				if(BlinkDevice.HOST.getAddress().contentEquals(SERVICE_KEEPER.obtainCurrentCenterDevice().getAddress())){
-			    	syncDatabaseManager.center.insertMeasurementData(ret);
+					builder_success.setMessage(""+syncDatabaseManager.center.insertMeasurementData(ret));
 			    }
 			    else{
-			    	
+			    	builder_success.setMessage("");
 			    }
 				
-				builder_success.setMessage("");
 				BlinkMessage successBlinkMessage = builder_success.build();
 				sendBlinkMessageTo(successBlinkMessage, BlinkDevice.load(blinkMessage.getSourceAddress()));
+				setSynchronizing(false);
 			}
 			else if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_FUNCTION){//
 				Log.i("Blink", "TYPE_REQUEST_FUNCTION");
@@ -163,7 +168,7 @@ public class MessageProcessor {
 			 * }
 			 */
 			/*위 까지는 TYPE_REQUEST에 대한 처리*/
-			
+			//Sync 플래그를 false로 변경하여 동기화 요청을 할 수 있도록 한다.
 			if(blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_BlinkAppInfo_SYNC_SUCCESS){
 				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(OPERATOR_CONTEXT);
 				String jsonResponseMessage = blinkMessage.getMessage();
@@ -174,6 +179,7 @@ public class MessageProcessor {
 			      else{
 			    	  syncDatabaseManager.wearable.syncBlinkDatabase(mergedBlinkAppInfo);
 			      }
+			      setSynchronizing(false);
 			}
 			else if(blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_IDENTITY_SUCCESS){
 				
@@ -186,10 +192,12 @@ public class MessageProcessor {
 				Log.i("Blink", "TYPE_RESPONSE_MEASUREMENTDATA_SUCCESS");
 				SERVICE_KEEPER.obtainBinder(blinkMessage.getDestinationApplication()).callbackData(blinkMessage.getCode(), blinkMessage.getMessage(), true);
 			}
+			//Sync 플래그를 false로 변경하여 동기화 요청을 할 수 있도록 한다.
 			else if(blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SYNC_SUCCESS){
 				Log.i("Blink", "TYPE_RESPONSE_MEASUREMENTDATA_SYNC_SUCCESS");
-//				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(OPERATOR_CONTEXT);
-//				syncDatabaseManager.wearable.syncMeasurementDatabase(SERVICE_KEEPER.obtainCurrentCenterDevice(), seq);
+				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(OPERATOR_CONTEXT);
+				syncDatabaseManager.wearable.syncMeasurementDatabase(SERVICE_KEEPER.obtainCurrentCenterDevice(), Integer.parseInt(blinkMessage.getMessage()));
+				setSynchronizing(false);
 			}
 		
 		}
@@ -283,6 +291,12 @@ public class MessageProcessor {
 		 *원래 send쪽에서는 처리안하려 했는데 동기화 때문에......  
 		 */
 		// obtainCurrentCenterDevice => 현재 연결된 네트워크 중 CenterDevice를 가져온다 없을 시 null.
+		
+		//동기화 중간에 재동기화 요청을 할 수 없도록 리턴
+		if(message.getType()==IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC || message.getType()==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
+			if(isSynchronizing())return;
+		}
+		
 		BlinkDevice centerDevice = null;
 		if(SERVICE_KEEPER.obtainCurrentCenterDevice()!=BlinkDevice.HOST){
 			Log.d("sendBlinkMessage in Blink", "i am not center");
@@ -304,9 +318,13 @@ public class MessageProcessor {
 	
 		SERVICE_KEEPER.sendMessageToDevice(toDevice, message);
 	
-
+		//동기화 메시지를 전송했으므로 동기화중으로 설정
+		if(message.getType()==IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC || message.getType()==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
+			setSynchronizing(true);
+		}
 		
 	}
+	
 	
 	private void handleSystemMessage(BlinkMessage message) {
 		switch(message.getType()) {
@@ -329,4 +347,15 @@ public class MessageProcessor {
 		else if(function.Type==Function.TYPE_BROADCAST)
 			OPERATOR_CONTEXT.sendBroadcast(new Intent(function.Action));
 	}
+
+
+
+
+	public boolean isSynchronizing() {
+	    return Synchronizing;
+    }
+
+	public void setSynchronizing(boolean synchronizing) {
+	    Synchronizing = synchronizing;
+    }
 }

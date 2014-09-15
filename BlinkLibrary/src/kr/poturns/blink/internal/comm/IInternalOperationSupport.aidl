@@ -109,9 +109,11 @@ interface IInternalOperationSupport {
 	void obtainMeasurementData(String ClassName,String DateTimeFrom,String DateTimeTo,int ContainType,int requestCode);
 	void obtainMeasurementDataById(inout List<Measurement> mMeasurementList,String DateTimeFrom,String DateTimeTo,int requestCode);
 	void startFunction(inout Function function,int requestCode);
+	void sendMeasurementData(inout BlinkAppInfo targetBlinkAppInfo,inout MeasurementData mMeasurementData,int requestCode);
 	
 	/**
 	 * 테스트를 위한 임시 매소드
 	 */
-	 void sendSyncMessage();
+	 void SyncBlinkApp();
+	 void SyncMeasurementData();
 }

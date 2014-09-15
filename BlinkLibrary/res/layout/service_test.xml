@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:weightSum="8"
     android:orientation="vertical" >
 
     <TextView
@@ -11,10 +12,14 @@
         android:layout_weight="3"
         android:text="" />
 
-    <TableLayout
+    <ScrollView 
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="5" >
+        android:layout_weight="5"
+        >
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp">
 
         <TableRow
             android:id="@+id/tableRow1"
@@ -131,27 +136,52 @@
             android:layout_height="wrap_content" >
 
             <Button
-                android:id="@+id/btn_sendMessage"
+                android:id="@+id/button13"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Sync sendMessage" />
+                android:text="BlinkApp 등록" />
 
             <Button
-                android:id="@+id/btn_registerBlinkApp"
+                android:id="@+id/button14"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="registerBlinkApp" />
+                android:text="MeasurementData 추가" />
 
             <Button
-                android:id="@+id/btn_registerMeasurementData"
+                android:id="@+id/button15"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="registerMeasurementData" />
-            
+                android:text="Function 실행(외부디바이스)" />
+        </TableRow>
+        <TableRow
+            android:id="@+id/tableRow6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <Button
+                android:id="@+id/button16"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="MeasurementData 전송" />
+
+            <Button
+                android:id="@+id/button17"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="BlinkAppInfo 동기화" />
+
+            <Button
+                android:id="@+id/button18"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="MeasurementData 동기화" />
         </TableRow>
     </TableLayout>
-
+	</ScrollView>
 </LinearLayout>

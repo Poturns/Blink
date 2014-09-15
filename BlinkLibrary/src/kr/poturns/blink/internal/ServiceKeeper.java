@@ -224,7 +224,7 @@ public class ServiceKeeper {
 	 * @param packageName
 	 * @return 
 	 */
-	BlinkSupportBinder obtainBinder(String packageName) {
+	public BlinkSupportBinder obtainBinder(String packageName) {
 		if (packageName != null)
 			return BINDER_MAP.get(packageName);
 		return null;

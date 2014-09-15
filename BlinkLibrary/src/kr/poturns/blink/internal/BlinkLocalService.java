@@ -21,6 +21,7 @@ import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
+import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -123,24 +124,6 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 			List<Measurement> mMeasurementList = gson.fromJson(mDatabaseMessage.getCondition(),new TypeToken<List<Measurement>>(){}.getType());
 			return gson.toJson(mSyncDatabaseManager.obtainMeasurementData(mMeasurementList,mDatabaseMessage.getDateTimeFrom(), mDatabaseMessage.getDateTimeTo()));
 		} 
-		//BlinkApp 동기화일 경우
-		else if(mDatabaseMessage.getType()==DatabaseMessage.SYNC_BLINKAPP){
-			List<BlinkAppInfo> mBlinkAppInfoList = gson.fromJson(mDatabaseMessage.getData(),new TypeToken<List<BlinkAppInfo>>(){}.getType());
-			//자기 자신이 메인 디바이스일 경우
-			if(BlinkDevice.HOST.getAddress().contentEquals(mServiceKeeper.obtainCurrentCenterDevice().getAddress())){
-				return ""+mSyncDatabaseManager.center.syncBlinkDatabase(mBlinkAppInfoList);
-			}
-			//메인 디바이스가 아닐 경우
-			else {
-				return ""+mSyncDatabaseManager.wearable.syncBlinkDatabase(mBlinkAppInfoList);
-			}
-		}
-		//MeasurementData 저장일 경우
-		else if(mDatabaseMessage.getType()==DatabaseMessage.SYNC_MEASUREMENT){
-			List<MeasurementData> mMeasurementDataList = gson.fromJson(mDatabaseMessage.getData(),new TypeToken<List<MeasurementData>>(){}.getType());
-			mSyncDatabaseManager.center.insertMeasurementData(mMeasurementDataList);
-			return "true";
-		}
 		return null;
 	}
 	
@@ -161,49 +144,49 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 	/**
 	 * 서비스에서 Database 변경에 대한 Observer 이벤트를 받으면 관련 기능을 호출한다.
 	 */
-	private ContentObserver mContentObserver = new ContentObserver(new Handler()){
+	public ContentObserver mContentObserver = new ContentObserver(new Handler()){
 		public void onChange(boolean selfChange, Uri uri) {
+			Log.i("Blink", "onChange : "+uri);
 			//새로운 BlinkApp이 추가되면 메인에 Sync 요청
 			if(uri.equals(SqliteManager.URI_OBSERVER_BLINKAPP)){
-				//DatabaseMessage 생성
-				DatabaseMessage mDatabaseMessage = new DatabaseMessage.Builder()
-				.setType(DatabaseMessage.SYNC_BLINKAPP)
-				.setData(gson.toJson(mSyncDatabaseManager.obtainBlinkApp()))
-				.build();
-				
-				//BlinkMessage 생성
-				BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
-										.setDestinationDevice((String) null)
-										.setDestinationApplication(null)
-										.setSourceDevice(BlinkDevice.HOST)
-										.setSourceApplication("kr.poturns.blink.internal.BlinkLocalService")
-										.setMessage(gson.toJson(mDatabaseMessage))
-										.setCode(0)
-										.build();
-				mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
+				//자신이 센터 디바이스면
+				if(mServiceKeeper.obtainCurrentCenterDevice().getAddress().equals(BlinkDevice.HOST.getAddress())){
+					//브로드캐스트 실행
+				} else {
+					//BlinkMessage 생성
+					BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
+											.setDestinationDevice((String) null)
+											.setDestinationApplication(null)
+											.setSourceDevice(BlinkDevice.HOST)
+											.setSourceApplication("kr.poturns.blink.internal.BlinkLocalService")
+											.setMessage(gson.toJson(mSyncDatabaseManager.obtainBlinkApp()))
+											.setCode(0)
+											.build();
+					mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
+				}
 			}
 			//새로운 MeasruementData가 추가되면 메인에 데이터 전송
 			else if(uri.equals(SqliteManager.URI_OBSERVER_MEASUREMENTDATA)){
-				//DatabaseMessage 생성
-				BlinkDevice CenterDevice = mServiceKeeper.obtainCurrentCenterDevice();
-				List<MeasurementData> mMeasurementDataList = mSyncDatabaseManager.wearable.obtainMeasurementDatabase(CenterDevice);
-				String SendData = gson.toJson(mMeasurementDataList);
-				
-				DatabaseMessage mDatabaseMessage = new DatabaseMessage.Builder()
-				.setType(DatabaseMessage.SYNC_BLINKAPP)
-				.setData(SendData)
-				.build();
-				
-				//BlinkMessage 생성
-				BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
-										.setDestinationDevice((String) null)
-										.setDestinationApplication(null)
-										.setSourceDevice(BlinkDevice.HOST)
-										.setSourceApplication("kr.poturns.blink.internal.BlinkLocalService")
-										.setMessage(gson.toJson(mDatabaseMessage))
-										.setCode(0)
-										.build();
-				mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
+				//자신이 센터 디바이스면
+				if(mServiceKeeper.obtainCurrentCenterDevice().getAddress().equals(BlinkDevice.HOST.getAddress())){
+					//암것도 안함
+				}else {
+					//DatabaseMessage 생성
+					BlinkDevice CenterDevice = mServiceKeeper.obtainCurrentCenterDevice();
+					List<MeasurementData> mMeasurementDataList = mSyncDatabaseManager.wearable.obtainMeasurementDatabase(CenterDevice);
+					String SendData = gson.toJson(mMeasurementDataList);
+					
+					//BlinkMessage 생성
+					BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
+											.setDestinationDevice((String) null)
+											.setDestinationApplication(null)
+											.setSourceDevice(BlinkDevice.HOST)
+											.setSourceApplication("kr.poturns.blink.internal.BlinkLocalService")
+											.setMessage(SendData)
+											.setCode(0)
+											.build();
+					mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
+				}
 			}
 			
 		};

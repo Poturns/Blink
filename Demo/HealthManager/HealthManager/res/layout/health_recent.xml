@@ -11,29 +11,30 @@
         android:layout_width="wrap_content"
         android:layout_height="100dp"
         android:layout_margin="10dp"
-        android:text="Primary"
+        android:text="Default"
         android:layout_weight="1"
         bootstrapbutton:bb_icon_right="fa-trophy"
-        bootstrapbutton:bb_type="primary" />
+        bootstrapbutton:bb_type="default" />
 
     <com.beardedhen.androidbootstrap.BootstrapButton
         android:id="@+id/btnTwo"
         android:layout_width="wrap_content"
+        
         android:layout_height="100dp"
         android:layout_margin="10dp"
-        android:text="Primary"
+        android:text="Default"
         android:layout_weight="1"
         bootstrapbutton:bb_icon_right="fa-trophy"
-        bootstrapbutton:bb_type="primary" />
+        bootstrapbutton:bb_type="default" />
 
     <com.beardedhen.androidbootstrap.BootstrapButton
         android:id="@+id/btnThree"
         android:layout_width="wrap_content"
         android:layout_height="100dp"
         android:layout_margin="10dp"
-        android:text="Primary"
+        android:text="Default"
         android:layout_weight="1"
         bootstrapbutton:bb_icon_right="fa-trophy"
-        bootstrapbutton:bb_type="primary" />
+        bootstrapbutton:bb_type="default" />
 
 </LinearLayout>

@@ -35,6 +35,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.text.method.DateTimeKeyListener;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -53,7 +54,7 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 	TextView resultView;
 	Button button1, button2, button3, button4, button5, button6;
 	Button button7, button8, button9, button10, button11, button12;
-	Button btn_sendMessage, btn_registerBlinkApp, btn_registerMeasurementData;
+	Button button13, button14, button15, button16, button17, button18;
 	BlinkAppInfo mBlinkAppInfo;
 	BlinkServiceInteraction interaction;
 	IInternalOperationSupport iSupport;
@@ -79,8 +80,6 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 			@Override
 			public void onServiceConnected(IInternalOperationSupport support) {
 				iSupport = support;
-				exampleRegisterBlinkApp();
-				exampleRegisterMeasurementDatabase();
 			}
 
 			@Override
@@ -145,14 +144,18 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 		button11.setOnClickListener(this);
 		button12 = (Button) findViewById(R.id.button12);
 		button12.setOnClickListener(this);
-		btn_sendMessage = (Button) findViewById(R.id.btn_sendMessage);
-		btn_sendMessage.setOnClickListener(this);
-		btn_registerBlinkApp = (Button) findViewById(R.id.btn_registerBlinkApp);
-		btn_registerBlinkApp.setOnClickListener(this);
-		btn_registerMeasurementData = (Button) findViewById(R.id.btn_registerMeasurementData);
-		btn_registerMeasurementData.setOnClickListener(this);
-		
-		
+		button12 = (Button) findViewById(R.id.button13);
+		button12.setOnClickListener(this);
+		button12 = (Button) findViewById(R.id.button14);
+		button12.setOnClickListener(this);
+		button12 = (Button) findViewById(R.id.button15);
+		button12.setOnClickListener(this);
+		button12 = (Button) findViewById(R.id.button16);
+		button12.setOnClickListener(this);
+		button12 = (Button) findViewById(R.id.button17);
+		button12.setOnClickListener(this);
+		button12 = (Button) findViewById(R.id.button18);
+		button12.setOnClickListener(this);
 	}
 
 	@Override
@@ -277,23 +280,63 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 				iSupport.stopListeningAsServer();
 
 			} else if (v.getId() == R.id.button12) {
-
-			} else if (v.getId() == R.id.btn_sendMessage) {
+				
+			} else if (v.getId() == R.id.button13) {
+				exampleRegisterBlinkApp();
+			} else if (v.getId() == R.id.button14) {
+				exampleRegisterMeasurementDatabase();
+			} else if (v.getId() == R.id.button15) {
+				//function
+				SyncDatabaseManager sdm = new SyncDatabaseManager(this);
+				mBlinkAppInfo = interaction.local.obtainBlinkApp();
+				interaction.local.queryDevice("Device!='"+mBlinkAppInfo.mDevice.Device+"'").queryApp("").queryFunction("");
+				List<Function> mFunctionList = interaction.local.getFunctionList();
+				Log.i("Blink","function size : "+mFunctionList.size());
+				if(mFunctionList.size()>0){
+					for(int i=0;i<mFunctionList.size();i++){
+						interaction.remote.startFunction(mFunctionList.get(i), 100);
+					}
+				}else {
+					Toast.makeText(this, "외부 디바이스 기능이 없습니다.", Toast.LENGTH_SHORT);
+				}
+			} else if (v.getId() == R.id.button16) {
+				List<BlinkAppInfo> mBlinkAppInfoList = interaction.local.obtainBlinkAppAll();
+				mBlinkAppInfo = interaction.local.obtainBlinkApp();
+				MeasurementData newData = new MeasurementData();
+				newData.Data = "100";
+				newData.DateTime = "2014-09-15 00:00:00";
+				
+				boolean isSend = false;
+				for(int i=0;i<mBlinkAppInfoList.size();i++){
+					//다른 어플리케이션으로 보냄
+					if(!mBlinkAppInfo.mDevice.Device.equals(mBlinkAppInfoList.get(i).mDevice.Device)
+							&& !mBlinkAppInfo.mApp.PackageName.equals(mBlinkAppInfoList.get(i).mApp.PackageName)){
+						interaction.remote.sendMeasurementData(mBlinkAppInfoList.get(i), newData, 101);
+						isSend = true;
+					}
+						
+				}
+				if(!isSend){
+					Toast.makeText(this, "데이터를 보낼 타겟이 없습니다.", Toast.LENGTH_SHORT);
+				}
+				
+				
+			} else if (v.getId() == R.id.button17) {
+				interaction.SyncBlinkApp();
+			} else if (v.getId() == R.id.button18) {
+				interaction.SyncMeasurementData();
+			}
+			/*
+			else if (v.getId() == R.id.btn_sendMessage) {
 				//SyncMeasurementData
 				interaction.sendSyncMessage();
 			} else if (v.getId() == R.id.btn_registerBlinkApp) {
-				//function
-				SyncDatabaseManager sdm = new SyncDatabaseManager(this);
-				sdm.queryDevice("Device='SHV-E250L'").queryApp("").queryFunction("");
-				List<Function> fl = sdm.getFunctionList();
-				Log.i("Blink","function size : "+fl.size());
-				if(fl.size()>0){
-					interaction.remote.startFunction(fl.get(0), 100);
-				}
+				
 			} else if (v.getId() == R.id.btn_registerMeasurementData) {
 				//remote measurement data
 				interaction.remote.obtainMeasurementData(Eye.class, 101);
 			}
+			*/
 		} catch (RemoteException e) {
 
 		}

@@ -886,15 +886,39 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 				e.printStackTrace();
 			}
 		}
+		
+		/**
+		 * 타겟 어플리케이션에 단일 데이터를 전송한다.
+		 * @param targetBlinkAppInfo : 전송할 타겟 어플리케이션
+		 * @param mMeasurementData : 전송할 MeasurementData
+		 */
+		public void sendMeasurementData(BlinkAppInfo targetBlinkAppInfo,MeasurementData mMeasurementData,int requestCode){
+			try {
+	            mInternalOperationSupport.sendMeasurementData(targetBlinkAppInfo, mMeasurementData, requestCode);
+            } catch (RemoteException e) {
+	            // TODO Auto-generated catch block
+	            e.printStackTrace();
+            }
+		}
 	}
 
 	/**
 	 * Sync 메시지 전송을 위한 임시 매소드
 	 */
-	public void sendSyncMessage(){
+	public void SyncBlinkApp(){
 		try {
 			Log.i("test", "btn_sendMessage");
-			mInternalOperationSupport.sendSyncMessage();
+			mInternalOperationSupport.SyncBlinkApp();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void SyncMeasurementData(){
+		try {
+			Log.i("test", "btn_sendMessage");
+			mInternalOperationSupport.SyncMeasurementData();
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
