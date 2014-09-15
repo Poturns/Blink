@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
 
     <LinearLayout
         android:id="@+id/fragment_logview_table_title"
@@ -9,6 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
+        android:layout_marginBottom="1dp"
         android:orientation="horizontal" >
 
         <TextView
@@ -52,14 +54,17 @@
             android:textColor="@android:color/black" />
     </LinearLayout>
 
-    <ListView
-        android:id="@android:id/list"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/fragment_logview_table_title"
-        android:divider="@android:color/black" >
-    </ListView>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginLeft="@dimen/list_header_side_margin"
+        android:layout_marginRight="@dimen/list_header_side_margin"
+        android:background="@android:color/darker_gray" />
 
-    <include layout="@layout/emptyview" />
+    <include
+        android:layout_marginTop="2dp"
+        layout="@layout/view_listview" />
 
-</RelativeLayout>
+    <include layout="@layout/view_empty" />
+
+</LinearLayout>

@@ -44,6 +44,7 @@ class ConnectionListFragment extends BaseConnectionFragment {
 			public View getView(int position, View convertView, ViewGroup parent) {
 				BlinkDevice device = getItem(position);
 				View v = super.getView(position, convertView, parent);
+				v.setBackgroundResource(R.drawable.selector_rectangle_box);
 				TextView tv = (TextView) v.findViewById(android.R.id.text1);
 				tv.setText(device.getName());
 				tv.setCompoundDrawablesWithIntrinsicBounds(
@@ -56,7 +57,7 @@ class ConnectionListFragment extends BaseConnectionFragment {
 		ListView listView = (ListView) mSwipeRefreshLayout
 				.findViewById(android.R.id.list);
 		listView.setAdapter(mAdapter);
-		listView.setEmptyView(View.inflate(getActivity(), R.layout.emptyview,
+		listView.setEmptyView(View.inflate(getActivity(), R.layout.view_empty,
 				null));
 		listView.setOnItemClickListener(mOnItemClickListener);
 		return mSwipeRefreshLayout;

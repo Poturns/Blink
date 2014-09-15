@@ -16,19 +16,15 @@
     <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="2dp"
-        android:layout_marginBottom="2dp"
         android:layout_marginLeft="@dimen/list_header_side_margin"
         android:layout_marginRight="@dimen/list_header_side_margin"
         android:background="@android:color/darker_gray" />
 
-    <ListView
-        android:id="@android:id/list"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <include
         android:layout_marginLeft="@dimen/list_side_margin"
-        android:layout_marginRight="@dimen/list_side_margin" >
-    </ListView>
+        android:layout_marginRight="@dimen/list_side_margin"
+        layout="@layout/view_listview" />
 
-    <include layout="@layout/emptyview" />
+    <include layout="@layout/view_empty" />
 
 </LinearLayout>

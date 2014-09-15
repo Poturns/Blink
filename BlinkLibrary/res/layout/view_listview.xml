@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Padding과 divider등이 정의된 ListView -->
+<ListView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/list"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:addStatesFromChildren="true"
+    android:cacheColorHint="@android:color/transparent"
+    android:choiceMode="singleChoice"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:divider="@null"
+    android:dividerHeight="7dp"
+    android:listSelector="@null"
+    android:paddingBottom="5dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingTop="5dp"
+    android:scrollbarStyle="outsideOverlay" />
