@@ -25,7 +25,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentTop="true"
                 android:text="안녕하세요."
-                android:textColor="@color/white" />
+                android:textColor="#ffffff" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -33,7 +33,7 @@
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentRight="true"
                 android:text="안녕하세요."
-                android:textColor="@color/white" />
+                android:textColor="#ffffff" />
         </RelativeLayout>
 
         <!-- Recent -->
@@ -107,7 +107,8 @@
                 android:layout_width="0dp"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="#fc9d9d"
+                android:clickable="true"
+                android:background="@drawable/button_inbody"
                 android:padding="5dp" >
 
                 <ImageView
@@ -121,7 +122,8 @@
                 android:layout_width="0dp"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="#fe7a7a"
+                android:clickable="true"
+                android:background="@drawable/button_exercise"
                 android:padding="5dp" >
 
                 <ImageView
@@ -135,7 +137,8 @@
                 android:layout_width="0dp"
                 android:layout_height="fill_parent"
                 android:layout_weight="1"
-                android:background="#e66b6b"
+                android:clickable="true"
+                android:background="@drawable/button_heart"
                 android:paddingBottom="5dp" >
 
                 <ImageView
@@ -150,7 +153,8 @@
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="180dp"
-            android:background="#ffffff"
+            android:clickable="true"
+            android:background="@drawable/button_graph"
             android:orientation="horizontal" >
         </LinearLayout>
 
@@ -161,14 +165,19 @@
             android:layout_marginTop="5dp"
             android:orientation="horizontal" >
 
-            <com.beardedhen.androidbootstrap.BootstrapButton
+            <LinearLayout
                 android:layout_width="fill_parent"
                 android:layout_height="50dp"
                 android:layout_margin="5dp"
-                android:text="Open Controller"
-                bootstrapbutton:bb_roundedCorners="false"
-                bootstrapbutton:bb_size="default"
-                bootstrapbutton:bb_type="default" />
+                android:clickable="true"
+                android:background="@drawable/button_controller">
+                <TextView 
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:gravity="center"
+                    android:text="Open Controller"/>
+            </LinearLayout>
+            
         </LinearLayout>
         
         

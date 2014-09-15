@@ -147,13 +147,16 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 	 */
 	public ContentObserver mContentObserver = new ContentObserver(new Handler()){
 		public void onChange(boolean selfChange, Uri uri) {
-			Log.i("Blink", "onChange : "+uri);
 			//새로운 BlinkApp이 추가되면 메인에 Sync 요청
 			if(uri.equals(SqliteManager.URI_OBSERVER_BLINKAPP)){
+				Log.i("Blink", "onChange : "+SqliteManager.URI_OBSERVER_BLINKAPP);
 				//자신이 센터 디바이스면
 				if(mServiceKeeper.obtainCurrentCenterDevice().getAddress().equals(BlinkDevice.HOST.getAddress())){
+					Log.i("Blink", "I am Center Device!!");
 					//브로드캐스트 실행
+					
 				} else {
+					Log.i("Blink", "I am not Center Device!!");
 					//BlinkMessage 생성
 					BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
 											.setDestinationDevice((String) null)
@@ -169,10 +172,13 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 			}
 			//새로운 MeasruementData가 추가되면 메인에 데이터 전송
 			else if(uri.equals(SqliteManager.URI_OBSERVER_MEASUREMENTDATA)){
+				Log.i("Blink", "onChange : "+SqliteManager.URI_OBSERVER_MEASUREMENTDATA);
 				//자신이 센터 디바이스면
 				if(mServiceKeeper.obtainCurrentCenterDevice().getAddress().equals(BlinkDevice.HOST.getAddress())){
+					Log.i("Blink", "I am Center Device!!");
 					//암것도 안함
 				}else {
+					Log.i("Blink", "I am not Center Device!!");
 					//DatabaseMessage 생성
 					BlinkDevice CenterDevice = mServiceKeeper.obtainCurrentCenterDevice();
 					List<MeasurementData> mMeasurementDataList = mSyncDatabaseManager.wearable.obtainMeasurementDatabase(CenterDevice);

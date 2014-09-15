@@ -79,6 +79,7 @@ public class MessageProcessor {
 			int blinkMessage_type = blinkMessage.getType();
 			//동기화 시작할때 Sync 플래그를 true로, 끝날 때 false로 설정하여 추가 동기화를 막는다.
 			if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){//
+				Log.i("Blink", "TYPE_REQUEST_BlinkAppInfo_SYNC");
 				setSynchronizing(true);
 				builder_success.setType(IBlinkMessagable.TYPE_RESPONSE_BlinkAppInfo_SYNC_SUCCESS);
 				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(OPERATOR_CONTEXT);
@@ -106,8 +107,8 @@ public class MessageProcessor {
 			}
 			//동기화 시작할때 Sync 플래그를 true로, 끝날 때 false로 설정하여 추가 동기화를 막는다.
 			if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC){
-				setSynchronizing(true);
 				Log.i("Blink", "TYPE_REQUEST_MEASUREMENTDATA_SYNC");
+				setSynchronizing(true);
 				builder_success.setType(IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SYNC_SUCCESS);
 				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(OPERATOR_CONTEXT);
 				String jsonRequestMessage = blinkMessage.getMessage();
@@ -170,6 +171,7 @@ public class MessageProcessor {
 			/*위 까지는 TYPE_REQUEST에 대한 처리*/
 			//Sync 플래그를 false로 변경하여 동기화 요청을 할 수 있도록 한다.
 			if(blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_BlinkAppInfo_SYNC_SUCCESS){
+				Log.i("Blink", "TYPE_RESPONSE_BlinkAppInfo_SYNC_SUCCESS");
 				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(OPERATOR_CONTEXT);
 				String jsonResponseMessage = blinkMessage.getMessage();
 				ArrayList<BlinkAppInfo>mergedBlinkAppInfo = JsonManager.obtainJsonBlinkAppInfo(jsonResponseMessage);
@@ -212,13 +214,16 @@ public class MessageProcessor {
 				int blinkMessage_type = blinkMessage.getType();
 				
 				if(blinkMessage_type==IBlinkMessagable.TYPE_REQUEST_FUNCTION){
+					Log.i("Blink", "TYPE_RESPONSE_FUNCTION_FAIL");
 					builder.setType(IBlinkMessagable.TYPE_RESPONSE_FUNCTION_FAIL);
 					
 				}else if(blinkMessage_type==IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA){
+					Log.i("Blink", "TYPE_RESPONSE_MEASUREMENTDATA_FAIL");
 					builder.setType(IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_FAIL);
 				}else if(blinkMessage_type==IBlinkMessagable.TYPE_REQUEST_IDENTITY_SYNC){
 					//
 				}else if(blinkMessage_type==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
+					Log.i("Blink", "TYPE_RESPONSE_BlinkAppInfo_SYNC_FAIL");
 					builder.setType(IBlinkMessagable.TYPE_RESPONSE_BlinkAppInfo_SYNC_FAIL);
 				}
 				builder.setSourceDevice(currentDevice);
@@ -277,7 +282,7 @@ public class MessageProcessor {
 	 * @param toDevice
 	 */
 	public void sendBlinkMessageTo(BlinkMessage message, BlinkDevice toDevice) {
-		Log.d("sendBlinkMessageTo in Blink", "Send!!");
+		Log.d("Blink", "sendBlinkMessageTo in Send!!");
 //<<<<<<< HEAD
 		/*1. Destination MAC = null -> Hop:Main, Node:Main
 		 *
@@ -293,13 +298,13 @@ public class MessageProcessor {
 		// obtainCurrentCenterDevice => 현재 연결된 네트워크 중 CenterDevice를 가져온다 없을 시 null.
 		
 		//동기화 중간에 재동기화 요청을 할 수 없도록 리턴
-		if(message.getType()==IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC || message.getType()==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
-			if(isSynchronizing())return;
-		}
+//		if(message.getType()==IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC || message.getType()==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
+//			if(isSynchronizing())return;
+//		}
 		
 		BlinkDevice centerDevice = null;
 		if(SERVICE_KEEPER.obtainCurrentCenterDevice()!=BlinkDevice.HOST){
-			Log.d("sendBlinkMessage in Blink", "i am not center");
+			Log.d("Blink", "sendBlinkMessage in i am not center");
 			centerDevice = SERVICE_KEEPER.obtainCurrentCenterDevice();
 			if(message.getDestinationAddress() == null){ // Hop : Main, Node : Main
 				message.setDestinationAddress(centerDevice.getAddress());
@@ -310,18 +315,18 @@ public class MessageProcessor {
 			}
 			}
 		else{
-			Log.d("sendBlinkMessage in Blink", "i am center");
+			Log.d("Blink", "sendBlinkMessage in i am center");
 			//center일 때도 2가지로 나눠 1. Accept에서 send할 때. 2 send할 때 -> Accept에서 걸러야함.
 			// 그냥 fail to Send Message 보내야 함. (현재 프레임워크 구조상 Center가 없을 수가 없다.)
 		}
 	
 	
 		SERVICE_KEEPER.sendMessageToDevice(toDevice, message);
-	
+		Log.d("Blink", "sendBlinkMessage in Message send!");
 		//동기화 메시지를 전송했으므로 동기화중으로 설정
-		if(message.getType()==IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC || message.getType()==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
-			setSynchronizing(true);
-		}
+//		if(message.getType()==IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC || message.getType()==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
+//			setSynchronizing(true);
+//		}
 		
 	}
 	
