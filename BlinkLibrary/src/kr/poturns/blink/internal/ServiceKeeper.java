@@ -328,6 +328,9 @@ public class ServiceKeeper {
 	 * @param msg
 	 */
 	public void sendMessageToDevice(BlinkDevice targetDevice, Object msg) {
+		if (targetDevice == null)
+			return;
+		
 		if (targetDevice.isLESupported()) {
 			BluetoothGatt gatt = (BluetoothGatt) BLINK_NETWORK_MAP.get(targetDevice.getGroupID()).getConnectionObject(targetDevice);
 			if (gatt != null) {
@@ -350,6 +353,8 @@ public class ServiceKeeper {
 	 * @param identity
 	 */
 	void transferSystemSync(BlinkDevice targetDevice, int type) {
+		if (targetDevice == null)
+			return;
 		
 		Log.e("ServiceKeeper_transferSystemSync", targetDevice.getAddress() + " // " + type);
 		
@@ -402,7 +407,7 @@ public class ServiceKeeper {
 			NetworkMap mNetworkMap = BLINK_NETWORK_MAP.get(otherDevGroupID);
 			
 			// 상대 디바이스는 OpenGroup으로서 연결 요청, 자신의 디바이스는 OpenGroup 연결을 원치 않을 때..
-			if (!myDevGroupID.equals(otherDevGroupID)) {
+			if (myDevGroupID != otherDevGroupID) {
 				if (myDevGroupID != null) {
 					// 연결 종료
 					mNetworkMap.removeConnection(otherDevice);

@@ -212,7 +212,7 @@ public class ClassicLinkThread extends Thread {
 	void sendMessageToDevice(Object obj) {
 		if ((mOutputStream != null) && (obj != null)) {
 			try {
-				Log.d("InterDeviceManager_sendBlinkMessage()", DEVICE.getName() + " : " + obj.toString());
+				Log.d("InterDeviceManager_sendBlinkMessage()", DEVICE.getName() + " : " + ((BlinkMessage)obj).getMessage().toString());
 				mOutputStream.writeObject(obj);
 				mOutputStream.flush();
 				
