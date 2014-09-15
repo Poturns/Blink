@@ -161,6 +161,7 @@ class DataSelectFragment extends Fragment {
 				public View getView(int position, View convertView,
 						ViewGroup parent) {
 					View v = super.getView(position, convertView, parent);
+					v.setBackgroundResource(R.drawable.drawable_rectangle_box);
 					final Measurement measurement = getItem(position);
 					final App app = mManager
 							.obtainAppByMeasurement(measurement);
@@ -226,6 +227,15 @@ class DataSelectFragment extends Fragment {
 					.findViewById(android.R.id.list);
 			listView.setEmptyView(view.findViewById(android.R.id.empty));
 			listView.setAdapter(mAdapter);
+
+			// 표현할 데이터가 작으면, ExpandableListView를 펼쳐서 보여준다.
+			int groupSize = mAdapter.getGroupCount();
+			if (groupSize < (PrivateUtil.isScreenSizeSmall(getActivity()) ? 4
+					: 7)) {
+				for (int i = 0; i < groupSize; i++) {
+					listView.expandGroup(i, true);
+				}
+			}
 			return view;
 		}
 
@@ -313,6 +323,7 @@ class DataSelectFragment extends Fragment {
 				public View getView(int position, View convertView,
 						ViewGroup parent) {
 					View v = super.getView(position, convertView, parent);
+					v.setBackgroundResource(R.drawable.selector_rectangle_box);
 					IDatabaseObject item = getItem(position);
 					TextView head = (TextView) v
 							.findViewById(android.R.id.text1);
@@ -324,8 +335,8 @@ class DataSelectFragment extends Fragment {
 						head.setCompoundDrawablesRelativeWithIntrinsicBounds(
 								R.drawable.ic_action_device_access_storage_1,
 								0, 0, 0);
-						tail.setText(measurement.Measurement
-								+ "\n측정 데이터 갯수 : "
+						tail.setText(measurement.Description
+								+ "\nCount : "
 								+ mManager
 										.obtainMeasurementDataListSize(measurement));
 					} else if (item instanceof Function) {
@@ -345,8 +356,8 @@ class DataSelectFragment extends Fragment {
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 			View v = inflater.inflate(
-					R.layout.dialog_fragment_connection_db_info, container,
-					false);
+					R.layout.fragment_dataview_measurement_data_list,
+					container, false);
 			ListView listView = (ListView) v.findViewById(android.R.id.list);
 			listView.setAdapter(mAdapter);
 			listView.setEmptyView(v.findViewById(android.R.id.empty));

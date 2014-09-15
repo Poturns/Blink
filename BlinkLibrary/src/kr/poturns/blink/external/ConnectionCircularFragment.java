@@ -1,11 +1,11 @@
 package kr.poturns.blink.external;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import kr.poturns.blink.R;
-import kr.poturns.blink.external.CircularViewHelper.*;
-import kr.poturns.blink.external.ConnectionFragment.*;
+import kr.poturns.blink.external.CircularViewHelper.OnDragAndDropListener;
+import kr.poturns.blink.external.ConnectionFragment.BaseConnectionFragment;
+import kr.poturns.blink.external.ConnectionFragment.DeviceConnectionResultListener;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.content.Context;
 import android.os.Bundle;
@@ -37,7 +37,7 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 			@Override
 			protected View getView(Context context, int position, Object object) {
 				TextView view = (TextView) View.inflate(context,
-						R.layout.view_textview, null);
+						R.layout.view_circular, null);
 				BlinkDevice device = (BlinkDevice) object;
 				view.setCompoundDrawablesWithIntrinsicBounds(
 						0,
@@ -104,6 +104,7 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 		return viewGroup;
 	}
 
+	/** 연결되지 않은 Device를 나타내는 View의 alpha값을 변경한다. */
 	void setFilteringViewAlpha(int percent) {
 		List<View> list = mCircularHelper.getChildViews();
 		int size = list.size();
@@ -113,26 +114,6 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 			if (!((BlinkDevice) mCircularHelper.getViewTag(i)).isConnected())
 				v.setAlpha(((float) (100 - percent) / 100f));
 		}
-	}
-
-	ArrayList<View> generateViews() {
-		ArrayList<View> list = new ArrayList<View>();
-		int size = getDeviceList().size();
-		for (int i = 0; i < size; i++) {
-			TextView view = (TextView) View.inflate(getActivity(),
-					R.layout.view_textview, null);
-			BlinkDevice device = getDeviceList().get(i);
-			view.setCompoundDrawablesWithIntrinsicBounds(
-					0,
-					device.isConnected() ? R.drawable.ic_action_device_access_bluetooth_connected
-							: R.drawable.ic_action_device_access_bluetooth, 0,
-					0);
-			view.setText(device.getName());
-			view.setOnClickListener(mOnClickListener);
-			view.setTag(device);
-			list.add(view);
-		}
-		return list;
 	}
 
 	@Override
@@ -180,8 +161,11 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 		@Override
 		public void onStartDrag(View view, View center) {
 			view.setBackgroundResource(R.drawable.drawable_rounded_circle_gray);
-			((TextView) center).setText("Drop here to connect");
-			((TextView) center)
+			TextView centerView = (TextView) center;
+			centerView.setText(getString(((BlinkDevice) mCircularHelper
+					.getViewTag(view)).isConnected() ? R.string.drop_to_connect
+					: R.string.drop_to_disconnect));
+			centerView
 					.setBackgroundResource(R.drawable.drawable_rounded_circle_border);
 		}
 

@@ -223,7 +223,8 @@ class LogViewFragment extends Fragment {
 							.getFieldConstantByOrder(i)));
 				}
 			}
-
+			convertView
+					.setBackgroundResource(R.drawable.selector_rectangle_box);
 			return convertView;
 		}
 
