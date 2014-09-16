@@ -14,6 +14,7 @@ import kr.poturns.blink.external.ServiceControlActivity;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
 import kr.poturns.blink.internal.comm.BlinkSupportBinder;
+import kr.poturns.blink.internal.comm.IBlinkMessagable;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -161,6 +162,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 											.setSourceApplication("kr.poturns.blink.internal.BlinkLocalService")
 											.setMessage(gson.toJson(mSyncDatabaseManager.obtainBlinkApp()))
 											.setCode(0)
+											.setType(IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC)
 											.build();
 					mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
 				}
@@ -184,6 +186,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 											.setSourceApplication("kr.poturns.blink.internal.BlinkLocalService")
 											.setMessage(SendData)
 											.setCode(0)
+											.setType(IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA)
 											.build();
 					mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
 				}
