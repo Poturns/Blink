@@ -1,0 +1,270 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:bootstrapbutton="http://schemas.android.com/apk/res-auto"
+    xmlns:fontawesometext="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#e9e9e9" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+
+        <!-- Main -->
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="100dp"
+            android:background="@drawable/button_main"
+            android:clickable="true"
+            android:padding="10dp" >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:text="안녕하세요."
+                android:textColor="#ffffff" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:text="안녕하세요."
+                android:textColor="#ffffff" />
+        </RelativeLayout>
+
+        <!-- Recent -->
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="150dp"
+            android:orientation="horizontal"
+            android:weightSum="3" >
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/border"
+                android:paddingBottom="20dp"
+                android:paddingTop="20dp" >
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:text="오늘"
+                    android:textColor="#e87878"
+                    android:textSize="15dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/border"
+                android:paddingBottom="20dp"
+                android:paddingTop="20dp" >
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:text="하루 전"
+                    android:textColor="#e87878"
+                    android:textSize="15dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/border"
+                android:paddingBottom="20dp"
+                android:paddingTop="20dp" >
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:text="이틀 전"
+                    android:textColor="#e87878"
+                    android:textSize="15dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Info -->
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="100dp"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal"
+            android:weightSum="3" >
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/button_inbody"
+                android:clickable="true"
+                android:padding="5dp" >
+
+                <ImageView
+                    android:layout_width="fill_parent"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/icon_inbody_white" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/button_exercise"
+                android:clickable="true"
+                android:padding="5dp" >
+
+                <ImageView
+                    android:layout_width="fill_parent"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/icon_excercise_white" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:background="@drawable/button_heart"
+                android:clickable="true"
+                android:paddingBottom="5dp" >
+
+                <ImageView
+                    android:layout_width="fill_parent"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/icon_heart_white" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- graph -->
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="180dp"
+            android:background="@drawable/button_graph"
+            android:clickable="true"
+            android:orientation="horizontal" >
+        </LinearLayout>
+
+        <!-- Open Controll -->
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="5dp"
+            android:orientation="horizontal" >
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="50dp"
+                android:layout_margin="5dp"
+                android:background="@drawable/button_controller"
+                android:clickable="true" >
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:gravity="center"
+                    android:text="Open Controller" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- List -->
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="90dp"
+            android:layout_margin="10dp"
+            android:background="#ffffff"
+            android:orientation="horizontal"
+            android:weightSum="1"
+            android:clickable="true" >
+			<!-- icon -->
+            <LinearLayout
+				android:layout_height="fill_parent"
+				android:layout_weight="0.2"
+				android:layout_width="0dp"
+				android:layout_margin="10dp"
+				android:background="@drawable/radius">
+                <ImageView
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_gravity="center"
+                    android:src="@drawable/icon_heart_white" />
+            </LinearLayout>
+            <!-- info -->
+            <LinearLayout 
+                android:layout_height="fill_parent"
+                android:layout_weight="0.8"
+                android:layout_width="0dp"
+                android:orientation="vertical"
+                android:weightSum="1">
+                <!-- Subject -->
+                <LinearLayout 
+                    android:layout_weight="0.55"
+                    android:layout_height="0dp"
+                    android:layout_width="fill_parent"
+                    android:orientation="horizontal"
+                    android:weightSum="1">
+                	<TextView
+                	    android:layout_weight="0.85"
+                    	android:layout_width="0dp"
+	                    android:layout_height="fill_parent"
+	                    android:gravity="center"
+	                    android:textColor="#83888c"
+	                    android:text="Subject" />
+                	<ImageView
+                	    android:layout_weight="0.15"
+	                    android:layout_width="0dp"
+	                    android:layout_height="fill_parent"
+	                    android:gravity="center"
+						android:src="@drawable/icon_check_pink"/>
+	            </LinearLayout>
+	            <!-- line -->
+	            <LinearLayout 
+                    android:layout_weight="0.05"
+                    android:layout_height="0dp"
+                    android:layout_width="fill_parent"
+                    android:paddingRight="10dp">
+		            <View
+					    android:layout_width="fill_parent"
+					    android:layout_height="1dip"
+					    android:background="#d7d7d2"
+					/>
+	            </LinearLayout>
+	            <!-- summary -->
+	            <LinearLayout 
+	                android:layout_weight="0.40"
+	                android:layout_height="0dp"
+	                android:layout_width="fill_parent"
+	                android:orientation="horizontal">
+                	<TextView
+	                    android:layout_width="fill_parent"
+	                    android:layout_height="fill_parent"
+	                    android:textColor="#83888c"
+	                    android:gravity="center"
+	                    android:text="Sumary" />
+                	
+	            </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+        <!-- List end -->
+        
+        
+    </LinearLayout>
+</ScrollView>

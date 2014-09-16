@@ -4,7 +4,7 @@
     xmlns:fontawesometext="http://schemas.android.com/apk/res-auto"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="#e9e9e9" >
+    android:background="@drawable/blur" >
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -12,174 +12,626 @@
         android:orientation="vertical" >
 
         <!-- Main -->
-        <RelativeLayout
-            android:layout_width="fill_parent"
-            android:layout_height="100dp"
-            android:clickable="true"
-            android:background="@drawable/button_main"
-            android:padding="10dp" >
+        <!-- #fe7a7a -->
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentTop="true"
-                android:text="안녕하세요."
-                android:textColor="#ffffff" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentRight="true"
-                android:text="안녕하세요."
-                android:textColor="#ffffff" />
-        </RelativeLayout>
-
-        <!-- Recent -->
         <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="150dp"
+            android:layout_height="50dp"
+            android:background="#33000000"
             android:orientation="horizontal"
-            android:weightSum="3" >
+            android:padding="10dp"
+            android:weightSum="1" >
 
-            <LinearLayout
+            <ImageView
                 android:layout_width="0dp"
                 android:layout_height="fill_parent"
-                android:layout_weight="1"
-                android:paddingTop="20dp"
-                android:paddingBottom="20dp"
-                android:background="@drawable/border" >
+                android:layout_gravity="center"
+                android:layout_margin="5dp"
+                android:layout_weight="0.1"
+                android:src="@drawable/icon_inbody_white" />
 
-                <TextView
-                	android:gravity="center_horizontal"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="15dp"
-                    android:text="오늘"
-                    android:textColor="#e87878" />
-            </LinearLayout>
-
-            <LinearLayout
+            <TextView
                 android:layout_width="0dp"
                 android:layout_height="fill_parent"
-                android:layout_weight="1"
-                android:paddingTop="20dp"
-                android:paddingBottom="20dp"
-                android:background="@drawable/border" >
-                <TextView
-                	android:gravity="center_horizontal"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="15dp"
-                    android:text="하루 전"
-                    android:textColor="#e87878" />
+                android:layout_weight="0.8"
+                android:gravity="center"
+                android:text="Health Manager"
+                android:textColor="#ffffff"
+                android:textSize="20dp" />
 
-            </LinearLayout>
-
-            <LinearLayout
+            <ImageView
                 android:layout_width="0dp"
                 android:layout_height="fill_parent"
-                android:layout_weight="1"
-                android:paddingTop="20dp"
-                android:paddingBottom="20dp"
-                android:background="@drawable/border" >
-                <TextView
-                	android:gravity="center_horizontal"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:textSize="15dp"
-                    android:text="이틀 전"
-                    android:textColor="#e87878" />
-
-            </LinearLayout>
+                android:layout_gravity="center"
+                android:layout_margin="5dp"
+                android:layout_weight="0.1"
+                android:src="@drawable/icon_setting_white" />
         </LinearLayout>
 
         <!-- Info -->
+        <!-- android:background="@drawable/button_inbody" -->
+
         <LinearLayout
             android:layout_width="fill_parent"
             android:layout_height="100dp"
-            android:layout_marginTop="10dp"
+            android:background="#99000000"
             android:orientation="horizontal"
             android:weightSum="3" >
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="fill_parent"
+                android:layout_margin="1dp"
                 android:layout_weight="1"
                 android:clickable="true"
-                android:background="@drawable/button_inbody"
+                android:orientation="vertical"
                 android:padding="5dp" >
 
                 <ImageView
                     android:layout_width="fill_parent"
-                    android:layout_height="40dp"
+                    android:layout_height="0dp"
                     android:layout_gravity="center_horizontal"
-                    android:src="@drawable/inbody_white" />
+                    android:layout_weight="0.5"
+                    android:src="@drawable/icon_inbody_white" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="0.5"
+                    android:gravity="center"
+                    android:text="Inbody"
+                    android:textColor="#ffffff"
+                    android:textSize="20dp" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="fill_parent"
+                android:layout_margin="1dp"
                 android:layout_weight="1"
                 android:clickable="true"
-                android:background="@drawable/button_exercise"
+                android:orientation="vertical"
                 android:padding="5dp" >
 
                 <ImageView
                     android:layout_width="fill_parent"
-                    android:layout_height="40dp"
+                    android:layout_height="0dp"
                     android:layout_gravity="center_horizontal"
-                    android:src="@drawable/excercise_white" />
+                    android:layout_weight="0.5"
+                    android:src="@drawable/icon_excercise_white" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="0.5"
+                    android:gravity="center"
+                    android:text="Excercise"
+                    android:textColor="#ffffff"
+                    android:textSize="20dp" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="fill_parent"
+                android:layout_margin="1dp"
                 android:layout_weight="1"
                 android:clickable="true"
-                android:background="@drawable/button_heart"
+                android:orientation="vertical"
                 android:paddingBottom="5dp" >
 
                 <ImageView
                     android:layout_width="fill_parent"
-                    android:layout_height="50dp"
+                    android:layout_height="0dp"
                     android:layout_gravity="center_horizontal"
-                    android:src="@drawable/heart_white" />
+                    android:layout_weight="0.5"
+                    android:src="@drawable/icon_heart_white" />
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="0.5"
+                    android:gravity="center"
+                    android:text="Heartrate"
+                    android:textColor="#ffffff"
+                    android:textSize="20dp" />
             </LinearLayout>
         </LinearLayout>
 
-        <!-- graph -->
-        <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="180dp"
-            android:clickable="true"
-            android:background="@drawable/button_graph"
-            android:orientation="horizontal" >
-        </LinearLayout>
+        <!-- List -->
 
-        <!-- Open Controll -->
         <LinearLayout
             android:layout_width="fill_parent"
-            android:layout_height="60dp"
-            android:layout_marginTop="5dp"
-            android:orientation="horizontal" >
+            android:layout_height="90dp"
+            android:background="#99ffffff"
+            android:orientation="vertical"
+            android:weightSum="1" >
 
             <LinearLayout
+                android:layout_weight="0.95"
                 android:layout_width="fill_parent"
-                android:layout_height="50dp"
-                android:layout_margin="5dp"
+                android:layout_height="0dp"
                 android:clickable="true"
-                android:background="@drawable/button_controller">
-                <TextView 
-                    android:layout_width="fill_parent"
+                android:orientation="horizontal"
+                android:padding="10dp"
+                android:weightSum="1" >
+
+                <!-- icon -->
+
+                <ImageView
+                    android:layout_width="0dp"
                     android:layout_height="fill_parent"
-                    android:gravity="center"
-                    android:text="Open Controller"/>
+                    android:layout_gravity="center"
+                    android:layout_weight="0.2"
+                    android:padding="10dp"
+                    android:src="@drawable/icon_alert_gray" />
+                <!-- info -->
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:layout_weight="0.65"
+                    android:orientation="vertical"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:weightSum="1" >
+
+                    <!-- Subject -->
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.55"
+                        android:gravity="center"
+                        android:text="Subject"
+                        android:textColor="#83888c" />
+                    <!-- line -->
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.05"
+                        android:paddingRight="10dp" >
+
+                        <View
+                            android:layout_width="fill_parent"
+                            android:layout_height="1dip"
+                            android:background="#e5e5df" />
+                    </LinearLayout>
+                    <!-- summary -->
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.40"
+                        android:orientation="horizontal" >
+
+                        <TextView
+                            android:layout_width="fill_parent"
+                            android:layout_height="fill_parent"
+                            android:gravity="center"
+                            android:text="Sumary"
+                            android:textColor="#83888c" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:layout_gravity="center"
+                    android:layout_weight="0.10"
+                    android:src="@drawable/icon_right_circle_gray" />
             </LinearLayout>
             
+            <!-- line -->
+            <LinearLayout
+                android:layout_weight="0.05"
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp" >
+                <View
+                    android:layout_width="fill_parent"
+                    android:layout_height="1dip"
+                    android:background="#e5e5df" />
+            </LinearLayout>
         </LinearLayout>
-        
-        
+        <!-- List end -->
+		<!-- List -->
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="90dp"
+            android:background="#99ffffff"
+            android:orientation="vertical"
+            android:weightSum="1" >
+
+            <LinearLayout
+                android:layout_weight="0.95"
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:clickable="true"
+                android:orientation="horizontal"
+                android:padding="10dp"
+                android:weightSum="1" >
+
+                <!-- icon -->
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:layout_gravity="center"
+                    android:layout_weight="0.2"
+                    android:padding="10dp"
+                    android:src="@drawable/icon_alert_gray" />
+                <!-- info -->
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:layout_weight="0.65"
+                    android:orientation="vertical"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:weightSum="1" >
+
+                    <!-- Subject -->
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.55"
+                        android:gravity="center"
+                        android:text="Subject"
+                        android:textColor="#83888c" />
+                    <!-- line -->
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.05"
+                        android:paddingRight="10dp" >
+
+                        <View
+                            android:layout_width="fill_parent"
+                            android:layout_height="1dip"
+                            android:background="#e5e5df" />
+                    </LinearLayout>
+                    <!-- summary -->
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.40"
+                        android:orientation="horizontal" >
+
+                        <TextView
+                            android:layout_width="fill_parent"
+                            android:layout_height="fill_parent"
+                            android:gravity="center"
+                            android:text="Sumary"
+                            android:textColor="#83888c" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:layout_gravity="center"
+                    android:layout_weight="0.10"
+                    android:src="@drawable/icon_right_circle_gray" />
+            </LinearLayout>
+            
+            <!-- line -->
+            <LinearLayout
+                android:layout_weight="0.05"
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp" >
+                <View
+                    android:layout_width="fill_parent"
+                    android:layout_height="1dip"
+                    android:background="#e5e5df" />
+            </LinearLayout>
+        </LinearLayout>
+        <!-- List end -->
+        <!-- List -->
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="90dp"
+            android:background="#99ffffff"
+            android:orientation="vertical"
+            android:weightSum="1" >
+
+            <LinearLayout
+                android:layout_weight="0.95"
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:clickable="true"
+                android:orientation="horizontal"
+                android:padding="10dp"
+                android:weightSum="1" >
+
+                <!-- icon -->
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:layout_gravity="center"
+                    android:layout_weight="0.2"
+                    android:padding="10dp"
+                    android:src="@drawable/icon_alert_gray" />
+                <!-- info -->
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:layout_weight="0.65"
+                    android:orientation="vertical"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:weightSum="1" >
+
+                    <!-- Subject -->
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.55"
+                        android:gravity="center"
+                        android:text="Subject"
+                        android:textColor="#83888c" />
+                    <!-- line -->
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.05"
+                        android:paddingRight="10dp" >
+
+                        <View
+                            android:layout_width="fill_parent"
+                            android:layout_height="1dip"
+                            android:background="#e5e5df" />
+                    </LinearLayout>
+                    <!-- summary -->
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.40"
+                        android:orientation="horizontal" >
+
+                        <TextView
+                            android:layout_width="fill_parent"
+                            android:layout_height="fill_parent"
+                            android:gravity="center"
+                            android:text="Sumary"
+                            android:textColor="#83888c" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:layout_gravity="center"
+                    android:layout_weight="0.10"
+                    android:src="@drawable/icon_right_circle_gray" />
+            </LinearLayout>
+            
+            <!-- line -->
+            <LinearLayout
+                android:layout_weight="0.05"
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp" >
+                <View
+                    android:layout_width="fill_parent"
+                    android:layout_height="1dip"
+                    android:background="#e5e5df" />
+            </LinearLayout>
+        </LinearLayout>
+        <!-- List end -->
+        <!-- List -->
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="90dp"
+            android:background="#99ffffff"
+            android:orientation="vertical"
+            android:weightSum="1" >
+
+            <LinearLayout
+                android:layout_weight="0.95"
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:clickable="true"
+                android:orientation="horizontal"
+                android:padding="10dp"
+                android:weightSum="1" >
+
+                <!-- icon -->
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:layout_gravity="center"
+                    android:layout_weight="0.2"
+                    android:padding="10dp"
+                    android:src="@drawable/icon_alert_gray" />
+                <!-- info -->
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:layout_weight="0.65"
+                    android:orientation="vertical"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:weightSum="1" >
+
+                    <!-- Subject -->
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.55"
+                        android:gravity="center"
+                        android:text="Subject"
+                        android:textColor="#83888c" />
+                    <!-- line -->
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.05"
+                        android:paddingRight="10dp" >
+
+                        <View
+                            android:layout_width="fill_parent"
+                            android:layout_height="1dip"
+                            android:background="#e5e5df" />
+                    </LinearLayout>
+                    <!-- summary -->
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.40"
+                        android:orientation="horizontal" >
+
+                        <TextView
+                            android:layout_width="fill_parent"
+                            android:layout_height="fill_parent"
+                            android:gravity="center"
+                            android:text="Sumary"
+                            android:textColor="#83888c" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:layout_gravity="center"
+                    android:layout_weight="0.10"
+                    android:src="@drawable/icon_right_circle_gray" />
+            </LinearLayout>
+            
+            <!-- line -->
+            <LinearLayout
+                android:layout_weight="0.05"
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp" >
+                <View
+                    android:layout_width="fill_parent"
+                    android:layout_height="1dip"
+                    android:background="#e5e5df" />
+            </LinearLayout>
+        </LinearLayout>
+        <!-- List end -->
+        <!-- List -->
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="90dp"
+            android:background="#99ffffff"
+            android:orientation="vertical"
+            android:weightSum="1" >
+
+            <LinearLayout
+                android:layout_weight="0.95"
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:clickable="true"
+                android:orientation="horizontal"
+                android:padding="10dp"
+                android:weightSum="1" >
+
+                <!-- icon -->
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:layout_gravity="center"
+                    android:layout_weight="0.2"
+                    android:padding="10dp"
+                    android:src="@drawable/icon_alert_gray" />
+                <!-- info -->
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:layout_weight="0.65"
+                    android:orientation="vertical"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="10dp"
+                    android:weightSum="1" >
+
+                    <!-- Subject -->
+
+                    <TextView
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.55"
+                        android:gravity="center"
+                        android:text="Subject"
+                        android:textColor="#83888c" />
+                    <!-- line -->
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.05"
+                        android:paddingRight="10dp" >
+
+                        <View
+                            android:layout_width="fill_parent"
+                            android:layout_height="1dip"
+                            android:background="#e5e5df" />
+                    </LinearLayout>
+                    <!-- summary -->
+
+                    <LinearLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="0.40"
+                        android:orientation="horizontal" >
+
+                        <TextView
+                            android:layout_width="fill_parent"
+                            android:layout_height="fill_parent"
+                            android:gravity="center"
+                            android:text="Sumary"
+                            android:textColor="#83888c" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="fill_parent"
+                    android:layout_gravity="center"
+                    android:layout_weight="0.10"
+                    android:src="@drawable/icon_right_circle_gray" />
+            </LinearLayout>
+            
+            <!-- line -->
+            <LinearLayout
+                android:layout_weight="0.05"
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:paddingRight="10dp"
+                android:paddingLeft="10dp" >
+                <View
+                    android:layout_width="fill_parent"
+                    android:layout_height="1dip"
+                    android:background="#e5e5df" />
+            </LinearLayout>
+        </LinearLayout>
+        <!-- List end -->
     </LinearLayout>
+
 </ScrollView>
