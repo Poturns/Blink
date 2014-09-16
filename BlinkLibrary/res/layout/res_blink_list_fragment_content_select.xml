@@ -18,8 +18,8 @@
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         android:layout_marginRight="20dp"
-        android:background="@drawable/selector_button"
-        android:drawableRight="@drawable/ic_action_navigation_next_item"
+        android:background="@drawable/res_blink_selector_button"
+        android:drawableRight="@drawable/res_bllink_ic_action_navigation_next_item"
         android:gravity="center_vertical" />
 
 </RelativeLayout>

@@ -7,7 +7,7 @@
     <!-- BLINK CUSTOMIZED PERMISSIONs -->
     <permission
         android:name="kr.poturns.blink.permission.LISTEN_STATE_MESSAGE"
-        android:description="@string/app_name"
+        android:description="@string/res_bllink_app_name"
         android:label="Listen state callback message _ label" >
     </permission>
 
@@ -26,21 +26,20 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name"
+        android:icon="@drawable/res_bllink_ic_blink_launcher"
+        android:label="@string/res_bllink_app_name"
         android:theme="@android:style/Theme.Holo.Light" >
         <activity
             android:name="kr.poturns.blink.external.ServiceControlActivity"
-            android:label="@string/app_name"
-            android:screenOrientation="locked" >
+            android:icon="@drawable/res_bllink_ic_blink_launcher"
+            android:label="@string/res_bllink_app_name"
+            android:screenOrientation="locked"
+            android:theme="@android:style/Theme.Holo.Light" >
         </activity>
         <activity
             android:name="kr.poturns.blink.db.TestActivity"
-            android:label="@string/app_name" >
+            android:label="@string/res_bllink_app_name" >
         </activity>
-        <activity
-            android:name="kr.poturns.blink.external.PreferenceActivity"
-            android:label="@string/preference" />
         <activity android:name="kr.poturns.blink.test.ServiceTestActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

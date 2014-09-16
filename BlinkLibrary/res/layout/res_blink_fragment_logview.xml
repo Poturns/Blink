@@ -20,7 +20,7 @@
             android:layout_gravity="center"
             android:layout_weight="3"
             android:gravity="center"
-            android:text="@string/fragment_logview_title_device"
+            android:text="@string/res_blink_fragment_logview_title_device"
             android:textColor="@android:color/black" />
 
         <TextView
@@ -30,7 +30,7 @@
             android:layout_gravity="center"
             android:layout_weight="5"
             android:gravity="center"
-            android:text="@string/fragment_logview_title_app"
+            android:text="@string/res_blink_fragment_logview_title_app"
             android:textColor="@android:color/black" />
 
         <TextView
@@ -40,7 +40,7 @@
             android:layout_gravity="center"
             android:layout_weight="10"
             android:gravity="center"
-            android:text="@string/fragment_logview_title_content"
+            android:text="@string/res_blink_fragment_logview_title_content"
             android:textColor="@android:color/black" />
 
         <TextView
@@ -50,21 +50,21 @@
             android:layout_gravity="center"
             android:layout_weight="3"
             android:gravity="center"
-            android:text="@string/fragment_logview_title_datetime"
+            android:text="@string/res_blink_fragment_logview_title_datetime"
             android:textColor="@android:color/black" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginLeft="@dimen/list_header_side_margin"
-        android:layout_marginRight="@dimen/list_header_side_margin"
+        android:layout_marginLeft="@dimen/res_blink_list_header_side_margin"
+        android:layout_marginRight="@dimen/res_blink_list_header_side_margin"
         android:background="@android:color/darker_gray" />
 
     <include
         android:layout_marginTop="2dp"
-        layout="@layout/view_listview" />
+        layout="@layout/res_blink_view_listview" />
 
-    <include layout="@layout/view_empty" />
+    <include layout="@layout/res_blink_view_empty" />
 
 </LinearLayout>

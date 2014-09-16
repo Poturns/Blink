@@ -8,6 +8,11 @@
         android:id="@android:id/content"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_centerInParent="true" />
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginBottom="@dimen/page_row_margin"
+        android:layout_marginLeft="@dimen/page_column_margin"
+        android:layout_marginRight="@dimen/page_column_margin"
+        android:layout_marginTop="@dimen/page_row_margin" />
 
 </RelativeLayout>

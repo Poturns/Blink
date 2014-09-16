@@ -64,7 +64,7 @@ class PrivateUtil {
 	 * @param resources
 	 *            display metric 정보를 가져올 resources
 	 * @return App Icon이 존재하면 해당 App Icon을 나타내는 Drawable,<br>
-	 *         없거나 가져오는데 실패하면 {@link R.drawable#ic_action_android}을 가져온다.
+	 *         없거나 가져오는데 실패하면 {@link R.drawable#res_bllink_ic_action_android}을 가져온다.
 	 */
 	public static Drawable obtainAppIcon(App app, Resources resources) {
 		Drawable drawable = null;
@@ -82,7 +82,7 @@ class PrivateUtil {
 		if (drawable == null) {
 			int density = (int) resources.getDisplayMetrics().density;
 			drawable = resources.getDrawableForDensity(
-					R.drawable.ic_action_android, density * 96);
+					R.drawable.res_bllink_ic_action_android, density * 96);
 		}
 
 		return drawable;

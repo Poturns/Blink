@@ -20,7 +20,7 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/fragment_list_recent_measurement"
         android:layout_below="@+id/fragment_list_recent_measurement"
-        android:drawableStart="@drawable/ic_action_hardware_phone"
+        android:drawableStart="@drawable/res_bllink_ic_action_hardware_phone"
         android:gravity="center_vertical"
         android:paddingStart="?android:attr/listPreferredItemPaddingStart" />
 

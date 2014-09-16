@@ -56,7 +56,7 @@ class DataSelectFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		final View view = inflater.inflate(R.layout.fragment_data_select,
+		final View view = inflater.inflate(R.layout.res_blink_fragment_data_select,
 				container, false);
 		return view;
 	}
@@ -84,7 +84,7 @@ class DataSelectFragment extends Fragment {
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		if (PrivateUtil.isScreenSizeSmall(getActivity())) {
-			inflater.inflate(R.menu.fragment_data_select, menu);
+			inflater.inflate(R.menu.res_blink_fragment_data_select, menu);
 		}
 	}
 
@@ -155,13 +155,13 @@ class DataSelectFragment extends Fragment {
 					.obtainRecentModifiedMeasurement(PrivateUtil
 							.isScreenSizeSmall(getActivity()) ? 7 : 5);
 			mRecentListAdapter = new ArrayAdapter<Measurement>(getActivity(),
-					R.layout.list_recent, android.R.id.text1,
+					R.layout.res_blink_list_recent, android.R.id.text1,
 					mRecentMeasurementList) {
 				@Override
 				public View getView(int position, View convertView,
 						ViewGroup parent) {
 					View v = super.getView(position, convertView, parent);
-					v.setBackgroundResource(R.drawable.drawable_rectangle_box);
+					v.setBackgroundResource(R.drawable.res_blink_drawable_rectangle_box);
 					final Measurement measurement = getItem(position);
 					final App app = mManager
 							.obtainAppByMeasurement(measurement);
@@ -202,7 +202,7 @@ class DataSelectFragment extends Fragment {
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View v = inflater.inflate(R.layout.fragment_data_recent_list,
+			View v = inflater.inflate(R.layout.res_blink_fragment_data_recent_list,
 					container, false);
 			ListView listView = (ListView) v.findViewById(android.R.id.list);
 			listView.setAdapter(mRecentListAdapter);
@@ -222,7 +222,7 @@ class DataSelectFragment extends Fragment {
 			mDeviceMap = mManager.obtainDeviceMap();
 			mAdapter = new ContentAdapter(getActivity(), mDeviceMap);
 			final View view = inflater.inflate(
-					R.layout.fragment_data_devicemap, container, false);
+					R.layout.res_blink_fragment_data_devicemap, container, false);
 			ExpandableListView listView = (ExpandableListView) view
 					.findViewById(android.R.id.list);
 			listView.setEmptyView(view.findViewById(android.R.id.empty));
@@ -254,7 +254,7 @@ class DataSelectFragment extends Fragment {
 				Holder holder = (Holder) h;
 				holder.tv.setText(device.Device);
 				holder.tv.setCompoundDrawablesWithIntrinsicBounds(
-						R.drawable.ic_action_hardware_phone, 0, 0, 0);
+						R.drawable.res_bllink_ic_action_hardware_phone, 0, 0, 0);
 			}
 
 			@Override
@@ -323,7 +323,7 @@ class DataSelectFragment extends Fragment {
 				public View getView(int position, View convertView,
 						ViewGroup parent) {
 					View v = super.getView(position, convertView, parent);
-					v.setBackgroundResource(R.drawable.selector_rectangle_box);
+					v.setBackgroundResource(R.drawable.res_blink_selector_rectangle_box);
 					IDatabaseObject item = getItem(position);
 					TextView head = (TextView) v
 							.findViewById(android.R.id.text1);
@@ -333,7 +333,7 @@ class DataSelectFragment extends Fragment {
 						Measurement measurement = (Measurement) item;
 						head.setText(measurement.MeasurementName);
 						head.setCompoundDrawablesRelativeWithIntrinsicBounds(
-								R.drawable.ic_action_device_access_storage_1,
+								R.drawable.res_bllink_ic_action_device_access_storage_1,
 								0, 0, 0);
 						tail.setText(measurement.Description
 								+ "\nCount : "
@@ -343,7 +343,7 @@ class DataSelectFragment extends Fragment {
 						Function function = (Function) item;
 						head.setText(function.Function);
 						head.setCompoundDrawablesRelativeWithIntrinsicBounds(
-								R.drawable.ic_action_av_play_over_video, 0, 0,
+								R.drawable.res_bllink_ic_action_av_play_over_video, 0, 0,
 								0);
 						tail.setText(function.Description);
 					}
@@ -356,7 +356,7 @@ class DataSelectFragment extends Fragment {
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 			View v = inflater.inflate(
-					R.layout.fragment_dataview_measurement_data_list,
+					R.layout.res_blink_fragment_dataview_measurement_data_list,
 					container, false);
 			ListView listView = (ListView) v.findViewById(android.R.id.list);
 			listView.setAdapter(mAdapter);

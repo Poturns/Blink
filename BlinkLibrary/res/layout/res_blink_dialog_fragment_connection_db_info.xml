@@ -9,6 +9,6 @@
         android:layout_height="match_parent"
         android:padding="3dp" />
 
-    <include layout="@layout/view_empty" />
+    <include layout="@layout/res_blink_view_empty" />
 
 </RelativeLayout>

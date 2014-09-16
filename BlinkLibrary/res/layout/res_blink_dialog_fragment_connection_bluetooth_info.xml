@@ -16,7 +16,7 @@
             android:layout_marginLeft="10dp"
             android:layout_marginRight="20dp"
             android:layout_marginTop="30dp"
-            android:text="@string/blink_state_macaddress" />
+            android:text="@string/res_blink_blink_state_macaddress" />
 
         <TextView
             android:id="@+id/dialog_fragment_connection_title_device_ego"
@@ -25,7 +25,7 @@
             android:layout_alignLeft="@+id/dialog_fragment_connection_title_macaddress"
             android:layout_below="@+id/dialog_fragment_connection_title_macaddress"
             android:layout_marginTop="30dp"
-            android:text="@string/blink_state_type" />
+            android:text="@string/res_blink_blink_state_type" />
 
         <TextView
             android:id="@+id/dialog_fragment_connection_title_blink_support"
@@ -34,7 +34,7 @@
             android:layout_alignLeft="@+id/dialog_fragment_connection_title_device_ego"
             android:layout_below="@+id/dialog_fragment_connection_title_device_ego"
             android:layout_marginTop="30dp"
-            android:text="@string/blink_state_support_library" />
+            android:text="@string/res_blink_blink_state_support_library" />
 
         <TextView
             android:id="@+id/dialog_fragment_connection_title_connection"
@@ -43,7 +43,7 @@
             android:layout_alignLeft="@+id/dialog_fragment_connection_title_blink_support"
             android:layout_below="@+id/dialog_fragment_connection_title_blink_support"
             android:layout_marginTop="30dp"
-            android:text="@string/blink_state_connection" />
+            android:text="@string/res_blink_blink_state_connection" />
 
         <TextView
             android:id="@+id/dialog_fragment_connection_title_autoconnect"
@@ -52,7 +52,7 @@
             android:layout_alignLeft="@+id/dialog_fragment_connection_title_connection"
             android:layout_below="@+id/dialog_fragment_connection_title_connection"
             android:layout_marginTop="30dp"
-            android:text="@string/blink_state_auto_connect" />
+            android:text="@string/res_blink_blink_state_auto_connect" />
 
         <TextView
             android:id="@+id/dialog_fragment_connection_title_ble"
@@ -62,7 +62,7 @@
             android:layout_below="@+id/dialog_fragment_connection_title_autoconnect"
             android:layout_marginBottom="10dp"
             android:layout_marginTop="30dp"
-            android:text="@string/blink_state_ble" />
+            android:text="@string/res_blink_blink_state_ble" />
 
         <TextView
             android:id="@+id/dialog_fragment_connection_macaddress"

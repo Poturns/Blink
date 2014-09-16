@@ -3,8 +3,8 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" >
 
-    <include layout="@layout/view_listview" />
+    <include layout="@layout/res_blink_view_listview" />
 
-    <include layout="@layout/view_empty" />
+    <include layout="@layout/res_blink_view_empty" />
 
 </RelativeLayout>

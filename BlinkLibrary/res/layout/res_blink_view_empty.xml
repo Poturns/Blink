@@ -9,8 +9,8 @@
     android:layout_gravity="center"
     android:layout_marginBottom="30dp"
     android:layout_marginTop="30dp"
-    android:drawableStart="@drawable/ic_action_alerts_and_states_warning"
+    android:drawableStart="@drawable/res_bllink_ic_action_alerts_and_states_warning"
     android:gravity="center"
-    android:text="@string/empty_data"
+    android:text="@string/res_blink_empty_data"
     android:textColor="@android:color/black"
     android:visibility="gone" />

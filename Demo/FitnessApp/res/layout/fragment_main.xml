@@ -3,29 +3,21 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <RelativeLayout
-        android:id="@+id/fragment_main_content"
+    <ListView
+        android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="@dimen/page_row_margin"
-        android:layout_marginLeft="@dimen/page_column_margin"
-        android:layout_marginRight="@dimen/page_column_margin"
-        android:layout_marginTop="@dimen/page_row_margin"
-        android:background="@drawable/fragment_main_drawable" >
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="@dimen/page_row_margin"
-            android:text="Hello_World!" />
-
-        <Button
-            android:id="@android:id/button1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="Control Activity" />
-    </RelativeLayout>
+        android:cacheColorHint="@android:color/transparent"
+        android:choiceMode="singleChoice"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:divider="@null"
+        android:dividerHeight="10dp"
+        android:listSelector="@null"
+        android:paddingBottom="5dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="5dp"
+        android:scrollbarStyle="outsideOverlay" />
 
 </RelativeLayout>

@@ -31,18 +31,18 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		ViewGroup viewGroup = (ViewGroup) View.inflate(getActivity(),
-				R.layout.fragment_circular_connection, null);
+				R.layout.res_blink_fragment_circular_connection, null);
 		showHostDeviceToList(false);
 		mCircularHelper = new CircularViewHelper(viewGroup, android.R.id.text1) {
 			@Override
 			protected View getView(Context context, int position, Object object) {
 				TextView view = (TextView) View.inflate(context,
-						R.layout.view_circular, null);
+						R.layout.res_blink_view_circular, null);
 				BlinkDevice device = (BlinkDevice) object;
 				view.setCompoundDrawablesWithIntrinsicBounds(
 						0,
-						device.isConnected() ? R.drawable.ic_action_device_access_bluetooth_connected
-								: R.drawable.ic_action_device_access_bluetooth,
+						device.isConnected() ? R.drawable.res_bllink_ic_action_device_access_bluetooth_connected
+								: R.drawable.res_bllink_ic_action_device_access_bluetooth,
 						0, 0);
 				String name = device.getName();
 				// TODO 현재 ChildView 크기 만큼, 표시되는 이름 길이 줄이기
@@ -123,7 +123,7 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.fragment_circular_connection, menu);
+		inflater.inflate(R.menu.res_blink_fragment_circular_connection, menu);
 	}
 
 	private OnDragAndDropListener mDragAndDropListener = new OnDragAndDropListener() {
@@ -160,19 +160,19 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 
 		@Override
 		public void onStartDrag(View view, View center) {
-			view.setBackgroundResource(R.drawable.drawable_rounded_circle_gray);
+			view.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle_gray);
 			TextView centerView = (TextView) center;
 			centerView.setText(getString(((BlinkDevice) mCircularHelper
-					.getViewTag(view)).isConnected() ? R.string.drop_to_connect
-					: R.string.drop_to_disconnect));
+					.getViewTag(view)).isConnected() ? R.string.res_blink_drop_to_connect
+					: R.string.res_blink_drop_to_disconnect));
 			centerView
-					.setBackgroundResource(R.drawable.drawable_rounded_circle_border);
+					.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle_border);
 		}
 
 		@Override
 		public void onDropEnd(View view, View center) {
-			center.setBackgroundResource(R.drawable.drawable_rounded_circle);
-			view.setBackgroundResource(R.drawable.drawable_rounded_circle);
+			center.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle);
+			view.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle);
 			((TextView) center).setText(getHostDevice().getName());
 		}
 	};

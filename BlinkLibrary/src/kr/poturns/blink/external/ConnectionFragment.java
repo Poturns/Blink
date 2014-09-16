@@ -140,7 +140,7 @@ final class ConnectionFragment extends Fragment {
 				@Override
 				public void onServiceDisconnected() {
 					// Service와 연결이 끊기면 현재 Activity를 종료한다.
-					Toast.makeText(activity, R.string.blink_service_disabled,
+					Toast.makeText(activity, R.string.res_blink_blink_service_disabled,
 							Toast.LENGTH_SHORT).show();
 					mBlinkOperation = null;
 					activity.finish();
@@ -149,7 +149,7 @@ final class ConnectionFragment extends Fragment {
 				@Override
 				public void onServiceFailed() {
 					// Service의 binding이 실패하면 현재 Activity를 종료한다.
-					Toast.makeText(activity, R.string.blink_service_failed,
+					Toast.makeText(activity, R.string.res_blink_blink_service_failed,
 							Toast.LENGTH_SHORT).show();
 					mBlinkOperation = null;
 					activity.finish();
@@ -175,7 +175,7 @@ final class ConnectionFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		// ChildFragment의 container역할을 하는 View를 생성한다.
-		return inflater.inflate(R.layout.fragment_connection, container, false);
+		return inflater.inflate(R.layout.res_blink_fragment_connection, container, false);
 	}
 
 	@Override
@@ -230,12 +230,12 @@ final class ConnectionFragment extends Fragment {
 	final void fetchDeviceListFromBluetooth() {
 		if (!mBluetoothEnabled
 				|| BluetoothAdapter.getDefaultAdapter().getState() != BluetoothAdapter.STATE_ON) {
-			Toast.makeText(getActivity(), R.string.bluetooth_disabled,
+			Toast.makeText(getActivity(), R.string.res_blink_bluetooth_disabled,
 					Toast.LENGTH_SHORT).show();
 			return;
 		}
 		if (mFetchTasking) {
-			Toast.makeText(getActivity(), R.string.discovery_is_running,
+			Toast.makeText(getActivity(), R.string.res_blink_discovery_is_running,
 					Toast.LENGTH_SHORT).show();
 			return;
 		}
@@ -462,7 +462,7 @@ final class ConnectionFragment extends Fragment {
 			getDialog().setTitle(mBlinkDevice.getName());
 
 			final View v = inflater.inflate(
-					R.layout.dialog_fragment_connection_device_info, container,
+					R.layout.res_blink_dialog_fragment_connection_device_info, container,
 					false);
 			mTabHost = (TabHost) v.findViewById(android.R.id.tabhost);
 			mTabHost.setup();
@@ -480,7 +480,7 @@ final class ConnectionFragment extends Fragment {
 			};
 			final String[] pageTitles = DeviceInfoDialogFragment.this
 					.getResources().getStringArray(
-							R.array.dialog_connect_page_titles);
+							R.array.res_blink_dialog_connect_page_titles);
 			int i = 0;
 			for (String title : pageTitles) {
 				mTabHost.addTab(mTabHost.newTabSpec(String.valueOf(i++))
@@ -565,7 +565,7 @@ final class ConnectionFragment extends Fragment {
 			public View onCreateView(LayoutInflater inflater,
 					ViewGroup container, Bundle savedInstanceState) {
 				final View v = inflater.inflate(
-						R.layout.dialog_fragment_connection_bluetooth_info,
+						R.layout.res_blink_dialog_fragment_connection_bluetooth_info,
 						container, false);
 				((TextView) v
 						.findViewById(R.id.dialog_fragment_connection_macaddress))
@@ -641,7 +641,7 @@ final class ConnectionFragment extends Fragment {
 				mAppList = ConnectionFragment.this.mManager
 						.obtainAppList(mDevice);
 				mDialogListAdapter = new ArrayAdapter<App>(getActivity(),
-						R.layout.list_app, android.R.id.text1, mAppList) {
+						R.layout.res_blink_list_app, android.R.id.text1, mAppList) {
 					@Override
 					public View getView(int position, View convertView,
 							ViewGroup parent) {
@@ -688,7 +688,7 @@ final class ConnectionFragment extends Fragment {
 			public View onCreateView(LayoutInflater inflater,
 					ViewGroup container, Bundle savedInstanceState) {
 				final View v = inflater.inflate(
-						R.layout.dialog_fragment_connection_db_info, container,
+						R.layout.res_blink_dialog_fragment_connection_db_info, container,
 						false);
 				ListView listView = (ListView) v
 						.findViewById(android.R.id.list);
@@ -798,7 +798,7 @@ final class ConnectionFragment extends Fragment {
 		@Override
 		public void onDeviceConnected(BlinkDevice device) {
 			Toast.makeText(getActivity(),
-					device.getName() + getString(R.string.device_connected),
+					device.getName() + getString(R.string.res_blink_device_connected),
 					Toast.LENGTH_SHORT).show();
 		}
 
@@ -808,7 +808,7 @@ final class ConnectionFragment extends Fragment {
 				Toast.makeText(
 						getActivity(),
 						device.getName()
-								+ getString(R.string.device_disconnected),
+								+ getString(R.string.res_blink_device_disconnected),
 						Toast.LENGTH_SHORT).show();
 			onDeviceListChanged();
 		}

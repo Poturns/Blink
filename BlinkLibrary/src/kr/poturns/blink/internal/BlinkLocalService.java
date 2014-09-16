@@ -91,7 +91,7 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 		mServiceKeeper = ServiceKeeper.getInstance(this);
 		
 		Notification mBlinkNotification = new Notification.Builder(this)
-										.setSmallIcon(R.drawable.ic_launcher)
+										.setSmallIcon(R.drawable.res_bllink_ic_blink_launcher)
 										.setContentTitle(NAME)
 										.setContentText("Running Blink-Service")
 										.setContentIntent(mPendingIntent)

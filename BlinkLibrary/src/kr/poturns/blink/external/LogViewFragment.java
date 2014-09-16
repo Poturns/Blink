@@ -55,7 +55,7 @@ class LogViewFragment extends Fragment {
 		checkArgumentsFromOtherFragment();
 
 		mArrayAdapter = new LogArrayAdapter(getActivity(),
-				R.layout.list_fragment_logview, mLogList);
+				R.layout.res_blink_list_fragment_logview, mLogList);
 		mLogComparator = new ExternalBlinkLog.LogComparator();
 	}
 
@@ -99,7 +99,7 @@ class LogViewFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		final View view = inflater.inflate(R.layout.fragment_logview,
+		final View view = inflater.inflate(R.layout.res_blink_fragment_logview,
 				container, false);
 		View titleLayout = view.findViewById(R.id.fragment_logview_table_title);
 		ListView listView = (ListView) view.findViewById(android.R.id.list);
@@ -114,7 +114,7 @@ class LogViewFragment extends Fragment {
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.fragment_logview, menu);
+		inflater.inflate(R.menu.res_blink_fragment_logview, menu);
 		final MenuItem searchMenu = menu.findItem(R.id.action_search);
 
 		SearchView searchView = (SearchView) searchMenu.getActionView();
@@ -133,7 +133,7 @@ class LogViewFragment extends Fragment {
 			}
 		});
 		searchView.setSubmitButtonEnabled(true);
-		searchView.setQueryHint(getText(R.string.hint));
+		searchView.setQueryHint(getText(R.string.res_blink_hint));
 		searchMenu.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM
 				| MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
 	}
@@ -224,7 +224,7 @@ class LogViewFragment extends Fragment {
 				}
 			}
 			convertView
-					.setBackgroundResource(R.drawable.selector_rectangle_box);
+					.setBackgroundResource(R.drawable.res_blink_selector_rectangle_box);
 			return convertView;
 		}
 

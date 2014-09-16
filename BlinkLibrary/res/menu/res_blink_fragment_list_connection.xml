@@ -3,17 +3,17 @@
 
     <item
         android:id="@+id/action_connection_view_change"
-        android:icon="@drawable/ic_action_collections_view_as_grid"
+        android:icon="@drawable/res_bllink_ic_action_collections_view_as_grid"
         android:orderInCategory="101"
         android:showAsAction="always"
-        android:title="@string/action_show_as_graphic">
+        android:title="@string/res_blink_action_show_as_graphic">
     </item>
     <item
         android:id="@+id/action_list_fillter"
         android:checkable="true"
-        android:icon="@drawable/ic_action_device_access_bluetooth_connected"
+        android:icon="@drawable/res_bllink_ic_action_device_access_bluetooth_connected"
         android:orderInCategory="100"
         android:showAsAction="always"
-        android:title="@string/action_show_only_connected"/>
+        android:title="@string/res_blink_action_show_only_connected"/>
 
 </menu>

@@ -62,7 +62,7 @@ class DataViewFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		final View v = inflater.inflate(
-				R.layout.dialog_fragment_connection_device_info, container,
+				R.layout.res_blink_dialog_fragment_connection_device_info, container,
 				false);
 		mTabHost = (TabHost) v.findViewById(android.R.id.tabhost);
 		mTabHost.setup();
@@ -78,7 +78,7 @@ class DataViewFragment extends Fragment {
 			}
 		};
 		final String[] pageTitles = getResources().getStringArray(
-				R.array.dialog_data_page_titles);
+				R.array.res_blink_dialog_data_page_titles);
 		int i = 0;
 		for (String title : pageTitles) {
 			mTabHost.addTab(mTabHost.newTabSpec(String.valueOf(i++))
@@ -167,7 +167,7 @@ class DataViewFragment extends Fragment {
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 			View fragmentLayout = inflater.inflate(
-					R.layout.fragment_dataview_measurement_data_graph,
+					R.layout.res_blink_fragment_dataview_measurement_data_graph,
 					container, false);
 			mGraphView = (ViewGroup) fragmentLayout
 					.findViewById(R.id.fragment_sample_GraphView);
@@ -275,7 +275,7 @@ class DataViewFragment extends Fragment {
 				public View getView(int position, View convertView,
 						ViewGroup parent) {
 					View v = super.getView(position, convertView, parent);
-					v.setBackgroundResource(R.drawable.selector_rectangle_box);
+					v.setBackgroundResource(R.drawable.res_blink_selector_rectangle_box);
 					MeasurementData item = getItem(position);
 					((TextView) v.findViewById(android.R.id.text1))
 							.setText(item.Data);
@@ -290,7 +290,7 @@ class DataViewFragment extends Fragment {
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 			View v = inflater.inflate(
-					R.layout.fragment_dataview_measurement_data_list,
+					R.layout.res_blink_fragment_dataview_measurement_data_list,
 					container, false);
 			ListView listView = (ListView) v.findViewById(android.R.id.list);
 			listView.setAdapter(mAdapter);

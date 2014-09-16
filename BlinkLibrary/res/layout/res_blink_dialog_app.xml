@@ -10,6 +10,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center"
-        android:text="@string/choose_content" />
+        android:text="@string/res_blink_choose_content" />
 
 </LinearLayout>
