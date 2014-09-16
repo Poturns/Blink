@@ -55,6 +55,7 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 	Button button1, button2, button3, button4, button5, button6;
 	Button button7, button8, button9, button10, button11, button12;
 	Button button13, button14, button15, button16, button17, button18;
+	Button button19;
 	BlinkAppInfo mBlinkAppInfo;
 	BlinkServiceInteraction interaction;
 	IInternalOperationSupport iSupport;
@@ -65,7 +66,7 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.service_test);
 
-		interaction = new BlinkServiceInteraction(this) {
+		interaction = new BlinkServiceInteraction(this,null,eventCallback) {
 
 			@Override
 			public void onServiceFailed() {
@@ -144,18 +145,20 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 		button11.setOnClickListener(this);
 		button12 = (Button) findViewById(R.id.button12);
 		button12.setOnClickListener(this);
-		button12 = (Button) findViewById(R.id.button13);
-		button12.setOnClickListener(this);
-		button12 = (Button) findViewById(R.id.button14);
-		button12.setOnClickListener(this);
-		button12 = (Button) findViewById(R.id.button15);
-		button12.setOnClickListener(this);
-		button12 = (Button) findViewById(R.id.button16);
-		button12.setOnClickListener(this);
-		button12 = (Button) findViewById(R.id.button17);
-		button12.setOnClickListener(this);
-		button12 = (Button) findViewById(R.id.button18);
-		button12.setOnClickListener(this);
+		button13 = (Button) findViewById(R.id.button13);
+		button13.setOnClickListener(this);
+		button14 = (Button) findViewById(R.id.button14);
+		button14.setOnClickListener(this);
+		button15 = (Button) findViewById(R.id.button15);
+		button15.setOnClickListener(this);
+		button16 = (Button) findViewById(R.id.button16);
+		button16.setOnClickListener(this);
+		button17 = (Button) findViewById(R.id.button17);
+		button17.setOnClickListener(this);
+		button18 = (Button) findViewById(R.id.button18);
+		button18.setOnClickListener(this);
+		button19 = (Button) findViewById(R.id.button19);
+		button19.setOnClickListener(this);
 	}
 
 	@Override
@@ -325,59 +328,15 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 				interaction.SyncBlinkApp();
 			} else if (v.getId() == R.id.button18) {
 				interaction.SyncMeasurementData();
+			} else if (v.getId() == R.id.button19) {
+				interaction.remote.obtainMeasurementData(Eye.class, 102);
 			}
-			/*
-			else if (v.getId() == R.id.btn_sendMessage) {
-				//SyncMeasurementData
-				interaction.sendSyncMessage();
-			} else if (v.getId() == R.id.btn_registerBlinkApp) {
-				
-			} else if (v.getId() == R.id.btn_registerMeasurementData) {
-				//remote measurement data
-				interaction.remote.obtainMeasurementData(Eye.class, 101);
-			}
-			*/
 		} catch (RemoteException e) {
 
 		}
 	}
 
 	IInternalEventCallback.Stub eventCallback = new IInternalEventCallback.Stub() {
-
-		@Override
-		public void onDeviceDiscovered(final BlinkDevice deviceX)
-				throws RemoteException {
-			runOnUiThread(new Runnable() {
-
-				@Override
-				public void run() {
-					resultView.append("DISCOVERED : " + deviceX.getAddress()
-							+ "\n");
-				}
-
-			});
-		}
-
-		@Override
-		public void onDeviceConnected(BlinkDevice deviceX)
-				throws RemoteException {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onDeviceDisconnected(BlinkDevice deviceX)
-				throws RemoteException {
-			// TODO Auto-generated method stub
-
-		}
-
-		@Override
-		public void onDeviceConnectionFailed(BlinkDevice deviceX)
-				throws RemoteException {
-			Xdevice = null;
-
-		}
 
 		@Override
 		public void onReceiveData(int arg0, CallbackData arg1)

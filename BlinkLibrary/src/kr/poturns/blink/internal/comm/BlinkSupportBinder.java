@@ -137,9 +137,13 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	 * @param result : 통신이 정상적으로 되었는지 결과
 	 */
 	public void callbackData(int responseCode,String data,boolean result){
+		Log.i("Blink", "Binder callbackData");
 		ServiceKeeper mServiceKeeper = ServiceKeeper.getInstance(CONTEXT);
 		RemoteCallbackList<IInternalEventCallback> mRemoteCallbackList = mServiceKeeper.obtainRemoteCallbackList(mPackageName);
-		if(mRemoteCallbackList==null)return;
+		if(mRemoteCallbackList==null){
+			Log.i("Blink", "Binder mRemoteCallbackList is null");
+			return;
+		}
 		CallbackData mCallbackData = CALLBACK_DATA_MAP.get(responseCode);
 		if(mCallbackData==null){
 			mCallbackData = new CallbackData();
@@ -150,6 +154,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		int N = mRemoteCallbackList.beginBroadcast();
 		for(int i=0;i<N;i++){
 			try {
+				Log.i("Blink", "Binder call onReceiveData");
 				mRemoteCallbackList.getBroadcastItem(i).onReceiveData(responseCode, mCallbackData);
 			} catch (RemoteException e) {
 				// TODO Auto-generated catch block
@@ -180,6 +185,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	public void obtainMeasurementData(String ClassName,
 			String DateTimeFrom, String DateTimeTo, int ContainType,int requestCode)
 			throws RemoteException {
+		Log.i("Blink", "Binder obtainMeasurementData");
 		// TODO Auto-generated method stub
 		CallbackData mCallbackData = new CallbackData();
 		
@@ -214,11 +220,16 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 				}
 				//자기 자신이 center 디바이스면 메시지를 보내지 않고 에러코드를 설정한다.
 				if(ServiceKeeper.getInstance(CONTEXT).obtainCurrentCenterDevice().getAddress().contentEquals(mBlinkDevice.getAddress())){
+					Log.i("Blink", "Binder obtainMeasurementData : I am center");
 					mCallbackData.ResultDetail = CallbackData.ERROR_CENTER_DEVICE;
 					callbackData(requestCode, null,false);
 				}
-				else CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
+				else {
+					Log.i("Blink", "Binder obtainMeasurementData : I am not center");
+					CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
+				}
 			}else {
+				Log.i("Blink", "Binder obtainMeasurementData : no out device");
 				mCallbackData.ResultDetail = CallbackData.ERROR_NO_OUT_DEVICE;
 				if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
 					mCallbackData.InDeviceData = mBlinkDatabaseManager.obtainMeasurementData(mClass, DateTimeFrom, DateTimeTo, ContainType);

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- List -->
+<!-- android:background="#99ffffff" -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="90dp"
+    android:background="@drawable/button_list"
+    android:clickable="true"
+    android:orientation="vertical"
+    android:weightSum="1" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.95"
+        android:orientation="horizontal"
+        android:padding="10dp"
+        android:weightSum="1" >
+
+        <!-- icon -->
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center"
+            android:layout_weight="0.2"
+            android:padding="10dp"
+            android:src="@drawable/icon_alert_gray" />
+        <!-- info -->
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_weight="0.65"
+            android:orientation="vertical"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:weightSum="1" >
+
+            <!-- Subject -->
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.55"
+                android:gravity="center"
+                android:text="Subject"
+                android:textColor="#83888c" />
+            <!-- line -->
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.05"
+                android:paddingRight="10dp" >
+
+                <View
+                    android:layout_width="fill_parent"
+                    android:layout_height="1dip"
+                    android:background="#e5e5df" />
+            </LinearLayout>
+            <!-- summary -->
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="0dp"
+                android:layout_weight="0.40"
+                android:orientation="horizontal" >
+
+                <TextView
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:gravity="center"
+                    android:text="Sumary"
+                    android:textColor="#83888c" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center"
+            android:layout_weight="0.10"
+            android:src="@drawable/icon_right_circle_gray" />
+    </LinearLayout>
+
+    <!-- line -->
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.05"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp" >
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dip"
+            android:background="#e5e5df" />
+    </LinearLayout>
+
+</LinearLayout><!-- List end -->

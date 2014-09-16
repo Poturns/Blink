@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="100dp"
+    android:background="#99000000"
+    android:orientation="horizontal"
+    android:weightSum="3" >
+
+    <!-- Inbody -->
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:layout_margin="1dp"
+        android:layout_weight="1"
+        android:clickable="true"
+        android:orientation="vertical"
+        android:padding="5dp" >
+
+        <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="0.5"
+            android:src="@drawable/icon_inbody_white" />
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.5"
+            android:gravity="center"
+            android:text="Inbody"
+            android:textColor="#ffffff"
+            android:textSize="20dp" />
+    </LinearLayout>
+
+    <!-- Excercise -->
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:layout_margin="1dp"
+        android:layout_weight="1"
+        android:clickable="true"
+        android:orientation="vertical"
+        android:padding="5dp" >
+
+        <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="0.5"
+            android:paddingTop="5dp"
+            android:src="@drawable/icon_excercise_white" />
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.5"
+            android:gravity="center"
+            android:text="Excercise"
+            android:textColor="#ffffff"
+            android:textSize="20dp" />
+    </LinearLayout>
+
+    <!-- Heart -->
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:layout_marginTop="10dp"
+        android:layout_weight="1"
+        android:clickable="true"
+        android:orientation="vertical"
+        android:paddingBottom="5dp" >
+
+        <ImageView
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_gravity="center"
+            android:layout_weight="0.5"
+            android:paddingTop="10dp"
+            android:src="@drawable/icon_heart_white" />
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="0dp"
+            android:layout_weight="0.5"
+            android:gravity="center"
+            android:text="Heartrate"
+            android:textColor="#ffffff"
+            android:textSize="20dp" />
+    </LinearLayout>
+
+</LinearLayout>

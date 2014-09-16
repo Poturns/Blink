@@ -2,7 +2,6 @@ package kr.poturns.blink.internal.comm;
 
 import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 
 import kr.poturns.blink.db.BlinkDatabaseManager;
@@ -16,7 +15,6 @@ import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.internal.BlinkLocalService;
 import kr.poturns.blink.internal.DeviceAnalyzer;
-import kr.poturns.blink.schema.Eye;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -32,13 +30,11 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.RemoteException;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 
 /**
  * Blink 어플리케이션과 서비스 간의 통신을 도와주는 클래스</br>
@@ -48,7 +44,7 @@ import com.google.gson.reflect.TypeToken;
  * @since 2014.08.19
  * 
  */
-public abstract class BlinkServiceInteraction implements ServiceConnection, IBlinkEventBroadcast {
+public class BlinkServiceInteraction implements ServiceConnection, IBlinkEventBroadcast {
 	private final String tag = "BlinkServiceInteraction";
 	
 	private final Context CONTEXT;
@@ -59,6 +55,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	private IInternalOperationSupport mInternalOperationSupport;
 	private IInternalEventCallback mIInternalEventCallback;
 	private BlinkDatabaseManager mBlinkDatabaseManager;
+	private boolean binding;
 	/**
 	 * Application Info
 	 */
@@ -115,6 +112,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		mPackageName = context.getPackageName();
 		mAppName = context.getApplicationInfo()
 				.loadLabel(context.getPackageManager()).toString();
+		setBinding(false);
 	}
 
 	/**
@@ -145,13 +143,12 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 						mInternalOperationSupport
 								.registerCallback(mIInternalEventCallback);
 					}
-					// 어플리케이션 관련 정보 교환
-
-				} catch (RemoteException e) {
+					
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
-
+			setBinding(true);
 			onServiceConnected(mInternalOperationSupport);
 		}
 	}
@@ -159,6 +156,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	@Override
 	public final void onServiceDisconnected(ComponentName name) {
 		CONTEXT.unregisterReceiver(EVENT_BR);
+		setBinding(false);
 		onServiceDisconnected();
 	}
 
@@ -336,17 +334,23 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	 * 
 	 * @param iSupport
 	 */
-	public abstract void onServiceConnected(IInternalOperationSupport iSupport);
+	public void onServiceConnected(IInternalOperationSupport iSupport){
+
+	}
 
 	/**
 	 * Service에서 Unbinding 되었을 때 호출된다.
 	 */
-	public abstract void onServiceDisconnected();
+	public void onServiceDisconnected(){
+		
+	}
 
 	/**
 	 * Service에서 Binding이 실패하였을 때 호출된다.
 	 */
-	public abstract void onServiceFailed();
+	public void onServiceFailed(){
+		
+	}
 
 	/**
 	 * Database Interaction
@@ -396,7 +400,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 					.registerBlinkApp(mBlinkAppInfo);
 			mBlinkAppInfo = local.obtainBlinkApp();
 			return true;
-		} catch (RemoteException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;
@@ -416,7 +420,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 			mInternalOperationSupport
 					.registerBlinkApp(mBlinkAppInfo);
 			return true;
-		} catch (RemoteException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return false;
@@ -438,7 +442,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 	public void openControlActivity(){
 		try {
 			mInternalOperationSupport.openControlActivity();
-		} catch (RemoteException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -803,7 +807,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		private void setRequestPolicy(int requestPolicy) {
 			try {
 				mInternalOperationSupport.setRequestPolicy(requestPolicy);
-			} catch (RemoteException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -881,7 +885,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		public void startFunction(Function function, int requestCode) {
 			try {
 				mInternalOperationSupport.startFunction(function, requestCode);
-			} catch (RemoteException e) {
+			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -895,7 +899,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		public void sendMeasurementData(BlinkAppInfo targetBlinkAppInfo,MeasurementData mMeasurementData,int requestCode){
 			try {
 	            mInternalOperationSupport.sendMeasurementData(targetBlinkAppInfo, mMeasurementData, requestCode);
-            } catch (RemoteException e) {
+            } catch (Exception e) {
 	            // TODO Auto-generated catch block
 	            e.printStackTrace();
             }
@@ -909,7 +913,7 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		try {
 			Log.i("test", "btn_sendMessage");
 			mInternalOperationSupport.SyncBlinkApp();
-		} catch (RemoteException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -919,9 +923,17 @@ public abstract class BlinkServiceInteraction implements ServiceConnection, IBli
 		try {
 			Log.i("test", "btn_sendMessage");
 			mInternalOperationSupport.SyncMeasurementData();
-		} catch (RemoteException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
+
+	public boolean isBinding() {
+	    return binding;
+    }
+
+	private void setBinding(boolean binding) {
+	    this.binding = binding;
+    }
 }
