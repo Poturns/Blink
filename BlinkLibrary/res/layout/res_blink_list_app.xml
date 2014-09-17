@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
-        android:layout_toLeftOf="@+id/fragment_connection_db_info"
+        android:layout_toLeftOf="@+id/res_blink_fragment_connection_db_info"
         android:gravity="center_vertical"
         android:minHeight="?android:attr/listPreferredItemHeightSmall"
         android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
@@ -18,19 +18,19 @@
         android:textAppearance="?android:attr/textAppearanceListItemSmall" />
 
     <TextView
-        android:id="@+id/fragment_connection_db_info"
+        android:id="@+id/res_blink_fragment_connection_db_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_marginRight="10dp"
-        android:layout_toLeftOf="@+id/fragment_connection_log_info"
+        android:layout_toLeftOf="@+id/res_blink_fragment_connection_log_info"
         android:background="@drawable/res_blink_selector_button"
         android:gravity="center"
         android:paddingRight="10dp"
         android:text="@string/res_blink_show_db_info" />
 
     <TextView
-        android:id="@+id/fragment_connection_log_info"
+        android:id="@+id/res_blink_fragment_connection_log_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"

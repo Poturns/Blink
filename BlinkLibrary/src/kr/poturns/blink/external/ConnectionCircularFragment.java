@@ -41,8 +41,8 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 				BlinkDevice device = (BlinkDevice) object;
 				view.setCompoundDrawablesWithIntrinsicBounds(
 						0,
-						device.isConnected() ? R.drawable.res_bllink_ic_action_device_access_bluetooth_connected
-								: R.drawable.res_bllink_ic_action_device_access_bluetooth,
+						device.isConnected() ? R.drawable.res_blink_ic_action_device_access_bluetooth_connected
+								: R.drawable.res_blink_ic_action_device_access_bluetooth,
 						0, 0);
 				String name = device.getName();
 				// TODO 현재 ChildView 크기 만큼, 표시되는 이름 길이 줄이기
@@ -73,9 +73,9 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 		mCircularHelper.drawCircularView(getDeviceList());
 
 		mSlidingDrawer = (SlidingDrawer) viewGroup
-				.findViewById(R.id.fragment_circular_sliding_drawer);
+				.findViewById(R.id.res_blink_fragment_circular_sliding_drawer);
 		mSeekBar = (SeekBar) mSlidingDrawer
-				.findViewById(R.id.fragment_circular_seekbar);
+				.findViewById(R.id.res_blink_fragment_circular_seekbar);
 		mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
 			@Override

@@ -17,10 +17,10 @@
 
 <resources>
 
-    <string name="res_bllink_app_namenk_app_name">FitnessApp</string>
+    <string name="app_name">FitnessApp</string>
 
     <string-array name="title_entry">
-        <item>InBody 데이터</item>
+        <item>InBody</item>
         <item>운동</item>
         <item>기록</item>
         <item>설정</item>

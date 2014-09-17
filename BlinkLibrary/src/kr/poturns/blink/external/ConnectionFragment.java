@@ -355,7 +355,7 @@ final class ConnectionFragment extends Fragment {
 		// callback.setParentFragment(this);
 		callback.setHasOptionsMenu(true);
 		getChildFragmentManager().beginTransaction()
-				.replace(R.id.fragment_connection_content, callback)
+				.replace(R.id.res_blink_fragment_connection_content, callback)
 				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
 				.commit();
 	}
@@ -494,7 +494,7 @@ final class ConnectionFragment extends Fragment {
 				}
 			});
 			mViewPager = (ViewPager) v
-					.findViewById(R.id.dialog_deviceinfo_viewpager);
+					.findViewById(R.id.res_blink_dialog_deviceinfo_viewpager);
 			mViewPager
 					.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 						@Override
@@ -568,17 +568,17 @@ final class ConnectionFragment extends Fragment {
 						R.layout.res_blink_dialog_fragment_connection_bluetooth_info,
 						container, false);
 				((TextView) v
-						.findViewById(R.id.dialog_fragment_connection_macaddress))
+						.findViewById(R.id.res_blink_dialog_fragment_connection_macaddress))
 						.setText(mDevice.getAddress());
 				((TextView) v
-						.findViewById(R.id.dialog_fragment_connection_device_ego))
+						.findViewById(R.id.res_blink_dialog_fragment_connection_device_ego))
 						.setText(mDevice.getIdentity().toString());
 				Switch isBlinkSupport = (Switch) v
-						.findViewById(R.id.dialog_fragment_connection_blink_support);
+						.findViewById(R.id.res_blink_dialog_fragment_connection_blink_support);
 				isBlinkSupport.setClickable(false);
 				isBlinkSupport.setChecked(mDevice.isBlinkSupported());
 				Switch isConnected = (Switch) v
-						.findViewById(R.id.dialog_fragment_connection_connection);
+						.findViewById(R.id.res_blink_dialog_fragment_connection_connection);
 				isConnected.setChecked(mDevice.isConnected());
 				isConnected
 						.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -608,7 +608,7 @@ final class ConnectionFragment extends Fragment {
 							}
 						});
 				Switch isAutoConnect = (Switch) v
-						.findViewById(R.id.dialog_fragment_connection_autoconnect);
+						.findViewById(R.id.res_blink_dialog_fragment_connection_autoconnect);
 				isAutoConnect
 						.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
@@ -620,7 +620,7 @@ final class ConnectionFragment extends Fragment {
 						});
 				isAutoConnect.setChecked(mDevice.isAutoConnect());
 				Switch isLESupported = (Switch) v
-						.findViewById(R.id.dialog_fragment_connection_ble);
+						.findViewById(R.id.res_blink_dialog_fragment_connection_ble);
 				isLESupported.setClickable(false);
 				isLESupported.setChecked(mDevice.isLESupported());
 				return v;
@@ -655,7 +655,7 @@ final class ConnectionFragment extends Fragment {
 								PrivateUtil.obtainAppIcon(app, getResources()),
 								null, null, null);
 
-						v.findViewById(R.id.fragment_connection_db_info)
+						v.findViewById(R.id.res_blink_fragment_connection_db_info)
 								.setOnClickListener(new View.OnClickListener() {
 
 									@Override
@@ -667,7 +667,7 @@ final class ConnectionFragment extends Fragment {
 												.getParentFragment()).dismiss();
 									}
 								});
-						v.findViewById(R.id.fragment_connection_log_info)
+						v.findViewById(R.id.res_blink_fragment_connection_log_info)
 								.setOnClickListener(new View.OnClickListener() {
 
 									@Override
@@ -788,7 +788,7 @@ final class ConnectionFragment extends Fragment {
 
 		@Override
 		public boolean onOptionsItemSelected(MenuItem item) {
-			if (item.getItemId() == R.id.action_connection_view_change) {
+			if (item.getItemId() == R.id.res_blink_action_connection_view_change) {
 				changeFragment();
 				return true;
 			} else

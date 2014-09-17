@@ -68,11 +68,11 @@ public final class ServiceControlActivity extends Activity implements
 		FileUtil.createExternalDirectory();
 		setContentView(R.layout.res_blink_activity_service_control);
 		mSqliteManagerExtended = new SqliteManagerExtended(this);
-		mSlidingPaneLayout = (SlidingPaneLayout) findViewById(R.id.activity_sliding_layout);
+		mSlidingPaneLayout = (SlidingPaneLayout) findViewById(R.id.res_blink_activity_sliding_layout);
 		mSlidingPaneLayout.setSliderFadeColor(Color.TRANSPARENT);
-		mLeftListView = (ListView) findViewById(R.id.activity_main_left_drawer);
+		mLeftListView = (ListView) findViewById(R.id.res_blink_activity_main_left_drawer);
 		mActionBarToggle = new ActionBarToggle(this, mSlidingPaneLayout,
-				R.drawable.res_bllink_ic_navigation_drawer, R.string.res_bllink_app_name,
+				R.drawable.res_blink_ic_navigation_drawer, R.string.res_bllink_app_name,
 				R.string.res_bllink_app_name);
 
 		mLeftListView.setAdapter(ArrayAdapter.createFromResource(this,
@@ -92,7 +92,7 @@ public final class ServiceControlActivity extends Activity implements
 		a.recycle();
 		getFragmentManager()
 				.beginTransaction()
-				.add(R.id.activity_main_fragment_content, mConnectionFragment,
+				.add(R.id.res_blink_activity_main_fragment_content, mConnectionFragment,
 						"0").hide(mConnectionFragment).commit();
 		transitFragment(0, null);
 	}
@@ -140,7 +140,7 @@ public final class ServiceControlActivity extends Activity implements
 			f.setHasOptionsMenu(true);
 			transaction
 					.hide(mConnectionFragment)
-					.add(R.id.activity_main_fragment_content, f,
+					.add(R.id.res_blink_activity_main_fragment_content, f,
 							String.valueOf(position)).show(f)
 					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 					.commit();

@@ -69,9 +69,9 @@ class DataSelectFragment extends Fragment {
 		} else {
 			getChildFragmentManager()
 					.beginTransaction()
-					.replace(R.id.fragment_content_select_recent_list,
+					.replace(R.id.res_blink_fragment_content_select_recent_list,
 							new RecentListFragment())
-					.replace(R.id.framgent_content_select_device_list,
+					.replace(R.id.res_blink_framgent_content_select_device_list,
 							new DeviceMapFragment()).commit();
 		}
 		Bundle arg = getArguments();
@@ -91,7 +91,7 @@ class DataSelectFragment extends Fragment {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
-		if (id == R.id.action_refresh) {
+		if (id == R.id.res_blink_action_refresh) {
 			changeInternalFragment();
 			return true;
 		} else
@@ -120,7 +120,7 @@ class DataSelectFragment extends Fragment {
 		Fragment f = new DataViewFragment();
 		f.setArguments(bundle);
 		getFragmentManager().beginTransaction()
-				.add(R.id.activity_main_fragment_content, f, "1").hide(this)
+				.add(R.id.res_blink_activity_main_fragment_content, f, "1").hide(this)
 				.show(f)
 				.addToBackStack(DataSelectFragment.class.getSimpleName())
 				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
@@ -136,7 +136,7 @@ class DataSelectFragment extends Fragment {
 		Fragment f = new MeasurementListFragment();
 		f.setArguments(arg);
 		getFragmentManager().beginTransaction()
-				.add(R.id.activity_main_fragment_content, f, "1").hide(this)
+				.add(R.id.res_blink_activity_main_fragment_content, f, "1").hide(this)
 				.show(f)
 				.addToBackStack(DataSelectFragment.class.getSimpleName())
 				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
@@ -170,18 +170,18 @@ class DataSelectFragment extends Fragment {
 					((TextView) v.findViewById(android.R.id.text1))
 							.setText(device.Device);
 					TextView appTextView = (TextView) v
-							.findViewById(R.id.fragment_list_recent_app);
+							.findViewById(R.id.res_blink_fragment_list_recent_app);
 					appTextView.setText(app.AppName);
 					appTextView
 							.setCompoundDrawablesRelativeWithIntrinsicBounds(
 									PrivateUtil.obtainAppIcon(app,
 											getResources()), null, null, null);
 					((TextView) v
-							.findViewById(R.id.fragment_list_recent_measurement))
+							.findViewById(R.id.res_blink_fragment_list_recent_measurement))
 							.setText(PrivateUtil
 									.obtainSplitMeasurementSchema(measurement));
 					((TextView) v
-							.findViewById(R.id.fragment_list_recent_datetime))
+							.findViewById(R.id.res_blink_fragment_list_recent_datetime))
 							.setText(mManager.obtainMeasurementDataDateTime(
 									measurement).replace(" ", "\n"));
 					v.setOnClickListener(new View.OnClickListener() {
@@ -254,7 +254,7 @@ class DataSelectFragment extends Fragment {
 				Holder holder = (Holder) h;
 				holder.tv.setText(device.Device);
 				holder.tv.setCompoundDrawablesWithIntrinsicBounds(
-						R.drawable.res_bllink_ic_action_hardware_phone, 0, 0, 0);
+						R.drawable.res_blink_ic_action_hardware_phone, 0, 0, 0);
 			}
 
 			@Override
@@ -333,7 +333,7 @@ class DataSelectFragment extends Fragment {
 						Measurement measurement = (Measurement) item;
 						head.setText(measurement.MeasurementName);
 						head.setCompoundDrawablesRelativeWithIntrinsicBounds(
-								R.drawable.res_bllink_ic_action_device_access_storage_1,
+								R.drawable.res_blink_ic_action_device_access_storage_1,
 								0, 0, 0);
 						tail.setText(measurement.Description
 								+ "\nCount : "
@@ -343,7 +343,7 @@ class DataSelectFragment extends Fragment {
 						Function function = (Function) item;
 						head.setText(function.Function);
 						head.setCompoundDrawablesRelativeWithIntrinsicBounds(
-								R.drawable.res_bllink_ic_action_av_play_over_video, 0, 0,
+								R.drawable.res_blink_ic_action_av_play_over_video, 0, 0,
 								0);
 						tail.setText(function.Description);
 					}
@@ -403,7 +403,7 @@ class DataSelectFragment extends Fragment {
 			f.setArguments(bundle);
 			getFragmentManager()
 					.beginTransaction()
-					.add(R.id.activity_main_fragment_content, f, "1")
+					.add(R.id.res_blink_activity_main_fragment_content, f, "1")
 					.hide(this)
 					.show(f)
 					.addToBackStack(

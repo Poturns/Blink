@@ -1,17 +1,12 @@
 package kr.poturns.blink.demo.fitnessapp;
 
-import java.util.Random;
-
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeListener.Direction;
-import kr.poturns.blink.demo.fitnessapp.R;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -20,12 +15,14 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 public class MainActivity extends Activity implements ActivityInterface {
 	SwipeListener mDirectionListener;
 	BlinkServiceInteraction mInteraction;
 	IInternalOperationSupport mISupport;
+	GestureDetector mGestureDetector;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -48,7 +45,7 @@ public class MainActivity extends Activity implements ActivityInterface {
 		};
 		mInteraction.startBroadcastReceiver();
 		mInteraction.startService();
-		final GestureDetector gd = new GestureDetector(this,
+		mGestureDetector = new GestureDetector(this,
 				new GestureDetector.SimpleOnGestureListener() {
 					@Override
 					public boolean onFling(MotionEvent e1, MotionEvent e2,
@@ -58,65 +55,90 @@ public class MainActivity extends Activity implements ActivityInterface {
 						if (Math.abs(e1.getX() - e2.getX()) < 100) {
 							// 아래서 위로 스크롤 하는 경우
 							if (e1.getY() - e2.getY() > 50) {
-								return mDirectionListener.onSwipe(Direction.UP);
+								return mDirectionListener
+										.onSwipe(Direction.UP_TO_DOWN);
 								// 위에서 아래로 스크롤
 							} else if (e2.getY() - e1.getY() > 50) {
 								return mDirectionListener
-										.onSwipe(Direction.DOWN);
+										.onSwipe(Direction.DOWN_TO_UP);
 							}
 							// 세로로 움직인 폭이 일정 이상이면 무시
 						} else if (Math.abs(e1.getY() - e2.getY()) < 100) {
 							if (e1.getX() - e2.getX() > 50) {
 								return mDirectionListener
-										.onSwipe(Direction.RIGHT);
+										.onSwipe(Direction.RIGHT_TO_LEFT);
 							} else if (e2.getX() - e1.getX() > 50) {
 								return mDirectionListener
-										.onSwipe(Direction.LEFT);
+										.onSwipe(Direction.LEFT_TO_RIGHT);
 							}
 						}
 						return false;
 					}
 				});
-		getWindow().getDecorView().setOnTouchListener(
-				new View.OnTouchListener() {
+		View container = findViewById(R.id.root).findViewById(R.id.container);
 
-					@Override
-					public boolean onTouch(View v, MotionEvent event) {
-						return gd.onTouchEvent(event);
-					}
-				});
+		RelativeLayout.LayoutParams layoutParam = (RelativeLayout.LayoutParams) container
+				.getLayoutParams();
 
-		View mContentView = findViewById(android.R.id.content);
+		layoutParam.addRule(RelativeLayout.CENTER_IN_PARENT,
+				RelativeLayout.TRUE);
 
-		ViewGroup.LayoutParams lp = mContentView.getLayoutParams();
-		// lp.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
+		int pageColumnMargin = getResources().getDimensionPixelSize(
+				R.dimen.page_column_margin);
+		int pageRowMargin = getResources().getDimensionPixelSize(
+				R.dimen.page_row_margin);
 		Point size = new Point();
 		getWindow().getWindowManager().getDefaultDisplay().getSize(size);
 		// 화면의 가로/세로 중 작은쪽의 크기에 맞춰 정사각형 형태의 View를 생성
 		if (size.x < size.y)
-			lp.height = lp.width = size.x;
+			layoutParam.height = layoutParam.width = size.x - pageColumnMargin;
 		else
-			lp.width = lp.height = size.y;
+			layoutParam.width = layoutParam.height = size.y - pageRowMargin;
+		container.setLayoutParams(layoutParam);
 
-		mContentView.setLayoutParams(lp);
-		mContentView.setBackgroundResource(R.drawable.fitness);
-		attachFragment(new HomeFragment(), null);
+		attachFragment(new HomeFragment(), null, R.animator.slide_in_right,
+				R.animator.slide_out_left);
 	}
 
 	@Override
 	protected void onDestroy() {
-		mInteraction.stopService();
+		try {
+			mInteraction.stopService();
+		} catch (Exception e) {
+			// ignore
+		}
+		SQLiteHelper.closeDB();
 		super.onDestroy();
 	}
 
 	@Override
+	public boolean dispatchTouchEvent(MotionEvent ev) {
+		if (mGestureDetector.onTouchEvent(ev))
+			return true;
+		else
+			return super.dispatchTouchEvent(ev);
+	}
+
+	@Override
 	public void attachFragment(Fragment fragment, Bundle arguments) {
+		attachFragment(fragment, arguments, R.animator.slide_in_right,
+				R.animator.slide_out_left);
+	}
+
+	@Override
+	public void attachFragment(Fragment fragment, Bundle arguments, int animIn,
+			int animOut) {
 		this.mDirectionListener = (SwipeListener) fragment;
 		fragment.setArguments(arguments);
 		getFragmentManager().beginTransaction()
-				.replace(android.R.id.content, fragment)
-				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-				.commit();
+				.setCustomAnimations(animIn, animOut)
+				.replace(R.id.content, fragment).commit();
+	}
+
+	@Override
+	public void returnToMain() {
+		attachFragment(new HomeFragment(), null, R.animator.slide_in_left,
+				R.animator.slide_out_right);
 	}
 
 	@Override
@@ -134,13 +156,13 @@ public class MainActivity extends Activity implements ActivityInterface {
 		/** Swipe 방향 */
 		public enum Direction {
 			/** 위쪽에서 아래쪽 방향으로 Swipe */
-			UP,
+			UP_TO_DOWN,
 			/** 아래쪽에서 위쪽 방향으로 Swipe */
-			DOWN,
+			DOWN_TO_UP,
 			/** 왼쪽에서 오른쪽 방향으로 Swipe */
-			LEFT,
+			LEFT_TO_RIGHT,
 			/** 오른쪽에서 왼쪽 방향으로 Swipe */
-			RIGHT
+			RIGHT_TO_LEFT
 		}
 
 		/**
@@ -168,11 +190,38 @@ public class MainActivity extends Activity implements ActivityInterface {
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View v = inflater.inflate(R.layout.fragment_main, container, false);
+			View v = inflater.inflate(R.layout.fragment_home, container, false);
 			ListView listView = (ListView) v.findViewById(android.R.id.list);
 			listView.setAdapter(new ArrayAdapter<String>(getActivity(),
 					R.layout.list_home, android.R.id.text1, getResources()
-							.getStringArray(R.array.title_entry)));
+							.getStringArray(R.array.title_entry)) {
+				@Override
+				public View getView(int position, View convertView,
+						ViewGroup parent) {
+					View v = super.getView(position, convertView, parent);
+					TextView tv = (TextView) v.findViewById(android.R.id.text1);
+					switch (position) {
+					case 0:
+						tv.setCompoundDrawablesRelativeWithIntrinsicBounds(
+								R.drawable.ic_action_social_person, 0, 0, 0);
+						break;
+					case 1:
+						tv.setCompoundDrawablesRelativeWithIntrinsicBounds(
+								R.drawable.ic_action_action_dumbbell, 0, 0, 0);
+						break;
+					case 2:
+						tv.setCompoundDrawablesRelativeWithIntrinsicBounds(
+								R.drawable.ic_action_collections_view_as_list,
+								0, 0, 0);
+						break;
+					default:
+						tv.setCompoundDrawablesRelativeWithIntrinsicBounds(
+								R.drawable.ic_action_action_settings, 0, 0, 0);
+						break;
+					}
+					return v;
+				}
+			});
 			listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 				@Override
 				public void onItemClick(AdapterView<?> parent, View view,
@@ -182,7 +231,18 @@ public class MainActivity extends Activity implements ActivityInterface {
 						mActivityInterface.attachFragment(
 								new SettingFragment(), null);
 						break;
-
+					case 0:
+						mActivityInterface.attachFragment(new InBodyFragment(),
+								null);
+						break;
+					case 1:
+						mActivityInterface.attachFragment(
+								new FitnessFragment(), null);
+						break;
+					case 2:
+						mActivityInterface.attachFragment(new RecordFragment(),
+								null);
+						break;
 					default:
 						break;
 					}
@@ -194,70 +254,6 @@ public class MainActivity extends Activity implements ActivityInterface {
 		@Override
 		public boolean onSwipe(Direction direction) {
 			return false;
-		}
-	}
-
-	class SampleFragment extends SwipeEventFragment {
-		Random random = new Random(System.currentTimeMillis());
-		int index = 5;
-
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			View v = inflater.inflate(R.layout.fragment_main, container, false);
-			v.setBackground(getResources().getDrawable(
-					R.drawable.debug_background_5));
-			v.findViewById(android.R.id.button1).setOnClickListener(
-					new View.OnClickListener() {
-
-						@Override
-						public void onClick(View v) {
-							try {
-								mISupport.openControlActivity();
-							} catch (RemoteException e) {
-								Toast.makeText(
-										MainActivity.this,
-										"Service Remote Exception : "
-												+ e.getMessage(), 1000).show();
-							} catch (NullPointerException e) {
-								Toast.makeText(MainActivity.this,
-										"Service had not bind yet.", 1000)
-										.show();
-							}
-						}
-					});
-			return v;
-		}
-
-		@Override
-		public boolean onSwipe(Direction direction) {
-			int rand;
-			while ((rand = random.nextInt(4) + 1) == index)
-				;
-			index = rand;
-			int drawableID;
-			switch (rand) {
-			default:
-			case 1:
-				drawableID = R.drawable.debug_background_1;
-				break;
-			case 2:
-				drawableID = R.drawable.debug_background_2;
-				break;
-			case 3:
-				drawableID = R.drawable.debug_background_3;
-				break;
-			case 4:
-				drawableID = R.drawable.debug_background_4;
-				break;
-			case 5:
-				drawableID = R.drawable.debug_background_5;
-				break;
-
-			}
-			getView().setBackground(getResources().getDrawable(drawableID));
-			return false;
-
 		}
 	}
 }

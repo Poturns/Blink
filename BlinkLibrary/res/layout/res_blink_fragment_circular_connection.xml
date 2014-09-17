@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/content_frame"
+    android:id="@+id/res_blink_content_frame"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
@@ -13,17 +13,17 @@
         android:gravity="center" />
 
     <SlidingDrawer
-        android:id="@+id/fragment_circular_sliding_drawer"
+        android:id="@+id/res_blink_fragment_circular_sliding_drawer"
         android:layout_width="match_parent"
         android:layout_height="90dp"
         android:layout_gravity="bottom"
         android:content="@android:id/content"
-        android:handle="@+id/fragment_circular_drawer_button"
+        android:handle="@+id/res_blink_fragment_circular_drawer_button"
         android:orientation="vertical"
         android:splitMotionEvents="true" >
 
         <Button
-            android:id="@+id/fragment_circular_drawer_button"
+            android:id="@+id/res_blink_fragment_circular_drawer_button"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:background="@null" />
@@ -34,7 +34,7 @@
             android:layout_height="wrap_content" >
 
             <TextView
-                android:id="@+id/drawer_text1"
+                android:id="@+id/res_blink_drawer_text1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
@@ -43,7 +43,7 @@
                 android:text="SCAN" />
 
             <TextView
-                android:id="@+id/drawer_text2"
+                android:id="@+id/res_blink_drawer_text2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
@@ -52,14 +52,14 @@
                 android:text="CONNECTION" />
 
             <SeekBar
-                android:id="@+id/fragment_circular_seekbar"
+                android:id="@+id/res_blink_fragment_circular_seekbar"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
                 android:layout_marginLeft="10dp"
                 android:layout_marginRight="10dp"
-                android:layout_toLeftOf="@id/drawer_text2"
-                android:layout_toRightOf="@id/drawer_text1"
+                android:layout_toLeftOf="@id/res_blink_drawer_text2"
+                android:layout_toRightOf="@id/res_blink_drawer_text1"
                 android:max="100" />
         </RelativeLayout>
     </SlidingDrawer>

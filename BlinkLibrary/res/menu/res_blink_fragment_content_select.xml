@@ -2,8 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <item
-        android:id="@+id/action_refresh"
-        android:icon="@drawable/res_bllink_ic_action_navigation_refresh"
+        android:id="@+id/res_blink_action_refresh"
+        android:icon="@drawable/res_blink_ic_action_navigation_refresh"
         android:orderInCategory="102"
         android:showAsAction="always"
         android:title="@string/res_blink_action_refresh">

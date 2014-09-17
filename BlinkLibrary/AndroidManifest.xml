@@ -26,12 +26,12 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/res_bllink_ic_blink_launcher"
+        android:icon="@drawable/res_blink_ic_launcher"
         android:label="@string/res_bllink_app_name"
         android:theme="@android:style/Theme.Holo.Light" >
         <activity
             android:name="kr.poturns.blink.external.ServiceControlActivity"
-            android:icon="@drawable/res_bllink_ic_blink_launcher"
+            android:icon="@drawable/res_blink_ic_launcher"
             android:label="@string/res_bllink_app_name"
             android:screenOrientation="locked"
             android:theme="@android:style/Theme.Holo.Light" >

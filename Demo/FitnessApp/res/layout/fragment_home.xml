@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center"
+    android:background="@drawable/fitness"
+    android:gravity="center" >
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:foreground="@drawable/dim" >
+    </FrameLayout>
+
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:cacheColorHint="@android:color/transparent"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:divider="@null"
+        android:dividerHeight="60dp"
+        android:listSelector="@null"
+        android:paddingBottom="50dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="50dp"
+        android:scrollbarStyle="outsideOverlay"
+        android:scrollbars="none" />
+
+</RelativeLayout>

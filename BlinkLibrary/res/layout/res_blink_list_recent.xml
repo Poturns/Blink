@@ -5,7 +5,7 @@
     android:addStatesFromChildren="true" >
 
     <TextView
-        android:id="@+id/fragment_list_recent_measurement"
+        android:id="@+id/res_blink_fragment_list_recent_measurement"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
@@ -18,14 +18,14 @@
         android:id="@android:id/text1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/fragment_list_recent_measurement"
-        android:layout_below="@+id/fragment_list_recent_measurement"
-        android:drawableStart="@drawable/res_bllink_ic_action_hardware_phone"
+        android:layout_alignLeft="@+id/res_blink_fragment_list_recent_measurement"
+        android:layout_below="@+id/res_blink_fragment_list_recent_measurement"
+        android:drawableStart="@drawable/res_blink_ic_action_hardware_phone"
         android:gravity="center_vertical"
         android:paddingStart="?android:attr/listPreferredItemPaddingStart" />
 
     <TextView
-        android:id="@+id/fragment_list_recent_app"
+        android:id="@+id/res_blink_fragment_list_recent_app"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@android:id/text1"
@@ -35,7 +35,7 @@
         android:paddingStart="?android:attr/listPreferredItemPaddingStart" />
 
     <TextView
-        android:id="@+id/fragment_list_recent_datetime"
+        android:id="@+id/res_blink_fragment_list_recent_datetime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"

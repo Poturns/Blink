@@ -76,7 +76,7 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 			mPreferenceDirField.setAccessible(true);
 			File mPreferenceDir = FileUtil
 					.obtainExternalDirectory(FileUtil.EXTERNAL_PREF_DIRECTORY_NAME);
-			Log.d(TAG, "use : " + mPreferenceDir);
+			Log.d(TAG, "will use : " + mPreferenceDir);
 			String path = mPreferenceDirField.get(mBase).toString();
 			if (!path.equals(mOriginalPreferencePath)) {
 				mOriginalPreferencePath = path;
@@ -136,7 +136,7 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 		if (titleRes == R.string.res_blink_preference_external_title_delete_database) {
 			new AlertDialog.Builder(getActivity())
 					.setTitle(titleRes)
-					.setIcon(R.drawable.res_bllink_ic_action_alerts_and_states_warning)
+					.setIcon(R.drawable.res_blink_ic_action_alerts_and_states_warning)
 					.setMessage(R.string.res_blink_confirm_delete)
 					.setNegativeButton(android.R.string.no, null)
 					.setPositiveButton(android.R.string.yes,
@@ -165,7 +165,7 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 		} else if (titleRes == R.string.res_blink_preference_external_title_delete_database_device) {
 			new AlertDialog.Builder(getActivity())
 					.setTitle(titleRes)
-					.setIcon(R.drawable.res_bllink_ic_action_alerts_and_states_warning)
+					.setIcon(R.drawable.res_blink_ic_action_alerts_and_states_warning)
 					.setMessage(R.string.res_blink_confirm_delete)
 					.setNegativeButton(android.R.string.no, null)
 					.setPositiveButton(android.R.string.yes,

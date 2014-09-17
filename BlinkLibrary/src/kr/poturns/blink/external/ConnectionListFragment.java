@@ -48,8 +48,8 @@ class ConnectionListFragment extends BaseConnectionFragment {
 				TextView tv = (TextView) v.findViewById(android.R.id.text1);
 				tv.setText(device.getName());
 				tv.setCompoundDrawablesWithIntrinsicBounds(
-						device.isConnected() ? R.drawable.res_bllink_ic_action_device_access_bluetooth_connected
-								: R.drawable.res_bllink_ic_action_device_access_bluetooth,
+						device.isConnected() ? R.drawable.res_blink_ic_action_device_access_bluetooth_connected
+								: R.drawable.res_blink_ic_action_device_access_bluetooth,
 						0, 0, 0);
 				return v;
 			}
@@ -71,7 +71,7 @@ class ConnectionListFragment extends BaseConnectionFragment {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		final int id = item.getItemId();
-		if (id == R.id.action_list_fillter) {
+		if (id == R.id.res_blink_action_list_fillter) {
 			if (mRetainOperationItem != null)
 				mRetainOperationItem = item;
 			boolean check;

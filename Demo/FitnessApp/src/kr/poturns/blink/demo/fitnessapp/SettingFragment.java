@@ -1,12 +1,21 @@
 package kr.poturns.blink.demo.fitnessapp;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeListener;
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Environment;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
-import android.preference.SwitchPreference;
+import android.widget.ListView;
+import android.widget.Toast;
 
 public class SettingFragment extends PreferenceFragment implements
 		SwipeListener {
@@ -29,9 +38,20 @@ public class SettingFragment extends PreferenceFragment implements
 	}
 
 	private void bindPreferenceSummaryToValue() {
-		SwitchPreference preference = (SwitchPreference) findPreference(KEY_ALERT_HEART_BEAT_IMPACT);
+		CheckBoxPreference preference = (CheckBoxPreference) findPreference(KEY_ALERT_HEART_BEAT_IMPACT);
 		preference.setChecked(getPreferenceScreen().getSharedPreferences()
 				.getBoolean(KEY_ALERT_HEART_BEAT_IMPACT, false));
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		ListView listView = (ListView) getView()
+				.findViewById(android.R.id.list);
+		listView.setDivider(null);
+		listView.setPaddingRelative(10, 30, 10, 30);
+		listView.setDividerHeight(60);
+		listView.setBackgroundColor(getResources().getColor(R.color.main));
 	}
 
 	@Override
@@ -39,17 +59,55 @@ public class SettingFragment extends PreferenceFragment implements
 			Preference preference) {
 		String key = preference.getKey();
 		if (key.equals(KEY_DELETE_TRAINING_DATA)) {
-
+			SQLiteHelper.getInstance(getActivity()).dropAllTable();
+			Toast.makeText(getActivity(), "삭제했습니다.", 1000).show();
 			return true;
 		} else if (key.equals(KEY_INBODY_DATA)) {
+			copy(new File(
+					"/data/data/kr.poturns.blink.demo.fitnessapp/databases/fitness"),
+					new File(Environment.getExternalStorageDirectory(),
+							"fitness.db"));
 
 			return true;
 		}
 		return false;
 	}
 
+	private void copy(File src, File dst) {
+		InputStream in = null;
+		OutputStream out = null;
+
+		// Transfer bytes from in to out
+		try {
+			in = new FileInputStream(src);
+			out = new FileOutputStream(dst);
+			byte[] buf = new byte[1024];
+			int len;
+			while ((len = in.read(buf)) > 0) {
+				out.write(buf, 0, len);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (in != null)
+				try {
+					in.close();
+				} catch (Exception e2) {
+				}
+			if (out != null)
+				try {
+					out.close();
+				} catch (Exception e2) {
+				}
+		}
+	}
+
 	@Override
 	public boolean onSwipe(Direction direction) {
+		if (direction == Direction.LEFT_TO_RIGHT) {
+			mActivityInterface.returnToMain();
+			return true;
+		}
 		return false;
 	}
 

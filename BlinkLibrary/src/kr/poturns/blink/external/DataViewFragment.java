@@ -92,7 +92,7 @@ class DataViewFragment extends Fragment {
 			}
 		});
 		mViewPager = (ViewPager) v
-				.findViewById(R.id.dialog_deviceinfo_viewpager);
+				.findViewById(R.id.res_blink_dialog_deviceinfo_viewpager);
 		mViewPager.setOffscreenPageLimit(mFragmentList.size());
 		mViewPager
 				.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
@@ -170,7 +170,7 @@ class DataViewFragment extends Fragment {
 					R.layout.res_blink_fragment_dataview_measurement_data_graph,
 					container, false);
 			mGraphView = (ViewGroup) fragmentLayout
-					.findViewById(R.id.fragment_sample_GraphView);
+					.findViewById(R.id.res_blink_fragment_graph);
 			View graph = makeGraph();
 			if (graph != null)
 				mGraphView.addView(graph);
