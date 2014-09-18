@@ -12,6 +12,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -200,11 +201,14 @@ public class FitnessFragment extends SwipeEventFragment implements
 		Toast toast = Toast.makeText(getActivity(), msg, 1000);
 		View toastFrameView = toast.getView();
 		toastFrameView.setBackgroundResource(R.drawable.rectangle_box_shadow);
+		toastFrameView.setPaddingRelative(20, 20, 20, 20);
 		TextView view = (TextView) toastFrameView
 				.findViewById(android.R.id.message);
-		view.setTextColor(Color.BLACK);
+		view.setGravity(Gravity.CENTER);
+		view.setTextColor(getResources().getColor(R.color.main));
 		view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
-		view.setPaddingRelative(20, 20, 20, 20);
+		view.setShadowLayer(0, 0, 0, 0);
+		view.setPaddingRelative(30, 30, 30, 30);
 		toast.show();
 	}
 
@@ -222,7 +226,8 @@ public class FitnessFragment extends SwipeEventFragment implements
 	private Random mRandom = new Random(System.currentTimeMillis());
 
 	private int generateHeartBeat() {
-		return mRandom.nextInt(55) + 20;
+		return mRandom.nextInt(10) + mRandom.nextInt(10) + mRandom.nextInt(10)
+				+ mRandom.nextInt(10) + mRandom.nextInt(10) + 50;
 	}
 
 	private void putHeartBeat(int bpm) {
@@ -235,9 +240,9 @@ public class FitnessFragment extends SwipeEventFragment implements
 
 	private void terminateFitness() {
 		stopCounting();
-		mSqLiteHelper.insert(mCurrentDisplayDbTable, mCountOfPushUps);
-		mSqLiteHelper.insert(mCurrentDisplayDbTable, mCountOfSitUps);
-		mSqLiteHelper.insert(mCurrentDisplayDbTable, mCountOfSquats);
+		mSqLiteHelper.insert(SQLiteHelper.TABLE_PUSH_UP, mCountOfPushUps);
+		mSqLiteHelper.insert(SQLiteHelper.TABLE_SIT_UP, mCountOfSitUps);
+		mSqLiteHelper.insert(SQLiteHelper.TABLE_SQUAT, mCountOfSquats);
 		// TODO Blink Service에 data 등록
 	}
 

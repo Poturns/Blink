@@ -56,8 +56,8 @@ class DataSelectFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		final View view = inflater.inflate(R.layout.res_blink_fragment_data_select,
-				container, false);
+		final View view = inflater.inflate(
+				R.layout.res_blink_fragment_data_select, container, false);
 		return view;
 	}
 
@@ -69,9 +69,11 @@ class DataSelectFragment extends Fragment {
 		} else {
 			getChildFragmentManager()
 					.beginTransaction()
-					.replace(R.id.res_blink_fragment_content_select_recent_list,
+					.replace(
+							R.id.res_blink_fragment_content_select_recent_list,
 							new RecentListFragment())
-					.replace(R.id.res_blink_framgent_content_select_device_list,
+					.replace(
+							R.id.res_blink_framgent_content_select_device_list,
 							new DeviceMapFragment()).commit();
 		}
 		Bundle arg = getArguments();
@@ -120,8 +122,8 @@ class DataSelectFragment extends Fragment {
 		Fragment f = new DataViewFragment();
 		f.setArguments(bundle);
 		getFragmentManager().beginTransaction()
-				.add(R.id.res_blink_activity_main_fragment_content, f, "1").hide(this)
-				.show(f)
+				.add(R.id.res_blink_activity_main_fragment_content, f, "1")
+				.hide(this).show(f)
 				.addToBackStack(DataSelectFragment.class.getSimpleName())
 				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 				.commit();
@@ -136,8 +138,8 @@ class DataSelectFragment extends Fragment {
 		Fragment f = new MeasurementListFragment();
 		f.setArguments(arg);
 		getFragmentManager().beginTransaction()
-				.add(R.id.res_blink_activity_main_fragment_content, f, "1").hide(this)
-				.show(f)
+				.add(R.id.res_blink_activity_main_fragment_content, f, "1")
+				.hide(this).show(f)
 				.addToBackStack(DataSelectFragment.class.getSimpleName())
 				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 				.commit();
@@ -202,8 +204,9 @@ class DataSelectFragment extends Fragment {
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View v = inflater.inflate(R.layout.res_blink_fragment_data_recent_list,
-					container, false);
+			View v = inflater.inflate(
+					R.layout.res_blink_fragment_data_recent_list, container,
+					false);
 			ListView listView = (ListView) v.findViewById(android.R.id.list);
 			listView.setAdapter(mRecentListAdapter);
 			listView.setEmptyView(v.findViewById(android.R.id.empty));
@@ -222,7 +225,8 @@ class DataSelectFragment extends Fragment {
 			mDeviceMap = mManager.obtainDeviceMap();
 			mAdapter = new ContentAdapter(getActivity(), mDeviceMap);
 			final View view = inflater.inflate(
-					R.layout.res_blink_fragment_data_devicemap, container, false);
+					R.layout.res_blink_fragment_data_devicemap, container,
+					false);
 			ExpandableListView listView = (ExpandableListView) view
 					.findViewById(android.R.id.list);
 			listView.setEmptyView(view.findViewById(android.R.id.empty));
@@ -333,7 +337,7 @@ class DataSelectFragment extends Fragment {
 						Measurement measurement = (Measurement) item;
 						head.setText(measurement.MeasurementName);
 						head.setCompoundDrawablesRelativeWithIntrinsicBounds(
-								R.drawable.res_blink_ic_action_device_access_storage_1,
+								R.drawable.res_blink_ic_action_statistics_chart,
 								0, 0, 0);
 						tail.setText(measurement.Description
 								+ "\nCount : "
@@ -343,8 +347,8 @@ class DataSelectFragment extends Fragment {
 						Function function = (Function) item;
 						head.setText(function.Function);
 						head.setCompoundDrawablesRelativeWithIntrinsicBounds(
-								R.drawable.res_blink_ic_action_av_play_over_video, 0, 0,
-								0);
+								R.drawable.res_blink_ic_action_statistics_function,
+								0, 0, 0);
 						tail.setText(function.Description);
 					}
 					return v;

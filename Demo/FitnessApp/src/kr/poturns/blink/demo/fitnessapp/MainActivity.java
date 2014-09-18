@@ -211,12 +211,11 @@ public class MainActivity extends Activity implements ActivityInterface {
 						break;
 					case 2:
 						tv.setCompoundDrawablesRelativeWithIntrinsicBounds(
-								R.drawable.ic_action_collections_view_as_list,
-								0, 0, 0);
+								R.drawable.ic_action_statistics, 0, 0, 0);
 						break;
 					default:
 						tv.setCompoundDrawablesRelativeWithIntrinsicBounds(
-								R.drawable.ic_action_action_settings, 0, 0, 0);
+								R.drawable.ic_action_setup, 0, 0, 0);
 						break;
 					}
 					return v;

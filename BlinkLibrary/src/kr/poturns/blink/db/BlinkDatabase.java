@@ -113,13 +113,13 @@ public class BlinkDatabase {
 	 */
 	public static void updateBlinkDatabase(SQLiteDatabase db) {
 		// TODO Auto-generated method stub
-		db.execSQL("DROP TABLE IF EXSITS Device");
-		db.execSQL("DROP TABLE IF EXSITS App");
-		db.execSQL("DROP TABLE IF EXSITS Measurement");
-		db.execSQL("DROP TABLE IF EXSITS Function");
-		db.execSQL("DROP TABLE IF EXSITS Data");
-		db.execSQL("DROP TABLE IF EXSITS MeasurementData");
-		db.execSQL("DROP TABLE IF EXSITS Log");
+		db.execSQL("DROP TABLE IF EXISTS Device");
+		db.execSQL("DROP TABLE IF EXISTS App");
+		db.execSQL("DROP TABLE IF EXISTS Measurement");
+		db.execSQL("DROP TABLE IF EXISTS Function");
+		db.execSQL("DROP TABLE IF EXISTS Data");
+		db.execSQL("DROP TABLE IF EXISTS MeasurementData");
+		db.execSQL("DROP TABLE IF EXISTS Log");
 		// 새로 생성될 수 있도록 onCreate() 메소드를 생성한다.
 		createBlinkDatabase(db);
 	}

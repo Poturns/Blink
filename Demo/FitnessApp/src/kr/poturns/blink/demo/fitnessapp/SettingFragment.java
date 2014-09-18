@@ -48,9 +48,10 @@ public class SettingFragment extends PreferenceFragment implements
 		super.onActivityCreated(savedInstanceState);
 		ListView listView = (ListView) getView()
 				.findViewById(android.R.id.list);
-		listView.setDivider(null);
+		// TODO 리스트 뷰 구성
+		listView.setDivider(getResources().getDrawable(android.R.color.white));
 		listView.setPaddingRelative(10, 30, 10, 30);
-		listView.setDividerHeight(60);
+		listView.setDividerHeight(5);
 		listView.setBackgroundColor(getResources().getColor(R.color.main));
 	}
 

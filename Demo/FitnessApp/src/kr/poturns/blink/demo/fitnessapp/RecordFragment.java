@@ -10,6 +10,7 @@ import com.handstudio.android.hzgrapherlib.vo.GraphNameBox;
 import com.handstudio.android.hzgrapherlib.vo.linegraph.LineGraph;
 import com.handstudio.android.hzgrapherlib.vo.linegraph.LineGraphVO;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -64,7 +65,7 @@ public class RecordFragment extends SwipeEventFragment {
 		Calendar c = Calendar.getInstance();
 		mCurrentDisplayYear = c.get(Calendar.YEAR);
 		mCurrentDisplayMonth = c.get(Calendar.MONTH) + 1;
-		mIsShowingHalfFirstOfData = true;
+		mIsShowingHalfFirstOfData = c.get(Calendar.DATE) < 16 ? true : false;
 	}
 
 	private void drawGraph(String tableName, int year, int month) {
@@ -169,11 +170,11 @@ public class RecordFragment extends SwipeEventFragment {
 				GraphAnimation.DEFAULT_DURATION));
 		// set graph name box
 		GraphNameBox box = new GraphNameBox();
-		box.setNameboxTextSize(50);
+		box.setNameboxTextSize(60);
+		box.setNameboxColor(Color.BLACK);
+		box.setNameboxPadding(20);
 		vo.setGraphNameBox(box);
 
-		// set draw graph region
-		vo.setDrawRegion(true);
 		int max = mSqLiteHelper.selectMax(tableName, String.valueOf(year),
 				month);
 		vo.setMaxValue(max + 20);
