@@ -9,11 +9,14 @@
     <!-- Inbody -->
 
     <LinearLayout
+        android:id="@+id/button_inbody_main"
         android:layout_width="0dp"
         android:layout_height="fill_parent"
         android:layout_margin="1dp"
         android:layout_weight="1"
+        android:background="@drawable/button_main"
         android:clickable="true"
+        android:onClick="onClickToMainMenu"
         android:orientation="vertical"
         android:padding="5dp" >
 
@@ -37,11 +40,14 @@
     <!-- Excercise -->
 
     <LinearLayout
+        android:id="@+id/button_excercise_main"
         android:layout_width="0dp"
         android:layout_height="fill_parent"
         android:layout_margin="1dp"
         android:layout_weight="1"
+        android:background="@drawable/button_main"
         android:clickable="true"
+        android:onClick="onClickToMainMenu"
         android:orientation="vertical"
         android:padding="5dp" >
 
@@ -66,11 +72,14 @@
     <!-- Heart -->
 
     <LinearLayout
+        android:id="@+id/button_heart_main"
         android:layout_width="0dp"
         android:layout_height="fill_parent"
         android:layout_marginTop="10dp"
+        android:background="@drawable/button_main"
         android:layout_weight="1"
         android:clickable="true"
+        android:onClick="onClickToMainMenu"
         android:orientation="vertical"
         android:paddingBottom="5dp" >
 

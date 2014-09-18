@@ -1,6 +1,7 @@
 package kr.poturns.blink.db.archive;
 
 import kr.poturns.blink.db.JsonManager;
+import kr.poturns.blink.schema.DefaultSchema;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -9,7 +10,7 @@ import android.os.Parcelable;
  * @author Jiwon
  *
  */
-public class MeasurementData implements IDatabaseObject, Parcelable {
+public class MeasurementData extends DefaultSchema implements IDatabaseObject, Parcelable {
 	public int MeasurementId;
 	public int MeasurementDataId;
 	/**
@@ -18,7 +19,6 @@ public class MeasurementData implements IDatabaseObject, Parcelable {
 	 */
 	public int GroupId;
 	public String Data;
-	public String DateTime;
 
 	public MeasurementData() {
 

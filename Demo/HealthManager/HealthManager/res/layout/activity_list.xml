@@ -47,27 +47,9 @@
             android:onClick="onClick" />
     </LinearLayout>
 
-    <!-- Main Menu -->
-
-    <include layout="@layout/menu_main" />
-
-    <!-- Sub Menu -->
-
-    <FrameLayout
-        android:id="@+id/menu_sub"
+    <!-- ListView Menu -->
+    <ListView
+        android:id="@+id/activity_list_listview"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent" >
-
-        <include
-            android:id="@+id/submenu_inbody"
-            layout="@layout/submenu_inbody" />
-
-        <include
-            android:id="@+id/submenu_excercise"
-            layout="@layout/submenu_excercise" />
-
-        <include
-            android:id="@+id/submenu_heartrate"
-            layout="@layout/submenu_heartrate" />
-    </FrameLayout>
+        android:layout_height="fill_parent" />
 </LinearLayout>

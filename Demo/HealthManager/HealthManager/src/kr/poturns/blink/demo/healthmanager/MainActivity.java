@@ -1,42 +1,45 @@
 package kr.poturns.blink.demo.healthmanager;
 
 import kr.poturns.blink.db.archive.CallbackData;
-import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
-import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+/**
+ * HealthManager 기능 명세
+ * 1. 인바디
+ *  1) 정보 확인
+ *  2) 내 정보 설정(나이 성별)
+ * 2. 운동
+ *  1) 정보 확인
+ * 2. 심박수
+ *  1) 정보 확인
+ *  2) 심박수 알람 설정
+ *  
+ * @author mementohora
+ *
+ */
 public class MainActivity extends Activity implements OnClickListener {
 
 	boolean bindService = false;
 	BlinkServiceInteraction mBlinkServiceInteraction;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
+		hideAllSubMenu();
+		findViewById(R.id.submenu_inbody).setVisibility(View.VISIBLE);
 		
-		mBlinkServiceInteraction = new BlinkServiceInteraction(this, null, mIInternalEventCallback);
-		mBlinkServiceInteraction.startService();
-	}
-
-	@Override
-	public void onClick(View v) {
-		// TODO Auto-generated method stub
-		switch (v.getId()) {
-		case R.id.button_setting:
-			mBlinkServiceInteraction.openControlActivity();
-			break;
-
-		default:
-			break;
-		}
+		mBlinkServiceInteraction = ((HealthManagerApplication)getApplicationContext()).getmBlinkServiceInteraction();
 	}
 
 	@Override
@@ -45,22 +48,55 @@ public class MainActivity extends Activity implements OnClickListener {
 		super.onDestroy();
 	};
 	
-	IInternalEventCallback mIInternalEventCallback = new IInternalEventCallback() {
+	@Override
+	public void onClick(View v) {
+		// TODO Auto-generated method stub
+		switch (v.getId()) {
+		case R.id.button_setting:
+			mBlinkServiceInteraction.openControlActivity();
+			break;
+			
+		default:
+			break;
+		}
+	}
+	private void hideAllSubMenu(){
+		findViewById(R.id.submenu_inbody).setVisibility(View.GONE);
+		findViewById(R.id.submenu_excercise).setVisibility(View.GONE);
+		findViewById(R.id.submenu_heartrate).setVisibility(View.GONE);
+	}
 
-		@Override
-        public IBinder asBinder() {
-	        // TODO Auto-generated method stub
-	        return null;
-        }
+	public void onClickToMainMenu(View v){
+		hideAllSubMenu();
+		switch (v.getId()) {
+			case R.id.button_inbody_main:
+				findViewById(R.id.submenu_inbody).setVisibility(View.VISIBLE);
+				break;
+				
+			case R.id.button_excercise_main:
+				findViewById(R.id.submenu_excercise).setVisibility(View.VISIBLE);
+				break;
+			
+			case R.id.button_heart_main:
+				findViewById(R.id.submenu_heartrate).setVisibility(View.VISIBLE);
+				break;
+		}
+	}
 
-		@Override
-        public void onReceiveData(int arg0, CallbackData arg1)
-                throws RemoteException {
-	        // TODO Auto-generated method stub
-	        
-        }
+	public void onClickToSubMenu(View v){
+		switch (v.getId()) {
+		case R.id.first_inbody:
+			Log.i("Demo", "first_inbody");
+			Intent intent = new Intent(this, ListActivity.class);
+			startActivity(intent);
+			break;
 
-	};
+		default:
+			break;
+		}
+	}
+	
+	
 	
 	
 	
