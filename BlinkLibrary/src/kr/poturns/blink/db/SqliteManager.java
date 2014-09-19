@@ -34,62 +34,8 @@ import com.google.gson.GsonBuilder;
  * @author mementohora
  *
  */
-public class SqliteManager extends SQLiteOpenHelper {
+public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase{
 	private final String tag = "SqliteManager";
-	
-	/**
-	 * Database 관련 static 변수들
-	 */
-	
-	/**
-	 * obtainMeasurementList나 obtainMeasurementData에서 클래스를 통해 데이터를 얻어올 때 사용되는 타입
-	 * schema를 통해 데이터를 얻어올 때 완전히 일치하는 데이터를 가져온다.
-	 */
-	public final static int CONTAIN_DEFAULT = 0;
-	/**
-	 * obtainMeasurementList나 obtainMeasurementData에서 클래스를 통해 데이터를 얻어올 때 사용되는 타입
-	 * schema를 통해 데이터를 얻어올 때 부모 클래스가 일치하는 데이터를 가져온다.
-	 */
-	public final static int CONTAIN_PARENT = 1;
-	/**
-	 * obtainMeasurementList나 obtainMeasurementData에서 클래스를 통해 데이터를 얻어올 때 사용되는 타입
-	 * schema를 통해 데이터를 얻어올 때 필드명이 일치하는 데이터를 가져온다.
-	 */
-	public final static int CONTAIN_FIELD = 2;
-	
-	/**
-	 * BlinkLog에 저장되는 type으로 어떤 행동을 했는지 구분하는 값이다.
-	 */
-	public final static int LOG_REGISTER_BLINKAPP = 1;
-	public final static int LOG_OBTAIN_BLINKAPP = 2;
-	public final static int LOG_REGISTER_Measurement = 3;
-	public final static int LOG_OBTAIN_Measurement = 4;
-	public final static int LOG_REGISTER_Function = 5;
-	public final static int LOG_OBTAIN_Function = 6;
-	public final static int LOG_REGISTER_MEASRUEMENT = 7;
-	public final static int LOG_OBTAIN_MEASUREMENT = 8;
-	
-	/**
-	 * 데이터베이스가 변화했을 때 호출되는 Observer의 Uri
-	 * BlinkApp이 추가됐을 때 해당 Uri로 호출된다.
-	 * 옵저버를 등록해야 사용할 수 있다. </br>
-	 * example : {@code getContentResolver().registerContentObserver(SqliteManager.URI_OBSERVER_BLINKAPP, false, mContentObserver);} 
-	 */
-	public final static Uri URI_OBSERVER_BLINKAPP = Uri.parse("blink://kr.poturns.blink/database/blinkappinfo");
-	/**
-	 * 데이터베이스가 변화했을 때 호출되는 Observer의 Uri
-	 * MeasurementData가 추가됐을 때 해당 Uri로 호출된다.
-	 * 옵저버를 등록해야 사용할 수 있다. </br>
-	 * example : {@code getContentResolver().registerContentObserver(SqliteManager.URI_OBSERVER_MEASUREMENTDATA, false, mContentObserver);} 
-	 */
-	public final static Uri URI_OBSERVER_MEASUREMENTDATA = Uri.parse("blink://kr.poturns.blink/database/measurementdata");
-	/**
-	 * 데이터베이스가 변화했을 때 호출되는 Observer의 Uri
-	 * BlinkAppInfo가 Sync됐을 때 해당 Uri로 호출된다.
-	 * 옵저버를 등록해야 사용할 수 있다. </br>
-	 * example : {@code getContentResolver().registerContentObserver(SqliteManager.URI_OBSERVER_SYNC, false, mContentObserver);} 
-	 */
-	public final static Uri URI_OBSERVER_SYNC = Uri.parse("blink://kr.poturns.blink/database/blinkappinfo/sync");
 	
 	/**
 	 * Sqlite에 쿼리를 날릴 때 사용되는 기본 쿼리문
@@ -109,15 +55,6 @@ public class SqliteManager extends SQLiteOpenHelper {
 	protected final String SQL_DELETE_MEASUREMENT = "delete from Measurement ";
 	protected final String SQL_DELETE_MEASUREMENTDATA = "delete from MeasurementData ";
 	protected final String SQL_SELECT_LOG =  "SELECT * FROM BlinkLog ";
-	
-	/**
-	 * Sqlite 데이터베이스 위치
-	 */
-	public static final String EXTERNAL_DB_FILE_PATH = Environment.getExternalStorageDirectory() + "/Blink/archive/";
-	/**
-	 * Sqlite 데이터베이스 파일명
-	 */
-	public static final String EXTERNAL_DB_FILE_NAME = "BlinkDatabase.db";
 	
 	Context CONTEXT;
 	SQLiteDatabase mSQLiteDatabase;
@@ -143,15 +80,128 @@ public class SqliteManager extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		// TODO Auto-generated method stub
-		BlinkDatabase.createBlinkDatabase(db);
+		createBlinkDatabase(db);
 	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		// TODO Auto-generated method stub
-		BlinkDatabase.updateBlinkDatabase(db);
+		updateBlinkDatabase(db);
 	}
 
+	/**
+	 * SQLiteDatabase에 테이블을 생성한다.
+	 * @param db
+	 */
+	public void createBlinkDatabase(SQLiteDatabase db) {
+		// DB에 테이블 생성하기
+		String sql = "";
+
+		// Create DeviceAppList table sql statement
+		sql = "create table 'Device' ("
+				+ "'DeviceId' INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ "'Device' TEXT NOT NULL,"
+				+ "'UUID' TEXT,"
+				+ "'MacAddress' TEXT,"
+				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime')),"
+				+ "UNIQUE ('MacAddress')"
+				+ "); ";
+		db.execSQL(sql);
+
+		sql = "create table 'App' ("
+				+ "'AppId' INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ "'DeviceId' INTEGER NOT NULL,"
+				+ "'PackageName' TEXT NOT NULL,"
+				+ "'AppName' TEXT NOT NULL,"
+				+ "'AppIcon' BLOB,"
+				+ "'Version' INTEGER NOT NULL DEFAULT (1),"
+				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime')),"
+				+ "UNIQUE ('DeviceId','PackageName'),"
+				+ "FOREIGN KEY('DeviceId') REFERENCES Device('DeviceId')"
+				+ "); ";
+		db.execSQL(sql);
+		
+		// Create DeviceAppMeasurement table sql statement
+		sql = "create table 'Measurement' ("
+				+ "'AppId' INTEGER NOT NULL,"
+				+ "'MeasurementId' INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ "'MeasurementName' TEXT NOT NULL,"
+				+ "'Measurement' TEXT NOT NULL,"
+				+ "'Type' TEXT NOT NULL,"
+				+ "'Description' TEXT NOT NULL,"
+				+ "UNIQUE ('AppId','Measurement'),"
+				+ "FOREIGN KEY('AppId') REFERENCES App('AppId')"
+				+ ");";
+		// sql문 실행하기
+		db.execSQL(sql);
+
+		// Create DeviceAppFunction table sql statement
+		sql = "create table 'Function' ("
+				+ "'AppId' INTEGER NOT NULL,"
+				+ "'Function' TEXT NOT NULL,"
+				+ "'Description' TEXT,"
+				+ "'Action' TEXT NOT NULL,"
+				+ "'Type' INTEGER NOT NULL DEFAULT (1),"
+				+ "PRIMARY KEY ('AppId','Action','Type'),"
+				+ "FOREIGN KEY('AppId') REFERENCES App('AppId')"
+				+ ");";
+		db.execSQL(sql);
+
+		Log.i(tag, "createSystemDatabase ok");
+		
+		sql = "create table 'MeasurementData' ("
+				+ "'MeasurementId' INTEGER NOT NULL,"
+				+ "'MeasurementDataId' INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ "'GroupId' INTEGER,"
+				+ "'Data' TEXT NOT NULL,"
+				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime')),"
+				+ "UNIQUE ('MeasurementId','MeasurementDataId'),"
+				+ "FOREIGN KEY('MeasurementId') REFERENCES Measurement('MeasurementId')"
+				+ ");";
+		db.execSQL(sql);
+
+		Log.i(tag, "createMeasurementDatabase ok");
+		
+		sql = "create table 'BlinkLog' ("
+				+ "'LogId' INTEGER PRIMARY KEY AUTOINCREMENT,"
+				+ "'Device' TEXT NOT NULL,"
+				+ "'App' TEXT NOT NULL,"
+				+ "'Type' INTEGER NOT NULL,"
+				+ "'Content' TEXT NOT NULL,"
+				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime'))"
+				+ ");";
+		db.execSQL(sql);
+		
+		Log.i(tag, "logDatabase ok");
+		
+		sql = "create table 'SyncMeasurementData' ("
+				+ "'DeviceId' INTEGER PRIMARY KEY ,"
+				+ "'MeasurementDataId' INTEGER NOT NULL,"
+				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime')),"
+				+ "FOREIGN KEY('MeasurementDataId') REFERENCES MeasurementData('MeasurementDataId')"
+				+ ");";
+		db.execSQL(sql);
+
+		Log.i(tag, "SynchronizeDatabase ok");
+	}
+
+	/**
+	 * 기존 테이블을 모두 삭제한 후 다시 생성한다.
+	 * @param db
+	 */
+	public void updateBlinkDatabase(SQLiteDatabase db) {
+		// TODO Auto-generated method stub
+		db.execSQL("DROP TABLE IF EXSITS Device");
+		db.execSQL("DROP TABLE IF EXSITS App");
+		db.execSQL("DROP TABLE IF EXSITS Measurement");
+		db.execSQL("DROP TABLE IF EXSITS Function");
+		db.execSQL("DROP TABLE IF EXSITS Data");
+		db.execSQL("DROP TABLE IF EXSITS MeasurementData");
+		db.execSQL("DROP TABLE IF EXSITS Log");
+		// 새로 생성될 수 있도록 onCreate() 메소드를 생성한다.
+		createBlinkDatabase(db);
+	}
+	
 	/**
 	 * 주어진 파라미터의 BlinkAppInfo를 Database에 등록한다.
 	 * 등록하면서 자동적으로 부여되는 데이터를 얻기 위해 등록 후 다시 obtain- 매소드를 호출한다.

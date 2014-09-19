@@ -344,7 +344,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	 */
 	@Override
     public void sendMeasurementData(BlinkAppInfo targetBlinkAppInfo,
-            MeasurementData mMeasurementData,int requestCode) throws RemoteException {
+            String json,int requestCode) throws RemoteException {
 	    // TODO Auto-generated method stub
 		CallbackData mCallbackData = new CallbackData();
 		
@@ -365,7 +365,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 									.setDestinationApplication(targetBlinkAppInfo.mApp.PackageName)
 									.setSourceDevice(BlinkDevice.update(mBlinkDevice))
 									.setSourceApplication(mPackageName)
-									.setMessage(gson.toJson(mMeasurementData))
+									.setMessage(json)
 									.setCode(requestCode)
 									.build();
 			CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, BlinkDevice.load(targetBlinkAppInfo.mDevice.MacAddress));
@@ -373,7 +373,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		//타겟 디바이스가 자기 자신이면 직접 콜백을 호출한다.
 		else if(targetBlinkAppInfo.mDevice.MacAddress.contentEquals(mBlinkDevice.getAddress())) {
 			//다른 어플리케이션의 콜백 호출
-			ServiceKeeper.getInstance(CONTEXT).obtainBinder(targetBlinkAppInfo.mApp.PackageName).callbackData(requestCode, gson.toJson(mMeasurementData), true);
+			ServiceKeeper.getInstance(CONTEXT).obtainBinder(targetBlinkAppInfo.mApp.PackageName).callbackData(requestCode, json, true);
 			//자기 자신에게 reponse를 보냄
 			mCallbackData.ResultDetail = CallbackData.ERROR_NO_OUT_DEVICE;
 			callbackData(requestCode, null,true);

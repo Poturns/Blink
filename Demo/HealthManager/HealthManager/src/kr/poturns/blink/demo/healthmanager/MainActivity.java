@@ -1,11 +1,15 @@
 package kr.poturns.blink.demo.healthmanager;
 
+import java.util.List;
+
+import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Toast;
 
 /**
  * HealthManager 기능 명세

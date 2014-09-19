@@ -645,6 +645,16 @@ public class BlinkServiceInteraction implements ServiceConnection, IBlinkEventBr
 		}
 
 		/**
+		 * 기존에 저장되어 있는 결과들을 지우고 새로운 쿼리를 날릴 수 있도록 한다.
+		 * @return
+		 */
+		public Local clear() {
+			// TODO Auto-generated method stub
+			mBlinkDatabaseManager.clear();
+			return this;
+		}
+		
+		/**
 		 * Device를 검색하는 쿼리로 조건을 매개변수로 받는다. 결과는 DeviceList에 저장된다.
 		 * @param where
 		 * @return
@@ -896,9 +906,9 @@ public class BlinkServiceInteraction implements ServiceConnection, IBlinkEventBr
 		 * @param targetBlinkAppInfo : 전송할 타겟 어플리케이션
 		 * @param mMeasurementData : 전송할 MeasurementData
 		 */
-		public void sendMeasurementData(BlinkAppInfo targetBlinkAppInfo,MeasurementData mMeasurementData,int requestCode){
+		public void sendMeasurementData(BlinkAppInfo targetBlinkAppInfo,String json,int requestCode){
 			try {
-	            mInternalOperationSupport.sendMeasurementData(targetBlinkAppInfo, mMeasurementData, requestCode);
+	            mInternalOperationSupport.sendMeasurementData(targetBlinkAppInfo, json, requestCode);
             } catch (Exception e) {
 	            // TODO Auto-generated catch block
 	            e.printStackTrace();

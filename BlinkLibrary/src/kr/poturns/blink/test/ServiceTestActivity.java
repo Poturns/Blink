@@ -60,6 +60,7 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 	BlinkServiceInteraction interaction;
 	IInternalOperationSupport iSupport;
 	BlinkDevice Xdevice;
+	Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -314,7 +315,7 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 					//다른 어플리케이션으로 보냄
 					if(!mBlinkAppInfo.mDevice.Device.equals(mBlinkAppInfoList.get(i).mDevice.Device)
 							&& !mBlinkAppInfo.mApp.PackageName.equals(mBlinkAppInfoList.get(i).mApp.PackageName)){
-						interaction.remote.sendMeasurementData(mBlinkAppInfoList.get(i), newData, 101);
+						interaction.remote.sendMeasurementData(mBlinkAppInfoList.get(i), gson.toJson(newData), 101);
 						isSend = true;
 					}
 						
