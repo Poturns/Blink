@@ -35,7 +35,7 @@
         <service
             android:name="kr.poturns.blink.internal.BlinkLocalService"
             android:exported="true"
-            android:process="kr.poturns.blinkmain" >
+            android:process="kr.poturns.blink.internal" >
             <intent-filter>
                 <action android:name="kr.poturns.blink.internal.BlinkLocalService" />
             </intent-filter>
@@ -46,7 +46,7 @@
             android:exported="true"
             android:icon="@drawable/res_blink_ic_launcher"
             android:label="@string/res_bllink_app_name"
-            android:process="kr.poturns.blinkmain"
+            android:process="kr.poturns.blink.internal"
             android:screenOrientation="locked"
             android:theme="@android:style/Theme.Holo.Light" >
         </activity>

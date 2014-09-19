@@ -25,9 +25,9 @@
         android:layout_marginRight="10dp"
         android:layout_toLeftOf="@+id/res_blink_fragment_connection_log_info"
         android:background="@drawable/res_blink_selector_button"
+        android:drawableLeft="@drawable/res_blink_ic_action_storage_database"
         android:gravity="center"
-        android:paddingRight="10dp"
-        android:text="@string/res_blink_show_db_info" />
+        android:paddingRight="10dp" />
 
     <TextView
         android:id="@+id/res_blink_fragment_connection_log_info"
@@ -37,7 +37,7 @@
         android:layout_centerVertical="true"
         android:layout_marginRight="20dp"
         android:background="@drawable/res_blink_selector_button"
-        android:gravity="center"
-        android:text="@string/res_blink_show_log_info" />
+        android:drawableLeft="@drawable/res_blink_ic_action_storage_log"
+        android:gravity="center" />
 
 </RelativeLayout>

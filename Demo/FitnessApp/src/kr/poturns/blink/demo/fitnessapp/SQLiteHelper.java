@@ -78,7 +78,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 	}
 
 	public void insert(String table, int count) {
-		if (count < 1)
+		if (count < 1 && !mDatabase.isOpen())
 			return;
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_COUNT, count);
@@ -91,7 +91,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 	}
 
 	public void insert(int bpm) {
-		if (bpm < 1)
+		if (bpm < 1 && !mDatabase.isOpen())
 			return;
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_HEARTBEAT_BPM, bpm);

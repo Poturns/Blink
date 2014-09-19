@@ -86,11 +86,17 @@ final class ConnectionFragment extends Fragment {
 		/** Device 리스트가 변경되었을 때 호출된다. */
 		void onDeviceListChanged();
 
+		/** Device 리스트 변경 작업이 종료되었을 때 호출된다. */
+		void onDeviceListChangeCompleted();
+
 		/** Bluetooth Discovery가 종료되었을 때, 호출된다. */
 		void onDiscoveryFinished();
 
 		/** Bluetooth Discovery가 시작되었을 때, 호출된다. */
 		void onDiscoveryStarted();
+
+		/** Bluetooth Discovery가 실패하였을 때, 호출된다. */
+		void onDiscoveryFailed();
 	}
 
 	/** {@link BlinkDevice}의 연결/연결해제 요청의 결과를 전달해주는 리스너 */
@@ -140,7 +146,8 @@ final class ConnectionFragment extends Fragment {
 				@Override
 				public void onServiceDisconnected() {
 					// Service와 연결이 끊기면 현재 Activity를 종료한다.
-					Toast.makeText(activity, R.string.res_blink_blink_service_disabled,
+					Toast.makeText(activity,
+							R.string.res_blink_blink_service_disabled,
 							Toast.LENGTH_SHORT).show();
 					mBlinkOperation = null;
 					activity.finish();
@@ -149,7 +156,8 @@ final class ConnectionFragment extends Fragment {
 				@Override
 				public void onServiceFailed() {
 					// Service의 binding이 실패하면 현재 Activity를 종료한다.
-					Toast.makeText(activity, R.string.res_blink_blink_service_failed,
+					Toast.makeText(activity,
+							R.string.res_blink_blink_service_failed,
 							Toast.LENGTH_SHORT).show();
 					mBlinkOperation = null;
 					activity.finish();
@@ -175,7 +183,8 @@ final class ConnectionFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		// ChildFragment의 container역할을 하는 View를 생성한다.
-		return inflater.inflate(R.layout.res_blink_fragment_connection, container, false);
+		return inflater.inflate(R.layout.res_blink_fragment_connection,
+				container, false);
 	}
 
 	@Override
@@ -230,13 +239,17 @@ final class ConnectionFragment extends Fragment {
 	final void fetchDeviceListFromBluetooth() {
 		if (!mBluetoothEnabled
 				|| BluetoothAdapter.getDefaultAdapter().getState() != BluetoothAdapter.STATE_ON) {
-			Toast.makeText(getActivity(), R.string.res_blink_bluetooth_disabled,
-					Toast.LENGTH_SHORT).show();
+			Toast.makeText(getActivity(),
+					R.string.res_blink_bluetooth_disabled, Toast.LENGTH_SHORT)
+					.show();
+			mCurrentChildFragmentInterface.onDiscoveryFailed();
 			return;
 		}
 		if (mFetchTasking) {
-			Toast.makeText(getActivity(), R.string.res_blink_discovery_is_running,
-					Toast.LENGTH_SHORT).show();
+			Toast.makeText(getActivity(),
+					R.string.res_blink_discovery_is_running, Toast.LENGTH_SHORT)
+					.show();
+			mCurrentChildFragmentInterface.onDiscoveryFailed();
 			return;
 		}
 		mDeviceList.clear();
@@ -355,8 +368,8 @@ final class ConnectionFragment extends Fragment {
 		// callback.setParentFragment(this);
 		callback.setHasOptionsMenu(true);
 		getChildFragmentManager().beginTransaction()
-				.replace(R.id.res_blink_fragment_connection_content, callback)
 				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+				.replace(R.id.res_blink_fragment_connection_content, callback)
 				.commit();
 	}
 
@@ -371,12 +384,14 @@ final class ConnectionFragment extends Fragment {
 					new AsyncTaskLoader.OnLoadCompleteListener<Boolean>() {
 						public void onLoadComplete(
 								android.content.Loader<Boolean> loader,
-								Boolean data) {
+								Boolean result) {
 							mFetchTasking = false;
-							if (!data) {
-								onPostLoading();
+							onPostLoading();
+							if (!result) {
 								onDeviceListLoadFailed();
 							}
+							mCurrentChildFragmentInterface
+									.onDeviceListChangeCompleted();
 							loader.abandon();
 						}
 					});
@@ -462,8 +477,8 @@ final class ConnectionFragment extends Fragment {
 			getDialog().setTitle(mBlinkDevice.getName());
 
 			final View v = inflater.inflate(
-					R.layout.res_blink_dialog_fragment_connection_device_info, container,
-					false);
+					R.layout.res_blink_dialog_fragment_connection_device_info,
+					container, false);
 			mTabHost = (TabHost) v.findViewById(android.R.id.tabhost);
 			mTabHost.setup();
 			TabHost.TabContentFactory factory = new TabHost.TabContentFactory() {
@@ -564,9 +579,10 @@ final class ConnectionFragment extends Fragment {
 			@Override
 			public View onCreateView(LayoutInflater inflater,
 					ViewGroup container, Bundle savedInstanceState) {
-				final View v = inflater.inflate(
-						R.layout.res_blink_dialog_fragment_connection_bluetooth_info,
-						container, false);
+				final View v = inflater
+						.inflate(
+								R.layout.res_blink_dialog_fragment_connection_bluetooth_info,
+								container, false);
 				((TextView) v
 						.findViewById(R.id.res_blink_dialog_fragment_connection_macaddress))
 						.setText(mDevice.getAddress());
@@ -641,7 +657,8 @@ final class ConnectionFragment extends Fragment {
 				mAppList = ConnectionFragment.this.mManager
 						.obtainAppList(mDevice);
 				mDialogListAdapter = new ArrayAdapter<App>(getActivity(),
-						R.layout.res_blink_list_app, android.R.id.text1, mAppList) {
+						R.layout.res_blink_list_app, android.R.id.text1,
+						mAppList) {
 					@Override
 					public View getView(int position, View convertView,
 							ViewGroup parent) {
@@ -655,7 +672,8 @@ final class ConnectionFragment extends Fragment {
 								PrivateUtil.obtainAppIcon(app, getResources()),
 								null, null, null);
 
-						v.findViewById(R.id.res_blink_fragment_connection_db_info)
+						v.findViewById(
+								R.id.res_blink_fragment_connection_db_info)
 								.setOnClickListener(new View.OnClickListener() {
 
 									@Override
@@ -667,7 +685,8 @@ final class ConnectionFragment extends Fragment {
 												.getParentFragment()).dismiss();
 									}
 								});
-						v.findViewById(R.id.res_blink_fragment_connection_log_info)
+						v.findViewById(
+								R.id.res_blink_fragment_connection_log_info)
 								.setOnClickListener(new View.OnClickListener() {
 
 									@Override
@@ -688,8 +707,8 @@ final class ConnectionFragment extends Fragment {
 			public View onCreateView(LayoutInflater inflater,
 					ViewGroup container, Bundle savedInstanceState) {
 				final View v = inflater.inflate(
-						R.layout.res_blink_dialog_fragment_connection_db_info, container,
-						false);
+						R.layout.res_blink_dialog_fragment_connection_db_info,
+						container, false);
 				ListView listView = (ListView) v
 						.findViewById(android.R.id.list);
 				listView.setEmptyView(v.findViewById(android.R.id.empty));
@@ -797,8 +816,10 @@ final class ConnectionFragment extends Fragment {
 
 		@Override
 		public void onDeviceConnected(BlinkDevice device) {
-			Toast.makeText(getActivity(),
-					device.getName() + getString(R.string.res_blink_device_connected),
+			Toast.makeText(
+					getActivity(),
+					device.getName()
+							+ getString(R.string.res_blink_device_connected),
 					Toast.LENGTH_SHORT).show();
 		}
 
@@ -860,6 +881,14 @@ final class ConnectionFragment extends Fragment {
 			onDeviceListChanged();
 			Toast.makeText(getActivity(), "Bluetooth discovery was finished.",
 					Toast.LENGTH_SHORT).show();
+		}
+
+		@Override
+		public void onDiscoveryFailed() {
+		}
+
+		@Override
+		public void onDeviceListChangeCompleted() {
 		}
 
 	}

@@ -15,7 +15,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /** 현재 연결된 Device들을 ListView의 형태로 보여주는 Fragment */
 class ConnectionListFragment extends BaseConnectionFragment {
@@ -57,8 +56,8 @@ class ConnectionListFragment extends BaseConnectionFragment {
 		ListView listView = (ListView) mSwipeRefreshLayout
 				.findViewById(android.R.id.list);
 		listView.setAdapter(mAdapter);
-		listView.setEmptyView(View.inflate(getActivity(), R.layout.res_blink_view_empty,
-				null));
+		listView.setEmptyView(View.inflate(getActivity(),
+				R.layout.res_blink_view_empty, null));
 		listView.setOnItemClickListener(mOnItemClickListener);
 		return mSwipeRefreshLayout;
 	}
@@ -100,6 +99,17 @@ class ConnectionListFragment extends BaseConnectionFragment {
 		}
 	};
 
+	@Override
+	public void onDeviceListChangeCompleted() {
+		onDiscoveryFailed();
+	}
+
+	@Override
+	public void onDiscoveryFailed() {
+		mRefresh = false;
+		mSwipeRefreshLayout.setRefreshing(false);
+	}
+
 	private AdapterView.OnItemClickListener mOnItemClickListener = new AdapterView.OnItemClickListener() {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position,
@@ -113,9 +123,8 @@ class ConnectionListFragment extends BaseConnectionFragment {
 		if (mRefresh) {
 			mRefresh = false;
 			mSwipeRefreshLayout.setRefreshing(false);
-			Toast.makeText(getActivity(), "connection refresh!",
-					Toast.LENGTH_SHORT).show();
 		}
+
 		showHostDeviceToList(true);
 		mAdapter.notifyDataSetChanged();
 	}

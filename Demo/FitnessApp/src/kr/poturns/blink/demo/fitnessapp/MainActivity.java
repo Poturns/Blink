@@ -252,7 +252,13 @@ public class MainActivity extends Activity implements ActivityInterface {
 
 		@Override
 		public boolean onSwipe(Direction direction) {
-			return false;
+			switch (direction) {
+			case LEFT_TO_RIGHT:
+				getActivity().finish();
+				return true;
+			default:
+				return false;
+			}
 		}
 	}
 }

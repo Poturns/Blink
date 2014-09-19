@@ -4,18 +4,21 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Context;
-import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,10 +40,17 @@ public class FitnessFragment extends SwipeEventFragment implements
 	private float lastZ;
 	private float x, y, z;
 	private TextView mCountTextView;
-	private TextView mTitleTextview;
+	private TextView mTitleTextView;
+	private TextView mHeartBeatTextView;
 	private int mCurrentCount = 0;
+	private int mBpmCurrent = 0;
+	private int mBpmPrev = 0;
+	private ProgressBar mHeartBeatProgressBar;
+	private Thread mProgress;
 	private String mCurrentDisplayDbTable = SQLiteHelper.TABLE_PUSH_UP;
 	private static final int SHAKE_THRESHOLD = 800;
+	private static final int DIFF_COUNT_OF_HEART_BEAT_NOTIFIED = 10;
+	private static final int HEART_BEAT_COUNT_INTERVAL = 10;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -53,7 +63,7 @@ public class FitnessFragment extends SwipeEventFragment implements
 		if (arg != null) {
 			mCurrentDisplayDbTable = arg.getString("fitness");
 		} else if (savedInstanceState != null) {
-
+			// TODO restore state
 		}
 	}
 
@@ -74,9 +84,80 @@ public class FitnessFragment extends SwipeEventFragment implements
 				}
 			}
 		});
-		mTitleTextview = (TextView) v.findViewById(R.id.fitness_title);
+		mTitleTextView = (TextView) v.findViewById(R.id.fitness_title);
+		mHeartBeatProgressBar = (ProgressBar) v
+				.findViewById(R.id.fitness_progress_heartbeat);
+		mHeartBeatProgressBar.setVisibility(View.INVISIBLE);
+		mHeartBeatTextView = (TextView) v.findViewById(R.id.fitness_heart_beat);
+		mProgress = new ProgressAction();
 		return v;
 	}
+
+	class ProgressAction extends Thread {
+		int progress = 0;
+
+		@Override
+		public void run() {
+
+			FitnessFragment.this.getActivity().runOnUiThread(mStartAction);
+			progress = 0;
+			while (true) {
+				synchronized (this) {
+					try {
+						this.wait(1000);
+					} catch (InterruptedException e) {
+						break;
+					}
+				}
+				if (progress == HEART_BEAT_COUNT_INTERVAL) {
+					mBpmCurrent = generateHeartBeat();
+					FitnessFragment.this.getActivity().runOnUiThread(
+							mHeartBeatCountAction);
+					progress = 0;
+				} else
+					progress++;
+			}
+			FitnessFragment.this.getActivity().runOnUiThread(mStopAction);
+
+		}
+	};
+
+	private Runnable mStartAction = new Runnable() {
+
+		@Override
+		public void run() {
+			mHeartBeatProgressBar.setVisibility(View.VISIBLE);
+			mHeartBeatProgressBar.setIndeterminate(true);
+			mHeartBeatTextView.setText("");
+			mBpmCurrent = 0;
+			mBpmPrev = 0;
+		}
+	};
+	private Runnable mStopAction = new Runnable() {
+
+		@Override
+		public void run() {
+			mHeartBeatProgressBar.setVisibility(View.INVISIBLE);
+			mHeartBeatProgressBar.setIndeterminate(false);
+			mHeartBeatTextView.setText("");
+			mBpmCurrent = 0;
+			mBpmPrev = 0;
+		}
+	};
+
+	private Runnable mHeartBeatCountAction = new Runnable() {
+
+		@Override
+		public void run() {
+			if (mBpmPrev != 0
+					&& Math.abs(mBpmPrev - mBpmCurrent) > DIFF_COUNT_OF_HEART_BEAT_NOTIFIED) {
+				notifyHeartBeatAlert();
+			}
+			mBpmPrev = mBpmCurrent;
+			mHeartBeatTextView.setText(String.valueOf(mBpmCurrent));
+			putHeartBeat(mBpmCurrent);
+		}
+	};
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -175,6 +256,7 @@ public class FitnessFragment extends SwipeEventFragment implements
 		mCountTextView.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, 0,
 				0);
 		mCurrentCount = 0;
+		mProgress.interrupt();
 	}
 
 	private void startCounting() {
@@ -195,6 +277,8 @@ public class FitnessFragment extends SwipeEventFragment implements
 				resId, 0, 0);
 
 		registerListener();
+		mProgress = new ProgressAction();
+		mProgress.start();
 	}
 
 	private void showAlertMessage(String msg) {
@@ -218,7 +302,7 @@ public class FitnessFragment extends SwipeEventFragment implements
 		} else {
 			mCurrentCount = 0;
 			mCurrentDisplayDbTable = table;
-			mTitleTextview.setText(mCurrentDisplayDbTable);
+			mTitleTextView.setText(mCurrentDisplayDbTable);
 			stopCounting();
 		}
 	}
@@ -235,7 +319,24 @@ public class FitnessFragment extends SwipeEventFragment implements
 	}
 
 	private void notifyHeartBeatAlert() {
+		boolean notify = PreferenceManager.getDefaultSharedPreferences(
+				getActivity()).getBoolean(
+				SettingFragment.KEY_ALERT_HEART_BEAT_IMPACT, false);
+		if (notify) {
+			Notification noti = new Notification.Builder(getActivity())
+					.setAutoCancel(true)
+					.setContentText("심장박동의 변화가 위험할정도로 큽니다.")
+					.setContentTitle(getString(R.string.app_name))
+					.setSmallIcon(R.drawable.ic_action_health_heart).build();
+			NotificationManager manager = (NotificationManager) getActivity()
+					.getSystemService(Context.NOTIFICATION_SERVICE);
+			manager.notify(9090, noti);
+			notifyHeartBeatAlertToOtherDevice();
+		}
+	}
 
+	private void notifyHeartBeatAlertToOtherDevice() {
+		// TODO blink sendmsg
 	}
 
 	private void terminateFitness() {

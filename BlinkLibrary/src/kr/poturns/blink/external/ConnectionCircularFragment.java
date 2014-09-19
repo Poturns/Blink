@@ -26,6 +26,11 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 	private SlidingDrawer mSlidingDrawer;
 	private SeekBar mSeekBar;
 	CircularViewHelper mCircularHelper;
+	/**
+	 * 장비 리스트 변경 후, SeekBar의 값을 변경할 때 참조하는 변수<br>
+	 * <li>0 : 변경 안함</li> <li>1 : Max</li> <li>2 : Min</li>
+	 */
+	int mSetSeekBarValueMax = 0;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -74,6 +79,7 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 
 		mSlidingDrawer = (SlidingDrawer) viewGroup
 				.findViewById(R.id.res_blink_fragment_circular_sliding_drawer);
+		mSlidingDrawer.animateOpen();
 		mSeekBar = (SeekBar) mSlidingDrawer
 				.findViewById(R.id.res_blink_fragment_circular_seekbar);
 		mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -82,11 +88,11 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 			public void onStopTrackingTouch(SeekBar seekBar) {
 				int progress = seekBar.getProgress();
 				if (progress > 50) { // connected device
+					mSetSeekBarValueMax = 1;
 					retainConnectedDevicesFromList();
-					seekBar.setProgress(100);
 				} else {
+					mSetSeekBarValueMax = 2;
 					obtainDiscoveryList();
-					seekBar.setProgress(0);
 				}
 			}
 
@@ -162,9 +168,10 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 		public void onStartDrag(View view, View center) {
 			view.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle_gray);
 			TextView centerView = (TextView) center;
-			centerView.setText(getString(((BlinkDevice) mCircularHelper
-					.getViewTag(view)).isConnected() ? R.string.res_blink_drop_to_connect
-					: R.string.res_blink_drop_to_disconnect));
+			centerView
+					.setText(getString(((BlinkDevice) mCircularHelper
+							.getViewTag(view)).isConnected() ? R.string.res_blink_drop_to_connect
+							: R.string.res_blink_drop_to_disconnect));
 			centerView
 					.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle_border);
 		}
@@ -191,4 +198,14 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 		mCircularHelper.drawCircularView(getDeviceList());
 	}
 
+	@Override
+	public void onDeviceListChangeCompleted() {
+		super.onDeviceListChangeCompleted();
+		if (mSetSeekBarValueMax == 1) {
+			mSeekBar.setProgress(100);
+		} else if (mSetSeekBarValueMax == 2) {
+			mSeekBar.setProgress(0);
+		}
+		mSetSeekBarValueMax = 0;
+	}
 }
