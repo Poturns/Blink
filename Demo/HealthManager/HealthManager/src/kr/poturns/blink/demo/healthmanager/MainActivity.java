@@ -1,13 +1,8 @@
 package kr.poturns.blink.demo.healthmanager;
 
-import kr.poturns.blink.db.archive.CallbackData;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
-import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -83,12 +78,26 @@ public class MainActivity extends Activity implements OnClickListener {
 		}
 	}
 
-	public void onClickToSubMenu(View v){
+	public void onClickInbodyMenu(View v){
 		switch (v.getId()) {
-		case R.id.first_inbody:
-			Log.i("Demo", "first_inbody");
-			Intent intent = new Intent(this, ListActivity.class);
-			startActivity(intent);
+		case R.id.button_inbody_info:
+			Log.i("Demo", "button_inbody_info");
+			break;
+
+		case R.id.button_user_info:
+			UserInfoDialog dialog = new UserInfoDialog(this);
+			dialog.show();
+			break;
+		default:
+			break;
+		}
+	}
+	
+	
+	public void onClickExcerciseMenu(View v){
+		switch (v.getId()) {
+		case R.id.button_excercise_info:
+			Log.i("Demo", "button_excercise_info");
 			break;
 
 		default:
@@ -96,8 +105,17 @@ public class MainActivity extends Activity implements OnClickListener {
 		}
 	}
 	
-	
-	
-	
-	
+	public void onClickHeartrateMenu(View v){
+		switch (v.getId()) {
+		case R.id.button_heartrate_info:
+			Log.i("Demo", "button_heartrate_info");
+			break;
+		case R.id.button_heartrate_check:
+			Log.i("Demo", "button_heartrate_check");
+			break;
+
+		default:
+			break;
+		}
+	}
 }
