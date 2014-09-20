@@ -2,13 +2,17 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="5dp" >
+    android:layout_margin="10dp" >
     
 	<TextView 
 	    android:id="@+id/glass_listitem_content"
-	    android:layout_width="match_parent"
+	    android:layout_width="wrap_content"
 	    android:layout_height="wrap_content"
-	    android:layout_margin="3dp"
-	    android:gravity="right|center_vertical"
-	    android:text="CONTENT" />
+	    android:layout_alignParentRight="true"
+	    android:layout_margin="5dp"
+	    android:padding = "5dp"
+	    android:text="CONTENT"
+	    android:textColor="@android:color/background_dark"
+    	android:background="@drawable/list_item_normal" />
+	
 </RelativeLayout>

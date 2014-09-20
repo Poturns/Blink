@@ -3,44 +3,36 @@ package kr.poturns.blink.demo.visualizer;
 import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.CallbackData;
 import kr.poturns.blink.db.archive.Function;
+import kr.poturns.blink.demo.visualizer.map.SupportMapActivity;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
-import android.app.AlertDialog;
-import android.content.Context;
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.os.RemoteException;
-import android.support.v4.app.FragmentActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-
-public class GlassActivity extends FragmentActivity{
-
+public class GlassActivity extends SupportMapActivity {
+	
 	private BlinkServiceInteraction mInteraction;
 	
-	private GoogleMap mGoogleMap;
+	private ImageView mHeartbeatImageView;
+	private TextView mHeartbeatTextView;
 	private ListView mAlertList;
 	private GlassAlertAdapter mAlertAdapter;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.glass_activity);
+		// 상위 액티비티에서 setContentView() 수행. 
 		
 		initiateComponent();
 		
@@ -54,6 +46,8 @@ public class GlassActivity extends FragmentActivity{
 		    	  // Data 받음..
 		    	  String data = arg1.InDeviceData == null? arg1.OutDeviceData : (arg1.InDeviceData + arg1.OutDeviceData);
 		    	  mAlertAdapter.pushNewMessage(data);
+		    	  
+		    	  onHeartbeat(100);
 		      }
 
 			@Override
@@ -139,12 +133,11 @@ public class GlassActivity extends FragmentActivity{
 			
 			boolean isDeviceConnected = mInteraction.isDeviceConnected();
 			setControlActivityVisibility(!isDeviceConnected);
-			setMapVisibility(isDeviceConnected);
+			setMapVisibility(!isDeviceConnected);
 		}
 		
 		// TEST
 		mAlertAdapter.pushNewMessage("HELLO");
-		updateLocation();
 	}
 	
 	@Override
@@ -164,12 +157,8 @@ public class GlassActivity extends FragmentActivity{
 	}
 
 	private void initiateComponent() {
-		SupportMapFragment mGoogleMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.glass_map);
-		mGoogleMap = mGoogleMapFragment.getMap();
-		mGoogleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-		mGoogleMap.setMyLocationEnabled(true);
+
 		
-		//mGoogleMapFragment.getView().setVisibility(View.GONE);
 		Button mControllerBtn = (Button) findViewById(R.id.glass_btn_controller);
 		mControllerBtn.setOnClickListener(new OnClickListener() {
 			
@@ -183,53 +172,39 @@ public class GlassActivity extends FragmentActivity{
 		mAlertList = (ListView) findViewById(R.id.glass_alertlist);
 		mAlertAdapter = new GlassAlertAdapter(this);
 		mAlertList.setAdapter(mAlertAdapter);
-	}
-	
-	public void setMapVisibility(boolean enabled) {
-		SupportMapFragment mGoogleMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.glass_map);
-		mGoogleMapFragment.getView().setVisibility(enabled? View.VISIBLE : View.INVISIBLE);
-		
-		if (enabled)
-			updateLocation();
-	}
-	
-	public void updateLocation() {
-		LocationManager mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-		
-		Criteria mCriteria = new Criteria();
-		//mCriteria.setAccuracy(Criteria.ACCURACY_HIGH);
-		
-		String mProvider = mLocationManager.getBestProvider(mCriteria, true);
-		mLocationManager.requestLocationUpdates(mProvider, 10000, 10, new LocationListener() {
-			
-			@Override
-			public void onLocationChanged(Location location) {
-				LatLng latlng = new LatLng(location.getLatitude(), location.getLongitude());
-				mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng, 13));
-			}
+		mAlertList.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
-			public void onStatusChanged(String provider, int status, Bundle extras) {
-				
-			}
-
-			@Override
-			public void onProviderEnabled(String provider) {
-				Log.d("Glass Activity", "onProviderEnabled : " + provider);
-			}
-
-			@Override
-			public void onProviderDisabled(String provider) {
-				Log.d("Glass Activity", "onProviderDisabled : " + provider);
-				
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+				onHeartbeat(100);
 			}
 		});
+		
+		mHeartbeatImageView = (ImageView) findViewById(R.id.heartbeat_image);
+		mHeartbeatTextView = (TextView) findViewById(R.id.heartbeat_figure);
 	}
 	
 	private void setControlActivityVisibility(boolean enabled) {
-
 		Button mControllerBtn = (Button) findViewById(R.id.glass_btn_controller);
 		mControllerBtn.setVisibility(enabled? View.VISIBLE : View.INVISIBLE);
 		mControllerBtn.setClickable(enabled);
+	}
+	
+	private void onHeartbeat(int heartbeat) {
+		mHeartbeatImageView.setImageResource(R.drawable.heartbeat2);
+		mHeartbeatImageView.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				mHeartbeatImageView.setImageResource(R.drawable.heartbeat1);
+			}
+		}, 1000);
+		
+		mHeartbeatTextView.setText(String.valueOf(heartbeat));
+		mHeartbeatTextView.postDelayed(new Runnable(){
+			@Override
+			public void run() {
+				mHeartbeatTextView.setText(null);
+			}
+		}, 1000);
 	}
 }
