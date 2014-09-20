@@ -1,16 +1,9 @@
 package kr.poturns.blink.demo.fitnessapp;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeListener;
+import kr.poturns.blink.demo.fitnessapp.measurement.FitnessUtil;
 import android.app.Activity;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Environment;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -47,15 +40,14 @@ public class SettingFragment extends PreferenceFragment implements
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		getView().setBackgroundResource(R.drawable.image_balance);
 		ListView listView = (ListView) getView()
 				.findViewById(android.R.id.list);
-		// TODO 리스트 뷰 구성
-		//listView.getch
-		listView.setDivider(getResources().getDrawable(android.R.color.transparent));
+		listView.setDivider(getResources().getDrawable(
+				android.R.color.transparent));
 		listView.setPaddingRelative(10, 30, 10, 30);
-		listView.setDividerHeight(5);
-		listView.setBackgroundColor(Color.parseColor("#00000000"));
+		listView.setDividerHeight(60);
+		listView.setBackground(getResources().getDrawable(
+				R.drawable.image_sunset));
 	}
 
 	@Override
@@ -67,43 +59,16 @@ public class SettingFragment extends PreferenceFragment implements
 			Toast.makeText(getActivity(), "삭제했습니다.", 1000).show();
 			return true;
 		} else if (key.equals(KEY_INBODY_DATA)) {
-			copy(new File(
-					"/data/data/kr.poturns.blink.demo.fitnessapp/databases/fitness"),
-					new File(Environment.getExternalStorageDirectory(),
-							"fitness.db"));
-
+			if (getActivity().deleteFile(
+					"/data/data/kr.poturns.blink.demo.fitnessapp/"
+							+ FitnessUtil.FILE_INBODY)) {
+				Toast.makeText(getActivity(), "삭제했습니다.", 1000).show();
+			} else {
+				Toast.makeText(getActivity(), "실패했습니다.", 1000).show();
+			}
 			return true;
 		}
 		return false;
-	}
-
-	private void copy(File src, File dst) {
-		InputStream in = null;
-		OutputStream out = null;
-
-		// Transfer bytes from in to out
-		try {
-			in = new FileInputStream(src);
-			out = new FileOutputStream(dst);
-			byte[] buf = new byte[1024];
-			int len;
-			while ((len = in.read(buf)) > 0) {
-				out.write(buf, 0, len);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			if (in != null)
-				try {
-					in.close();
-				} catch (Exception e2) {
-				}
-			if (out != null)
-				try {
-					out.close();
-				} catch (Exception e2) {
-				}
-		}
 	}
 
 	@Override

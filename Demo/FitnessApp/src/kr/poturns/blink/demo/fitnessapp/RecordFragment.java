@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
+import kr.poturns.blink.demo.fitnessapp.measurement.FitnessUtil;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -22,6 +23,7 @@ public class RecordFragment extends SwipeEventFragment {
 	private int mYear;
 	private int mMonth;
 	private int mDay;
+	private boolean mShowCalorie = false;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -40,9 +42,7 @@ public class RecordFragment extends SwipeEventFragment {
 		mYear = c.get(Calendar.YEAR);
 		mMonth = c.get(Calendar.MONTH) + 1;
 		mDay = c.get(Calendar.DATE);
-		if (getArguments() == null)
-			setDefaultDate();
-		else
+		if (getArguments() != null)
 			setDateFromArguments();
 
 		drawGraph(mCurrentDisplayDbTable);
@@ -58,9 +58,7 @@ public class RecordFragment extends SwipeEventFragment {
 	private void setDateFromArguments() {
 		Bundle arg = getArguments();
 		mCurrentDisplayDbTable = arg.getString("mCurrentDisplayDbTable");
-	}
-
-	private void setDefaultDate() {
+		mShowCalorie = arg.getBoolean("calorie");
 	}
 
 	private void drawGraph(String tableName) {
@@ -73,6 +71,7 @@ public class RecordFragment extends SwipeEventFragment {
 	private void drawGraphWithNewFragment(int animIn, int animOut) {
 		Bundle arg = new Bundle();
 		arg.putString("mCurrentDisplayDbTable", mCurrentDisplayDbTable);
+		arg.putBoolean("calorie", mShowCalorie);
 		mActivityInterface.attachFragment(new RecordFragment(), arg, animIn,
 				animOut);
 	}
@@ -112,8 +111,21 @@ public class RecordFragment extends SwipeEventFragment {
 					R.animator.slide_out_up);
 			return true;
 		case LEFT_TO_RIGHT:
-			mActivityInterface.returnToMain();
+			if (mShowCalorie) {
+				mShowCalorie = false;
+				drawGraphWithNewFragment(R.animator.slide_in_left,
+						R.animator.slide_out_right);
+			} else
+				mActivityInterface.returnToMain();
 			return true;
+		case RIGHT_TO_LEFT:
+			if (!mShowCalorie) {
+				mShowCalorie = true;
+				drawGraphWithNewFragment(R.animator.slide_in_right,
+						R.animator.slide_out_left);
+				return true;
+			} else
+				return false;
 		default:
 			return false;
 		}
@@ -121,7 +133,7 @@ public class RecordFragment extends SwipeEventFragment {
 
 	private BarGraphVO getBarGraphVO(String tableName) {
 		BarGraphVO vo = null;
-		ArrayList<Integer> list = new ArrayList<Integer>();
+		ArrayList<Float> list = new ArrayList<Float>();
 		int prevYear = mYear;
 		int prevMonth = mMonth;
 		int prevDay = mDay - 1;
@@ -134,11 +146,14 @@ public class RecordFragment extends SwipeEventFragment {
 			}
 			prevDay = SQLiteHelper.getDayOfMonth(prevMonth);
 		}
-
-		list.add(mSqLiteHelper.select(tableName, String.valueOf(prevYear),
-				prevMonth, prevDay));
-		list.add(mSqLiteHelper.select(tableName, String.valueOf(mYear), mMonth,
-				mDay));
+		int prevCount = mSqLiteHelper.select(tableName,
+				String.valueOf(prevYear), prevMonth, prevDay);
+		list.add(mShowCalorie ? (float) FitnessUtil.calculateCalorie(tableName,
+				prevCount) : prevCount);
+		int currentCount = mSqLiteHelper.select(tableName,
+				String.valueOf(mYear), mMonth, mDay);
+		list.add(mShowCalorie ? (float) FitnessUtil.calculateCalorie(tableName,
+				currentCount) : currentCount);
 		String[] legendArr = { "어제", "오늘" };
 
 		float[] array = new float[] { list.get(0), list.get(1) };
@@ -149,6 +164,8 @@ public class RecordFragment extends SwipeEventFragment {
 			title = "윗몸일으키기";
 		else if (tableName.equals(SQLiteHelper.TABLE_SQUAT))
 			title = "스쿼트";
+		if (mShowCalorie)
+			title += " (KCal)";
 		int color = getResources().getColor(R.color.main);
 
 		ArrayList<BarGraph> arrGraph = new ArrayList<BarGraph>();
@@ -158,10 +175,10 @@ public class RecordFragment extends SwipeEventFragment {
 		vo.setLegendArr(legendArr);
 		vo.setArrGraph(arrGraph);
 		vo.setBarWidth(30);
-		int max = Math.max(list.get(0), list.get(1)) + 10;
+		int max = (int) (Math.max(list.get(0), list.get(1)) + 10);
 		vo.setMaxValueX(10);
 		vo.setMaxValueY(max);
-		int increment = Math.abs(list.get(0) - list.get(1));
+		int increment = (int) Math.abs(list.get(0) - list.get(1));
 		vo.setIncrementX(4);
 		vo.setIncrementY(increment);
 		vo.setGraphNameBox(new GraphNameBox());
