@@ -277,9 +277,6 @@ public class FitnessFragment extends SwipeEventFragment implements
 		}
 		mCountTextView.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, 0,
 				0);
-		// mTitleTextView.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0,
-		// 0,
-		// 0);
 		mCurrentCount = 0;
 		mHeartBeatBackgroundThread.interrupt();
 	}
@@ -290,13 +287,13 @@ public class FitnessFragment extends SwipeEventFragment implements
 		int resId = 0;
 		mCurrentCount = 0;
 		if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_PUSH_UP)) {
-			resId = R.drawable.ic_action_health_pushup_white;
+			resId = R.drawable.ic_action_health_push_up;
 			mCurrentCount = mCountOfPushUps;
 		} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SIT_UP)) {
-			resId = R.drawable.ic_action_health_situp_white;
+			resId = R.drawable.ic_action_health_sit_up;
 			mCurrentCount = mCountOfSitUps;
 		} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SQUAT)) {
-			resId = R.drawable.ic_action_health_squat_white;
+			resId = R.drawable.ic_action_health_squat;
 			mCurrentCount = mCountOfSquats;
 		}
 		Drawable drawable = getResources().getDrawable(resId);

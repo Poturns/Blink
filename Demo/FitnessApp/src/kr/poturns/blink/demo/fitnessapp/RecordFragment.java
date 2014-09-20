@@ -3,18 +3,18 @@ package kr.poturns.blink.demo.fitnessapp;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-import com.handstudio.android.hzgrapherlib.animation.GraphAnimation;
-import com.handstudio.android.hzgrapherlib.graphview.LineGraphView;
-import com.handstudio.android.hzgrapherlib.vo.GraphNameBox;
-import com.handstudio.android.hzgrapherlib.vo.linegraph.LineGraph;
-import com.handstudio.android.hzgrapherlib.vo.linegraph.LineGraphVO;
-
+import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
+
+import com.handstudio.android.hzgrapherlib.animation.GraphAnimation;
+import com.handstudio.android.hzgrapherlib.graphview.BarGraphView;
+import com.handstudio.android.hzgrapherlib.vo.GraphNameBox;
+import com.handstudio.android.hzgrapherlib.vo.bargraph.BarGraph;
+import com.handstudio.android.hzgrapherlib.vo.bargraph.BarGraphVO;
 
 public class RecordFragment extends SwipeEventFragment {
 	private SQLiteHelper mSqLiteHelper;
@@ -66,8 +66,7 @@ public class RecordFragment extends SwipeEventFragment {
 	private void drawGraph(String tableName) {
 		ViewGroup vg = (ViewGroup) getView();
 		vg.removeAllViews();
-		vg.addView(new LineGraphView(getActivity(), getLineGraphVo(tableName)),
-				0);
+		vg.addView(new BarGraphView(getActivity(), getBarGraphVO(tableName)), 0);
 		vg.invalidate();
 	}
 
@@ -120,7 +119,8 @@ public class RecordFragment extends SwipeEventFragment {
 		}
 	}
 
-	private LineGraphVO getLineGraphVo(String tableName) {
+	private BarGraphVO getBarGraphVO(String tableName) {
+		BarGraphVO vo = null;
 		ArrayList<Integer> list = new ArrayList<Integer>();
 		int prevYear = mYear;
 		int prevMonth = mMonth;
@@ -134,12 +134,14 @@ public class RecordFragment extends SwipeEventFragment {
 			}
 			prevDay = SQLiteHelper.getDayOfMonth(prevMonth);
 		}
+
 		list.add(mSqLiteHelper.select(tableName, String.valueOf(prevYear),
 				prevMonth, prevDay));
 		list.add(mSqLiteHelper.select(tableName, String.valueOf(mYear), mMonth,
 				mDay));
-		ArrayList<LineGraph> arrGraph = new ArrayList<LineGraph>();
-		float[] array = new float[] { 0, list.get(0), list.get(1) };
+		String[] legendArr = { "어제", "오늘" };
+
+		float[] array = new float[] { list.get(0), list.get(1) };
 		String title = "";
 		if (tableName.equals(SQLiteHelper.TABLE_PUSH_UP))
 			title = "팔굽혀펴기";
@@ -148,27 +150,32 @@ public class RecordFragment extends SwipeEventFragment {
 		else if (tableName.equals(SQLiteHelper.TABLE_SQUAT))
 			title = "스쿼트";
 		int color = getResources().getColor(R.color.main);
-		arrGraph.add(new LineGraph(title, color, array));
 
-		String[] legends = new String[] { "", "어제", "오늘" };
-		LineGraphVO vo = new LineGraphVO(legends, arrGraph);
+		ArrayList<BarGraph> arrGraph = new ArrayList<BarGraph>();
+		arrGraph.add(new BarGraph(title, color, array));
 
-		// set animation
+		vo = new BarGraphVO();
+		vo.setLegendArr(legendArr);
+		vo.setArrGraph(arrGraph);
+		vo.setBarWidth(30);
+		int max = Math.max(list.get(0), list.get(1)) + 10;
+		vo.setMaxValueX(10);
+		vo.setMaxValueY(max);
+		int increment = Math.abs(list.get(0) - list.get(1));
+		vo.setIncrementX(4);
+		vo.setIncrementY(increment);
+		vo.setGraphNameBox(new GraphNameBox());
 		vo.setAnimation(new GraphAnimation(GraphAnimation.LINEAR_ANIMATION,
 				GraphAnimation.DEFAULT_DURATION));
-		// set graph name box
+		vo.setAnimationShow(true);
+		vo.setTextX(50);
+		vo.setTextY(30);
 		GraphNameBox box = new GraphNameBox();
 		box.setNameboxColor(color);
 		box.setNameboxTextSize(60);
 		box.setNameboxColor(Color.BLACK);
 		box.setNameboxPadding(20);
 		vo.setGraphNameBox(box);
-		vo.setTextXSize(40);
-		vo.setTextYSize(30);
-		int max = Math.max(list.get(0), list.get(1));
-		vo.setMaxValue(max + 10);
-		vo.setIncrement(Math.abs(list.get(0) - list.get(1)));
-		vo.setDrawRegion(false);
 		return vo;
 	}
 }

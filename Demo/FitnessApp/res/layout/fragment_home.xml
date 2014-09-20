@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center"
-    android:background="@drawable/fitness"
+    android:background="@drawable/image_meditation"
     android:gravity="center" >
 
     <FrameLayout

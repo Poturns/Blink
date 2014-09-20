@@ -8,6 +8,7 @@ import java.io.OutputStream;
 
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeListener;
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.CheckBoxPreference;
@@ -46,13 +47,15 @@ public class SettingFragment extends PreferenceFragment implements
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+		getView().setBackgroundResource(R.drawable.image_balance);
 		ListView listView = (ListView) getView()
 				.findViewById(android.R.id.list);
 		// TODO 리스트 뷰 구성
-		listView.setDivider(getResources().getDrawable(android.R.color.white));
+		//listView.getch
+		listView.setDivider(getResources().getDrawable(android.R.color.transparent));
 		listView.setPaddingRelative(10, 30, 10, 30);
 		listView.setDividerHeight(5);
-		listView.setBackgroundColor(getResources().getColor(R.color.main));
+		listView.setBackgroundColor(Color.parseColor("#00000000"));
 	}
 
 	@Override
