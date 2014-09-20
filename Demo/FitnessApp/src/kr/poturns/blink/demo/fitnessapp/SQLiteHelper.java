@@ -1,15 +1,17 @@
 package kr.poturns.blink.demo.fitnessapp;
 
 import java.util.ArrayList;
-import java.util.List;
 
+import kr.poturns.blink.demo.fitnessapp.measurement.HeartBeat;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 public class SQLiteHelper extends SQLiteOpenHelper {
+	private static final String TAG = SQLiteHelper.class.getSimpleName();
 	public static final String TABLE_PUSH_UP = "PUSHUP";
 	public static final String TABLE_SQUAT = "SQUAT";
 	public static final String TABLE_SIT_UP = "SITUP";
@@ -77,8 +79,21 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 		onCreate(db);
 	}
 
+	private boolean checkIntegrity(String table, int i) {
+		if (i < 1) {
+			Log.e(TAG, table + ": checkIntegrity failed - value : " + i);
+			return false;
+		}
+		if (!mDatabase.isOpen()) {
+			Log.e(TAG, "Database already closed!");
+			return false;
+		}
+		return true;
+	}
+
+	/** 심장 박동수를 제외한 다른 데이터를 입력한다. */
 	public void insert(String table, int count) {
-		if (count < 1 && !mDatabase.isOpen())
+		if (!checkIntegrity(table, count))
 			return;
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_COUNT, count);
@@ -90,8 +105,9 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 		}
 	}
 
+	/** 심장 박동수를 입력한다. */
 	public void insert(int bpm) {
-		if (bpm < 1 && !mDatabase.isOpen())
+		if (!checkIntegrity(TABLE_HEART_BEAT, bpm))
 			return;
 		ContentValues values = new ContentValues();
 		values.put(COLUMN_HEARTBEAT_BPM, bpm);
@@ -104,6 +120,8 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 	}
 
 	/**
+	 * 지정하는 날짜에 해당하는 데이터들의 합을 얻는다.
+	 * 
 	 * @param table
 	 * @param dateTime
 	 *            yyyy-mm-dd
@@ -136,6 +154,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 		}
 	}
 
+	/** 해당 연도와 월에 해당하는 데이터의 최고값을 얻어온다. */
 	public int selectMax(String table, String year, int month) {
 		int monthSize = getDayOfMonth(month);
 		Cursor cursor = mDatabase.rawQuery("SELECT MAX(" + COLUMN_COUNT
@@ -151,15 +170,20 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 			return 0;
 	}
 
-	public List<Integer> select(String table, String year, int month) {
+	/** 해당 연도와 월에 해당하는 데이터들을 얻어온다. */
+	public ArrayList<Integer> select(String table, String year, int month) {
 		int monthSize = getDayOfMonth(month);
 		ArrayList<Integer> list = new ArrayList<Integer>(monthSize);
 		for (int i = 1; i <= monthSize; i++) {
-			list.add(select(table, year + "-"
-					+ (month > 9 ? month : "0" + month) + "-"
-					+ (i > 9 ? i : ("0" + i))));
+			list.add(select(table, year, month, i));
 		}
 		return list;
+	}
+
+	/** 해당 연도와 월, 날짜에 해당하는 데이터를 얻어온다. */
+	public int select(String table, String year, int month, int day) {
+		return select(table, year + "-" + (month > 9 ? month : "0" + month)
+				+ "-" + (day > 9 ? day : ("0" + day)));
 	}
 
 	/**
@@ -179,7 +203,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 		while (cursor.moveToNext()) {
 			hb = new HeartBeat();
 			hb.bpm = cursor.getInt(indexOfBpm);
-			hb.time = cursor.getString(indexOfDate);
+			hb.DateTime = cursor.getString(indexOfDate);
 			list.add(hb);
 		}
 		return list;

@@ -37,13 +37,4 @@
         android:textColor="@android:color/white"
         android:textSize="20dp" />
 
-    <ProgressBar
-        android:id="@+id/fitness_progress_heartbeat"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="60dp"
-        android:layout_height="20dp"
-        android:layout_above="@+id/fitness_count"
-        android:layout_alignLeft="@+id/fitness_heart_beat"
-        android:layout_marginTop="10dp" />
-
 </RelativeLayout>

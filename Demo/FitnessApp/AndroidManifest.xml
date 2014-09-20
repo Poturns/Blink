@@ -51,7 +51,7 @@
             android:theme="@android:style/Theme.Holo.Light" >
         </activity>
 
-        <receiver android:name="kr.poturns.blink.demo.fitnessapp.AppBroadCastReciever" >
+        <receiver android:name="kr.poturns.blink.demo.fitnessapp.AppBroadcastReciever" >
             <intent-filter android:priority="100" >
                 <action android:name="android.intent.action.PACKAGE_INSTALL" />
                 <action android:name="android.intent.action.PACKAGE_REMOVED" />
