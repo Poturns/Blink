@@ -16,7 +16,21 @@ import android.content.Context;
 public class FitnessUtil {
 	public static final String FILE_INBODY = "inbody";
 
+	/**
+	 * 해당 {@link SQLiteHelper}의 Table에 해당하는 운동의 {@code count}만큼 칼로리를 계산한다.
+	 * 
+	 * @param table
+	 *            <li>{@link SQLiteHelper#TABLE_PUSH_UP}</li> <li>
+	 *            {@link SQLiteHelper#TABLE_SIT_UP}</li><li>
+	 *            {@link SQLiteHelper#TABLE_SQUAT}</li> <t>중 하나.
+	 * @param count
+	 *            운동 횟수
+	 * @return 해당 운동 횟수만큼 소모한 kcal,<br>
+	 *         <t> {@code table}에 해당하는 운동이 아니거나 {@code count < 1}이면 0
+	 */
 	public static final double calculateCalorie(String table, int count) {
+		if (count < 1)
+			return 0;
 		if (table.equals(SQLiteHelper.TABLE_PUSH_UP))
 			return 0.825 * ((double) count);
 		else if (table.equals(SQLiteHelper.TABLE_SIT_UP))
@@ -27,13 +41,14 @@ public class FitnessUtil {
 			return 0;
 	}
 
+	/** InBody 데이터를 읽어온다 */
 	public static final InBodyData readInBodyFromFile(Context context)
 			throws StreamCorruptedException, IOException,
 			ClassNotFoundException {
 		FileInputStream fis = null;
 		BufferedInputStream bis = null;
 		ObjectInputStream ois = null;
-		InBodyData object;
+		InBodyData object = null;
 		try {
 			fis = context.openFileInput(FILE_INBODY);
 			bis = new BufferedInputStream(fis);
@@ -47,6 +62,7 @@ public class FitnessUtil {
 		return object;
 	}
 
+	/** InBody 데이터를 저장한다 */
 	public static boolean saveInBodyFile(Context context, InBodyData obj)
 			throws IOException {
 		boolean state = false;

@@ -310,8 +310,6 @@ public class FitnessFragment extends SwipeEventFragment implements
 		Drawable drawable = getResources().getDrawable(resId);
 		drawable.setBounds(0, 0, 200, 200);
 		mCountTextView.setCompoundDrawablesRelative(null, drawable, null, null);
-		// mTitleTextView.setCompoundDrawablesRelativeWithIntrinsicBounds(0,
-		// resId, 0, 0);
 		registerListener();
 		mHeartBeatBackgroundThread = new HeartBeatActionThread();
 		mHeartBeatBackgroundThread.start();
@@ -366,6 +364,8 @@ public class FitnessFragment extends SwipeEventFragment implements
 				mActivityInterface.getBlinkServiceInteraction().remote
 						.sendMeasurementData(info, mGson.toJson(new HeartBeat(
 								bpm, DateTimeUtil.get())), REQUEST_CODE);
+				Log.d(TAG, "send HeartBeat : " + bpm + " // to "
+						+ REMOTE_APP_PACKAGE_NAME);
 				return;
 			}
 		}
