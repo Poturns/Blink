@@ -254,8 +254,11 @@ final class ConnectionFragment extends Fragment {
 		}
 		mDeviceList.clear();
 		mFetchTasking = true;
-		new DataLoaderTask(getActivity(), true).forceLoad();
 		onPreLoading();
+		if (!fetchDeviceListBluetoothInternal()) {
+			onPostLoading();
+			mCurrentChildFragmentInterface.onDeviceListLoadFailed();
+		}
 	}
 
 	/**
@@ -279,8 +282,11 @@ final class ConnectionFragment extends Fragment {
 	 * {@link #onDeviceListLoadFailed()}가 호출된다.
 	 */
 	final void retainConnectedDevicesFromList() {
-		new DataLoaderTask(getActivity(), false).forceLoad();
 		onPreLoading();
+		if (!retainConnectedDevicesFromListInternal()) {
+			mCurrentChildFragmentInterface.onDeviceListChangeCompleted();
+		}
+		onPostLoading();
 	}
 
 	/**
@@ -371,39 +377,6 @@ final class ConnectionFragment extends Fragment {
 				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
 				.replace(R.id.res_blink_fragment_connection_content, callback)
 				.commit();
-	}
-
-	/** Service를 통해 BlinkDevice의 리스트를 얻어오는 작업을 비동기적으로 수행하는 Loader */
-	class DataLoaderTask extends AsyncTaskLoader<Boolean> {
-		private boolean mIsFetch;
-
-		public DataLoaderTask(Context context, boolean isFetch) {
-			super(context);
-			this.mIsFetch = isFetch;
-			this.registerListener(0,
-					new AsyncTaskLoader.OnLoadCompleteListener<Boolean>() {
-						public void onLoadComplete(
-								android.content.Loader<Boolean> loader,
-								Boolean result) {
-							mFetchTasking = false;
-							onPostLoading();
-							if (!result) {
-								onDeviceListLoadFailed();
-							}
-							mCurrentChildFragmentInterface
-									.onDeviceListChangeCompleted();
-							loader.abandon();
-						}
-					});
-		}
-
-		@Override
-		public Boolean loadInBackground() {
-			if (mIsFetch)
-				return fetchDeviceListBluetoothInternal();
-			else
-				return retainConnectedDevicesFromListInternal();
-		}
 	}
 
 	/** BlinkDevice의 연결 작업을 비동기적으로 수행하는 Loader */
@@ -876,6 +849,7 @@ final class ConnectionFragment extends Fragment {
 
 		@Override
 		public void onDiscoveryFinished() {
+			mParentFragment.mFetchTasking = false;
 			getActivity().setProgressBarIndeterminateVisibility(false);
 			onPostLoading();
 			onDeviceListChanged();
@@ -885,6 +859,7 @@ final class ConnectionFragment extends Fragment {
 
 		@Override
 		public void onDiscoveryFailed() {
+			mParentFragment.mFetchTasking = false;
 		}
 
 		@Override

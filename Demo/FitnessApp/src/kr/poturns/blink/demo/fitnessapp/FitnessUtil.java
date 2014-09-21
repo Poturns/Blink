@@ -27,14 +27,6 @@ public class FitnessUtil {
 			return 0;
 	}
 
-	public static final String recommandFitness(InBodyData data) {
-		return null;
-	}
-
-	public static final int recommandCalorie(InBodyData data) {
-		return 0;
-	}
-
 	public static final InBodyData readInBodyFromFile(Context context)
 			throws StreamCorruptedException, IOException,
 			ClassNotFoundException {

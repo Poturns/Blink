@@ -25,6 +25,7 @@ import android.widget.TabHost;
 import android.widget.TextView;
 
 import com.handstudio.android.hzgrapherlib.graphview.BubbleGraphView;
+import com.handstudio.android.hzgrapherlib.vo.GraphNameBox;
 import com.handstudio.android.hzgrapherlib.vo.bubblegraph.BubbleGraph;
 import com.handstudio.android.hzgrapherlib.vo.bubblegraph.BubbleGraphVO;
 
@@ -62,8 +63,8 @@ class DataViewFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		final View v = inflater.inflate(
-				R.layout.res_blink_dialog_fragment_connection_device_info, container,
-				false);
+				R.layout.res_blink_dialog_fragment_connection_device_info,
+				container, false);
 		mTabHost = (TabHost) v.findViewById(android.R.id.tabhost);
 		mTabHost.setup();
 		TabHost.TabContentFactory factory = new TabHost.TabContentFactory() {
@@ -166,9 +167,10 @@ class DataViewFragment extends Fragment {
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View fragmentLayout = inflater.inflate(
-					R.layout.res_blink_fragment_dataview_measurement_data_graph,
-					container, false);
+			View fragmentLayout = inflater
+					.inflate(
+							R.layout.res_blink_fragment_dataview_measurement_data_graph,
+							container, false);
 			mGraphView = (ViewGroup) fragmentLayout
 					.findViewById(R.id.res_blink_fragment_graph);
 			View graph = makeGraph();
@@ -193,11 +195,9 @@ class DataViewFragment extends Fragment {
 				return null;
 			float[] array = new float[size];
 			float[] bubbles = new float[size];
-			float defValue = 0f;
 			for (int i = 0; i < size; i++) {
 				array[i] = Float.valueOf(dataList.get(i).Data);
-				bubbles[i] = Math.abs(defValue - array[i]) + 100f;
-				defValue = array[i];
+				bubbles[i] = (float) Math.random() * 10f;
 			}
 
 			return new BubbleGraph(measurement.MeasurementName, color, array,
@@ -228,6 +228,9 @@ class DataViewFragment extends Fragment {
 
 			ret.setIsLineShow(true);
 			ret.setIsAnimaionShow(true);
+			GraphNameBox nameBox = new GraphNameBox();
+			nameBox.setNameboxTextSize(30);
+			ret.setGraphNameBox(nameBox);
 			Random random = new Random(System.currentTimeMillis());
 			int graphCount = 0;
 
