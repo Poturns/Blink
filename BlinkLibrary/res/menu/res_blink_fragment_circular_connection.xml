@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/res_blink_action_connection_view_change"
+        android:icon="@drawable/res_blink_ic_action_collections_sort_by_size"
+        android:orderInCategory="100"
+        android:showAsAction="always"
+        android:title="@string/res_blink_action_show_as_list">
+    </item>
+
+</menu>

@@ -15,7 +15,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 /** 현재 연결된 Device들을 ListView의 형태로 보여주는 Fragment */
 class ConnectionListFragment extends BaseConnectionFragment {
@@ -30,7 +29,7 @@ class ConnectionListFragment extends BaseConnectionFragment {
 		setHasOptionsMenu(true);
 
 		mSwipeRefreshLayout = (SwipeRefreshLayout) View.inflate(getActivity(),
-				R.layout.fragment_list_connection, null);
+				R.layout.res_blink_fragment_list_connection, null);
 		mSwipeRefreshLayout.setOnRefreshListener(mOnRefreshListener);
 		mSwipeRefreshLayout.setColorSchemeResources(
 				android.R.color.holo_blue_bright,
@@ -44,11 +43,12 @@ class ConnectionListFragment extends BaseConnectionFragment {
 			public View getView(int position, View convertView, ViewGroup parent) {
 				BlinkDevice device = getItem(position);
 				View v = super.getView(position, convertView, parent);
+				v.setBackgroundResource(R.drawable.res_blink_selector_rectangle_box);
 				TextView tv = (TextView) v.findViewById(android.R.id.text1);
 				tv.setText(device.getName());
 				tv.setCompoundDrawablesWithIntrinsicBounds(
-						device.isConnected() ? R.drawable.ic_action_device_access_bluetooth_connected
-								: R.drawable.ic_action_device_access_bluetooth,
+						device.isConnected() ? R.drawable.res_blink_ic_action_device_access_bluetooth_connected
+								: R.drawable.res_blink_ic_action_device_access_bluetooth,
 						0, 0, 0);
 				return v;
 			}
@@ -56,21 +56,21 @@ class ConnectionListFragment extends BaseConnectionFragment {
 		ListView listView = (ListView) mSwipeRefreshLayout
 				.findViewById(android.R.id.list);
 		listView.setAdapter(mAdapter);
-		listView.setEmptyView(View.inflate(getActivity(), R.layout.emptyview,
-				null));
+		listView.setEmptyView(View.inflate(getActivity(),
+				R.layout.res_blink_view_empty, null));
 		listView.setOnItemClickListener(mOnItemClickListener);
 		return mSwipeRefreshLayout;
 	}
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.fragment_list_connection, menu);
+		inflater.inflate(R.menu.res_blink_fragment_list_connection, menu);
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		final int id = item.getItemId();
-		if (id == R.id.action_list_fillter) {
+		if (id == R.id.res_blink_action_list_fillter) {
 			if (mRetainOperationItem != null)
 				mRetainOperationItem = item;
 			boolean check;
@@ -99,6 +99,17 @@ class ConnectionListFragment extends BaseConnectionFragment {
 		}
 	};
 
+	@Override
+	public void onDeviceListChangeCompleted() {
+		onDiscoveryFailed();
+	}
+
+	@Override
+	public void onDiscoveryFailed() {
+		mRefresh = false;
+		mSwipeRefreshLayout.setRefreshing(false);
+	}
+
 	private AdapterView.OnItemClickListener mOnItemClickListener = new AdapterView.OnItemClickListener() {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position,
@@ -112,9 +123,8 @@ class ConnectionListFragment extends BaseConnectionFragment {
 		if (mRefresh) {
 			mRefresh = false;
 			mSwipeRefreshLayout.setRefreshing(false);
-			Toast.makeText(getActivity(), "connection refresh!",
-					Toast.LENGTH_SHORT).show();
 		}
+
 		showHostDeviceToList(true);
 		mAdapter.notifyDataSetChanged();
 	}

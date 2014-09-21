@@ -38,9 +38,9 @@ class LogViewFragment extends Fragment {
 	App mApp;
 	SqliteManagerExtended mManager;
 	int mPrevTitleViewSelectionId;
-	int[] mTitleViewsIdArray = new int[] { R.id.fragment_logview_text_device,
-			R.id.fragment_logview_text_app, R.id.fragment_logview_text_content,
-			R.id.fragment_logview_text_datetime };
+	int[] mTitleViewsIdArray = new int[] { R.id.res_blink_fragment_logview_text_device,
+			R.id.res_blink_fragment_logview_text_app, R.id.res_blink_fragment_logview_text_content,
+			R.id.res_blink_fragment_logview_text_datetime };
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -55,7 +55,7 @@ class LogViewFragment extends Fragment {
 		checkArgumentsFromOtherFragment();
 
 		mArrayAdapter = new LogArrayAdapter(getActivity(),
-				R.layout.list_fragment_logview, mLogList);
+				R.layout.res_blink_list_fragment_logview, mLogList);
 		mLogComparator = new ExternalBlinkLog.LogComparator();
 	}
 
@@ -99,9 +99,9 @@ class LogViewFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		final View view = inflater.inflate(R.layout.fragment_logview,
+		final View view = inflater.inflate(R.layout.res_blink_fragment_logview,
 				container, false);
-		View titleLayout = view.findViewById(R.id.fragment_logview_table_title);
+		View titleLayout = view.findViewById(R.id.res_blink_fragment_logview_table_title);
 		ListView listView = (ListView) view.findViewById(android.R.id.list);
 		listView.setAdapter(mArrayAdapter);
 		listView.setEmptyView(view.findViewById(android.R.id.empty));
@@ -114,8 +114,8 @@ class LogViewFragment extends Fragment {
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.fragment_logview, menu);
-		final MenuItem searchMenu = menu.findItem(R.id.action_search);
+		inflater.inflate(R.menu.res_blink_fragment_logview, menu);
+		final MenuItem searchMenu = menu.findItem(R.id.res_blink_action_search);
 
 		SearchView searchView = (SearchView) searchMenu.getActionView();
 		searchView.setOnQueryTextListener(new OnQueryTextListener() {
@@ -133,7 +133,7 @@ class LogViewFragment extends Fragment {
 			}
 		});
 		searchView.setSubmitButtonEnabled(true);
-		searchView.setQueryHint(getText(R.string.hint));
+		searchView.setQueryHint(getText(R.string.res_blink_hint));
 		searchMenu.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM
 				| MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
 	}
@@ -147,7 +147,7 @@ class LogViewFragment extends Fragment {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		final int id = item.getItemId();
-		if (id == R.id.action_refresh) {
+		if (id == R.id.res_blink_action_refresh) {
 			// Log 새로고침
 			getLoader(
 					new Loader.OnLoadCompleteListener<List<ExternalBlinkLog>>() {
@@ -223,7 +223,8 @@ class LogViewFragment extends Fragment {
 							.getFieldConstantByOrder(i)));
 				}
 			}
-
+			convertView
+					.setBackgroundResource(R.drawable.res_blink_selector_rectangle_box);
 			return convertView;
 		}
 

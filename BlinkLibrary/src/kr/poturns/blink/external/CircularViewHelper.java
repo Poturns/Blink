@@ -235,7 +235,7 @@ class CircularViewHelper {
 	 *            - {@link Collection}의 data
 	 */
 	protected View getView(Context context, int position, Object object) {
-		return View.inflate(context, R.layout.view_textview, null);
+		return View.inflate(context, R.layout.res_blink_view_circular, null);
 	}
 
 	/** 현재 배치된 Child View의 개수를 얻는다. */

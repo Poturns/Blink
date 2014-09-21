@@ -65,7 +65,7 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.service_test);
+		setContentView(R.layout.res_blink_service_test);
 
 		interaction = new BlinkServiceInteraction(this,null,eventCallback) {
 

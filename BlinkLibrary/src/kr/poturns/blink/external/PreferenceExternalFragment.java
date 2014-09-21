@@ -31,6 +31,7 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 	/** '기기를 센터로 설정'의 Key */
 	private static final String KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST = "KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST";
 	IServiceContolActivity mInterface;
+	String mOriginalPreferencePath;
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -47,7 +48,7 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 				+ FileUtil.EXTERNAL_PREF_FILE_NAME);
 		getPreferenceManager().setSharedPreferencesName(
 				FileUtil.EXTERNAL_PREF_FILE_NAME);
-		addPreferencesFromResource(R.xml.preference_external);
+		addPreferencesFromResource(R.xml.res_blink_preference_external);
 		bindPreferenceSummaryToValue();
 	}
 
@@ -75,12 +76,36 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 			mPreferenceDirField.setAccessible(true);
 			File mPreferenceDir = FileUtil
 					.obtainExternalDirectory(FileUtil.EXTERNAL_PREF_DIRECTORY_NAME);
-			Log.d(TAG, "use : " + mPreferenceDir);
+			Log.d(TAG, "will use : " + mPreferenceDir);
+			String path = mPreferenceDirField.get(mBase).toString();
+			if (!path.equals(mOriginalPreferencePath)) {
+				mOriginalPreferencePath = path;
+				mPreferenceDirField.set(mBase, mPreferenceDir);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			Log.w(TAG, "could not change mPreferenceDir");
+		}
+	}
+
+	@Override
+	public void onDestroy() {
+		try {
+			Context mBase = getActivity().getBaseContext();
+			Class<? extends Context> contextImplClass = mBase.getClass();
+
+			// sharedPreference Directory
+			Field mPreferenceDirField = contextImplClass
+					.getDeclaredField("mPreferencesDir");
+			mPreferenceDirField.setAccessible(true);
+			File mPreferenceDir = new File(mOriginalPreferencePath);
+			Log.d(TAG, "restore : " + mPreferenceDir);
 			mPreferenceDirField.set(mBase, mPreferenceDir);
 		} catch (Exception e) {
 			e.printStackTrace();
 			Log.w(TAG, "could not change mPreferenceDir");
 		}
+		super.onDestroy();
 	}
 
 	@Override
@@ -102,18 +127,17 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 	private void bindPreferenceSummaryToValue() {
 		SharedPreferences pref = getPreferenceScreen().getSharedPreferences();
 		pref.registerOnSharedPreferenceChangeListener(this);
-		// onSharedPreferenceChanged(pref, "sample");
 	}
 
 	@Override
 	public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen,
 			Preference preference) {
 		int titleRes = preference.getTitleRes();
-		if (titleRes == R.string.preference_external_title_delete_database) {
+		if (titleRes == R.string.res_blink_preference_external_title_delete_database) {
 			new AlertDialog.Builder(getActivity())
 					.setTitle(titleRes)
-					.setIcon(R.drawable.ic_action_alerts_and_states_warning)
-					.setMessage(R.string.confirm_delete)
+					.setIcon(R.drawable.res_blink_ic_action_alerts_and_states_warning)
+					.setMessage(R.string.res_blink_confirm_delete)
 					.setNegativeButton(android.R.string.no, null)
 					.setPositiveButton(android.R.string.yes,
 							new DialogInterface.OnClickListener() {
@@ -128,21 +152,21 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 									}
 									if (!result) {
 										Toast.makeText(getActivity(),
-												R.string.deleted,
+												R.string.res_blink_deleted,
 												Toast.LENGTH_SHORT).show();
 									} else {
 										Toast.makeText(getActivity(),
-												R.string.fail,
+												R.string.res_blink_fail,
 												Toast.LENGTH_SHORT).show();
 									}
 								}
 							}).create().show();
 			return true;
-		} else if (titleRes == R.string.preference_external_title_delete_database_device) {
+		} else if (titleRes == R.string.res_blink_preference_external_title_delete_database_device) {
 			new AlertDialog.Builder(getActivity())
 					.setTitle(titleRes)
-					.setIcon(R.drawable.ic_action_alerts_and_states_warning)
-					.setMessage(R.string.confirm_delete)
+					.setIcon(R.drawable.res_blink_ic_action_alerts_and_states_warning)
+					.setMessage(R.string.res_blink_confirm_delete)
 					.setNegativeButton(android.R.string.no, null)
 					.setPositiveButton(android.R.string.yes,
 							new DialogInterface.OnClickListener() {
@@ -156,11 +180,11 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 									manager.close();
 									if (result) {
 										Toast.makeText(getActivity(),
-												R.string.deleted,
+												R.string.res_blink_deleted,
 												Toast.LENGTH_SHORT).show();
 									} else {
 										Toast.makeText(getActivity(),
-												R.string.fail,
+												R.string.res_blink_fail,
 												Toast.LENGTH_SHORT).show();
 									}
 								}

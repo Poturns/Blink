@@ -24,14 +24,9 @@ import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TextView;
 
-import com.handstudio.android.hzgrapherlib.animation.GraphAnimation;
 import com.handstudio.android.hzgrapherlib.graphview.BubbleGraphView;
-import com.handstudio.android.hzgrapherlib.graphview.CircleGraphView;
-import com.handstudio.android.hzgrapherlib.vo.GraphNameBox;
 import com.handstudio.android.hzgrapherlib.vo.bubblegraph.BubbleGraph;
 import com.handstudio.android.hzgrapherlib.vo.bubblegraph.BubbleGraphVO;
-import com.handstudio.android.hzgrapherlib.vo.circlegraph.CircleGraph;
-import com.handstudio.android.hzgrapherlib.vo.circlegraph.CircleGraphVO;
 
 /**
  * App의 Data들을 graph들로 보여주는 Fragment
@@ -67,7 +62,7 @@ class DataViewFragment extends Fragment {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		final View v = inflater.inflate(
-				R.layout.dialog_fragment_connection_device_info, container,
+				R.layout.res_blink_dialog_fragment_connection_device_info, container,
 				false);
 		mTabHost = (TabHost) v.findViewById(android.R.id.tabhost);
 		mTabHost.setup();
@@ -83,7 +78,7 @@ class DataViewFragment extends Fragment {
 			}
 		};
 		final String[] pageTitles = getResources().getStringArray(
-				R.array.dialog_data_page_titles);
+				R.array.res_blink_dialog_data_page_titles);
 		int i = 0;
 		for (String title : pageTitles) {
 			mTabHost.addTab(mTabHost.newTabSpec(String.valueOf(i++))
@@ -97,7 +92,7 @@ class DataViewFragment extends Fragment {
 			}
 		});
 		mViewPager = (ViewPager) v
-				.findViewById(R.id.dialog_deviceinfo_viewpager);
+				.findViewById(R.id.res_blink_dialog_deviceinfo_viewpager);
 		mViewPager.setOffscreenPageLimit(mFragmentList.size());
 		mViewPager
 				.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
@@ -141,8 +136,11 @@ class DataViewFragment extends Fragment {
 	@Override
 	public void onResume() {
 		super.onResume();
-		getActivity().getActionBar().setTitle(mMeasurement.MeasurementName);
-		getActivity().getActionBar().setSubtitle(mMeasurement.Type);
+		String title = mMeasurement.MeasurementName;
+		if (title == null || title.length() < 1)
+			title = PrivateUtil.obtainSplitMeasurementSchema(mMeasurement);
+		getActivity().getActionBar().setTitle(title);
+		getActivity().getActionBar().setSubtitle(mMeasurement.Measurement);
 	}
 
 	@Override
@@ -161,65 +159,6 @@ class DataViewFragment extends Fragment {
 		super.onDestroyView();
 	}
 
-	/** 현재 App의 MeasurementData들이 차지하는 비율을 파이 그래프 형태로 보여준다. */
-	private class DataMeasurementsPieFragment extends Fragment {
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			final View view = inflater.inflate(R.layout.fragment_dataview,
-					container, false);
-			CircleGraphVO vo = makePieGraph();
-			if (vo != null)
-				((ViewGroup) view).addView(new CircleGraphView(getActivity(),
-						vo));
-			return view;
-		}
-
-		private CircleGraphVO makePieGraph() {
-			ArrayList<CircleGraph> graphItemList = new ArrayList<CircleGraph>();
-			Random random = new Random(System.currentTimeMillis());
-			Measurement measurement = DataViewFragment.this.mMeasurement;
-			int r = random.nextInt(128) + 128;
-			int g = random.nextInt(128) + 128;
-			int b = random.nextInt(128) + 128;
-			graphItemList.add(new CircleGraph(measurement.MeasurementName,
-					Color.rgb(r, g, b), DataViewFragment.this.mManager
-							.obtainMeasurementDataListSize(measurement)));
-
-			if (graphItemList.isEmpty())
-				return null;
-			CircleGraphVO vo = new CircleGraphVO(graphItemList);
-
-			// circle Line
-			vo.setLineColor(Color.WHITE);
-
-			// set text setting
-			vo.setTextColor(Color.WHITE);
-			vo.setTextSize(20);
-
-			// set circle center move X ,Y
-			vo.setCenterX(0);
-			vo.setCenterY(0);
-
-			// set animation
-			vo.setAnimation(new GraphAnimation(GraphAnimation.LINEAR_ANIMATION,
-					10));
-			// set graph name box
-
-			vo.setPieChart(true);
-
-			GraphNameBox graphNameBox = new GraphNameBox();
-
-			// nameBox
-			graphNameBox.setNameboxMarginTop(25);
-			graphNameBox.setNameboxMarginRight(25);
-
-			vo.setGraphNameBox(graphNameBox);
-
-			return vo;
-		}
-	}
-
 	/** 해당 Device의 App의 Measurement의 Data들을 line graph형태로 보여준다. */
 	private class DataMeasurementsLineGraphFragment extends Fragment {
 		private ViewGroup mGraphView;
@@ -227,10 +166,11 @@ class DataViewFragment extends Fragment {
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View fragmentLayout = inflater.inflate(R.layout.fragment_graph,
+			View fragmentLayout = inflater.inflate(
+					R.layout.res_blink_fragment_dataview_measurement_data_graph,
 					container, false);
 			mGraphView = (ViewGroup) fragmentLayout
-					.findViewById(R.id.fragment_sample_GraphView);
+					.findViewById(R.id.res_blink_fragment_graph);
 			View graph = makeGraph();
 			if (graph != null)
 				mGraphView.addView(graph);
@@ -260,7 +200,7 @@ class DataViewFragment extends Fragment {
 				defValue = array[i];
 			}
 
-			return new BubbleGraph(measurement.Description, color, array,
+			return new BubbleGraph(measurement.MeasurementName, color, array,
 					bubbles);
 		}
 
@@ -271,10 +211,17 @@ class DataViewFragment extends Fragment {
 			int size = dataList.size();
 			String[] legendArr = new String[size];
 			for (int i = 0; i < size; i++) {
+				// yyyy-mm-dd hh:MM:ss 형식으로 된 시간정보에서
+				// mm-dd 만 추출
 				legendArr[i] = dataList.get(i).DateTime.split(" ")[0]
 						.replaceAll("^.*?-", "");
 				if (legendArr[i].length() > 6)
 					legendArr[i] = legendArr[i].substring(0, 5);
+				if (size > 70
+						|| (size > 40 && PrivateUtil
+								.isScreenSizeSmall(getActivity()))) {
+					legendArr[i] = legendArr[i].substring(2);
+				}
 			}
 			ret = new BubbleGraphVO(legendArr);
 			ret.setAnimationDuration(1000);
@@ -284,9 +231,9 @@ class DataViewFragment extends Fragment {
 			Random random = new Random(System.currentTimeMillis());
 			int graphCount = 0;
 
-			int r = random.nextInt(128) + 128;
-			int g = random.nextInt(128) + 128;
-			int b = random.nextInt(128) + 128;
+			int r = random.nextInt(172) + 64;
+			int g = random.nextInt(172) + 64;
+			int b = random.nextInt(172) + 64;
 			BubbleGraph bg = makeBubbleGraph(mMeasurement, Color.rgb(r, g, b));
 			if (bg != null) {
 				ret.add(bg);
@@ -300,6 +247,7 @@ class DataViewFragment extends Fragment {
 		}
 	}
 
+	/** 해당 Device의 App의 Measurement의 Data들의 목록을 보여준다. */
 	private class DataMeasurementDataListFragment extends Fragment {
 		List<MeasurementData> mMeasurementDataList;
 		ArrayAdapter<MeasurementData> mAdapter;
@@ -327,6 +275,7 @@ class DataViewFragment extends Fragment {
 				public View getView(int position, View convertView,
 						ViewGroup parent) {
 					View v = super.getView(position, convertView, parent);
+					v.setBackgroundResource(R.drawable.res_blink_selector_rectangle_box);
 					MeasurementData item = getItem(position);
 					((TextView) v.findViewById(android.R.id.text1))
 							.setText(item.Data);
@@ -341,8 +290,8 @@ class DataViewFragment extends Fragment {
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 			View v = inflater.inflate(
-					R.layout.dialog_fragment_connection_db_info, container,
-					false);
+					R.layout.res_blink_fragment_dataview_measurement_data_list,
+					container, false);
 			ListView listView = (ListView) v.findViewById(android.R.id.list);
 			listView.setAdapter(mAdapter);
 			listView.setEmptyView(v.findViewById(android.R.id.empty));

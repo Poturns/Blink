@@ -1,0 +1,9 @@
+<!-- 연결 상태 (리스트) 의 레이아웃 -->
+<android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/res_blink_swipe_container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <include layout="@layout/res_blink_view_listview" />
+
+</android.support.v4.widget.SwipeRefreshLayout>

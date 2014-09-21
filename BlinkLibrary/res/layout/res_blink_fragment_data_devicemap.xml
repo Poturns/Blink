@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DataSelectFragment의 DeviceMapFragment의 Layout, Device와 App을 ExpandableListView를 이용하여 Map의 형태로 보여준다 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@android:id/text1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/res_blink_list_header_side_margin"
+        android:gravity="center_vertical"
+        android:text="@string/res_blink_measurement_data" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="2dp"
+        android:layout_marginLeft="@dimen/res_blink_list_header_side_margin"
+        android:layout_marginRight="@dimen/res_blink_list_header_side_margin"
+        android:background="@android:color/darker_gray" />
+
+    <ExpandableListView
+        android:id="@android:id/list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/res_blink_list_side_margin"
+        android:layout_marginRight="@dimen/res_blink_list_side_margin" >
+    </ExpandableListView>
+
+    <include layout="@layout/res_blink_view_empty" />
+
+</LinearLayout>

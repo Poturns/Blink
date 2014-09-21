@@ -1,11 +1,11 @@
 package kr.poturns.blink.external;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import kr.poturns.blink.R;
-import kr.poturns.blink.external.CircularViewHelper.*;
-import kr.poturns.blink.external.ConnectionFragment.*;
+import kr.poturns.blink.external.CircularViewHelper.OnDragAndDropListener;
+import kr.poturns.blink.external.ConnectionFragment.BaseConnectionFragment;
+import kr.poturns.blink.external.ConnectionFragment.DeviceConnectionResultListener;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.content.Context;
 import android.os.Bundle;
@@ -26,23 +26,28 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 	private SlidingDrawer mSlidingDrawer;
 	private SeekBar mSeekBar;
 	CircularViewHelper mCircularHelper;
+	/**
+	 * 장비 리스트 변경 후, SeekBar의 값을 변경할 때 참조하는 변수<br>
+	 * <li>0 : 변경 안함</li> <li>1 : Max</li> <li>2 : Min</li>
+	 */
+	int mSetSeekBarValueMax = 0;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		ViewGroup viewGroup = (ViewGroup) View.inflate(getActivity(),
-				R.layout.fragment_circular_connection, null);
+				R.layout.res_blink_fragment_circular_connection, null);
 		showHostDeviceToList(false);
 		mCircularHelper = new CircularViewHelper(viewGroup, android.R.id.text1) {
 			@Override
 			protected View getView(Context context, int position, Object object) {
 				TextView view = (TextView) View.inflate(context,
-						R.layout.view_textview, null);
+						R.layout.res_blink_view_circular, null);
 				BlinkDevice device = (BlinkDevice) object;
 				view.setCompoundDrawablesWithIntrinsicBounds(
 						0,
-						device.isConnected() ? R.drawable.ic_action_device_access_bluetooth_connected
-								: R.drawable.ic_action_device_access_bluetooth,
+						device.isConnected() ? R.drawable.res_blink_ic_action_device_access_bluetooth_connected
+								: R.drawable.res_blink_ic_action_device_access_bluetooth,
 						0, 0);
 				String name = device.getName();
 				// TODO 현재 ChildView 크기 만큼, 표시되는 이름 길이 줄이기
@@ -73,20 +78,21 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 		mCircularHelper.drawCircularView(getDeviceList());
 
 		mSlidingDrawer = (SlidingDrawer) viewGroup
-				.findViewById(R.id.fragment_circular_sliding_drawer);
+				.findViewById(R.id.res_blink_fragment_circular_sliding_drawer);
+		mSlidingDrawer.animateOpen();
 		mSeekBar = (SeekBar) mSlidingDrawer
-				.findViewById(R.id.fragment_circular_seekbar);
+				.findViewById(R.id.res_blink_fragment_circular_seekbar);
 		mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
 
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {
 				int progress = seekBar.getProgress();
 				if (progress > 50) { // connected device
+					mSetSeekBarValueMax = 1;
 					retainConnectedDevicesFromList();
-					seekBar.setProgress(100);
 				} else {
+					mSetSeekBarValueMax = 2;
 					obtainDiscoveryList();
-					seekBar.setProgress(0);
 				}
 			}
 
@@ -104,6 +110,7 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 		return viewGroup;
 	}
 
+	/** 연결되지 않은 Device를 나타내는 View의 alpha값을 변경한다. */
 	void setFilteringViewAlpha(int percent) {
 		List<View> list = mCircularHelper.getChildViews();
 		int size = list.size();
@@ -115,26 +122,6 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 		}
 	}
 
-	ArrayList<View> generateViews() {
-		ArrayList<View> list = new ArrayList<View>();
-		int size = getDeviceList().size();
-		for (int i = 0; i < size; i++) {
-			TextView view = (TextView) View.inflate(getActivity(),
-					R.layout.view_textview, null);
-			BlinkDevice device = getDeviceList().get(i);
-			view.setCompoundDrawablesWithIntrinsicBounds(
-					0,
-					device.isConnected() ? R.drawable.ic_action_device_access_bluetooth_connected
-							: R.drawable.ic_action_device_access_bluetooth, 0,
-					0);
-			view.setText(device.getName());
-			view.setOnClickListener(mOnClickListener);
-			view.setTag(device);
-			list.add(view);
-		}
-		return list;
-	}
-
 	@Override
 	public BaseConnectionFragment getChangedFragment() {
 		return new ConnectionListFragment();
@@ -142,7 +129,7 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-		inflater.inflate(R.menu.fragment_circular_connection, menu);
+		inflater.inflate(R.menu.res_blink_fragment_circular_connection, menu);
 	}
 
 	private OnDragAndDropListener mDragAndDropListener = new OnDragAndDropListener() {
@@ -179,16 +166,20 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 
 		@Override
 		public void onStartDrag(View view, View center) {
-			view.setBackgroundResource(R.drawable.drawable_rounded_circle_gray);
-			((TextView) center).setText("Drop here to connect");
-			((TextView) center)
-					.setBackgroundResource(R.drawable.drawable_rounded_circle_border);
+			view.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle_gray);
+			TextView centerView = (TextView) center;
+			centerView
+					.setText(getString(((BlinkDevice) mCircularHelper
+							.getViewTag(view)).isConnected() ? R.string.res_blink_drop_to_connect
+							: R.string.res_blink_drop_to_disconnect));
+			centerView
+					.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle_border);
 		}
 
 		@Override
 		public void onDropEnd(View view, View center) {
-			center.setBackgroundResource(R.drawable.drawable_rounded_circle);
-			view.setBackgroundResource(R.drawable.drawable_rounded_circle);
+			center.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle);
+			view.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle);
 			((TextView) center).setText(getHostDevice().getName());
 		}
 	};
@@ -207,4 +198,14 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 		mCircularHelper.drawCircularView(getDeviceList());
 	}
 
+	@Override
+	public void onDeviceListChangeCompleted() {
+		super.onDeviceListChangeCompleted();
+		if (mSetSeekBarValueMax == 1) {
+			mSeekBar.setProgress(100);
+		} else if (mSetSeekBarValueMax == 2) {
+			mSeekBar.setProgress(0);
+		}
+		mSetSeekBarValueMax = 0;
+	}
 }

@@ -56,8 +56,8 @@ class DataSelectFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		final View view = inflater.inflate(R.layout.fragment_data_select,
-				container, false);
+		final View view = inflater.inflate(
+				R.layout.res_blink_fragment_data_select, container, false);
 		return view;
 	}
 
@@ -69,9 +69,11 @@ class DataSelectFragment extends Fragment {
 		} else {
 			getChildFragmentManager()
 					.beginTransaction()
-					.replace(R.id.fragment_content_select_recent_list,
+					.replace(
+							R.id.res_blink_fragment_content_select_recent_list,
 							new RecentListFragment())
-					.replace(R.id.framgent_content_select_device_list,
+					.replace(
+							R.id.res_blink_framgent_content_select_device_list,
 							new DeviceMapFragment()).commit();
 		}
 		Bundle arg = getArguments();
@@ -84,14 +86,14 @@ class DataSelectFragment extends Fragment {
 	@Override
 	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		if (PrivateUtil.isScreenSizeSmall(getActivity())) {
-			inflater.inflate(R.menu.fragment_data_select, menu);
+			inflater.inflate(R.menu.res_blink_fragment_data_select, menu);
 		}
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
-		if (id == R.id.action_refresh) {
+		if (id == R.id.res_blink_action_refresh) {
 			changeInternalFragment();
 			return true;
 		} else
@@ -120,8 +122,8 @@ class DataSelectFragment extends Fragment {
 		Fragment f = new DataViewFragment();
 		f.setArguments(bundle);
 		getFragmentManager().beginTransaction()
-				.add(R.id.activity_main_fragment_content, f, "1").hide(this)
-				.show(f)
+				.add(R.id.res_blink_activity_main_fragment_content, f, "1")
+				.hide(this).show(f)
 				.addToBackStack(DataSelectFragment.class.getSimpleName())
 				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 				.commit();
@@ -136,8 +138,8 @@ class DataSelectFragment extends Fragment {
 		Fragment f = new MeasurementListFragment();
 		f.setArguments(arg);
 		getFragmentManager().beginTransaction()
-				.add(R.id.activity_main_fragment_content, f, "1").hide(this)
-				.show(f)
+				.add(R.id.res_blink_activity_main_fragment_content, f, "1")
+				.hide(this).show(f)
 				.addToBackStack(DataSelectFragment.class.getSimpleName())
 				.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 				.commit();
@@ -155,12 +157,13 @@ class DataSelectFragment extends Fragment {
 					.obtainRecentModifiedMeasurement(PrivateUtil
 							.isScreenSizeSmall(getActivity()) ? 7 : 5);
 			mRecentListAdapter = new ArrayAdapter<Measurement>(getActivity(),
-					R.layout.list_recent, android.R.id.text1,
+					R.layout.res_blink_list_recent, android.R.id.text1,
 					mRecentMeasurementList) {
 				@Override
 				public View getView(int position, View convertView,
 						ViewGroup parent) {
 					View v = super.getView(position, convertView, parent);
+					v.setBackgroundResource(R.drawable.res_blink_drawable_rectangle_box);
 					final Measurement measurement = getItem(position);
 					final App app = mManager
 							.obtainAppByMeasurement(measurement);
@@ -169,18 +172,18 @@ class DataSelectFragment extends Fragment {
 					((TextView) v.findViewById(android.R.id.text1))
 							.setText(device.Device);
 					TextView appTextView = (TextView) v
-							.findViewById(R.id.fragment_list_recent_app);
+							.findViewById(R.id.res_blink_fragment_list_recent_app);
 					appTextView.setText(app.AppName);
 					appTextView
 							.setCompoundDrawablesRelativeWithIntrinsicBounds(
 									PrivateUtil.obtainAppIcon(app,
 											getResources()), null, null, null);
 					((TextView) v
-							.findViewById(R.id.fragment_list_recent_measurement))
+							.findViewById(R.id.res_blink_fragment_list_recent_measurement))
 							.setText(PrivateUtil
 									.obtainSplitMeasurementSchema(measurement));
 					((TextView) v
-							.findViewById(R.id.fragment_list_recent_datetime))
+							.findViewById(R.id.res_blink_fragment_list_recent_datetime))
 							.setText(mManager.obtainMeasurementDataDateTime(
 									measurement).replace(" ", "\n"));
 					v.setOnClickListener(new View.OnClickListener() {
@@ -201,8 +204,9 @@ class DataSelectFragment extends Fragment {
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
-			View v = inflater.inflate(R.layout.fragment_data_recent_list,
-					container, false);
+			View v = inflater.inflate(
+					R.layout.res_blink_fragment_data_recent_list, container,
+					false);
 			ListView listView = (ListView) v.findViewById(android.R.id.list);
 			listView.setAdapter(mRecentListAdapter);
 			listView.setEmptyView(v.findViewById(android.R.id.empty));
@@ -221,11 +225,21 @@ class DataSelectFragment extends Fragment {
 			mDeviceMap = mManager.obtainDeviceMap();
 			mAdapter = new ContentAdapter(getActivity(), mDeviceMap);
 			final View view = inflater.inflate(
-					R.layout.fragment_data_devicemap, container, false);
+					R.layout.res_blink_fragment_data_devicemap, container,
+					false);
 			ExpandableListView listView = (ExpandableListView) view
 					.findViewById(android.R.id.list);
 			listView.setEmptyView(view.findViewById(android.R.id.empty));
 			listView.setAdapter(mAdapter);
+
+			// 표현할 데이터가 작으면, ExpandableListView를 펼쳐서 보여준다.
+			int groupSize = mAdapter.getGroupCount();
+			if (groupSize < (PrivateUtil.isScreenSizeSmall(getActivity()) ? 4
+					: 7)) {
+				for (int i = 0; i < groupSize; i++) {
+					listView.expandGroup(i, true);
+				}
+			}
 			return view;
 		}
 
@@ -244,7 +258,7 @@ class DataSelectFragment extends Fragment {
 				Holder holder = (Holder) h;
 				holder.tv.setText(device.Device);
 				holder.tv.setCompoundDrawablesWithIntrinsicBounds(
-						R.drawable.ic_action_hardware_phone, 0, 0, 0);
+						R.drawable.res_blink_ic_action_hardware_phone, 0, 0, 0);
 			}
 
 			@Override
@@ -313,6 +327,7 @@ class DataSelectFragment extends Fragment {
 				public View getView(int position, View convertView,
 						ViewGroup parent) {
 					View v = super.getView(position, convertView, parent);
+					v.setBackgroundResource(R.drawable.res_blink_selector_rectangle_box);
 					IDatabaseObject item = getItem(position);
 					TextView head = (TextView) v
 							.findViewById(android.R.id.text1);
@@ -322,18 +337,18 @@ class DataSelectFragment extends Fragment {
 						Measurement measurement = (Measurement) item;
 						head.setText(measurement.MeasurementName);
 						head.setCompoundDrawablesRelativeWithIntrinsicBounds(
-								R.drawable.ic_action_device_access_storage_1,
+								R.drawable.res_blink_ic_action_statistics_chart,
 								0, 0, 0);
-						tail.setText(measurement.Measurement
-								+ "\n측정 데이터 갯수 : "
+						tail.setText(measurement.Description
+								+ "\nCount : "
 								+ mManager
 										.obtainMeasurementDataListSize(measurement));
 					} else if (item instanceof Function) {
 						Function function = (Function) item;
 						head.setText(function.Function);
 						head.setCompoundDrawablesRelativeWithIntrinsicBounds(
-								R.drawable.ic_action_av_play_over_video, 0, 0,
-								0);
+								R.drawable.res_blink_ic_action_statistics_function,
+								0, 0, 0);
 						tail.setText(function.Description);
 					}
 					return v;
@@ -345,8 +360,8 @@ class DataSelectFragment extends Fragment {
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 			View v = inflater.inflate(
-					R.layout.dialog_fragment_connection_db_info, container,
-					false);
+					R.layout.res_blink_fragment_dataview_measurement_data_list,
+					container, false);
 			ListView listView = (ListView) v.findViewById(android.R.id.list);
 			listView.setAdapter(mAdapter);
 			listView.setEmptyView(v.findViewById(android.R.id.empty));
@@ -392,7 +407,7 @@ class DataSelectFragment extends Fragment {
 			f.setArguments(bundle);
 			getFragmentManager()
 					.beginTransaction()
-					.add(R.id.activity_main_fragment_content, f, "1")
+					.add(R.id.res_blink_activity_main_fragment_content, f, "1")
 					.hide(this)
 					.show(f)
 					.addToBackStack(

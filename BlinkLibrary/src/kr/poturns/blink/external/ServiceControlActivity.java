@@ -64,18 +64,19 @@ public final class ServiceControlActivity extends Activity implements
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+		requestWindowFeature(Window.FEATURE_ACTION_BAR);
 		FileUtil.createExternalDirectory();
-		setContentView(R.layout.activity_service_control);
+		setContentView(R.layout.res_blink_activity_service_control);
 		mSqliteManagerExtended = new SqliteManagerExtended(this);
-		mSlidingPaneLayout = (SlidingPaneLayout) findViewById(R.id.activity_sliding_layout);
+		mSlidingPaneLayout = (SlidingPaneLayout) findViewById(R.id.res_blink_activity_sliding_layout);
 		mSlidingPaneLayout.setSliderFadeColor(Color.TRANSPARENT);
-		mLeftListView = (ListView) findViewById(R.id.activity_main_left_drawer);
+		mLeftListView = (ListView) findViewById(R.id.res_blink_activity_main_left_drawer);
 		mActionBarToggle = new ActionBarToggle(this, mSlidingPaneLayout,
-				R.drawable.ic_navigation_drawer, R.string.app_name,
-				R.string.app_name);
+				R.drawable.res_blink_ic_navigation_drawer, R.string.res_bllink_app_name,
+				R.string.res_bllink_app_name);
 
 		mLeftListView.setAdapter(ArrayAdapter.createFromResource(this,
-				R.array.activity_sercive_control_menu_array,
+				R.array.res_blink_activity_sercive_control_menu_array,
 				android.R.layout.simple_list_item_1));
 		mLeftListView.setOnItemClickListener(mLeftListViewOnItemClickListener);
 		mConnectionFragment = new ConnectionFragment();
@@ -91,7 +92,7 @@ public final class ServiceControlActivity extends Activity implements
 		a.recycle();
 		getFragmentManager()
 				.beginTransaction()
-				.add(R.id.activity_main_fragment_content, mConnectionFragment,
+				.add(R.id.res_blink_activity_main_fragment_content, mConnectionFragment,
 						"0").hide(mConnectionFragment).commit();
 		transitFragment(0, null);
 	}
@@ -139,7 +140,7 @@ public final class ServiceControlActivity extends Activity implements
 			f.setHasOptionsMenu(true);
 			transaction
 					.hide(mConnectionFragment)
-					.add(R.id.activity_main_fragment_content, f,
+					.add(R.id.res_blink_activity_main_fragment_content, f,
 							String.valueOf(position)).show(f)
 					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 					.commit();
@@ -164,7 +165,7 @@ public final class ServiceControlActivity extends Activity implements
 		View presentSelection = mLeftListView.getChildAt(position);
 		if (presentSelection != null) {
 			presentSelection
-					.setBackgroundResource(R.drawable.drawable_left_list_selected);
+					.setBackgroundResource(R.drawable.res_blink_drawable_left_list_selected);
 			presentSelection.setPaddingRelative(mListViewChildPaddingStart / 2,
 					0, mListViewChildPaddingEnd, 0);
 		}
