@@ -59,7 +59,7 @@ public class MessageProcessor {
 	 * @param fromDevice
 	 */
 	public void acceptBlinkMessage(BlinkMessage blinkMessage, BlinkDevice fromDevice) {
-		Log.d("acceptBlinkMessage in Blink", "start!!");
+		Log.d("acceptBlinkMessage", "accept start!!");
 		String currentAddress = null;
 		BlinkDevice currentDevice = null;
 		
@@ -107,8 +107,8 @@ public class MessageProcessor {
 			}
 			//동기화 시작할때 Sync 플래그를 true로, 끝날 때 false로 설정하여 추가 동기화를 막는다.
 			if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC){
-				Log.i("Blink", "TYPE_REQUEST_MEASUREMENTDATA_SYNC");
 				setSynchronizing(true);
+				Log.i("acceptBlinkMessage", "TYPE_REQUEST_MEASUREMENTDATA_SYNC");
 				builder_success.setType(IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SYNC_SUCCESS);
 				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(OPERATOR_CONTEXT);
 				String jsonRequestMessage = blinkMessage.getMessage();
@@ -127,7 +127,7 @@ public class MessageProcessor {
 				setSynchronizing(false);
 			}
 			else if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_FUNCTION){//
-				Log.i("Blink", "TYPE_REQUEST_FUNCTION");
+				Log.i("acceptBlinkMessage", "TYPE_REQUEST_FUNCTION");
 				//call back
 				Function function = JsonManager.obtainJsonFunction(blinkMessage.getMessage());
 				startFunction(function);
@@ -137,7 +137,7 @@ public class MessageProcessor {
 				sendBlinkMessageTo(successBlinkMessage, BlinkDevice.load(blinkMessage.getSourceAddress()));
 			}
 			else if(blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA){//
-				Log.i("Blink", "TYPE_REQUEST_MEASUREMENTDATA");
+				Log.i("acceptBlinkMessage", "TYPE_REQUEST_MEASUREMENTDATA");
 				String message = OPERATOR_CONTEXT.receiveMessageFromProcessor(blinkMessage.getMessage());
 				builder_success.setMessage(message);
 				builder_success.setType(IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SUCCESS);
@@ -187,16 +187,16 @@ public class MessageProcessor {
 				
 			}
 			else if(blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_FUNCTION_SUCCESS){
-				Log.i("Blink", "TYPE_RESPONSE_FUNCTION_SUCCESS");
+				Log.i("acceptBlinkMessage", "TYPE_RESPONSE_FUNCTION_SUCCESS");
 				SERVICE_KEEPER.obtainBinder(blinkMessage.getDestinationApplication()).callbackData(blinkMessage.getCode(), blinkMessage.getMessage(), true);
 			}
 			else if(blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SUCCESS){
-				Log.i("Blink", "TYPE_RESPONSE_MEASUREMENTDATA_SUCCESS");
+				Log.i("acceptBlinkMessage", "TYPE_RESPONSE_MEASUREMENTDATA_SUCCESS");
 				SERVICE_KEEPER.obtainBinder(blinkMessage.getDestinationApplication()).callbackData(blinkMessage.getCode(), blinkMessage.getMessage(), true);
 			}
 			//Sync 플래그를 false로 변경하여 동기화 요청을 할 수 있도록 한다.
 			else if(blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SYNC_SUCCESS){
-				Log.i("Blink", "TYPE_RESPONSE_MEASUREMENTDATA_SYNC_SUCCESS");
+				Log.i("acceptBlinkMessage", "TYPE_RESPONSE_MEASUREMENTDATA_SYNC_SUCCESS");
 				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(OPERATOR_CONTEXT);
 				syncDatabaseManager.wearable.syncMeasurementDatabase(SERVICE_KEEPER.obtainCurrentCenterDevice(), Integer.parseInt(blinkMessage.getMessage()));
 				setSynchronizing(false);
@@ -282,7 +282,7 @@ public class MessageProcessor {
 	 * @param toDevice
 	 */
 	public void sendBlinkMessageTo(BlinkMessage message, BlinkDevice toDevice) {
-		Log.d("Blink", "sendBlinkMessageTo in Send!!");
+		Log.d("sendBlinkMessageTo", "Send!!");
 //<<<<<<< HEAD
 		/*1. Destination MAC = null -> Hop:Main, Node:Main
 		 *
@@ -304,7 +304,7 @@ public class MessageProcessor {
 		
 		BlinkDevice centerDevice = null;
 		if(SERVICE_KEEPER.obtainCurrentCenterDevice()!=BlinkDevice.HOST){
-			Log.d("Blink", "sendBlinkMessage in i am not center");
+			Log.d("sendBlinkMessageTo", "i am not center");
 			centerDevice = SERVICE_KEEPER.obtainCurrentCenterDevice();
 			if(message.getDestinationAddress() == null){ // Hop : Main, Node : Main
 				message.setDestinationAddress(centerDevice.getAddress());
@@ -315,7 +315,7 @@ public class MessageProcessor {
 			}
 			}
 		else{
-			Log.d("Blink", "sendBlinkMessage in i am center");
+			Log.d("sendBlinkMessageTo", "i am center");
 			//center일 때도 2가지로 나눠 1. Accept에서 send할 때. 2 send할 때 -> Accept에서 걸러야함.
 			// 그냥 fail to Send Message 보내야 함. (현재 프레임워크 구조상 Center가 없을 수가 없다.)
 		}
