@@ -1,5 +1,7 @@
 package kr.poturns.blink.db.archive;
 
+import kr.poturns.blink.db.IBlinkDatabase;
+
 import org.json.JSONObject;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -29,22 +31,27 @@ public class DatabaseMessage {
     }
 
 	public String getCondition() {
+		if(mJsonObject.get("Condition")==null)return null;
 		return mJsonObject.get("Condition").getAsString();
     }
 
 	public String getDateTimeTo() {
+		if(mJsonObject.get("DateTimeTo")==null)return null;
 		return mJsonObject.get("DateTimeTo").getAsString();
     }
 
 	public String getDateTimeFrom() {
+		if(mJsonObject.get("DateTimeFrom")==null)return null;
 		return mJsonObject.get("DateTimeFrom").getAsString();
     }
 
 	public int getContainType() {
+		if(mJsonObject.get("ContainType")==null)return IBlinkDatabase.CONTAIN_DEFAULT;
 		return mJsonObject.get("ContainType").getAsInt();
     }
 
 	public String getData() {
+		if(mJsonObject.get("data")==null)return null;
 		return mJsonObject.get("data").getAsString();
     }
 

@@ -312,13 +312,8 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 				
 				boolean isSend = false;
 				for(int i=0;i<mBlinkAppInfoList.size();i++){
-					//다른 어플리케이션으로 보냄
-					if(!mBlinkAppInfo.mDevice.Device.equals(mBlinkAppInfoList.get(i).mDevice.Device)
-							&& !mBlinkAppInfo.mApp.PackageName.equals(mBlinkAppInfoList.get(i).mApp.PackageName)){
-						interaction.remote.sendMeasurementData(mBlinkAppInfoList.get(i), gson.toJson(newData), 101);
-						isSend = true;
-					}
-						
+					interaction.remote.sendMeasurementData(mBlinkAppInfoList.get(i), gson.toJson(newData), 101);
+					isSend = true;
 				}
 				if(!isSend){
 					Toast.makeText(this, "데이터를 보낼 타겟이 없습니다.", Toast.LENGTH_SHORT);

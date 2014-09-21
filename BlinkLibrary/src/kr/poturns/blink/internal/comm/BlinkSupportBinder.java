@@ -161,6 +161,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 				e.printStackTrace();
 			}
 		}
+		mRemoteCallbackList.finishBroadcast();
 	}
 
 	/**
@@ -212,6 +213,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 										.setSourceDevice(mBlinkDevice)
 										.setSourceApplication(mPackageName)
 										.setMessage(gson.toJson(mDatabaseMessage))
+										.setType(IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA)
 										.setCode(requestCode)
 										.build();
 				if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
@@ -279,6 +281,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 									.setSourceDevice(mBlinkDevice)
 									.setSourceApplication(mPackageName)
 									.setMessage(gson.toJson(mDatabaseMessage))
+									.setType(IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA)
 									.setCode(requestCode)
 									.build();
 			if(requestPolicy==REQUEST_TYPE_DUAL_DEVICE){
@@ -328,6 +331,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 									.setSourceDevice(BlinkDevice.update(mBlinkDevice))
 									.setSourceApplication(mPackageName)
 									.setMessage(gson.toJson(function))
+									.setType(IBlinkMessagable.TYPE_REQUEST_FUNCTION)
 									.setCode(requestCode)
 									.build();
 			CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, BlinkDevice.load(device.MacAddress));
@@ -345,6 +349,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	@Override
     public void sendMeasurementData(BlinkAppInfo targetBlinkAppInfo,
             String json,int requestCode) throws RemoteException {
+		Log.i("Blink", "sendMeasurementData");
 	    // TODO Auto-generated method stub
 		CallbackData mCallbackData = new CallbackData();
 		
@@ -353,19 +358,21 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		BlinkMessage mBlinkMessage;
 		
 		//해당 BlinkApp이 없을 경우
-		if(targetBlinkAppInfo.isExist){
+		if(!targetBlinkAppInfo.isExist){
 			mCallbackData.ResultDetail = CallbackData.ERROR_CONNECT_FAIL;
 			callbackData(requestCode, null,false);
 		}
 		//타겟 디바이스가 자신이 아니면 메시지를 보낸다.
 		else if(!targetBlinkAppInfo.mDevice.MacAddress.contentEquals(mBlinkDevice.getAddress())){
 			//BlinkMessage 생성
+			Log.i("Blink", "sendMeasurementData remote!");
 			mBlinkMessage = new BlinkMessage.Builder()
 									.setDestinationDevice(BlinkDevice.load(targetBlinkAppInfo.mDevice.MacAddress))
 									.setDestinationApplication(targetBlinkAppInfo.mApp.PackageName)
 									.setSourceDevice(BlinkDevice.update(mBlinkDevice))
 									.setSourceApplication(mPackageName)
 									.setMessage(json)
+									.setType(IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SUCCESS)
 									.setCode(requestCode)
 									.build();
 			CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, BlinkDevice.load(targetBlinkAppInfo.mDevice.MacAddress));

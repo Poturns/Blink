@@ -17,7 +17,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-
 public class HealthManagerApplication extends Application {
 	public static int RESPONSE_CODE_INBODY_DATA = 0;
 	public static int REPONSE_CODE_HEARTRATE_CHECK = 1;

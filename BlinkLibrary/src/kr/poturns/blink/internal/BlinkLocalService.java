@@ -173,7 +173,6 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 											.setMessage(gson.toJson(mSyncDatabaseManager.obtainBlinkApp()))
 											.setType(IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC)
 											.setCode(0)
-											.setType(IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC)
 											.build();
 					mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
 				}
@@ -201,7 +200,6 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 											.setMessage(SendData)
 											.setType(IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC)
 											.setCode(0)
-											.setType(IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA)
 											.build();
 					mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
 				}

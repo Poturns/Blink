@@ -458,9 +458,9 @@ public class SyncDatabaseManager extends BlinkDatabaseManager{
 					values.put("GroupId", mMeasurementData.GroupId);
 					values.put("Data", mMeasurementData.Data);
 					values.put("DateTime", mMeasurementData.DateTime);
-			        mSQLiteDatabase.insert("Function", null, values);
-			        if(MaxId<mMeasurementData.MeasurementId){
-			        	MaxId = mMeasurementData.MeasurementId; 
+			        mSQLiteDatabase.insert("MeasurementData", null, values);
+			        if(MaxId<mMeasurementData.MeasurementDataId){
+			        	MaxId = mMeasurementData.MeasurementDataId; 
 			        }
 				}
 				mSQLiteDatabase.setTransactionSuccessful();

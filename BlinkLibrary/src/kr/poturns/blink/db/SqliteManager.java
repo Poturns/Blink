@@ -602,6 +602,7 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase{
 		while(mCursor.moveToNext()){
 			mMeasurementData = new MeasurementData();
 			mMeasurementData.MeasurementId = mCursor.getInt(mCursor.getColumnIndex("MeasurementId"));
+			mMeasurementData.MeasurementDataId = mCursor.getInt(mCursor.getColumnIndex("MeasurementDataId"));
 			mMeasurementData.GroupId = mCursor.getInt(mCursor.getColumnIndex("GroupId"));
 			mMeasurementData.Data = mCursor.getString(mCursor.getColumnIndex("Data"));
 			mMeasurementData.DateTime = mCursor.getString(mCursor.getColumnIndex("DateTime"));
