@@ -30,6 +30,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -69,6 +70,8 @@ public class BlinkServiceInteraction implements ServiceConnection, IBlinkEventBr
 	public Local local;
 	public Remote remote;
 	Gson gson = new GsonBuilder().setPrettyPrinting().create();
+	
+	boolean isRegisteredReceiver = false;
 
 	/**
 	 * 생성자로 Boradcast와 Callback을 등록할 수 있다. 등록하고 싶지 않을 경우 null을 매개변수로 넘기면 된다.
@@ -183,16 +186,22 @@ public class BlinkServiceInteraction implements ServiceConnection, IBlinkEventBr
 				CONTEXT.getPackageName());
 
 		CONTEXT.unbindService(this);
-		CONTEXT.unregisterReceiver(EVENT_BR);
+		stopBroadcastReceiver();
 		// CONTEXT.stopService(intent);
 	}
 
 	public final void startBroadcastReceiver() {
-		CONTEXT.registerReceiver(EVENT_BR, FILTER);
+		if (!isRegisteredReceiver)
+			CONTEXT.registerReceiver(EVENT_BR, FILTER);
+		
+		isRegisteredReceiver = true;
 	}
 
 	public final void stopBroadcastReceiver() {
-		CONTEXT.unregisterReceiver(EVENT_BR);
+		if (isRegisteredReceiver)
+			CONTEXT.unregisterReceiver(EVENT_BR);
+		
+		isRegisteredReceiver = false;
 	}
 
 	public final void requestConfigurationChange(String... keys) {
@@ -946,4 +955,18 @@ public class BlinkServiceInteraction implements ServiceConnection, IBlinkEventBr
 	private void setBinding(boolean binding) {
 	    this.binding = binding;
     }
+	/**
+	 * 현재 연결된 디바이스가 있는지 여부를 알려준다.
+	 * @return
+	 */
+	public boolean isDeviceConnected() {
+		BlinkDevice[] devices = null;
+		
+		try {
+			if (mInternalOperationSupport != null)
+				devices= mInternalOperationSupport.obtainConnectedDeviceList();
+			
+		} catch (RemoteException e) {;}
+		return !(devices == null || devices.length == 0);
+	}
 }

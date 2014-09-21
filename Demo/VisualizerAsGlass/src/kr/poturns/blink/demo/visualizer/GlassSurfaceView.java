@@ -1,6 +1,5 @@
 package kr.poturns.blink.demo.visualizer;
 
-import java.io.IOException;
 import java.util.List;
 
 import android.content.Context;
@@ -22,16 +21,16 @@ public class GlassSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 		
 		mSurfaceHolder = getHolder();
 		mSurfaceHolder.addCallback(this);
-		mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+		//mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 	}
 
 	@Override
 	public void surfaceCreated(SurfaceHolder holder) {
-		mCamera = Camera.open();
 		try {
+			mCamera = Camera.open();
 			mCamera.setPreviewDisplay(mSurfaceHolder);
 			
-		} catch (IOException e) {
+		} catch (Exception e) {
 			if (mCamera != null) {
 				mCamera.release();
 				mCamera = null;
@@ -41,14 +40,30 @@ public class GlassSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
 	@Override
 	public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+		if (mCamera == null) {
+			try {
+				mCamera = Camera.open();
+				mCamera.setPreviewDisplay(mSurfaceHolder);
+				
+			} catch (Exception e) {
+				if (mCamera != null) {
+					mCamera.release();
+					mCamera = null;
+				}
+			}
+		}
+		
+		if (mCamera == null)
+			return;
+		
 		Camera.Parameters mParameters = mCamera.getParameters();
+		
 		List<Size> mPreviewSizeList = mParameters.getSupportedPreviewSizes();
 		
 		if (mPreviewSizeList == null){
 			mParameters.setPreviewSize(width, height);
-			String msg;
-			msg= "width:"+width+"height:"+height;
-			Log.i("tag", msg);
+			
+			Log.i("tag", "width:"+width+"height:"+height);
 			
 		} else {
 			int diff = 10000;
@@ -67,8 +82,11 @@ public class GlassSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 
 	@Override
 	public void surfaceDestroyed(SurfaceHolder holder) {
-		mCamera.stopPreview();
-        mCamera = null;
+		if (mCamera != null) {
+			mCamera.stopPreview();
+			mCamera.release();
+	        mCamera = null;
+		}
 	}
 
 }

@@ -8,4 +8,63 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+        
+		<com.nhn.android.maps.NMapView
+		    android:id="@+id/glass_map"
+		    android:layout_width="0dp"
+		    android:layout_height="150dp"
+		    android:layout_margin="10dp"
+		    android:layout_weight="1"
+		    android:padding="10dp" />
+
+	    <Button
+	        android:id="@+id/glass_btn_controller"
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="0dp"
+	        android:layout_height="200dp"
+	        android:layout_weight="1"
+	        android:layout_margin="10dp"
+	        android:layout_gravity="center"
+	        android:background="@drawable/controller_button"
+	        android:padding="10dp"
+	        android:text="NO CONNECTED DEVICE!\nClick to open controller."
+	        android:textColor="@android:color/white" />
+	        
+	    <ListView
+	        android:id="@+id/glass_alertlist"
+	        android:layout_width="0dp"
+	        android:layout_height="match_parent"
+	        android:layout_weight="1"
+	        android:layout_margin="10dp"
+	        android:dividerHeight="5dp"
+	        android:divider="@android:color/transparent"/>
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|right" 
+        android:layout_margin="10dp">
+
+        <TextView
+            android:id="@+id/heartbeat_figure"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:text=""
+            android:textStyle="bold"
+            android:textColor="@android:color/holo_red_dark" />
+        
+        <ImageView
+            android:id="@+id/heartbeat_image"
+            android:padding="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:src="@drawable/heartbeat1" />
+    </FrameLayout>
+
 </FrameLayout>
