@@ -1,4 +1,4 @@
-package kr.poturns.blink.demo.fitnessapp.measurement;
+package kr.poturns.blink.demo.fitnessapp;
 
 import android.text.format.DateFormat;
 

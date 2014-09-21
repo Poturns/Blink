@@ -1,7 +1,6 @@
 package kr.poturns.blink.demo.fitnessapp;
 
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeListener;
-import kr.poturns.blink.demo.fitnessapp.measurement.FitnessUtil;
 import android.app.Activity;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;

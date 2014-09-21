@@ -1,8 +1,13 @@
 package kr.poturns.blink.demo.fitnessapp;
 
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeListener.Direction;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
+import kr.poturns.blink.schema.HeartBeat;
+import kr.poturns.blink.schema.PushUp;
+import kr.poturns.blink.schema.SitUp;
+import kr.poturns.blink.schema.Squat;
 import android.app.Activity;
 import android.app.Fragment;
 import android.graphics.Point;
@@ -41,6 +46,19 @@ public class MainActivity extends Activity implements ActivityInterface {
 			@Override
 			public void onServiceConnected(IInternalOperationSupport iSupport) {
 				mISupport = iSupport;
+				// register meta data
+				BlinkAppInfo info = mInteraction.obtainBlinkApp();
+				if (!info.isExist) {
+					info.addMeasurement(SitUp.class);
+					info.mMeasurementList.get(0).Description = "Count of Sit Ups";
+					info.addMeasurement(PushUp.class);
+					info.mMeasurementList.get(1).Description = "Count of Push Ups";
+					info.addMeasurement(Squat.class);
+					info.mMeasurementList.get(2).Description = "Count of Squats";
+					info.addMeasurement(HeartBeat.class);
+					info.mMeasurementList.get(3).Description = "Beat per Minute of HeartBeats";
+					mInteraction.registerBlinkApp(info);
+				}
 			}
 		};
 		mInteraction.startBroadcastReceiver();
