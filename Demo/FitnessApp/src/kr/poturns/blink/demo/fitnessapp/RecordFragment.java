@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
-import kr.poturns.blink.demo.fitnessapp.measurement.FitnessUtil;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -180,7 +179,7 @@ public class RecordFragment extends SwipeEventFragment {
 		vo.setMaxValueY(max);
 		int increment = (int) Math.abs(list.get(0) - list.get(1));
 		vo.setIncrementX(4);
-		vo.setIncrementY(increment);
+		vo.setIncrementY(increment<1?10:increment);
 		vo.setGraphNameBox(new GraphNameBox());
 		vo.setAnimation(new GraphAnimation(GraphAnimation.LINEAR_ANIMATION,
 				GraphAnimation.DEFAULT_DURATION));

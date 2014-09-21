@@ -1,4 +1,4 @@
-package kr.poturns.blink.demo.fitnessapp.measurement;
+package kr.poturns.blink.demo.fitnessapp;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -10,7 +10,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
 
-import kr.poturns.blink.demo.fitnessapp.SQLiteHelper;
+import kr.poturns.blink.demo.fitnessapp.schema.InBodyData;
 import android.content.Context;
 
 public class FitnessUtil {

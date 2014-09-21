@@ -1,4 +1,4 @@
-package kr.poturns.blink.demo.fitnessapp.measurement;
+package kr.poturns.blink.demo.fitnessapp.schema;
 
 import java.io.Serializable;
 

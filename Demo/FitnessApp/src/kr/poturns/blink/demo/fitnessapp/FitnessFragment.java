@@ -3,11 +3,15 @@ package kr.poturns.blink.demo.fitnessapp;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
-import kr.poturns.blink.demo.fitnessapp.measurement.HeartBeat;
-import kr.poturns.blink.demo.fitnessapp.measurement.PushUp;
-import kr.poturns.blink.demo.fitnessapp.measurement.SitUp;
-import kr.poturns.blink.demo.fitnessapp.measurement.Squat;
+import kr.poturns.blink.schema.HeartBeat;
+import kr.poturns.blink.schema.PushUp;
+import kr.poturns.blink.schema.SitUp;
+import kr.poturns.blink.schema.Squat;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -18,6 +22,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -29,6 +34,7 @@ import android.widget.Toast;
 
 public class FitnessFragment extends SwipeEventFragment implements
 		SensorEventListener {
+	private static final String TAG = FitnessFragment.class.getSimpleName();
 	private SQLiteHelper mSqLiteHelper;
 	private SensorManager mSensorManager;
 	private Sensor mAccelerormeterSensor;
@@ -47,6 +53,7 @@ public class FitnessFragment extends SwipeEventFragment implements
 	private TextView mTitleTextView;
 	private TextView mHeartBeatTextView;
 	private int mCurrentCount = 0;
+	private Gson mGson = new GsonBuilder().setPrettyPrinting().create();
 	/** 현재 측정중인 운동 */
 	private String mCurrentDisplayDbTable = SQLiteHelper.TABLE_PUSH_UP;
 
@@ -60,11 +67,15 @@ public class FitnessFragment extends SwipeEventFragment implements
 	/** 센서가 움직임을 감지할 최소한의 속도 */
 	private static final int SHAKE_THRESHOLD = 800;
 	/** 심장박동수가 위험한 정도임을 알리기위해 필요한 심장박동수 변화값의 최소량 */
-	private static final int DIFF_COUNT_OF_HEART_BEAT_NOTIFIED = 10;
+	private static final int DIFF_COUNT_OF_HEART_BEAT_NOTIFIED = 20;
 	/** 심장박동수를 측정하기까지 걸리는 시간 (초) */
 	private static final int HEART_BEAT_COUNT_INTERVAL = 10;
 	/** 센서가 한번 측정 후, 다시 측정하기까지 걸리는 시간 */
 	private static final int SENSOR_ACTIVATE_TIME_THRESHOLD = 100;
+	/** remote device 에 전달 요청 코드 */
+	private static final int REQUEST_CODE = 1;
+	/** remote app package name */
+	private static final String REMOTE_APP_PACKAGE_NAME = "kr.poturns.blink.demo.visualizer";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -337,17 +348,28 @@ public class FitnessFragment extends SwipeEventFragment implements
 	/** 심장박동수를 생성하기위한 Random */
 	private Random mRandom = new Random(System.currentTimeMillis());
 
-	/** 심장박동수를 생성한다. 범위는 50-100 */
+	/** 심장박동수를 생성한다. 범위는 50-150 */
 	private int generateHeartBeat() {
-		return mRandom.nextInt(10) + mRandom.nextInt(10) + mRandom.nextInt(10)
-				+ mRandom.nextInt(10) + mRandom.nextInt(10) + 50;
+		return mRandom.nextInt(20) + mRandom.nextInt(20) + mRandom.nextInt(20)
+				+ mRandom.nextInt(20) + mRandom.nextInt(20) + 50;
 	}
 
 	/** 내부 DB와 BlinkDB에 심장박동수를 입력한다. */
 	private void putHeartBeat(int bpm) {
 		mSqLiteHelper.insert(bpm);
 		mActivityInterface.getBlinkServiceInteraction().local
-				.registerMeasurementData(new HeartBeat(bpm));
+				.registerMeasurementData(new HeartBeat(bpm, DateTimeUtil.get()));
+
+		for (BlinkAppInfo info : mActivityInterface
+				.getBlinkServiceInteraction().local.obtainBlinkAppAll()) {
+			if (info.mApp.PackageName.equals(REMOTE_APP_PACKAGE_NAME)) {
+				mActivityInterface.getBlinkServiceInteraction().remote
+						.sendMeasurementData(info, mGson.toJson(new HeartBeat(
+								bpm, DateTimeUtil.get())), REQUEST_CODE);
+				return;
+			}
+		}
+		Log.e(TAG, "Cannot reach remote device : " + REMOTE_APP_PACKAGE_NAME);
 	}
 
 	/** 심장박동 변화가 위험할 때, 알림 설정이 되어있는 경우 알림으로 알린다. */
@@ -380,12 +402,21 @@ public class FitnessFragment extends SwipeEventFragment implements
 		mSqLiteHelper.insert(SQLiteHelper.TABLE_SQUAT, mCountOfSquats);
 
 		// Blink Service에 data 등록
-		mActivityInterface.getBlinkServiceInteraction().local
-				.registerMeasurementData(new PushUp(mCountOfPushUps));
-		mActivityInterface.getBlinkServiceInteraction().local
-				.registerMeasurementData(new SitUp(mCountOfSitUps));
-		mActivityInterface.getBlinkServiceInteraction().local
-				.registerMeasurementData(new Squat(mCountOfSquats));
+		if (mCountOfPushUps > 0) {
+			mActivityInterface.getBlinkServiceInteraction().local
+					.registerMeasurementData(new PushUp(mCountOfPushUps,
+							DateTimeUtil.get()));
+		}
+		if (mCountOfSitUps > 0) {
+			mActivityInterface.getBlinkServiceInteraction().local
+					.registerMeasurementData(new SitUp(mCountOfSitUps,
+							DateTimeUtil.get()));
+		}
+		if (mCountOfSquats > 0) {
+			mActivityInterface.getBlinkServiceInteraction().local
+					.registerMeasurementData(new Squat(mCountOfSquats,
+							DateTimeUtil.get()));
+		}
 	}
 
 	/** 운동 횟수를 업데이트한다 */
