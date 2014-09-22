@@ -49,6 +49,8 @@ public class GlassActivity extends SupportMapActivity {
 		    	  mAlertAdapter.pushNewMessage(data);
 		    	  
 		    	  onHeartbeat(100);
+		    	  
+		    	  Toast.makeText(GlassActivity.this, data, Toast.LENGTH_SHORT).show();
 		      }
 		   }; 
 		
@@ -96,6 +98,7 @@ public class GlassActivity extends SupportMapActivity {
 		if (mInteraction != null) {
 			mInteraction.startService();
 		}
+
 	}
 	
 	
