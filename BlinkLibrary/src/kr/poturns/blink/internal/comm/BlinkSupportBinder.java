@@ -177,7 +177,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 			BlinkAppInfo mBlinkAppInfo)
 			throws RemoteException {
 		// TODO Auto-generated method stub
-		if(mBlinkAppInfo.isExist)return;
 		
 		PackageManager mPackageManager = CONTEXT.getPackageManager();
 		try {

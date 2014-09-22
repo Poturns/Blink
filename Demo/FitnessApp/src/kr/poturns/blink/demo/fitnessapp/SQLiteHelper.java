@@ -2,7 +2,7 @@ package kr.poturns.blink.demo.fitnessapp;
 
 import java.util.ArrayList;
 
-import kr.poturns.blink.demo.fitnessapp.measurement.HeartBeat;
+import kr.poturns.blink.schema.HeartBeat;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;

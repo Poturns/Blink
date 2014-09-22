@@ -207,5 +207,6 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 			mSeekBar.setProgress(0);
 		}
 		mSetSeekBarValueMax = 0;
+		mCircularHelper.drawCircularView(getDeviceList());
 	}
 }

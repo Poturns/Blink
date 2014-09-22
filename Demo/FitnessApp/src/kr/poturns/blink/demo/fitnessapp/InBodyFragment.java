@@ -7,7 +7,7 @@ import android.view.ViewGroup;
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
 
 public class InBodyFragment extends SwipeEventFragment {
-
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {

@@ -1,8 +1,13 @@
 package kr.poturns.blink.demo.fitnessapp;
 
+import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeListener.Direction;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
+import kr.poturns.blink.schema.HeartBeat;
+import kr.poturns.blink.schema.PushUp;
+import kr.poturns.blink.schema.SitUp;
+import kr.poturns.blink.schema.Squat;
 import android.app.Activity;
 import android.app.Fragment;
 import android.graphics.Point;
@@ -41,6 +46,19 @@ public class MainActivity extends Activity implements ActivityInterface {
 			@Override
 			public void onServiceConnected(IInternalOperationSupport iSupport) {
 				mISupport = iSupport;
+				// register meta data
+				BlinkAppInfo info = mInteraction.obtainBlinkApp();
+				if (!info.isExist) {
+					info.addMeasurement(SitUp.class);
+					info.mMeasurementList.get(0).Description = "Count of Sit Ups";
+					info.addMeasurement(PushUp.class);
+					info.mMeasurementList.get(1).Description = "Count of Push Ups";
+					info.addMeasurement(Squat.class);
+					info.mMeasurementList.get(2).Description = "Count of Squats";
+					info.addMeasurement(HeartBeat.class);
+					info.mMeasurementList.get(3).Description = "Beat per Minute of HeartBeats";
+					mInteraction.registerBlinkApp(info);
+				}
 			}
 		};
 		mInteraction.startBroadcastReceiver();
@@ -50,27 +68,24 @@ public class MainActivity extends Activity implements ActivityInterface {
 					@Override
 					public boolean onFling(MotionEvent e1, MotionEvent e2,
 							float velocityX, float velocityY) {
-
+						Direction direction = null;
 						// 가로로 움직인 폭이 일정 이상이면 무시
 						if (Math.abs(e1.getX() - e2.getX()) < 100) {
 							// 아래서 위로 스크롤 하는 경우
 							if (e1.getY() - e2.getY() > 50) {
-								return mDirectionListener
-										.onSwipe(Direction.UP_TO_DOWN);
+								direction = Direction.UP_TO_DOWN;
 								// 위에서 아래로 스크롤
 							} else if (e2.getY() - e1.getY() > 50) {
-								return mDirectionListener
-										.onSwipe(Direction.DOWN_TO_UP);
+								direction = Direction.DOWN_TO_UP;
 							}
 							// 세로로 움직인 폭이 일정 이상이면 무시
 						} else if (Math.abs(e1.getY() - e2.getY()) < 100) {
-							if (e1.getX() - e2.getX() > 50) {
-								return mDirectionListener
-										.onSwipe(Direction.RIGHT_TO_LEFT);
-							} else if (e2.getX() - e1.getX() > 50) {
-								return mDirectionListener
-										.onSwipe(Direction.LEFT_TO_RIGHT);
-							}
+							direction = Direction.RIGHT_TO_LEFT;
+						} else if (e2.getX() - e1.getX() > 50) {
+							direction = Direction.LEFT_TO_RIGHT;
+						}
+						if (mDirectionListener != null) {
+							return mDirectionListener.onSwipe(direction);
 						}
 						return false;
 					}
@@ -128,7 +143,11 @@ public class MainActivity extends Activity implements ActivityInterface {
 	@Override
 	public void attachFragment(Fragment fragment, Bundle arguments, int animIn,
 			int animOut) {
-		this.mDirectionListener = (SwipeListener) fragment;
+		if (fragment instanceof SwipeListener) {
+			mDirectionListener = (SwipeListener) fragment;
+		} else {
+			mDirectionListener = null;
+		}
 		fragment.setArguments(arguments);
 		getFragmentManager().beginTransaction()
 				.setCustomAnimations(animIn, animOut)
@@ -186,6 +205,7 @@ public class MainActivity extends Activity implements ActivityInterface {
 		}
 	}
 
+	/** 웨어러블 메인 화면 */
 	public static class HomeFragment extends SwipeEventFragment {
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
