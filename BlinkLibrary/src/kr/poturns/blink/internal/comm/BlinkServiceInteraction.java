@@ -387,22 +387,12 @@ public class BlinkServiceInteraction implements ServiceConnection, IBlinkEventBr
 	 */
 	public boolean registerBlinkApp(
 			BlinkAppInfo mBlinkAppInfo) {
+		if(mBlinkAppInfo.isExist)return false;
+		
 		mBlinkAppInfo.mDevice.Device = mBlinkDevice.getName();
 		mBlinkAppInfo.mDevice.MacAddress = mBlinkDevice.getAddress();
 		mBlinkAppInfo.mApp.PackageName = mPackageName;
 		mBlinkAppInfo.mApp.AppName = mAppName;
-		PackageManager mPackageManager = CONTEXT.getPackageManager();
-		
-		try {
-			Bitmap bitmap = ((BitmapDrawable)mPackageManager.getApplicationIcon(mPackageName)).getBitmap();
-			ByteArrayOutputStream stream = new ByteArrayOutputStream();
-			bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-			mBlinkAppInfo.mApp.AppIcon = stream.toByteArray();
-		} catch (NameNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-			mBlinkAppInfo.mApp.AppIcon = null;
-		}
 		
 		try {
 			mInternalOperationSupport

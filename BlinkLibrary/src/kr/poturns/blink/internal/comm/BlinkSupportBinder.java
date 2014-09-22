@@ -1,5 +1,6 @@
 package kr.poturns.blink.internal.comm;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.List;
 
@@ -17,6 +18,10 @@ import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.internal.BlinkLocalService;
 import kr.poturns.blink.internal.ConnectionSupportBinder;
 import kr.poturns.blink.internal.ServiceKeeper;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.util.Log;
@@ -172,8 +177,19 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 			BlinkAppInfo mBlinkAppInfo)
 			throws RemoteException {
 		// TODO Auto-generated method stub
-		Log.i(tag, "registerBlinkApp");
-		mBlinkDatabaseManager.registerLog(mDeviceName, mPackageName, mBlinkDatabaseManager.LOG_REGISTER_BLINKAPP, "");
+		if(mBlinkAppInfo.isExist)return;
+		
+		PackageManager mPackageManager = CONTEXT.getPackageManager();
+		try {
+			Bitmap bitmap = ((BitmapDrawable)mPackageManager.getApplicationIcon(mBlinkAppInfo.mApp.PackageName)).getBitmap();
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+			mBlinkAppInfo.mApp.AppIcon = stream.toByteArray();
+		} catch (NameNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			mBlinkAppInfo.mApp.AppIcon = null;
+		}
 		mBlinkDatabaseManager.registerBlinkApp(mBlinkAppInfo);
 	}
 

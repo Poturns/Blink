@@ -10,6 +10,11 @@ import android.os.Parcelable;
  *
  */
 public class Measurement implements IDatabaseObject, Parcelable{
+	public static String TYPE_STRING = "string";
+	public static String TYPE_INT = "int";
+	public static String TYPE_DOUBLE = "double";
+	public static String TYPE_FLOAT = "float";
+	public static String TYPE_SHORT = "short";
 	
 	public int AppId;
 	public int MeasurementId;

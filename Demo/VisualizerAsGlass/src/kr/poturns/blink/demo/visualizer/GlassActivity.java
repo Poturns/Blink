@@ -10,6 +10,7 @@ import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -65,6 +66,7 @@ public class GlassActivity extends SupportMapActivity {
 			
 			@Override
 			public void onServiceConnected(IInternalOperationSupport iSupport) {
+				Log.i("Glass", "onServiceConnected");
 				Toast.makeText(getApplicationContext(), "Binder Service Connected!", Toast.LENGTH_SHORT).show();
 
 				BlinkAppInfo mBlinkAppInfo = mInteraction.obtainBlinkApp();
