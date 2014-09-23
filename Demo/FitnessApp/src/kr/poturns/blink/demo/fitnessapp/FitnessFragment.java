@@ -354,6 +354,7 @@ public class FitnessFragment extends SwipeEventFragment implements
 
 	/** 내부 DB와 BlinkDB에 심장박동수를 입력한다. */
 	private void putHeartBeat(int bpm) {
+		Log.i("fitness", "putHeartBeat");
 		mSqLiteHelper.insert(bpm);
 		mActivityInterface.getBlinkServiceInteraction().local
 				.registerMeasurementData(new HeartBeat(bpm, DateTimeUtil.get()));
@@ -361,6 +362,7 @@ public class FitnessFragment extends SwipeEventFragment implements
 		for (BlinkAppInfo info : mActivityInterface
 				.getBlinkServiceInteraction().local.obtainBlinkAppAll()) {
 			if (info.mApp.PackageName.equals(REMOTE_APP_PACKAGE_NAME)) {
+				Log.i("fitness", "send HeartBeat");
 				mActivityInterface.getBlinkServiceInteraction().remote
 						.sendMeasurementData(info, mGson.toJson(new HeartBeat(
 								bpm, DateTimeUtil.get())), REQUEST_CODE);

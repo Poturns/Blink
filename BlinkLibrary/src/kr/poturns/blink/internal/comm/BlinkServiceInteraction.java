@@ -1007,15 +1007,22 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @param mMeasurementData
 		 *            : 전송할 MeasurementData
 		 */
-		public void sendMeasurementData(BlinkAppInfo targetBlinkAppInfo,
-				String json, int requestCode) {
-			try {
-				mInternalOperationSupport.sendMeasurementData(
-						targetBlinkAppInfo, json, requestCode);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		public void sendMeasurementData(final BlinkAppInfo targetBlinkAppInfo,
+				final String json, final int requestCode) {
+		
+			new Thread(){
+				public void run() {
+					try {
+					targetBlinkAppInfo.mApp.AppIcon = null;
+					mInternalOperationSupport.sendMeasurementData(
+							targetBlinkAppInfo, json, requestCode);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				};
+			}.start();
+			
 		}
 	}
 

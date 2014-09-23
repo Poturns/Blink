@@ -50,6 +50,7 @@ public class GlassActivity extends SupportMapActivity {
 		    	  
 		    	  onHeartbeat(100);
 		    	  
+		    	  Log.i("Glass", "onReceiveData");
 		    	  Toast.makeText(GlassActivity.this, data, Toast.LENGTH_SHORT).show();
 		      }
 		   }; 
@@ -77,6 +78,14 @@ public class GlassActivity extends SupportMapActivity {
 				//TODO: AppInfo에 Function을 등록하더라도 실제 Function을 제공하는 것에 대한 신뢰성 보장이 되지 않음..
 				mBlinkAppInfo.addFunction("LightOn", "Turn On the Light", "kr.poturns.blink.demo.visualizer.action.lighton", Function.TYPE_BROADCAST);
 				mInteraction.registerBlinkApp(mBlinkAppInfo);
+				
+				if (mInteraction != null) {
+					mInteraction.startBroadcastReceiver();
+					
+					boolean isDeviceConnected = mInteraction.isDeviceConnected();
+					setControlActivityVisibility(!isDeviceConnected);
+					setMapVisibility(!isDeviceConnected);
+				}
 			}
 			
 			@Override

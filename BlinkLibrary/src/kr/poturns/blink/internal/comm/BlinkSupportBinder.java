@@ -179,16 +179,16 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		// TODO Auto-generated method stub
 		
 		PackageManager mPackageManager = CONTEXT.getPackageManager();
-		try {
-			Bitmap bitmap = ((BitmapDrawable)mPackageManager.getApplicationIcon(mBlinkAppInfo.mApp.PackageName)).getBitmap();
-			ByteArrayOutputStream stream = new ByteArrayOutputStream();
-			bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-			mBlinkAppInfo.mApp.AppIcon = stream.toByteArray();
-		} catch (NameNotFoundException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+//		try {
+//			Bitmap bitmap = ((BitmapDrawable)mPackageManager.getApplicationIcon(mBlinkAppInfo.mApp.PackageName)).getBitmap();
+//			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+//			bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+//			mBlinkAppInfo.mApp.AppIcon = stream.toByteArray();
+//		} catch (NameNotFoundException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
 			mBlinkAppInfo.mApp.AppIcon = null;
-		}
+//		}
 		mBlinkDatabaseManager.registerBlinkApp(mBlinkAppInfo);
 	}
 

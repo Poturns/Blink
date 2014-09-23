@@ -298,12 +298,12 @@ public class MessageProcessor {
 		// obtainCurrentCenterDevice => 현재 연결된 네트워크 중 CenterDevice를 가져온다 없을 시 null.
 		
 		//동기화 중간에 재동기화 요청을 할 수 없도록 리턴
-		if(message.getType()==IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC || message.getType()==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
-			if(isSynchronizing()){
-				Log.d("sendBlinkMessageTo", "Synchronizing...");
-				return;
-			}
-		}
+//		if(message.getType()==IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC || message.getType()==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
+//			if(isSynchronizing()){
+//				Log.d("sendBlinkMessageTo", "Synchronizing...");
+//				return;
+//			}
+//		}
 		
 		BlinkDevice centerDevice = null;
 		if(SERVICE_KEEPER.obtainCurrentCenterDevice()!=BlinkDevice.HOST){
@@ -327,9 +327,9 @@ public class MessageProcessor {
 		SERVICE_KEEPER.sendMessageToDevice(toDevice, message);
 		Log.d("Blink", "sendBlinkMessage in Message send!");
 		//동기화 메시지를 전송했으므로 동기화중으로 설정
-		if(message.getType()==IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC || message.getType()==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
-			setSynchronizing(true);
-		}
+//		if(message.getType()==IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC || message.getType()==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
+//			setSynchronizing(true);
+//		}
 		
 	}
 	

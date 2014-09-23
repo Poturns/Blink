@@ -155,7 +155,7 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase{
 				+ "'GroupId' INTEGER,"
 				+ "'Data' TEXT NOT NULL,"
 				+ "'DateTime' DATETIME DEFAULT (datetime('now','localtime')),"
-				+ "UNIQUE ('MeasurementId','MeasurementDataId'),"
+				+ "UNIQUE ('MeasurementId','GroupId'),"
 				+ "FOREIGN KEY('MeasurementId') REFERENCES Measurement('MeasurementId')"
 				+ ");";
 		db.execSQL(sql);
