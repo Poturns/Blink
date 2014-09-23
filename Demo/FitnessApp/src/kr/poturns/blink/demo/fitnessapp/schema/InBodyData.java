@@ -2,6 +2,7 @@ package kr.poturns.blink.demo.fitnessapp.schema;
 
 import java.io.Serializable;
 
+/** @author Myungjin.Kim */
 public class InBodyData implements Serializable {
 	private static final long serialVersionUID = -7103393293897543627L;
 	/** 체형 */

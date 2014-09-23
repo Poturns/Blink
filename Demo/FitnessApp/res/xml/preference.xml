@@ -3,10 +3,10 @@
 
     <CheckBoxPreference
         android:defaultValue="false"
-        android:key="KEY_ALERT_HEART_BEAT_IMPACT"
+        android:key="KEY_MEASURE_HEARTBEAT"
         android:layout="@layout/list_preference"
-        android:summary="심박수의 변화가 위험할 정도로 이루어질 경우 알림을 띄웁니다."
-        android:title="심박수 위험 알림" />
+        android:summary="심박수 측정 서비스를 시작/종료합니다."
+        android:title="심박수 측정" />
 
     <PreferenceScreen
         android:key="KEY_DELETE_TRAINING_DATA"
@@ -18,5 +18,10 @@
         android:layout="@layout/list_preference"
         android:summary="저장된 INBODY 데이터를 삭제합니다."
         android:title="INBODY 데이터를 삭제" />
+    <PreferenceScreen
+        android:key="KEY_LOAD_CONTROL"
+        android:layout="@layout/list_preference"
+        android:summary="Blink 서비스 관리화면으로 이동합니다."
+        android:title="Blink Service Control" />
 
 </PreferenceScreen>

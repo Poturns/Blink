@@ -16,6 +16,11 @@ import com.handstudio.android.hzgrapherlib.vo.GraphNameBox;
 import com.handstudio.android.hzgrapherlib.vo.bargraph.BarGraph;
 import com.handstudio.android.hzgrapherlib.vo.bargraph.BarGraphVO;
 
+/**
+ * 기록된 운동량을 그래프로 보여주는 Fragment
+ * 
+ * @author Myungjin.Kim
+ */
 public class RecordFragment extends SwipeEventFragment {
 	private SQLiteHelper mSqLiteHelper;
 	private String mCurrentDisplayDbTable = SQLiteHelper.TABLE_PUSH_UP;
@@ -179,7 +184,7 @@ public class RecordFragment extends SwipeEventFragment {
 		vo.setMaxValueY(max);
 		int increment = (int) Math.abs(list.get(0) - list.get(1));
 		vo.setIncrementX(4);
-		vo.setIncrementY(increment<1?10:increment);
+		vo.setIncrementY(increment < 1 ? 10 : increment);
 		vo.setGraphNameBox(new GraphNameBox());
 		vo.setAnimation(new GraphAnimation(GraphAnimation.LINEAR_ANIMATION,
 				GraphAnimation.DEFAULT_DURATION));

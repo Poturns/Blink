@@ -4,7 +4,7 @@ import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.app.Fragment;
 import android.os.Bundle;
-
+/** @author Myungjin.Kim */
 public interface ActivityInterface {
 	public BlinkServiceInteraction getBlinkServiceInteraction();
 

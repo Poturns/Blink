@@ -12,7 +12,7 @@ import java.io.StreamCorruptedException;
 
 import kr.poturns.blink.demo.fitnessapp.schema.InBodyData;
 import android.content.Context;
-
+/** @author Myungjin.Kim */
 public class FitnessUtil {
 	public static final String FILE_INBODY = "inbody";
 
