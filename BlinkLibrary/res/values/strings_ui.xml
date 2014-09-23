@@ -35,6 +35,7 @@
     <string name="res_blink_blink_service_failed">Blink Service와의 연결이 실패하였습니다.</string>
     <string name="res_blink_drop_to_connect">Drop here to connect</string>
     <string name="res_blink_drop_to_disconnect">Drop here to disconnect</string>
+    <string name="res_blink_bluetooth_discovery_finished">Bluetooth 탐색을 완료하였습니다.</string>
 
     <string-array name="res_blink_dialog_connect_page_titles">
         <item>Bluetooth 정보</item>

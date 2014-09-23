@@ -33,21 +33,24 @@ public class FitnessFragment extends SwipeEventFragment implements
 	private SQLiteHelper mSqLiteHelper;
 	private SensorManager mSensorManager;
 	private Sensor mAccelerormeterSensor;
-	private int mCountOfPushUps = 0;
-	private int mCountOfSitUps = 0;
-	private int mCountOfSquats = 0;
+	/** 측정한 운동 횟수 */
+	private int mCountOfPushUps = 0, mCountOfSitUps = 0, mCountOfSquats = 0;
 	private boolean mSensorActive = false;
 	private boolean mFitnessStart = false;
 	private AtomicBoolean mSensorMovementReturning = new AtomicBoolean();
+	/** 센서가 측정한 시간 */
 	private long mSensorLastTime;
+	/** 센서가 측정한 속도 */
 	private float mSensorMovementSpeed;
-	private float mSensorLastX;
-	private float mSensorLastY;
-	private float mSensorLastZ;
+	/** 센서가 측정한 위치 값 */
+	private float mSensorLastX, mSensorLastY, mSensorLastZ;
 	private TextView mCountTextView;
 	private TextView mTitleTextView;
 	private TextView mHeartBeatTextView;
+	/** 현재 측정중인 운동 횟수 */
 	private int mCurrentCount = 0;
+	/** 서비스가 측정한 BPM */
+	int mMeasuredBpm;
 	/** 현재 측정중인 운동 */
 	private String mCurrentDisplayDbTable = SQLiteHelper.TABLE_PUSH_UP;
 
@@ -55,6 +58,8 @@ public class FitnessFragment extends SwipeEventFragment implements
 	private static final int SHAKE_THRESHOLD = 800;
 	/** 센서가 한번 측정 후, 다시 측정하기까지 걸리는 시간 */
 	private static final int SENSOR_ACTIVATE_TIME_THRESHOLD = 100;
+	/** Bundle을 통해 전달한 운동을 가리키는 EXTRA_NAME */
+	public static final String EXTRA_STRING_FITNESS = "fitness";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -63,12 +68,39 @@ public class FitnessFragment extends SwipeEventFragment implements
 				Context.SENSOR_SERVICE);
 		mAccelerormeterSensor = mSensorManager
 				.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+		if (savedInstanceState != null) {
+			mCountOfPushUps = savedInstanceState
+					.getInt(SQLiteHelper.TABLE_PUSH_UP);
+			mCountOfSitUps = savedInstanceState
+					.getInt(SQLiteHelper.TABLE_SIT_UP);
+			mCountOfSquats = savedInstanceState
+					.getInt(SQLiteHelper.TABLE_SQUAT);
+			mCurrentCount = savedInstanceState.getInt("current");
+			mCurrentDisplayDbTable = savedInstanceState.getString(
+					EXTRA_STRING_FITNESS, SQLiteHelper.TABLE_PUSH_UP);
+		}
 		Bundle arg = getArguments();
 		if (arg != null) {
-			mCurrentDisplayDbTable = arg.getString("fitness");
-		} else if (savedInstanceState != null) {
-			// TODO restore state
+			mCountOfPushUps = arg.getInt(SQLiteHelper.TABLE_PUSH_UP,
+					mCountOfPushUps);
+			mCountOfSitUps = arg.getInt(SQLiteHelper.TABLE_SIT_UP,
+					mCountOfSitUps);
+			mCountOfSquats = arg.getInt(SQLiteHelper.TABLE_SQUAT,
+					mCountOfSquats);
+			mCurrentCount = arg.getInt("current", mCurrentCount);
+			mCurrentDisplayDbTable = arg.getString(EXTRA_STRING_FITNESS);
 		}
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putInt(SQLiteHelper.TABLE_PUSH_UP, mCountOfPushUps);
+		outState.putInt(SQLiteHelper.TABLE_SIT_UP, mCountOfSitUps);
+		outState.putInt(SQLiteHelper.TABLE_SQUAT, mCountOfSquats);
+		outState.putInt("current", mCurrentCount);
+		outState.putString(EXTRA_STRING_FITNESS, mCurrentDisplayDbTable);
 	}
 
 	@Override
@@ -76,8 +108,13 @@ public class FitnessFragment extends SwipeEventFragment implements
 			Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.fragment_fitness, container, false);
 		mCountTextView = (TextView) v.findViewById(R.id.fitness_count);
-		mCountTextView.setCompoundDrawablesRelativeWithIntrinsicBounds(0,
-				R.drawable.ic_launcher, 0, 0);
+		if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_PUSH_UP)) {
+			mCountTextView.setBackgroundResource(R.drawable.circle_orange);
+		} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SIT_UP)) {
+			mCountTextView.setBackgroundResource(R.drawable.circle_green);
+		} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SQUAT)) {
+			mCountTextView.setBackgroundResource(R.drawable.circle_blue);
+		}
 		mCountTextView.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -89,17 +126,15 @@ public class FitnessFragment extends SwipeEventFragment implements
 			}
 		});
 		mTitleTextView = (TextView) v.findViewById(R.id.fitness_title);
+		mTitleTextView.setText(mCurrentDisplayDbTable);
 		mHeartBeatTextView = (TextView) v.findViewById(R.id.fitness_heart_beat);
 		return v;
 	}
 
-	int bpm;
-
 	@Override
 	public void onHeartBeat(int bpm) {
 		getActivity().runOnUiThread(mHeartBeatAction);
-		this.bpm = bpm;
-
+		this.mMeasuredBpm = bpm;
 	}
 
 	private Runnable mHeartBeatAction = new Runnable() {
@@ -108,7 +143,7 @@ public class FitnessFragment extends SwipeEventFragment implements
 		@Override
 		public void run() {
 			mHeartBeatTextView.startAnimation(anim);
-			mHeartBeatTextView.setText(Integer.toString(bpm));
+			mHeartBeatTextView.setText(Integer.toString(mMeasuredBpm));
 			return;
 		}
 	};
@@ -159,27 +194,46 @@ public class FitnessFragment extends SwipeEventFragment implements
 				return true;
 			}
 		case DOWN_TO_UP: // 운동 변경
+			String table = null;
 			if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_PUSH_UP)) {
-				changeFitness(SQLiteHelper.TABLE_SQUAT);
-				return true;
+				table = SQLiteHelper.TABLE_SQUAT;
 			} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SIT_UP)) {
-				changeFitness(SQLiteHelper.TABLE_PUSH_UP);
+				table = SQLiteHelper.TABLE_PUSH_UP;
+			} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SQUAT)) {
+				table = SQLiteHelper.TABLE_SIT_UP;
+			} else
+				return false;
+			if (changeFitness(table)) {
+				Bundle bundle = new Bundle();
+				onSaveInstanceState(bundle);
+				mActivityInterface.attachFragment(new FitnessFragment(),
+						bundle, R.animator.slide_in_bottom,
+						R.animator.slide_out_up);
 				return true;
 			}
 			return false;
 		case UP_TO_DOWN: // 운동 변경
+			String table1 = null;
 			if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_PUSH_UP)) {
-				changeFitness(SQLiteHelper.TABLE_SIT_UP);
-				return true;
+				table1 = SQLiteHelper.TABLE_SIT_UP;
 			} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SQUAT)) {
-				changeFitness(SQLiteHelper.TABLE_PUSH_UP);
+				table1 = SQLiteHelper.TABLE_PUSH_UP;
+			} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SIT_UP)) {
+				table1 = SQLiteHelper.TABLE_SQUAT;
+			} else
+				return false;
+			if (changeFitness(table1)) {
+				Bundle bundle = new Bundle();
+				onSaveInstanceState(bundle);
+				mActivityInterface.attachFragment(new FitnessFragment(),
+						bundle, R.animator.slide_in_up,
+						R.animator.slide_out_bottom);
 				return true;
 			}
 			return false;
 		default:
-			break;
+			return false;
 		}
-		return false;
 	}
 
 	/** 센서 측정을 시작하고, 카운터 버튼으로 운동 횟수를 측정하도록 설정한다. */
@@ -245,7 +299,7 @@ public class FitnessFragment extends SwipeEventFragment implements
 		TextView view = (TextView) toastFrameView
 				.findViewById(android.R.id.message);
 		view.setGravity(Gravity.CENTER);
-		view.setTextColor(getResources().getColor(R.color.main));
+		view.setTextColor(getResources().getColor(R.color.orange));
 		view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
 		view.setShadowLayer(0, 0, 0, 0);
 		view.setPaddingRelative(30, 30, 30, 30);
@@ -253,14 +307,15 @@ public class FitnessFragment extends SwipeEventFragment implements
 	}
 
 	/** 해당 운동으로 바꾼다. */
-	private void changeFitness(String table) {
+	private boolean changeFitness(String table) {
 		if (mSensorActive) {
 			showAlertMessage("먼저 운동을 종료해주세요.");
+			return false;
 		} else {
 			mCurrentCount = 0;
 			mCurrentDisplayDbTable = table;
-			mTitleTextView.setText(mCurrentDisplayDbTable);
 			stopCounting();
+			return true;
 		}
 	}
 
@@ -275,17 +330,17 @@ public class FitnessFragment extends SwipeEventFragment implements
 		if (mCountOfPushUps > 0) {
 			mActivityInterface.getBlinkServiceInteraction().local
 					.registerMeasurementData(new PushUp(mCountOfPushUps,
-							DateTimeUtil.get()));
+							DateTimeUtil.getTimeString()));
 		}
 		if (mCountOfSitUps > 0) {
 			mActivityInterface.getBlinkServiceInteraction().local
 					.registerMeasurementData(new SitUp(mCountOfSitUps,
-							DateTimeUtil.get()));
+							DateTimeUtil.getTimeString()));
 		}
 		if (mCountOfSquats > 0) {
 			mActivityInterface.getBlinkServiceInteraction().local
 					.registerMeasurementData(new Squat(mCountOfSquats,
-							DateTimeUtil.get()));
+							DateTimeUtil.getTimeString()));
 		}
 	}
 

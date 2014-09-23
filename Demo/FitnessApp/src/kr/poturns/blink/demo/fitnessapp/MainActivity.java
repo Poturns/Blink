@@ -339,7 +339,7 @@ public class MainActivity extends Activity implements ActivityInterface {
 				SQLiteHelper.getInstance(context).insert(bpm);
 				if (mInteraction != null) {
 					mInteraction.local.registerMeasurementData(new HeartBeat(
-							bpm, DateTimeUtil.get()));
+							bpm, DateTimeUtil.getTimeString()));
 
 					for (BlinkAppInfo info : mInteraction.local
 							.obtainBlinkAppAll()) {
@@ -347,7 +347,7 @@ public class MainActivity extends Activity implements ActivityInterface {
 								.equals(REMOTE_APP_PACKAGE_NAME)) {
 							mInteraction.remote.sendMeasurementData(info, mGson
 									.toJson(new HeartBeat(bpm, DateTimeUtil
-											.get())), REQUEST_CODE);
+											.getTimeString())), REQUEST_CODE);
 							Log.d(TAG, "send HeartBeat : " + bpm + " // to "
 									+ REMOTE_APP_PACKAGE_NAME);
 							return;

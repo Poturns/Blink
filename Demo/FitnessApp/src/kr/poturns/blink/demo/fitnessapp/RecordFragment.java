@@ -86,7 +86,7 @@ public class RecordFragment extends SwipeEventFragment {
 	 * <br>
 	 * SITUP <br>
 	 * | <br>
-	 * pushup - heartbeat(예정)<br>
+	 * pushup<br>
 	 * | <br>
 	 * SQUAT
 	 */
@@ -98,6 +98,8 @@ public class RecordFragment extends SwipeEventFragment {
 				mCurrentDisplayDbTable = SQLiteHelper.TABLE_SIT_UP;
 			else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SQUAT))
 				mCurrentDisplayDbTable = SQLiteHelper.TABLE_PUSH_UP;
+			else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SIT_UP))
+				mCurrentDisplayDbTable = SQLiteHelper.TABLE_SQUAT;
 			else
 				return false;
 			drawGraphWithNewFragment(R.animator.slide_in_up,
@@ -108,9 +110,10 @@ public class RecordFragment extends SwipeEventFragment {
 				mCurrentDisplayDbTable = SQLiteHelper.TABLE_SQUAT;
 			else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SIT_UP))
 				mCurrentDisplayDbTable = SQLiteHelper.TABLE_PUSH_UP;
+			else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SQUAT))
+				mCurrentDisplayDbTable = SQLiteHelper.TABLE_SIT_UP;
 			else
 				return false;
-			// mCurrentDisplayDbTable = SQLiteHelper.TABLE_HEART_BEAT;
 			drawGraphWithNewFragment(R.animator.slide_in_bottom,
 					R.animator.slide_out_up);
 			return true;
@@ -170,8 +173,18 @@ public class RecordFragment extends SwipeEventFragment {
 			title = "스쿼트";
 		if (mShowCalorie)
 			title += " (KCal)";
-		int color = getResources().getColor(R.color.main);
-
+		
+		int color;
+		if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_PUSH_UP)) {
+			color = getResources().getColor(R.color.orange);
+		} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SIT_UP)) {
+			color = getResources().getColor(R.color.green);
+		} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SQUAT)) {
+			color = getResources().getColor(R.color.blue);
+		} else {
+			color = getResources().getColor(R.color.orange);
+		}
+		
 		ArrayList<BarGraph> arrGraph = new ArrayList<BarGraph>();
 		arrGraph.add(new BarGraph(title, color, array));
 

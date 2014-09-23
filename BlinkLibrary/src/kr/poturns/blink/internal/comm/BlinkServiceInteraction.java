@@ -65,8 +65,10 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	private String mAppName = "";
 
 	public BlinkAppInfo mBlinkAppInfo;
-	public Local local;
-	public Remote remote;
+	// TODO 외부에서 접근은 가능하나 변경은 못하게 해야함 by MyungJin.Kim
+	/** */
+	public final Local local = new Local();
+	public final Remote remote = new Remote();
 	Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 	boolean isRegisteredReceiver = false;
@@ -114,9 +116,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		CONTEXT.getContentResolver().registerContentObserver(
 				SqliteManager.URI_OBSERVER_SYNC, false, mContentObserver);
 
-		local = new Local();
-		remote = new Remote();
-
 		/**
 		 * Setting Application Info
 		 */
@@ -127,7 +126,9 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	}
 
 	/**
-	 * Boradcast와 Callback을 등록하지 않는 생성자
+	 * Broadcast와 Callback을 등록하지 않는 생성자<br>
+	 * <br>
+	 * {@code BlinkServiceInteration(context, null, null)}을 호출하는 것과 동일하다.
 	 * 
 	 * @param context
 	 */
@@ -145,7 +146,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			mInternalOperationSupport = BlinkSupportBinder.asInterface(service);
 			if (mInternalOperationSupport == null) {
 				onServiceFailed();
-
 			} else {
 				try {
 					mInternalOperationSupport.registerApplicationInfo(
@@ -216,7 +216,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	public final void requestConfigurationChange(String... keys) {
 		if (keys != null) {
 			for (String key : keys) {
-				//TODO config setting
+				// TODO config setting
 			}
 		}
 
@@ -225,7 +225,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	}
 
 	/**
-	 * {@link BlinkDevice}의 연결 상태가 변했을 때 호출 될, {@link IBlinkEventBroadcast}를
+	 * {@link BlinkDevice}의 연결 상태가 변했을 때 호출 되는 콜백인{@link IBlinkEventBroadcast}를
 	 * 설정한다.
 	 */
 	public final void setOnBlinkEventBroadcast(
@@ -234,8 +234,8 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	}
 
 	/**
-	 * Blink Service를 통해 데이터가 온 것을 감지하면 호출 될 {@link IInternalEventCallback}을
-	 * 설정한다.
+	 * Blink Service를 통해 외부 디바이스에서 데이터가 온 것을 감지하면 호출되는 콜백인
+	 * {@link IInternalEventCallback}을 설정한다.
 	 */
 	public final void setIInternalEventCallback(IInternalEventCallback callback) {
 		mIInternalEventCallback = callback;
@@ -715,7 +715,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @return
 		 */
 		public Local clear() {
-
 			mBlinkDatabaseManager.clear();
 			return this;
 		}
@@ -727,7 +726,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @return
 		 */
 		public Local queryDevice(String where) {
-
 			mBlinkDatabaseManager.queryDevice(where);
 			return this;
 		}

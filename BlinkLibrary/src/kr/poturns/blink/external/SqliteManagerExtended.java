@@ -38,7 +38,7 @@ class SqliteManagerExtended extends SqliteManager {
 		List<Device> deviceList = obtainDataListFromCursor(
 				mSQLiteDatabase.rawQuery(
 						"SELECT * FROM Device WHERE Device = '"
-								+ device.getName() + "'", null), Device.class);
+								+ device.getName() + '\'', null), Device.class);
 		for (Device dbDevice : deviceList) {
 			if (dbDevice.MacAddress.equals(device.getAddress()))
 				return dbDevice;
@@ -336,7 +336,7 @@ class SqliteManagerExtended extends SqliteManager {
 		if (limit < 0)
 			limit = 5;
 		StringBuilder query = new StringBuilder();
-		query.append("SELECT DISTINCT * FROM Measurement WHERE MeasurementId IN ")
+		query.append("SELECT * FROM Measurement WHERE MeasurementId IN ")
 				.append("( SELECT DISTINCT MeasurementId FROM MeasurementData ORDER BY DateTime DESC ");
 		query.append("LIMIT ").append(limit).append(" )");
 		Cursor cursor = mSQLiteDatabase.rawQuery(query.toString(), null);

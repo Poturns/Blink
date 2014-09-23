@@ -3,6 +3,8 @@
 
     <color name="text_title">#020202</color>
     <color name="text_content">#ffffff</color>
-    <color name="main">#fb9d23</color>
+    <color name="orange">#fb9d23</color>
+    <color name="green">#2ecc71</color>
+    <color name="blue">#1997e1</color>
 
 </resources>
