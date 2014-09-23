@@ -217,19 +217,36 @@ class DataViewFragment extends Fragment {
 						.replaceAll("^.*?-", "");
 				if (legendArr[i].length() > 6)
 					legendArr[i] = legendArr[i].substring(0, 5);
-				if (size > 70
-						|| (size > 40 && PrivateUtil
-								.isScreenSizeSmall(getActivity()))) {
-					legendArr[i] = legendArr[i].substring(2);
+				if (PrivateUtil.isScreenSizeSmall(getActivity())) {
+					if (size > 20)
+						legendArr[i] = new String(legendArr[i].substring(4));
+					else if (size > 10)
+						legendArr[i] = new String(legendArr[i].substring(3));
+					else if (size > 5)
+						legendArr[i] = new String(legendArr[i].substring(1));
+				} else {
+					if (size > 100)
+						legendArr[i] = new String(legendArr[i].substring(4));
+					else if (size > 50)
+						legendArr[i] = new String(legendArr[i].substring(3));
+					else if (size > 30)
+						legendArr[i] = new String(legendArr[i].substring(2));
+					else if (size > 20)
+						legendArr[i] = new String(legendArr[i].substring(1));
 				}
+
 			}
 			ret = new BubbleGraphVO(legendArr);
 			ret.setAnimationDuration(1000);
-
+			ret.setXAxisTextSize(PrivateUtil.isScreenSizeSmall(getActivity()) ? 20
+					: 40);
+			ret.setYAxisTextSize(PrivateUtil.isScreenSizeSmall(getActivity()) ? 23
+					: 40);
 			ret.setIsLineShow(true);
 			ret.setIsAnimaionShow(true);
 			GraphNameBox nameBox = new GraphNameBox();
 			nameBox.setNameboxTextSize(30);
+			nameBox.setNameboxColor(Color.BLACK);
 			ret.setGraphNameBox(nameBox);
 			Random random = new Random(System.currentTimeMillis());
 			int graphCount = 0;

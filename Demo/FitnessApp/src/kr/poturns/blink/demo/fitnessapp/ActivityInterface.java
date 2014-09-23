@@ -4,6 +4,7 @@ import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.app.Fragment;
 import android.os.Bundle;
+
 /** @author Myungjin.Kim */
 public interface ActivityInterface {
 	public BlinkServiceInteraction getBlinkServiceInteraction();
@@ -19,4 +20,7 @@ public interface ActivityInterface {
 
 	/** 메인 화면으로 돌아간다. */
 	public void returnToMain();
+
+	/** 심박수 측정 서비스를 시작/종료 한다. */
+	public void startOrStopService(boolean start);
 }

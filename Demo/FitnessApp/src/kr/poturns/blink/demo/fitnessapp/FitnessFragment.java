@@ -14,6 +14,8 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -53,7 +55,8 @@ public class FitnessFragment extends SwipeEventFragment implements
 	int mMeasuredBpm;
 	/** 현재 측정중인 운동 */
 	private String mCurrentDisplayDbTable = SQLiteHelper.TABLE_PUSH_UP;
-
+	/** 심장박동 애니메이션을 보여줄 Thread */
+	private Thread mHeartBeatingThread;
 	/** 센서가 움직임을 감지할 최소한의 속도 */
 	private static final int SHAKE_THRESHOLD = 800;
 	/** 센서가 한번 측정 후, 다시 측정하기까지 걸리는 시간 */
@@ -133,20 +136,55 @@ public class FitnessFragment extends SwipeEventFragment implements
 
 	@Override
 	public void onHeartBeat(int bpm) {
-		getActivity().runOnUiThread(mHeartBeatAction);
 		this.mMeasuredBpm = bpm;
+		getActivity().runOnUiThread(mHeartBeatTextAction);
 	}
 
-	private Runnable mHeartBeatAction = new Runnable() {
-		private ScaleAnimation anim = new ScaleAnimation(1.0f, 1.0f, 1.2f, 1.2f);
+	/** 비동기적으로 심장박동수를 TextView에 표현하는 Action */
+	private Runnable mHeartBeatTextAction = new Runnable() {
 
 		@Override
 		public void run() {
-			mHeartBeatTextView.startAnimation(anim);
 			mHeartBeatTextView.setText(Integer.toString(mMeasuredBpm));
+		}
+	};
+
+	/** 심장박동 애니메이션을 보여줄 Thread */
+	private class HeartBeatAction extends Thread {
+		private ScaleAnimation anim = new ScaleAnimation(1.0f, 1.0f, 1.2f, 1.2f);
+		private static final String TAG = "HeartBeatAction";
+
+		private Runnable mAnimation = new Runnable() {
+
+			@Override
+			public void run() {
+				mHeartBeatTextView.startAnimation(anim);
+			}
+		};
+
+		@Override
+		public void run() {
+			Log.d(TAG, "start");
+			while (getHeartBeatPreferenceValue()) {
+				try {
+					synchronized (this) {
+						wait(900);
+					}
+				} catch (InterruptedException e) {
+					break;
+				}
+				mHeartBeatTextView.post(mAnimation);
+			}
+			Log.d(TAG, "end");
 			return;
 		}
 	};
+
+	/** {@link SettingFragment#KEY_MEASURE_HEARTBEAT} 설정값을 가져온다. */
+	boolean getHeartBeatPreferenceValue() {
+		return PreferenceManager.getDefaultSharedPreferences(getActivity())
+				.getBoolean(SettingFragment.KEY_MEASURE_HEARTBEAT, false);
+	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -159,6 +197,10 @@ public class FitnessFragment extends SwipeEventFragment implements
 		super.onResume();
 		if (mFitnessStart)
 			startCounting();
+		if (getHeartBeatPreferenceValue()) {
+			mHeartBeatingThread = new HeartBeatAction();
+			mHeartBeatingThread.start();
+		}
 		SQLiteHelper.closeDB();
 		mSqLiteHelper = SQLiteHelper.getInstance(getActivity());
 	}
@@ -167,6 +209,8 @@ public class FitnessFragment extends SwipeEventFragment implements
 	public void onPause() {
 		super.onPause();
 		stopCounting();
+		if (mHeartBeatingThread != null)
+			mHeartBeatingThread.interrupt();
 		SQLiteHelper.closeDB();
 	}
 

@@ -202,10 +202,9 @@ public class RecordFragment extends SwipeEventFragment {
 		vo.setAnimation(new GraphAnimation(GraphAnimation.LINEAR_ANIMATION,
 				GraphAnimation.DEFAULT_DURATION));
 		vo.setAnimationShow(true);
-		vo.setTextX(50);
-		vo.setTextY(30);
+		vo.setXAxisTextSize(50);
+		vo.setYAxisTextSize(30);
 		GraphNameBox box = new GraphNameBox();
-		box.setNameboxColor(color);
 		box.setNameboxTextSize(60);
 		box.setNameboxColor(Color.BLACK);
 		box.setNameboxPadding(20);

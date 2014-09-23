@@ -17,7 +17,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Point;
 import android.os.Bundle;
-import android.util.Log;
+import android.preference.PreferenceManager;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -28,9 +28,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 /**
  * Fitness App의 메인 Activity <br>
@@ -45,17 +42,13 @@ public class MainActivity extends Activity implements ActivityInterface {
 	BlinkServiceInteraction mInteraction;
 	IInternalOperationSupport mISupport;
 	GestureDetector mGestureDetector;
-	Gson mGson = new GsonBuilder().setPrettyPrinting().create();
-	/** remote device 에 전달 요청 코드 */
-	static final int REQUEST_CODE = 1;
-	/** remote app package name */
-	static final String REMOTE_APP_PACKAGE_NAME = "kr.poturns.blink.demo.visualizer";
-	static final String TAG = MainActivity.class.getSimpleName();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
+		// Blink 서비스 시작
 		mInteraction = new BlinkServiceInteraction(this, null, null) {
 
 			@Override
@@ -86,6 +79,15 @@ public class MainActivity extends Activity implements ActivityInterface {
 		};
 		mInteraction.startBroadcastReceiver();
 		mInteraction.startService();
+		
+		// 심박수 측정 서비스 시작/종료
+		startOrStopService(PreferenceManager.getDefaultSharedPreferences(this)
+				.getBoolean(SettingFragment.KEY_MEASURE_HEARTBEAT, false));
+		IntentFilter filter = new IntentFilter(
+				HeartBeatService.WIDGET_HEART_BEAT_ACTION);
+		registerReceiver(mHeartBeatReciever, filter);
+		
+		// 화면 제스처 등록
 		mGestureDetector = new GestureDetector(this,
 				new GestureDetector.SimpleOnGestureListener() {
 					@Override
@@ -116,6 +118,8 @@ public class MainActivity extends Activity implements ActivityInterface {
 						return false;
 					}
 				});
+		
+		// View 설정 & 화면 크기 제한
 		View container = findViewById(R.id.root).findViewById(R.id.container);
 
 		RelativeLayout.LayoutParams layoutParam = (RelativeLayout.LayoutParams) container
@@ -136,9 +140,8 @@ public class MainActivity extends Activity implements ActivityInterface {
 		else
 			layoutParam.width = layoutParam.height = size.y - pageRowMargin;
 		container.setLayoutParams(layoutParam);
-		IntentFilter filter = new IntentFilter(
-				HeartBeatService.WIDGET_HEART_BEAT_ACTION);
-		registerReceiver(mHeartBeatReciever, filter);
+		
+		// 홈 화면으로 이동
 		attachFragment(new HomeFragment(), null, R.animator.slide_in_right,
 				R.animator.slide_out_left);
 	}
@@ -175,7 +178,7 @@ public class MainActivity extends Activity implements ActivityInterface {
 		if (fragment instanceof SwipeListener) {
 			mChildObject = (SwipeListener) fragment;
 		} else {
-			mChildObject = null;
+			throw new RuntimeException("Fragment should implement SwipeListner");
 		}
 		if (fragment instanceof IInternalEventCallback) {
 			mInteraction
@@ -336,27 +339,17 @@ public class MainActivity extends Activity implements ActivityInterface {
 						&& mChildObject instanceof OnHeartBeatEventListener) {
 					((OnHeartBeatEventListener) mChildObject).onHeartBeat(bpm);
 				}
-				SQLiteHelper.getInstance(context).insert(bpm);
-				if (mInteraction != null) {
-					mInteraction.local.registerMeasurementData(new HeartBeat(
-							bpm, DateTimeUtil.getTimeString()));
-
-					for (BlinkAppInfo info : mInteraction.local
-							.obtainBlinkAppAll()) {
-						if (info.mApp.PackageName
-								.equals(REMOTE_APP_PACKAGE_NAME)) {
-							mInteraction.remote.sendMeasurementData(info, mGson
-									.toJson(new HeartBeat(bpm, DateTimeUtil
-											.getTimeString())), REQUEST_CODE);
-							Log.d(TAG, "send HeartBeat : " + bpm + " // to "
-									+ REMOTE_APP_PACKAGE_NAME);
-							return;
-						}
-					}
-					Log.e(TAG, "Cannot reach remote device : "
-							+ REMOTE_APP_PACKAGE_NAME);
-				}
 			}
 		}
 	};
+
+	@Override
+	public void startOrStopService(boolean start) {
+		Intent intent = new Intent(this, HeartBeatService.class);
+		if (start) {
+			startService(intent);
+		} else {
+			stopService(intent);
+		}
+	}
 }

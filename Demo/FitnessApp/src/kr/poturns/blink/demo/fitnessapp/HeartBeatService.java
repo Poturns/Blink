@@ -2,6 +2,13 @@ package kr.poturns.blink.demo.fitnessapp;
 
 import java.util.Random;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import kr.poturns.blink.db.archive.BlinkAppInfo;
+import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
+import kr.poturns.blink.internal.comm.IInternalOperationSupport;
+import kr.poturns.blink.schema.HeartBeat;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
@@ -27,6 +34,8 @@ public class HeartBeatService extends Service {
 	/** intent extra value (heartbeat), (Integer) */
 	public final static String WIDGET_HEART_BEAT_VALUE = "heartbeat";
 	private static final String TAG = HeartBeatService.class.getSimpleName();
+	BlinkServiceInteraction mInteraction;
+	IInternalOperationSupport mIInternalOperationSupport;
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -40,6 +49,15 @@ public class HeartBeatService extends Service {
 			mHeartBeatBackgroundThread = new HeartBeatActionThread();
 			mHeartBeatBackgroundThread.start();
 			Log.d(TAG, "HeartBeat Thread started");
+
+			mInteraction = new BlinkServiceInteraction(this) {
+				@Override
+				public void onServiceConnected(
+						IInternalOperationSupport iSupport) {
+					HeartBeatService.this.mIInternalOperationSupport = iSupport;
+				}
+			};
+			mInteraction.startService();
 		}
 		return START_REDELIVER_INTENT;
 	}
@@ -51,6 +69,7 @@ public class HeartBeatService extends Service {
 			mHeartBeatBackgroundThread.interrupt();
 			Log.d(TAG, "HeartBeat Thread finished");
 		}
+		mInteraction.stopService();
 		super.onDestroy();
 	}
 
@@ -65,9 +84,15 @@ public class HeartBeatService extends Service {
 
 	private class HeartBeatActionThread extends Thread {
 		private int progress = 0;
+		/** remote device 에 전달 요청 코드 */
+		private static final int REQUEST_CODE = 1;
+		/** remote app package name */
+		private static final String REMOTE_APP_PACKAGE_NAME = "kr.poturns.blink.demo.visualizer";
+		private Gson mGson = new GsonBuilder().setPrettyPrinting().create();
 
 		@Override
 		public void run() {
+			Log.d(TAG, "HeartBeat Thread started internal");
 			progress = 0;
 			Intent intent = new Intent(WIDGET_HEART_BEAT_ACTION);
 			while (true) {
@@ -85,11 +110,42 @@ public class HeartBeatService extends Service {
 					Log.d(TAG, "HeartBeat Thread send broadcast, HeartBeat : "
 							+ bpm);
 					progress = 0;
+					recordHeartBeat(bpm);
+					sendHeartBeatRemote(bpm);
 				} else
 					progress++;
 			}
-			Log.d(TAG, "HeartBeat Thread finished");
+			Log.d(TAG, "HeartBeat Thread finished internal");
 			return;
+		}
+
+		private void recordHeartBeat(int bpm) {
+			SQLiteHelper.getInstance(HeartBeatService.this).insert(bpm);
+			if (mInteraction != null) {
+				mInteraction.local.registerMeasurementData(new HeartBeat(bpm,
+						DateTimeUtil.getTimeString()));
+			}
+		}
+
+		private void sendHeartBeatRemote(int bpm) {
+			if(bpm < 1)
+				return;
+			if (mIInternalOperationSupport != null) {
+				for (BlinkAppInfo info : mInteraction.local.obtainBlinkAppAll()) {
+					if (info.mApp.PackageName.equals(REMOTE_APP_PACKAGE_NAME)) {
+						mInteraction.remote.sendMeasurementData(info, mGson
+								.toJson(new HeartBeat(bpm, DateTimeUtil
+										.getTimeString())), REQUEST_CODE);
+						Log.d(TAG, "send HeartBeat : " + bpm + " // to "
+								+ REMOTE_APP_PACKAGE_NAME);
+						return;
+					}
+				}
+				Log.e(TAG, "Cannot reach remote device : "
+						+ REMOTE_APP_PACKAGE_NAME);
+			} else {
+				Log.e(TAG, "Blink Service Support == null");
+			}
 		}
 	};
 }

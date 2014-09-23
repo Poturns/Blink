@@ -2,14 +2,13 @@ package kr.poturns.blink.demo.fitnessapp;
 
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeListener;
 import android.app.Activity;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
+import android.preference.SwitchPreference;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -40,7 +39,7 @@ public class SettingFragment extends PreferenceFragment implements
 	}
 
 	private void bindPreferenceSummaryToValue() {
-		CheckBoxPreference preference = (CheckBoxPreference) findPreference(KEY_MEASURE_HEARTBEAT);
+		SwitchPreference preference = (SwitchPreference) findPreference(KEY_MEASURE_HEARTBEAT);
 		preference.setChecked(getPreferenceScreen().getSharedPreferences()
 				.getBoolean(KEY_MEASURE_HEARTBEAT, false));
 	}
@@ -111,12 +110,7 @@ public class SettingFragment extends PreferenceFragment implements
 		if (key.equals(KEY_MEASURE_HEARTBEAT)) {
 			boolean start = sharedPreferences.getBoolean(KEY_MEASURE_HEARTBEAT,
 					false);
-			Intent intent = new Intent(getActivity(), HeartBeatService.class);
-			if (start) {
-				getActivity().startService(intent);
-			} else {
-				getActivity().stopService(intent);
-			}
+			mActivityInterface.startOrStopService(start);
 		}
 	}
 
