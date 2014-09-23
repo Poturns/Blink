@@ -1,8 +1,13 @@
 package kr.poturns.blink.demo.fitnessapp;
 
+import com.google.gson.Gson;
+
 import kr.poturns.blink.db.archive.BlinkAppInfo;
+import kr.poturns.blink.db.archive.CallbackData;
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeListener.Direction;
+import kr.poturns.blink.demo.fitnessapp.schema.InBodyData;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
+import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import kr.poturns.blink.schema.HeartBeat;
 import kr.poturns.blink.schema.PushUp;
@@ -10,8 +15,10 @@ import kr.poturns.blink.schema.SitUp;
 import kr.poturns.blink.schema.Squat;
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -68,7 +75,7 @@ public class MainActivity extends Activity implements ActivityInterface {
 					@Override
 					public boolean onFling(MotionEvent e1, MotionEvent e2,
 							float velocityX, float velocityY) {
-						Direction direction = null;
+						Direction direction = Direction.UP_TO_DOWN;
 						// 가로로 움직인 폭이 일정 이상이면 무시
 						if (Math.abs(e1.getX() - e2.getX()) < 100) {
 							// 아래서 위로 스크롤 하는 경우
@@ -281,4 +288,27 @@ public class MainActivity extends Activity implements ActivityInterface {
 			}
 		}
 	}
+	
+	IInternalEventCallback.Stub iInternalEventCallback = new IInternalEventCallback.Stub(){
+
+		@Override
+        public void onReceiveData(int code, CallbackData data)
+                throws RemoteException {
+	        // TODO Auto-generated method stub
+	        if(code==InBodyFragment.CODE_INBODY){
+//	        	Gson gson = new Gson();
+//	        	if(data.OutDeviceData==null)return;
+//	        	InBodyData mInbodyData = gson.fromJson(data.OutDeviceData,InBodyData.class);
+//	        	SharedPreferences prefs = getSharedPreferences("fitness", MODE_PRIVATE);
+//	        	SharedPreferences.Editor editor = prefs.edit();
+//	        	editor.putString("age", mInbodyData.age);
+//	        	editor.putString("gender", mInbodyData.age);
+//	        	editor.putString("weight", mInbodyData.age);
+//	        	editor.putString("weight_standard", mInbodyData.age);
+//	        	editor.putString("NeedCalorie", mInbodyData.age);
+//	        	editor.commit();
+	        }
+        }
+		
+	};
 }
