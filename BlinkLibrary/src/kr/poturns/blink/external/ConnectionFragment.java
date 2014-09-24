@@ -246,9 +246,9 @@ final class ConnectionFragment extends Fragment {
 	 */
 	final void connectOrDisConnectDevice(BlinkDevice device,
 			DeviceConnectionResultListener l) {
-		if (mConnectionTasking) {
-			Toast.makeText(getActivity(), "already connection tasking", 1000)
-					.show();
+		if (mConnectionTasking || mConnectionThread != null) {
+			Toast.makeText(getActivity(), "already connection tasking",
+					Toast.LENGTH_SHORT).show();
 			return;
 		}
 		if (device.isConnected()) {
@@ -263,28 +263,38 @@ final class ConnectionFragment extends Fragment {
 	}
 
 	/**
-	 * 주변에 발견된 BlinkDevice의 list를 가져온다. <br>
+	 * Bluetooth Discovery를 시작해서 주변에 발견된 BlinkDevice의 list를 비동기적으로 가져온다. <br>
 	 * <br>
-	 * 작업에 성공하면 {@link #onDeviceListChanged()}, 실패하면
-	 * {@link #onDeviceListLoadFailed()}가 호출된다. <br>
+	 * 작업에 성공하면 {@link IConnectionCallback#onDiscoveryFinished()}, <br>
+	 * 실패하면 {@link IConnectionCallback#onDeviceListLoadFailed()}가 호출된다. <br>
 	 * <br>
 	 * 작업이 이미 진행 중 이거나, Bluetooth가 비활성화 되어있으면 {@link Toast}를 띄운다.
 	 */
 	final void fetchDeviceListFromBluetooth() {
+		// Bluetooth가 사용 가능하지 않은 경우
 		if (!mBluetoothEnabled
-				|| BluetoothAdapter.getDefaultAdapter().getState() != BluetoothAdapter.STATE_ON) {
+				|| !BluetoothAdapter.getDefaultAdapter().isEnabled()) {
 			Toast.makeText(getActivity(),
 					R.string.res_blink_bluetooth_disabled, Toast.LENGTH_SHORT)
 					.show();
 			mCurrentChildFragmentInterface.onDiscoveryFailed();
 			return;
 		}
+
+		// 이미 discovery 중인 경우
 		if (mFetchTasking) {
 			Toast.makeText(getActivity(),
 					R.string.res_blink_discovery_is_running, Toast.LENGTH_SHORT)
 					.show();
 			mCurrentChildFragmentInterface.onDiscoveryFailed();
 			return;
+		}
+
+		// 혹여나 시행중인 discovery 종료
+		try {
+			mBlinkOperation.stopDiscovery();
+		} catch (RemoteException e) {
+			e.printStackTrace();
 		}
 		mDeviceList.clear();
 		mFetchTasking = true;
@@ -433,7 +443,7 @@ final class ConnectionFragment extends Fragment {
 
 		@Override
 		public void run() {
-			Log.e(TAG, "connection thread start!");
+			Log.d(TAG, "connection thread start!");
 			try {
 				if (mIsConnectTask) {
 					mBlinkOperation.connectDevice(mDevice);
@@ -449,8 +459,15 @@ final class ConnectionFragment extends Fragment {
 			long startTime = System.currentTimeMillis();
 			// wait
 			while (mWating.get()) {
-				// 15초 기다린다.
-				if (System.currentTimeMillis() - startTime > 15000) {
+				try {
+					synchronized (this) {
+						wait(500);
+					}
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				// 20초 기다린다.
+				if (System.currentTimeMillis() - startTime > 20000) {
 					sHandler.post(new Runnable() {
 
 						@Override
@@ -806,9 +823,16 @@ final class ConnectionFragment extends Fragment {
 		}
 
 		/**
-		 * Service를 통해 Bluetooth Discovery를 시작하고, DeviceList를 변경한다.<br>
+		 * Service를 통해Bluetooth Discovery를 시작해서 주변에 발견된 BlinkDevice의 list를
+		 * 비동기적으로 가져온다. <br>
+		 * <br>
 		 * {@link BlinkDevice}가 Discovery될 때마다
-		 * {@link BaseConnectionFragment#onDeviceDiscovered(BlinkDevice)}가 호출된다.
+		 * {@link BaseConnectionFragment#onDeviceDiscovered(BlinkDevice)}가 호출된다. <br>
+		 * <br>
+		 * 작업에 성공하면 {@link IConnectionCallback#onDiscoveryFinished()}, <br>
+		 * 실패하면 {@link IConnectionCallback#onDeviceListLoadFailed()}가 호출된다. <br>
+		 * <br>
+		 * 작업이 이미 진행 중 이거나, Bluetooth가 비활성화 되어있으면 {@link Toast}를 띄운다.
 		 */
 		void fetchDeviceListFromBluetooth() {
 			mParentFragment.fetchDeviceListFromBluetooth();
@@ -829,6 +853,8 @@ final class ConnectionFragment extends Fragment {
 		 * 
 		 * @param device
 		 *            연결/연결 해제할 Device
+		 * @param l
+		 *            작업 성공 후 호출 될 콜백
 		 */
 		void connectOrDisConnectDevice(BlinkDevice device,
 				DeviceConnectionResultListener l) {

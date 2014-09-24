@@ -39,6 +39,8 @@ class SqliteManagerExtended extends SqliteManager {
 				mSQLiteDatabase.rawQuery(
 						"SELECT * FROM Device WHERE Device = '"
 								+ device.getName() + '\'', null), Device.class);
+		if (deviceList == null)
+			return null;
 		for (Device dbDevice : deviceList) {
 			if (dbDevice.MacAddress.equals(device.getAddress()))
 				return dbDevice;

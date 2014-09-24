@@ -1,7 +1,6 @@
 package kr.poturns.blink.demo.fitnessapp;
 
 import java.io.IOException;
-import java.io.StreamCorruptedException;
 
 import kr.poturns.blink.db.archive.CallbackData;
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
@@ -37,43 +36,44 @@ import com.google.gson.Gson;
  */
 public class InBodyFragment extends SwipeEventFragment implements
 		OnClickListener, IInternalEventCallback {
-	public static int CODE_INBODY = 0x01;
+	public static final int CODE_INBODY = 0x01;
 	BlinkServiceInteraction mInteraction;
 	Gson gson;
-	
+
 	TextView inbody_date;
 	TextView inbody_age_gender;
 	TextView inbody_weight;
 	ProgressBar inbody_progressbar;
 	TextView inbody_progressbar_summary;
-	
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.fragment_inbody, container, false);
 		v.findViewById(R.id.inbody_go_fitness).setOnClickListener(this);
 		v.findViewById(R.id.inbody_update).setOnClickListener(this);
-		
-		//find view
-		inbody_date = (TextView)v.findViewById(R.id.inbody_date);
-		inbody_age_gender = (TextView)v.findViewById(R.id.inbody_age_gender);
-		inbody_weight = (TextView)v.findViewById(R.id.inbody_weight);
-		inbody_progressbar = (ProgressBar)v.findViewById(R.id.inbody_progressbar);
-		inbody_progressbar_summary = (TextView)v.findViewById(R.id.inbody_progressbar_summary);
-		
+
+		// find view
+		inbody_date = (TextView) v.findViewById(R.id.inbody_date);
+		inbody_age_gender = (TextView) v.findViewById(R.id.inbody_age_gender);
+		inbody_weight = (TextView) v.findViewById(R.id.inbody_weight);
+		inbody_progressbar = (ProgressBar) v
+				.findViewById(R.id.inbody_progressbar);
+		inbody_progressbar_summary = (TextView) v
+				.findViewById(R.id.inbody_progressbar_summary);
+
 		mInteraction = mActivityInterface.getBlinkServiceInteraction();
-		mInteraction.setIInternalEventCallback(this);
 		gson = new Gson();
-		
+
 		try {
-	        InBodyData mInbodyData = FitnessUtil.readInBodyFromFile(getActivity());
-	        updateView(mInbodyData);
-        } catch (Exception e) {
-	        // TODO Auto-generated catch block
-	        e.printStackTrace();
-	        updateView(null);
-        } 
-		
+			InBodyData mInbodyData = FitnessUtil
+					.readInBodyFromFile(getActivity());
+			updateView(mInbodyData);
+		} catch (Exception e) {
+			e.printStackTrace();
+			updateView(null);
+		}
+
 		return v;
 	}
 
@@ -128,33 +128,37 @@ public class InBodyFragment extends SwipeEventFragment implements
 	@Override
 	public void onReceiveData(int code, CallbackData data)
 			throws RemoteException {
-		// TODO Auto-generated method stub
-		if(code==CODE_INBODY){
-			if(data.Result==false){
-				Toast.makeText(getActivity(), "인바디 데이터를 받을 수 없습니다.", Toast.LENGTH_SHORT);
+		switch (code) {
+		case CODE_INBODY:
+			if (!data.Result) {
+				Toast.makeText(getActivity(), "인바디 데이터를 받을 수 없습니다.",
+						Toast.LENGTH_SHORT).show();
 				return;
-			}else {
-				InBodyData mInbodyData = gson.fromJson(data.OutDeviceData,InBodyData.class);
+			} else {
+				InBodyData mInbodyData = gson.fromJson(data.OutDeviceData,
+						InBodyData.class);
 				try {
-	                FitnessUtil.saveInBodyFile(getActivity(), mInbodyData);
-                } catch (IOException e) {
-	                // TODO Auto-generated catch block
-	                e.printStackTrace();
-	                return;
-                }
+					FitnessUtil.saveInBodyFile(getActivity(), mInbodyData);
+				} catch (IOException e) {
+					e.printStackTrace();
+					return;
+				}
 				updateView(mInbodyData);
 			}
+			break;
+		default:
+			break;
 		}
 	}
-	
-	public void updateView(InBodyData mInbodyData){
-		if(mInbodyData==null){
+
+	public void updateView(InBodyData mInbodyData) {
+		if (mInbodyData == null) {
 			inbody_date.setText("");
 			inbody_age_gender.setText("정보가 없습니다.");
-			inbody_weight.setText("없데이트를 해주세요.");
+			inbody_weight.setText("업데이트를 해주세요.");
 			inbody_progressbar.setProgress(0);
-			inbody_progressbar_summary.setText("");			
-		}else {
+			inbody_progressbar_summary.setText("");
+		} else {
 			inbody_date.setText("");
 			inbody_age_gender.setText("");
 			inbody_weight.setText("");

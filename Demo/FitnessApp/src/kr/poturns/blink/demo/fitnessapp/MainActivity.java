@@ -35,7 +35,6 @@ import android.widget.TextView;
  * 터치 이벤트를 받아 하위 fragment에 전달한다.
  * 
  * @author Myungjin.Kim
- * @author Jiwon
  */
 public class MainActivity extends Activity implements ActivityInterface {
 	SwipeListener mChildObject;
