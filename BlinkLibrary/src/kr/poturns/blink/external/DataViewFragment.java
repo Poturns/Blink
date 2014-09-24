@@ -40,7 +40,6 @@ class DataViewFragment extends Fragment {
 	SqliteManagerExtended mManager;
 	private TabHost mTabHost;
 	private ViewPager mViewPager;
-	ArrayList<Fragment> mFragmentList = new ArrayList<Fragment>(3);
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -54,9 +53,6 @@ class DataViewFragment extends Fragment {
 		mDevice = PrivateUtil.obtainDevice(arg);
 		mApp = PrivateUtil.obtainApp(arg);
 		mMeasurement = PrivateUtil.obtainMeasurement(arg);
-		// mFragmentList.add(new DataMeasurementsPieFragment());
-		mFragmentList.add(new DataMeasurementsLineGraphFragment());
-		mFragmentList.add(new DataMeasurementDataListFragment());
 	}
 
 	@Override
@@ -94,7 +90,6 @@ class DataViewFragment extends Fragment {
 		});
 		mViewPager = (ViewPager) v
 				.findViewById(R.id.res_blink_dialog_deviceinfo_viewpager);
-		mViewPager.setOffscreenPageLimit(mFragmentList.size());
 		mViewPager
 				.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 					@Override
@@ -107,12 +102,22 @@ class DataViewFragment extends Fragment {
 
 			@Override
 			public int getCount() {
-				return mFragmentList.size();
+				return 2;
 			}
 
 			@Override
 			public Fragment getItem(int position) {
-				return mFragmentList.get(position);
+				switch (position) {
+				case 0:
+					if (mManager.obtainMeasurementDataListSize(mMeasurement) == 0) {
+						// 불러올 데이터가 없는 경우 측정 리스트 Fragment를 불러오게 한다.
+						return new DataMeasurementDataListFragment();
+					} else {
+						return new DataMeasurementsLineGraphFragment();
+					}
+				default:
+					return new DataMeasurementDataListFragment();
+				}
 			}
 		});
 		return v;
@@ -217,19 +222,36 @@ class DataViewFragment extends Fragment {
 						.replaceAll("^.*?-", "");
 				if (legendArr[i].length() > 6)
 					legendArr[i] = legendArr[i].substring(0, 5);
-				if (size > 70
-						|| (size > 40 && PrivateUtil
-								.isScreenSizeSmall(getActivity()))) {
-					legendArr[i] = legendArr[i].substring(2);
+				if (PrivateUtil.isScreenSizeSmall(getActivity())) {
+					if (size > 20)
+						legendArr[i] = new String(legendArr[i].substring(4));
+					else if (size > 10)
+						legendArr[i] = new String(legendArr[i].substring(3));
+					else if (size > 5)
+						legendArr[i] = new String(legendArr[i].substring(1));
+				} else {
+					if (size > 100)
+						legendArr[i] = new String(legendArr[i].substring(4));
+					else if (size > 50)
+						legendArr[i] = new String(legendArr[i].substring(3));
+					else if (size > 30)
+						legendArr[i] = new String(legendArr[i].substring(2));
+					else if (size > 20)
+						legendArr[i] = new String(legendArr[i].substring(1));
 				}
+
 			}
 			ret = new BubbleGraphVO(legendArr);
 			ret.setAnimationDuration(1000);
-
+			ret.setXAxisTextSize(PrivateUtil.isScreenSizeSmall(getActivity()) ? 20
+					: 40);
+			ret.setYAxisTextSize(PrivateUtil.isScreenSizeSmall(getActivity()) ? 23
+					: 40);
 			ret.setIsLineShow(true);
 			ret.setIsAnimaionShow(true);
 			GraphNameBox nameBox = new GraphNameBox();
 			nameBox.setNameboxTextSize(30);
+			nameBox.setNameboxColor(Color.BLACK);
 			ret.setGraphNameBox(nameBox);
 			Random random = new Random(System.currentTimeMillis());
 			int graphCount = 0;

@@ -2,6 +2,11 @@ package kr.poturns.blink.util;
 
 import java.lang.reflect.Field;
 
+/**
+ * DB검색에서 Reflection을 사용하기 위한 매소드와 Schema 명을 만들기 위한 매소드들을 정의하고 있다.
+ * @author Jiwon
+ *
+ */
 public class ClassUtil {
 	/**
 	 * 클래스명을 리턴한다.

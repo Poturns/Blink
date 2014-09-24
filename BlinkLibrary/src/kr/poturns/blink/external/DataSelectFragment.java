@@ -178,10 +178,13 @@ class DataSelectFragment extends Fragment {
 							.setCompoundDrawablesRelativeWithIntrinsicBounds(
 									PrivateUtil.obtainAppIcon(app,
 											getResources()), null, null, null);
+					String title = measurement.MeasurementName;
+					if (title == null)
+						title = PrivateUtil
+								.obtainSplitMeasurementSchema(measurement);
 					((TextView) v
 							.findViewById(R.id.res_blink_fragment_list_recent_measurement))
-							.setText(PrivateUtil
-									.obtainSplitMeasurementSchema(measurement));
+							.setText(title);
 					((TextView) v
 							.findViewById(R.id.res_blink_fragment_list_recent_datetime))
 							.setText(mManager.obtainMeasurementDataDateTime(
@@ -347,7 +350,7 @@ class DataSelectFragment extends Fragment {
 						Function function = (Function) item;
 						head.setText(function.Function);
 						head.setCompoundDrawablesRelativeWithIntrinsicBounds(
-								R.drawable.res_blink_ic_action_statistics_function,
+								R.drawable.res_blink_ic_action_action_function,
 								0, 0, 0);
 						tail.setText(function.Description);
 					}
@@ -376,6 +379,8 @@ class DataSelectFragment extends Fragment {
 								.getActionBar().getTitle(), getActivity()
 								.getActionBar().getSubtitle());
 					}
+					//TODO Function를 나타내는 Item을 선택하였을 때,
+					// Function 실행요청을 보내야 하나?
 				}
 			});
 			return v;
@@ -402,7 +407,7 @@ class DataSelectFragment extends Fragment {
 				CharSequence subTitle) {
 			Bundle bundle = new Bundle(arg);
 			bundle.putCharSequence("title", title);
-			bundle.putCharSequence("sub", subTitle);
+			bundle.putCharSequence("subTitle", subTitle);
 			Fragment f = new DataViewFragment();
 			f.setArguments(bundle);
 			getFragmentManager()

@@ -6,58 +6,72 @@ import android.os.Parcelable;
 
 /**
  * Function 테이블과 맵핑되는 클래스
+ * 
+ * <br>
+ * <br>
+ * <b>Blink Database</b>에서 <b>Application</b>이 수행할 수 있는 <b>기능</b>을 의미한다.
+ * 
  * @author Jiwon
- *
+ * 
  */
-public class Function implements IDatabaseObject, Parcelable{
+public class Function implements IDatabaseObject, Parcelable {
+	/* Funtion이 어떠한 방식을 거쳐 수행 될 지를 결정하는 변수 */
+	/** Activity를 통해 실행하는 기능을 의미한다. */
 	public static final int TYPE_ACTIVITY = 1;
+	/** Service를 통해 실행하는 기능을 의미한다. */
 	public static final int TYPE_SERIVCE = 2;
+	/** Broadcase를 통해 실행하는 기능을 의미한다. */
 	public static final int TYPE_BROADCAST = 3;
-	
+
+	/** Function이 속한 App의 ID */
 	public int AppId;
+	/** Function의 이름 */
 	public String Function;
+	/** Function의 설명 */
 	public String Description;
+	/** Function의 행동 */
 	public String Action;
+	/** Function이 수행 될 방식 */
 	public int Type;
-	
-	public Function(){
+
+	public Function() {
 		this.AppId = -1;
 		this.Description = "";
 	}
-	public Function(String Function,String Description,String Action,int Type){
+
+	public Function(String Function, String Description, String Action, int Type) {
 		this.Function = Function;
 		this.Description = Description;
 		this.Action = Action;
 		this.Type = Type;
 	}
-	
-	public String toString(){
+
+	public String toString() {
 		String ret = "";
-		ret += "AppId : "+AppId+"\r\n";
-		ret += "Function : "+Function+"\r\n";
-		ret += "Description : "+Description+"\r\n";
-		ret += "Action : "+Action+"\r\n";
-		ret += "Type : "+Type+"\r\n";
+		ret += "AppId : " + AppId + "\r\n";
+		ret += "Function : " + Function + "\r\n";
+		ret += "Description : " + Description + "\r\n";
+		ret += "Action : " + Action + "\r\n";
+		ret += "Type : " + Type + "\r\n";
 		return ret;
 	}
-	
+
 	/**
 	 * Function 테이블의 등록 조건을 만족하는지 확인한다.
 	 */
 	@Override
 	public boolean checkIntegrity() {
-		// TODO Auto-generated method stub
-		if(Function!=null&&Function.length()>0)return true;
+		if (Function != null && Function.length() > 0)
+			return true;
 		return false;
 	}
-	
-	/**
+
+	/*
 	 * Parcelable 구현 매소드들
 	 */
 
 	@Override
 	public int describeContents() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
@@ -73,7 +87,6 @@ public class Function implements IDatabaseObject, Parcelable{
 
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
-		// TODO Auto-generated method stub
 		dest.writeString(JsonManager.gson.toJson(this));
 	}
 
@@ -82,8 +95,8 @@ public class Function implements IDatabaseObject, Parcelable{
 	}
 
 	public void readFromParcel(Parcel in) {
-		Function mFunction = JsonManager.gson.fromJson(
-				in.readString(), Function.class);
+		Function mFunction = JsonManager.gson.fromJson(in.readString(),
+				Function.class);
 		CopyFromOtherObject(mFunction);
 	}
 

@@ -2,20 +2,28 @@ package kr.poturns.blink.demo.fitnessapp;
 
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeListener;
 import android.app.Activity;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
-import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
+import android.preference.SwitchPreference;
 import android.widget.ListView;
 import android.widget.Toast;
 
+/**
+ * 설정값을 관리하는 fragment
+ * 
+ * @author Myungjin.Kim
+ */
 public class SettingFragment extends PreferenceFragment implements
-		SwipeListener {
+		SwipeListener, OnSharedPreferenceChangeListener {
 	ActivityInterface mActivityInterface;
-	public static final String KEY_ALERT_HEART_BEAT_IMPACT = "KEY_ALERT_HEART_BEAT_IMPACT";
+	public static final String KEY_MEASURE_HEARTBEAT = "KEY_MEASURE_HEARTBEAT";
 	public static final String KEY_DELETE_TRAINING_DATA = "KEY_DELETE_TRAINING_DATA";
 	public static final String KEY_INBODY_DATA = "KEY_INBODY_DATA";
+	public static final String KEY_LOAD_CONTROL = "KEY_LOAD_CONTROL";
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -31,9 +39,9 @@ public class SettingFragment extends PreferenceFragment implements
 	}
 
 	private void bindPreferenceSummaryToValue() {
-		CheckBoxPreference preference = (CheckBoxPreference) findPreference(KEY_ALERT_HEART_BEAT_IMPACT);
+		SwitchPreference preference = (SwitchPreference) findPreference(KEY_MEASURE_HEARTBEAT);
 		preference.setChecked(getPreferenceScreen().getSharedPreferences()
-				.getBoolean(KEY_ALERT_HEART_BEAT_IMPACT, false));
+				.getBoolean(KEY_MEASURE_HEARTBEAT, false));
 	}
 
 	@Override
@@ -47,6 +55,20 @@ public class SettingFragment extends PreferenceFragment implements
 		listView.setDividerHeight(60);
 		listView.setBackground(getResources().getDrawable(
 				R.drawable.image_sunset));
+	}
+
+	@Override
+	public void onResume() {
+		getPreferenceScreen().getSharedPreferences()
+				.registerOnSharedPreferenceChangeListener(this);
+		super.onResume();
+	}
+
+	@Override
+	public void onPause() {
+		getPreferenceScreen().getSharedPreferences()
+				.unregisterOnSharedPreferenceChangeListener(this);
+		super.onPause();
 	}
 
 	@Override
@@ -66,6 +88,9 @@ public class SettingFragment extends PreferenceFragment implements
 				Toast.makeText(getActivity(), "실패했습니다.", 1000).show();
 			}
 			return true;
+		} else if (key.equals(KEY_LOAD_CONTROL)) {
+			mActivityInterface.getBlinkServiceInteraction()
+					.openControlActivity();
 		}
 		return false;
 	}
@@ -77,6 +102,16 @@ public class SettingFragment extends PreferenceFragment implements
 			return true;
 		}
 		return false;
+	}
+
+	@Override
+	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
+			String key) {
+		if (key.equals(KEY_MEASURE_HEARTBEAT)) {
+			boolean start = sharedPreferences.getBoolean(KEY_MEASURE_HEARTBEAT,
+					false);
+			mActivityInterface.startOrStopService(start);
+		}
 	}
 
 }

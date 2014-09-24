@@ -5,7 +5,6 @@ import java.util.List;
 import kr.poturns.blink.R;
 import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.SyncDatabaseManager;
-import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.DatabaseMessage;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.Measurement;
@@ -119,18 +118,27 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 		// 클래스를 통한 데이터 검색일 경우
 		if (mDatabaseMessage.getType() == DatabaseMessage.OBTAIN_DATA_BY_CLASS) {
 			try {
-				Class<?> mClass = Class.forName(mDatabaseMessage.getCondition());
-	            return mSyncDatabaseManager.obtainMeasurementData(mClass,mDatabaseMessage.getDateTimeFrom(), mDatabaseMessage.getDateTimeTo(), mDatabaseMessage.getContainType());
-            } catch (Exception e) {
-	            // TODO Auto-generated catch block
-	            e.printStackTrace();
-            } 
+				Class<?> mClass = Class
+						.forName(mDatabaseMessage.getCondition());
+				return mSyncDatabaseManager.obtainMeasurementData(mClass,
+						mDatabaseMessage.getDateTimeFrom(),
+						mDatabaseMessage.getDateTimeTo(),
+						mDatabaseMessage.getContainType());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		//ID를 통한 데이터 검색일 경우
-		else if(mDatabaseMessage.getType()==DatabaseMessage.OBTAIN_DATA_BY_ID){
-			List<Measurement> mMeasurementList = gson.fromJson(mDatabaseMessage.getCondition(),new TypeToken<List<Measurement>>(){}.getType());
-			return gson.toJson(mSyncDatabaseManager.obtainMeasurementData(mMeasurementList,mDatabaseMessage.getDateTimeFrom(), mDatabaseMessage.getDateTimeTo()));
-		} 
+		// ID를 통한 데이터 검색일 경우
+		else if (mDatabaseMessage.getType() == DatabaseMessage.OBTAIN_DATA_BY_ID) {
+			List<Measurement> mMeasurementList = gson.fromJson(
+					mDatabaseMessage.getCondition(),
+					new TypeToken<List<Measurement>>() {
+					}.getType());
+			return gson.toJson(mSyncDatabaseManager.obtainMeasurementData(
+					mMeasurementList, mDatabaseMessage.getDateTimeFrom(),
+					mDatabaseMessage.getDateTimeTo()));
+		}
 		return null;
 	}
 
@@ -152,55 +160,64 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 	/**
 	 * 서비스에서 Database 변경에 대한 Observer 이벤트를 받으면 관련 기능을 호출한다.
 	 */
-	public ContentObserver mContentObserver = new ContentObserver(new Handler()){
+	public ContentObserver mContentObserver = new ContentObserver(new Handler()) {
 		public void onChange(boolean selfChange, Uri uri) {
-			//새로운 BlinkApp이 추가되면 메인에 Sync 요청
-			if(uri.equals(SqliteManager.URI_OBSERVER_BLINKAPP)){
-				Log.i("Blink", "onChange : "+SqliteManager.URI_OBSERVER_BLINKAPP);
-				//자신이 센터 디바이스면
-				if(mServiceKeeper.obtainCurrentCenterDevice().getAddress().equals(BlinkDevice.HOST.getAddress())){
-					Log.i("Blink", "I am Center Device!!");
-					//브로드캐스트 실행
-					
+			// 새로운 BlinkApp이 추가되면 메인에 Sync 요청
+			if (uri.equals(SqliteManager.URI_OBSERVER_BLINKAPP)) {
+				Log.i(NAME, "onChange : " + SqliteManager.URI_OBSERVER_BLINKAPP);
+				// 자신이 센터 디바이스면
+				if (mServiceKeeper.obtainCurrentCenterDevice().getAddress()
+						.equals(BlinkDevice.HOST.getAddress())) {
+					Log.i(NAME, "I am Center Device!!");
+					// 브로드캐스트 실행
+
 				} else {
-					Log.i("Blink", "I am not Center Device!!");
-					//BlinkMessage 생성
+					Log.i(NAME, "I am not Center Device!!");
+					// BlinkMessage 생성
 					BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
-											.setDestinationDevice((String) null)
-											.setDestinationApplication(null)
-											.setSourceDevice(BlinkDevice.HOST)
-											.setSourceApplication("kr.poturns.blink.internal.BlinkLocalService")
-											.setMessage(gson.toJson(mSyncDatabaseManager.obtainBlinkApp()))
-											.setType(IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC)
-											.setCode(0)
-											.build();
+							.setDestinationDevice((String) null)
+							.setDestinationApplication(null)
+							.setSourceDevice(BlinkDevice.HOST)
+							.setSourceApplication(
+									"kr.poturns.blink.internal.BlinkLocalService")
+							.setMessage(
+									gson.toJson(mSyncDatabaseManager
+											.obtainBlinkApp()))
+							.setType(
+									IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC)
+							.setCode(0).build();
 					mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
 				}
 			}
-			//새로운 MeasruementData가 추가되면 메인에 데이터 전송
-			else if(uri.equals(SqliteManager.URI_OBSERVER_MEASUREMENTDATA)){
-				Log.i("Blink", "onChange : "+SqliteManager.URI_OBSERVER_MEASUREMENTDATA);
-				//자신이 센터 디바이스면
-				if(mServiceKeeper.obtainCurrentCenterDevice().getAddress().equals(BlinkDevice.HOST.getAddress())){
-					Log.i("Blink", "I am Center Device!!");
-					//암것도 안함
-				}else {
-					Log.i("Blink", "I am not Center Device!!");
-					//DatabaseMessage 생성
-					BlinkDevice CenterDevice = mServiceKeeper.obtainCurrentCenterDevice();
-					List<MeasurementData> mMeasurementDataList = mSyncDatabaseManager.wearable.obtainMeasurementDatabase(CenterDevice);
+			// 새로운 MeasruementData가 추가되면 메인에 데이터 전송
+			else if (uri.equals(SqliteManager.URI_OBSERVER_MEASUREMENTDATA)) {
+				Log.i(NAME, "onChange : "
+						+ SqliteManager.URI_OBSERVER_MEASUREMENTDATA);
+				// 자신이 센터 디바이스면
+				if (mServiceKeeper.obtainCurrentCenterDevice().getAddress()
+						.equals(BlinkDevice.HOST.getAddress())) {
+					Log.i(NAME, "I am Center Device!!");
+					// 암것도 안함
+				} else {
+					Log.i(NAME, "I am not Center Device!!");
+					// DatabaseMessage 생성
+					BlinkDevice CenterDevice = mServiceKeeper
+							.obtainCurrentCenterDevice();
+					List<MeasurementData> mMeasurementDataList = mSyncDatabaseManager.wearable
+							.obtainMeasurementDatabase(CenterDevice);
 					String SendData = gson.toJson(mMeasurementDataList);
-					
-					//BlinkMessage 생성
+
+					// BlinkMessage 생성
 					BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
-											.setDestinationDevice((String) null)
-											.setDestinationApplication(null)
-											.setSourceDevice(BlinkDevice.HOST)
-											.setSourceApplication("kr.poturns.blink.internal.BlinkLocalService")
-											.setMessage(SendData)
-											.setType(IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC)
-											.setCode(0)
-											.build();
+							.setDestinationDevice((String) null)
+							.setDestinationApplication(null)
+							.setSourceDevice(BlinkDevice.HOST)
+							.setSourceApplication(
+									"kr.poturns.blink.internal.BlinkLocalService")
+							.setMessage(SendData)
+							.setType(
+									IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC)
+							.setCode(0).build();
 					mMessageProcessor.sendBlinkMessageTo(mBlinkMessage, null);
 				}
 			}

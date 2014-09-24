@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Color;
@@ -63,17 +64,24 @@ public final class ServiceControlActivity extends Activity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		// 기본 화면 설정
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		requestWindowFeature(Window.FEATURE_ACTION_BAR);
+		setTheme(android.R.style.Theme_Holo_Light);
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 		FileUtil.createExternalDirectory();
+		setTitle(R.string.res_bllink_app_name);
 		setContentView(R.layout.res_blink_activity_service_control);
+		getActionBar().setIcon(R.drawable.res_blink_ic_launcher);
+
+		// 변수 초기화, 뷰 설정
 		mSqliteManagerExtended = new SqliteManagerExtended(this);
 		mSlidingPaneLayout = (SlidingPaneLayout) findViewById(R.id.res_blink_activity_sliding_layout);
 		mSlidingPaneLayout.setSliderFadeColor(Color.TRANSPARENT);
 		mLeftListView = (ListView) findViewById(R.id.res_blink_activity_main_left_drawer);
 		mActionBarToggle = new ActionBarToggle(this, mSlidingPaneLayout,
-				R.drawable.res_blink_ic_navigation_drawer, R.string.res_bllink_app_name,
-				R.string.res_bllink_app_name);
+				R.drawable.res_blink_ic_navigation_drawer,
+				R.string.res_bllink_app_name, R.string.res_bllink_app_name);
 
 		mLeftListView.setAdapter(ArrayAdapter.createFromResource(this,
 				R.array.res_blink_activity_sercive_control_menu_array,
@@ -90,10 +98,13 @@ public final class ServiceControlActivity extends Activity implements
 		mListViewChildPaddingStart = a.getDimensionPixelSize(0, 20);
 		mListViewChildPaddingEnd = a.getDimensionPixelSize(1, 20);
 		a.recycle();
+
+		// '연결화면' 설정
 		getFragmentManager()
 				.beginTransaction()
-				.add(R.id.res_blink_activity_main_fragment_content, mConnectionFragment,
-						"0").hide(mConnectionFragment).commit();
+				.add(R.id.res_blink_activity_main_fragment_content,
+						mConnectionFragment, "0").hide(mConnectionFragment)
+				.commit();
 		transitFragment(0, null);
 	}
 
@@ -205,6 +216,22 @@ public final class ServiceControlActivity extends Activity implements
 		}
 	}
 
+	/**
+	 * <hr>
+	 * <b>1.</b> SlidingPaneLayout 이 먼저 이벤트를 받는다.<br>
+	 * 
+	 * <br>
+	 * <b>2.</b>위에서 처리가 되지 않은 경우 FragmentManager의 BackStack을 pop한다.
+	 * 
+	 * <br>
+	 * <br>
+	 * <b>3.</b>BackStack에서 pop할 것이 없었다면 현재 보여지는 Fragment를 검사한다.
+	 * 
+	 * <br>
+	 * <br>
+	 * <b>4.</b>현재 보여지는 Fragment가 ConnectionFragment이면 종료하고,<br>
+	 * 아니면 ConnectionFragment 화면으로 이동한다.<br>
+	 * */
 	@Override
 	public void onBackPressed() {
 		// 1.화면이 작다.
@@ -217,8 +244,20 @@ public final class ServiceControlActivity extends Activity implements
 				&& getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT
 				&& mSlidingPaneLayout.isOpen())
 			mSlidingPaneLayout.closePane();
-		else
-			super.onBackPressed();
+		else {
+			// backstack에 저장되어 있는 Fragment 복귀
+			if (!getFragmentManager().popBackStackImmediate()) {
+				// 복귀할 것이 없을 때,
+				// 현재 Fragment가 ConnectionFragment가 아닌 경우
+				// ConnectionFragment로 이동한다.
+				if (mCurrentPageSelection != 0) {
+					transitFragment(0, null);
+				} else {
+					finish();
+				}
+			}
+		}
+
 	}
 
 	@Override

@@ -50,6 +50,8 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 								: R.drawable.res_blink_ic_action_device_access_bluetooth,
 						0, 0);
 				String name = device.getName();
+				if (name == null || name.equals(""))
+					name = "NoName";
 				// TODO 현재 ChildView 크기 만큼, 표시되는 이름 길이 줄이기
 				// int size = getSize();
 				// if(name!=null && device.getName().length())
@@ -70,6 +72,7 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 
 			@Override
 			public boolean onLongClick(View v) {
+				mSetSeekBarValueMax = 2;
 				fetchDeviceListFromBluetooth();
 				return true;
 			}
@@ -196,17 +199,16 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 	@Override
 	public void onDeviceListChanged() {
 		mCircularHelper.drawCircularView(getDeviceList());
-	}
-
-	@Override
-	public void onDeviceListChangeCompleted() {
-		super.onDeviceListChangeCompleted();
-		if (mSetSeekBarValueMax == 1) {
+		switch (mSetSeekBarValueMax) {
+		case 1:
 			mSeekBar.setProgress(100);
-		} else if (mSetSeekBarValueMax == 2) {
+			break;
+		case 2:
 			mSeekBar.setProgress(0);
+			break;
+		default:
+			return;
 		}
 		mSetSeekBarValueMax = 0;
-		mCircularHelper.drawCircularView(getDeviceList());
 	}
 }

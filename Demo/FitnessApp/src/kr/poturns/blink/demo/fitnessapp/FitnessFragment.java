@@ -1,19 +1,12 @@
 package kr.poturns.blink.demo.fitnessapp;
 
-import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import kr.poturns.blink.db.archive.BlinkAppInfo;
+import kr.poturns.blink.demo.fitnessapp.MainActivity.OnHeartBeatEventListener;
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
-import kr.poturns.blink.schema.HeartBeat;
 import kr.poturns.blink.schema.PushUp;
 import kr.poturns.blink.schema.SitUp;
 import kr.poturns.blink.schema.Squat;
-import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
@@ -32,50 +25,44 @@ import android.view.animation.ScaleAnimation;
 import android.widget.TextView;
 import android.widget.Toast;
 
+/**
+ * 운동 측정을 하고, 관련 데이터를 저장한다.
+ * 
+ * @author Myungjin.Kim
+ */
 public class FitnessFragment extends SwipeEventFragment implements
-		SensorEventListener {
-	private static final String TAG = FitnessFragment.class.getSimpleName();
+		SensorEventListener, OnHeartBeatEventListener {
 	private SQLiteHelper mSqLiteHelper;
 	private SensorManager mSensorManager;
 	private Sensor mAccelerormeterSensor;
-	private int mCountOfPushUps = 0;
-	private int mCountOfSitUps = 0;
-	private int mCountOfSquats = 0;
+	/** 측정한 운동 횟수 */
+	private int mCountOfPushUps = 0, mCountOfSitUps = 0, mCountOfSquats = 0;
 	private boolean mSensorActive = false;
 	private boolean mFitnessStart = false;
 	private AtomicBoolean mSensorMovementReturning = new AtomicBoolean();
+	/** 센서가 측정한 시간 */
 	private long mSensorLastTime;
+	/** 센서가 측정한 속도 */
 	private float mSensorMovementSpeed;
-	private float mSensorLastX;
-	private float mSensorLastY;
-	private float mSensorLastZ;
+	/** 센서가 측정한 위치 값 */
+	private float mSensorLastX, mSensorLastY, mSensorLastZ;
 	private TextView mCountTextView;
 	private TextView mTitleTextView;
 	private TextView mHeartBeatTextView;
+	/** 현재 측정중인 운동 횟수 */
 	private int mCurrentCount = 0;
-	private Gson mGson = new GsonBuilder().setPrettyPrinting().create();
+	/** 서비스가 측정한 BPM */
+	int mMeasuredBpm;
 	/** 현재 측정중인 운동 */
 	private String mCurrentDisplayDbTable = SQLiteHelper.TABLE_PUSH_UP;
-
-	/** 심장박동수를 측정하고, 관련 애니메이션 작업을 처리하는 Thread */
-	private Thread mHeartBeatBackgroundThread;
-	/** 현재 측정된 BPM */
-	private int mBpmCurrent = 0;
-	/** 이전에 측정된 BPM */
-	private int mBpmPrev = 0;
-
+	/** 심장박동 애니메이션을 보여줄 Thread */
+	private Thread mHeartBeatingThread;
 	/** 센서가 움직임을 감지할 최소한의 속도 */
 	private static final int SHAKE_THRESHOLD = 800;
-	/** 심장박동수가 위험한 정도임을 알리기위해 필요한 심장박동수 변화값의 최소량 */
-	private static final int DIFF_COUNT_OF_HEART_BEAT_NOTIFIED = 20;
-	/** 심장박동수를 측정하기까지 걸리는 시간 (초) */
-	private static final int HEART_BEAT_COUNT_INTERVAL = 10;
 	/** 센서가 한번 측정 후, 다시 측정하기까지 걸리는 시간 */
 	private static final int SENSOR_ACTIVATE_TIME_THRESHOLD = 100;
-	/** remote device 에 전달 요청 코드 */
-	private static final int REQUEST_CODE = 1;
-	/** remote app package name */
-	private static final String REMOTE_APP_PACKAGE_NAME = "kr.poturns.blink.demo.visualizer";
+	/** Bundle을 통해 전달한 운동을 가리키는 EXTRA_NAME */
+	public static final String EXTRA_STRING_FITNESS = "fitness";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -84,12 +71,39 @@ public class FitnessFragment extends SwipeEventFragment implements
 				Context.SENSOR_SERVICE);
 		mAccelerormeterSensor = mSensorManager
 				.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+		if (savedInstanceState != null) {
+			mCountOfPushUps = savedInstanceState
+					.getInt(SQLiteHelper.TABLE_PUSH_UP);
+			mCountOfSitUps = savedInstanceState
+					.getInt(SQLiteHelper.TABLE_SIT_UP);
+			mCountOfSquats = savedInstanceState
+					.getInt(SQLiteHelper.TABLE_SQUAT);
+			mCurrentCount = savedInstanceState.getInt("current");
+			mCurrentDisplayDbTable = savedInstanceState.getString(
+					EXTRA_STRING_FITNESS, SQLiteHelper.TABLE_PUSH_UP);
+		}
 		Bundle arg = getArguments();
 		if (arg != null) {
-			mCurrentDisplayDbTable = arg.getString("fitness");
-		} else if (savedInstanceState != null) {
-			// TODO restore state
+			mCountOfPushUps = arg.getInt(SQLiteHelper.TABLE_PUSH_UP,
+					mCountOfPushUps);
+			mCountOfSitUps = arg.getInt(SQLiteHelper.TABLE_SIT_UP,
+					mCountOfSitUps);
+			mCountOfSquats = arg.getInt(SQLiteHelper.TABLE_SQUAT,
+					mCountOfSquats);
+			mCurrentCount = arg.getInt("current", mCurrentCount);
+			mCurrentDisplayDbTable = arg.getString(EXTRA_STRING_FITNESS);
 		}
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putInt(SQLiteHelper.TABLE_PUSH_UP, mCountOfPushUps);
+		outState.putInt(SQLiteHelper.TABLE_SIT_UP, mCountOfSitUps);
+		outState.putInt(SQLiteHelper.TABLE_SQUAT, mCountOfSquats);
+		outState.putInt("current", mCurrentCount);
+		outState.putString(EXTRA_STRING_FITNESS, mCurrentDisplayDbTable);
 	}
 
 	@Override
@@ -97,8 +111,13 @@ public class FitnessFragment extends SwipeEventFragment implements
 			Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.fragment_fitness, container, false);
 		mCountTextView = (TextView) v.findViewById(R.id.fitness_count);
-		mCountTextView.setCompoundDrawablesRelativeWithIntrinsicBounds(0,
-				R.drawable.ic_launcher, 0, 0);
+		if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_PUSH_UP)) {
+			mCountTextView.setBackgroundResource(R.drawable.circle_orange);
+		} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SIT_UP)) {
+			mCountTextView.setBackgroundResource(R.drawable.circle_green);
+		} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SQUAT)) {
+			mCountTextView.setBackgroundResource(R.drawable.circle_blue);
+		}
 		mCountTextView.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -110,15 +129,32 @@ public class FitnessFragment extends SwipeEventFragment implements
 			}
 		});
 		mTitleTextView = (TextView) v.findViewById(R.id.fitness_title);
+		mTitleTextView.setText(mCurrentDisplayDbTable);
 		mHeartBeatTextView = (TextView) v.findViewById(R.id.fitness_heart_beat);
-		mHeartBeatBackgroundThread = new HeartBeatActionThread();
 		return v;
 	}
 
-	private class HeartBeatActionThread extends Thread {
-		private int progress = 0;
+	@Override
+	public void onHeartBeat(int bpm) {
+		this.mMeasuredBpm = bpm;
+		getActivity().runOnUiThread(mHeartBeatTextAction);
+	}
+
+	/** 비동기적으로 심장박동수를 TextView에 표현하는 Action */
+	private Runnable mHeartBeatTextAction = new Runnable() {
+
+		@Override
+		public void run() {
+			mHeartBeatTextView.setText(Integer.toString(mMeasuredBpm));
+		}
+	};
+
+	/** 심장박동 애니메이션을 보여줄 Thread */
+	private class HeartBeatAction extends Thread {
 		private ScaleAnimation anim = new ScaleAnimation(1.0f, 1.0f, 1.2f, 1.2f);
-		private Runnable mBeatingAction = new Runnable() {
+		private static final String TAG = "HeartBeatAction";
+
+		private Runnable mAnimation = new Runnable() {
 
 			@Override
 			public void run() {
@@ -128,66 +164,27 @@ public class FitnessFragment extends SwipeEventFragment implements
 
 		@Override
 		public void run() {
-			FitnessFragment.this.getActivity().runOnUiThread(
-					mHeartBeatStartAction);
-			progress = 0;
-			while (true) {
-				mHeartBeatTextView.post(mBeatingAction);
-				synchronized (this) {
-					try {
-						this.wait(1000);
-					} catch (InterruptedException e) {
-						break;
+			Log.d(TAG, "start");
+			while (getHeartBeatPreferenceValue()) {
+				try {
+					synchronized (this) {
+						wait(900);
 					}
+				} catch (InterruptedException e) {
+					break;
 				}
-				if (progress == HEART_BEAT_COUNT_INTERVAL) {
-					mBpmCurrent = generateHeartBeat();
-					FitnessFragment.this.getActivity().runOnUiThread(
-							mHeartBeatCountAction);
-					progress = 0;
-				} else
-					progress++;
+				mHeartBeatTextView.post(mAnimation);
 			}
-			FitnessFragment.this.getActivity().runOnUiThread(
-					mHeartBeatStopAction);
+			Log.d(TAG, "end");
 			return;
 		}
 	};
 
-	/** 심장박동 측정 관련 작업의 UI를 시작하는 Runnable */
-	private Runnable mHeartBeatStartAction = new Runnable() {
-		@Override
-		public void run() {
-			mHeartBeatTextView.setText("");
-			mBpmCurrent = 0;
-			mBpmPrev = 0;
-		}
-	};
-
-	/** 심장박동 측정 관련 작업의 UI를 종료하는 Runnable */
-	private Runnable mHeartBeatStopAction = new Runnable() {
-
-		@Override
-		public void run() {
-			mHeartBeatTextView.setText("");
-			mBpmCurrent = 0;
-			mBpmPrev = 0;
-		}
-	};
-	/** 심장박동 측정하는 Runnable */
-	private Runnable mHeartBeatCountAction = new Runnable() {
-
-		@Override
-		public void run() {
-			if (mBpmPrev != 0
-					&& Math.abs(mBpmPrev - mBpmCurrent) > DIFF_COUNT_OF_HEART_BEAT_NOTIFIED) {
-				notifyHeartBeatAlert();
-			}
-			mBpmPrev = mBpmCurrent;
-			mHeartBeatTextView.setText(String.valueOf(mBpmCurrent));
-			putHeartBeat(mBpmCurrent);
-		}
-	};
+	/** {@link SettingFragment#KEY_MEASURE_HEARTBEAT} 설정값을 가져온다. */
+	boolean getHeartBeatPreferenceValue() {
+		return PreferenceManager.getDefaultSharedPreferences(getActivity())
+				.getBoolean(SettingFragment.KEY_MEASURE_HEARTBEAT, false);
+	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -200,6 +197,10 @@ public class FitnessFragment extends SwipeEventFragment implements
 		super.onResume();
 		if (mFitnessStart)
 			startCounting();
+		if (getHeartBeatPreferenceValue()) {
+			mHeartBeatingThread = new HeartBeatAction();
+			mHeartBeatingThread.start();
+		}
 		SQLiteHelper.closeDB();
 		mSqLiteHelper = SQLiteHelper.getInstance(getActivity());
 	}
@@ -208,6 +209,8 @@ public class FitnessFragment extends SwipeEventFragment implements
 	public void onPause() {
 		super.onPause();
 		stopCounting();
+		if (mHeartBeatingThread != null)
+			mHeartBeatingThread.interrupt();
 		SQLiteHelper.closeDB();
 	}
 
@@ -235,27 +238,46 @@ public class FitnessFragment extends SwipeEventFragment implements
 				return true;
 			}
 		case DOWN_TO_UP: // 운동 변경
+			String table = null;
 			if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_PUSH_UP)) {
-				changeFitness(SQLiteHelper.TABLE_SQUAT);
-				return true;
+				table = SQLiteHelper.TABLE_SQUAT;
 			} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SIT_UP)) {
-				changeFitness(SQLiteHelper.TABLE_PUSH_UP);
+				table = SQLiteHelper.TABLE_PUSH_UP;
+			} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SQUAT)) {
+				table = SQLiteHelper.TABLE_SIT_UP;
+			} else
+				return false;
+			if (changeFitness(table)) {
+				Bundle bundle = new Bundle();
+				onSaveInstanceState(bundle);
+				mActivityInterface.attachFragment(new FitnessFragment(),
+						bundle, R.animator.slide_in_bottom,
+						R.animator.slide_out_up);
 				return true;
 			}
 			return false;
 		case UP_TO_DOWN: // 운동 변경
+			String table1 = null;
 			if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_PUSH_UP)) {
-				changeFitness(SQLiteHelper.TABLE_SIT_UP);
-				return true;
+				table1 = SQLiteHelper.TABLE_SIT_UP;
 			} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SQUAT)) {
-				changeFitness(SQLiteHelper.TABLE_PUSH_UP);
+				table1 = SQLiteHelper.TABLE_PUSH_UP;
+			} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SIT_UP)) {
+				table1 = SQLiteHelper.TABLE_SQUAT;
+			} else
+				return false;
+			if (changeFitness(table1)) {
+				Bundle bundle = new Bundle();
+				onSaveInstanceState(bundle);
+				mActivityInterface.attachFragment(new FitnessFragment(),
+						bundle, R.animator.slide_in_up,
+						R.animator.slide_out_bottom);
 				return true;
 			}
 			return false;
 		default:
-			break;
+			return false;
 		}
-		return false;
 	}
 
 	/** 센서 측정을 시작하고, 카운터 버튼으로 운동 횟수를 측정하도록 설정한다. */
@@ -289,7 +311,6 @@ public class FitnessFragment extends SwipeEventFragment implements
 		mCountTextView.setCompoundDrawablesRelativeWithIntrinsicBounds(0, 0, 0,
 				0);
 		mCurrentCount = 0;
-		mHeartBeatBackgroundThread.interrupt();
 	}
 
 	/** 운동 측정을 시작한다. */
@@ -310,11 +331,7 @@ public class FitnessFragment extends SwipeEventFragment implements
 		Drawable drawable = getResources().getDrawable(resId);
 		drawable.setBounds(0, 0, 200, 200);
 		mCountTextView.setCompoundDrawablesRelative(null, drawable, null, null);
-		// mTitleTextView.setCompoundDrawablesRelativeWithIntrinsicBounds(0,
-		// resId, 0, 0);
 		registerListener();
-		mHeartBeatBackgroundThread = new HeartBeatActionThread();
-		mHeartBeatBackgroundThread.start();
 	}
 
 	/** Toast를 보여준다. */
@@ -326,7 +343,7 @@ public class FitnessFragment extends SwipeEventFragment implements
 		TextView view = (TextView) toastFrameView
 				.findViewById(android.R.id.message);
 		view.setGravity(Gravity.CENTER);
-		view.setTextColor(getResources().getColor(R.color.main));
+		view.setTextColor(getResources().getColor(R.color.orange));
 		view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
 		view.setShadowLayer(0, 0, 0, 0);
 		view.setPaddingRelative(30, 30, 30, 30);
@@ -334,64 +351,16 @@ public class FitnessFragment extends SwipeEventFragment implements
 	}
 
 	/** 해당 운동으로 바꾼다. */
-	private void changeFitness(String table) {
+	private boolean changeFitness(String table) {
 		if (mSensorActive) {
 			showAlertMessage("먼저 운동을 종료해주세요.");
+			return false;
 		} else {
 			mCurrentCount = 0;
 			mCurrentDisplayDbTable = table;
-			mTitleTextView.setText(mCurrentDisplayDbTable);
 			stopCounting();
+			return true;
 		}
-	}
-
-	/** 심장박동수를 생성하기위한 Random */
-	private Random mRandom = new Random(System.currentTimeMillis());
-
-	/** 심장박동수를 생성한다. 범위는 50-150 */
-	private int generateHeartBeat() {
-		return mRandom.nextInt(20) + mRandom.nextInt(20) + mRandom.nextInt(20)
-				+ mRandom.nextInt(20) + mRandom.nextInt(20) + 50;
-	}
-
-	/** 내부 DB와 BlinkDB에 심장박동수를 입력한다. */
-	private void putHeartBeat(int bpm) {
-		mSqLiteHelper.insert(bpm);
-		mActivityInterface.getBlinkServiceInteraction().local
-				.registerMeasurementData(new HeartBeat(bpm, DateTimeUtil.get()));
-
-		for (BlinkAppInfo info : mActivityInterface
-				.getBlinkServiceInteraction().local.obtainBlinkAppAll()) {
-			if (info.mApp.PackageName.equals(REMOTE_APP_PACKAGE_NAME)) {
-				mActivityInterface.getBlinkServiceInteraction().remote
-						.sendMeasurementData(info, mGson.toJson(new HeartBeat(
-								bpm, DateTimeUtil.get())), REQUEST_CODE);
-				return;
-			}
-		}
-		Log.e(TAG, "Cannot reach remote device : " + REMOTE_APP_PACKAGE_NAME);
-	}
-
-	/** 심장박동 변화가 위험할 때, 알림 설정이 되어있는 경우 알림으로 알린다. */
-	private void notifyHeartBeatAlert() {
-		boolean notify = PreferenceManager.getDefaultSharedPreferences(
-				getActivity()).getBoolean(
-				SettingFragment.KEY_ALERT_HEART_BEAT_IMPACT, false);
-		if (notify) {
-			Notification noti = new Notification.Builder(getActivity())
-					.setAutoCancel(true)
-					.setContentText("심장박동의 변화가 위험할정도로 큽니다.")
-					.setContentTitle(getString(R.string.app_name))
-					.setSmallIcon(R.drawable.ic_action_health_heart).build();
-			NotificationManager manager = (NotificationManager) getActivity()
-					.getSystemService(Context.NOTIFICATION_SERVICE);
-			manager.notify(9090, noti);
-			notifyHeartBeatAlertToOtherDevice();
-		}
-	}
-
-	private void notifyHeartBeatAlertToOtherDevice() {
-		// TODO blink sendmsg
 	}
 
 	/** 운동을 종료하고 그동안 운동한 횟수를 기록한다. */
@@ -405,17 +374,17 @@ public class FitnessFragment extends SwipeEventFragment implements
 		if (mCountOfPushUps > 0) {
 			mActivityInterface.getBlinkServiceInteraction().local
 					.registerMeasurementData(new PushUp(mCountOfPushUps,
-							DateTimeUtil.get()));
+							DateTimeUtil.getTimeString()));
 		}
 		if (mCountOfSitUps > 0) {
 			mActivityInterface.getBlinkServiceInteraction().local
 					.registerMeasurementData(new SitUp(mCountOfSitUps,
-							DateTimeUtil.get()));
+							DateTimeUtil.getTimeString()));
 		}
 		if (mCountOfSquats > 0) {
 			mActivityInterface.getBlinkServiceInteraction().local
 					.registerMeasurementData(new Squat(mCountOfSquats,
-							DateTimeUtil.get()));
+							DateTimeUtil.getTimeString()));
 		}
 	}
 

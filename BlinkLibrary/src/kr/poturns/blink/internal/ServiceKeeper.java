@@ -407,6 +407,7 @@ public class ServiceKeeper {
 			NetworkMap mNetworkMap = BLINK_NETWORK_MAP.get(otherDevGroupID);
 			
 			// 상대 디바이스는 OpenGroup으로서 연결 요청, 자신의 디바이스는 OpenGroup 연결을 원치 않을 때..
+			//XXX String 비교
 			if (myDevGroupID != otherDevGroupID) {
 				if (myDevGroupID != null) {
 					// 연결 종료

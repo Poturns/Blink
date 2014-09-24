@@ -13,13 +13,13 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 /**
- * Blink json convert help manager
+ * DB에서 사용되는 여러 객체들을 Json으로 만들어주는 전역 함수들을 선언하고 있다.
  * 
  * @author Jiwon
  *
  */
 public class JsonManager {
-	private final String tag = "JsonManager";
+	//private final String tag = "JsonManager";
 	public static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	
 	public static String obtainJsonBlinkAppInfo(ArrayList<BlinkAppInfo> mList){

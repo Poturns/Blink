@@ -25,7 +25,7 @@ interface IInternalOperationSupport {
 	boolean registerCallback(IInternalEventCallback callback);
 	
 	/**
-	 * 등록된 {@link IInternalEventCallback}을 등록한다.
+	 * 등록된 {@link IInternalEventCallback}을 제거한다.
 	 */
 	boolean unregisterCallback(IInternalEventCallback callback);
 	
@@ -98,14 +98,15 @@ interface IInternalOperationSupport {
 	/**
 	 * Sqlite에 데이터를 저장하거나 가져오는 매서드
 	 * 필요할 경우 바인더에서 블루투스쪽으로 데이터를 요청한다.
-	 * 관련 클래스는 BlinkDatabaseManager, SqliteManager이다.
+	 * @see BlinkDatabaseManager
+	 * @see SqliteManager
 	 * @author Jiwon
 	 *
 	 */
 	void setRequestPolicy(int requestPolicy);
 	void registerApplicationInfo(String PackageName,String AppName);
 	BlinkDevice getBlinkDevice();
-	void registerBlinkApp(inout BlinkAppInfo mBlinkAppInfo);
+	void registerBlinkApp(in BlinkAppInfo mBlinkAppInfo);
 	void obtainMeasurementData(String ClassName,String DateTimeFrom,String DateTimeTo,int ContainType,int requestCode);
 	void obtainMeasurementDataById(inout List<Measurement> mMeasurementList,String DateTimeFrom,String DateTimeTo,int requestCode);
 	void startFunction(inout Function function,int requestCode);

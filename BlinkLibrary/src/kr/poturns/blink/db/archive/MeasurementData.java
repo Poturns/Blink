@@ -7,21 +7,29 @@ import android.os.Parcelable;
 
 /**
  * MeasurementData 테이블과 맵핑되는 클래스
+ * 
+ * <br>
+ * <br>
+ * <b>Blink Database</b>에서 <b>Application</b>이 측정할 수 있는 데이터의 <b>실제 측정 데이터</b>를
+ * 의미한다.
+ * 
  * @author Jiwon
- *
+ * 
  */
-public class MeasurementData extends DefaultSchema implements IDatabaseObject, Parcelable {
+public class MeasurementData extends DefaultSchema implements IDatabaseObject,
+		Parcelable {
+	/** MeasurementData가 속한 Measurement의 ID */
 	public int MeasurementId;
+	/** MeasurementData의 ID */
 	public int MeasurementDataId;
 	/**
-	 * GroupId를 통해 같이 등록된 데이터인지 확인할 수 있다.
-	 * 시간상의 일치가 아닌 동일한 객체를 통해 등록된 데이터인지 확인한다.
+	 * GroupId를 통해 같이 등록된 데이터인지 확인할 수 있다. 시간상의 일치가 아닌 동일한 객체를 통해 등록된 데이터인지 확인한다.
 	 */
 	public int GroupId;
+	/** 실제 측정된 데이터 */
 	public String Data;
 
 	public MeasurementData() {
-
 	}
 
 	public String toString() {
@@ -39,17 +47,15 @@ public class MeasurementData extends DefaultSchema implements IDatabaseObject, P
 	 */
 	@Override
 	public boolean checkIntegrity() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
-	/**
+	/*
 	 * Parcelable 구현 매소드들
 	 */
-	
+
 	@Override
 	public int describeContents() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
@@ -65,7 +71,6 @@ public class MeasurementData extends DefaultSchema implements IDatabaseObject, P
 
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
-		// TODO Auto-generated method stub
 		dest.writeString(JsonManager.gson.toJson(this));
 	}
 

@@ -3,6 +3,7 @@ package kr.poturns.blink.demo.fitnessapp;
 import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeListener.Direction;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
+import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import kr.poturns.blink.schema.HeartBeat;
 import kr.poturns.blink.schema.PushUp;
@@ -10,8 +11,13 @@ import kr.poturns.blink.schema.SitUp;
 import kr.poturns.blink.schema.Squat;
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -23,8 +29,15 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+/**
+ * Fitness App의 메인 Activity <br>
+ * 기능을 제공하는데 필요한 주요 자원을 관리하고, <br>
+ * 터치 이벤트를 받아 하위 fragment에 전달한다.
+ * 
+ * @author Myungjin.Kim
+ */
 public class MainActivity extends Activity implements ActivityInterface {
-	SwipeListener mDirectionListener;
+	SwipeListener mChildObject;
 	BlinkServiceInteraction mInteraction;
 	IInternalOperationSupport mISupport;
 	GestureDetector mGestureDetector;
@@ -33,6 +46,8 @@ public class MainActivity extends Activity implements ActivityInterface {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		
+		// Blink 서비스 시작
 		mInteraction = new BlinkServiceInteraction(this, null, null) {
 
 			@Override
@@ -63,36 +78,47 @@ public class MainActivity extends Activity implements ActivityInterface {
 		};
 		mInteraction.startBroadcastReceiver();
 		mInteraction.startService();
+		
+		// 심박수 측정 서비스 시작/종료
+		startOrStopService(PreferenceManager.getDefaultSharedPreferences(this)
+				.getBoolean(SettingFragment.KEY_MEASURE_HEARTBEAT, false));
+		IntentFilter filter = new IntentFilter(
+				HeartBeatService.WIDGET_HEART_BEAT_ACTION);
+		registerReceiver(mHeartBeatReciever, filter);
+		
+		// 화면 제스처 등록
 		mGestureDetector = new GestureDetector(this,
 				new GestureDetector.SimpleOnGestureListener() {
 					@Override
 					public boolean onFling(MotionEvent e1, MotionEvent e2,
 							float velocityX, float velocityY) {
-
+						Direction direction = null;
 						// 가로로 움직인 폭이 일정 이상이면 무시
 						if (Math.abs(e1.getX() - e2.getX()) < 100) {
 							// 아래서 위로 스크롤 하는 경우
 							if (e1.getY() - e2.getY() > 50) {
-								return mDirectionListener
-										.onSwipe(Direction.UP_TO_DOWN);
+								direction = Direction.UP_TO_DOWN;
 								// 위에서 아래로 스크롤
 							} else if (e2.getY() - e1.getY() > 50) {
-								return mDirectionListener
-										.onSwipe(Direction.DOWN_TO_UP);
+								direction = Direction.DOWN_TO_UP;
 							}
 							// 세로로 움직인 폭이 일정 이상이면 무시
 						} else if (Math.abs(e1.getY() - e2.getY()) < 100) {
 							if (e1.getX() - e2.getX() > 50) {
-								return mDirectionListener
-										.onSwipe(Direction.RIGHT_TO_LEFT);
+								direction = Direction.RIGHT_TO_LEFT;
 							} else if (e2.getX() - e1.getX() > 50) {
-								return mDirectionListener
-										.onSwipe(Direction.LEFT_TO_RIGHT);
+								direction = Direction.LEFT_TO_RIGHT;
 							}
+						}
+
+						if (mChildObject != null && direction != null) {
+							return mChildObject.onSwipe(direction);
 						}
 						return false;
 					}
 				});
+		
+		// View 설정 & 화면 크기 제한
 		View container = findViewById(R.id.root).findViewById(R.id.container);
 
 		RelativeLayout.LayoutParams layoutParam = (RelativeLayout.LayoutParams) container
@@ -113,7 +139,8 @@ public class MainActivity extends Activity implements ActivityInterface {
 		else
 			layoutParam.width = layoutParam.height = size.y - pageRowMargin;
 		container.setLayoutParams(layoutParam);
-
+		
+		// 홈 화면으로 이동
 		attachFragment(new HomeFragment(), null, R.animator.slide_in_right,
 				R.animator.slide_out_left);
 	}
@@ -126,6 +153,7 @@ public class MainActivity extends Activity implements ActivityInterface {
 			// ignore
 		}
 		SQLiteHelper.closeDB();
+		unregisterReceiver(mHeartBeatReciever);
 		super.onDestroy();
 	}
 
@@ -146,7 +174,17 @@ public class MainActivity extends Activity implements ActivityInterface {
 	@Override
 	public void attachFragment(Fragment fragment, Bundle arguments, int animIn,
 			int animOut) {
-		this.mDirectionListener = (SwipeListener) fragment;
+		if (fragment instanceof SwipeListener) {
+			mChildObject = (SwipeListener) fragment;
+		} else {
+			throw new RuntimeException("Fragment should implement SwipeListner");
+		}
+		if (fragment instanceof IInternalEventCallback) {
+			mInteraction
+					.setIInternalEventCallback((IInternalEventCallback) fragment);
+		} else {
+			mInteraction.setIInternalEventCallback(null);
+		}
 		fragment.setArguments(arguments);
 		getFragmentManager().beginTransaction()
 				.setCustomAnimations(animIn, animOut)
@@ -167,6 +205,10 @@ public class MainActivity extends Activity implements ActivityInterface {
 	@Override
 	public IInternalOperationSupport getBlinkServiceSupport() {
 		return mISupport;
+	}
+
+	public static interface OnHeartBeatEventListener {
+		public void onHeartBeat(int bpm);
 	}
 
 	/** Swipe 모션 이벤트를 받는 리스너 */
@@ -204,6 +246,7 @@ public class MainActivity extends Activity implements ActivityInterface {
 		}
 	}
 
+	/** 웨어러블 메인 화면 */
 	public static class HomeFragment extends SwipeEventFragment {
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -277,6 +320,35 @@ public class MainActivity extends Activity implements ActivityInterface {
 			default:
 				return false;
 			}
+		}
+	}
+
+	BroadcastReceiver mHeartBeatReciever = new BroadcastReceiver() {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			if (intent.getAction().equals(
+					HeartBeatService.WIDGET_HEART_BEAT_ACTION)) {
+				/* 내부 DB와 BlinkDB에 심장박동수를 입력한다. */
+				int bpm = intent.getIntExtra(
+						HeartBeatService.WIDGET_HEART_BEAT_VALUE, 0);
+				if (bpm < 1)
+					return;
+				if (mChildObject != null
+						&& mChildObject instanceof OnHeartBeatEventListener) {
+					((OnHeartBeatEventListener) mChildObject).onHeartBeat(bpm);
+				}
+			}
+		}
+	};
+
+	@Override
+	public void startOrStopService(boolean start) {
+		Intent intent = new Intent(this, HeartBeatService.class);
+		if (start) {
+			startService(intent);
+		} else {
+			stopService(intent);
 		}
 	}
 }

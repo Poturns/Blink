@@ -100,11 +100,6 @@ class ConnectionListFragment extends BaseConnectionFragment {
 	};
 
 	@Override
-	public void onDeviceListChangeCompleted() {
-		onDiscoveryFailed();
-	}
-
-	@Override
 	public void onDiscoveryFailed() {
 		mRefresh = false;
 		mSwipeRefreshLayout.setRefreshing(false);

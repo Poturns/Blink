@@ -298,6 +298,7 @@ public class DeviceAnalyzer {
 				
 			}
 			
+			//XXX long type을 long으로 비교
 			return (long)(mTimestampDev1 - mTimestampDev2);
 		}
 	}
