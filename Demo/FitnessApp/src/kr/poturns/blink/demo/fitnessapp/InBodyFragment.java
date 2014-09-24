@@ -101,7 +101,6 @@ public class InBodyFragment extends SwipeEventFragment implements
 				Toast.makeText(getActivity(), "인바디 데이터를 받을 수 없습니다.", Toast.LENGTH_SHORT);
 				return;
 			}
-			data
 		}
 	}
 
