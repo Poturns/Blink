@@ -237,8 +237,19 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	 * Blink Service를 통해 외부 디바이스에서 데이터가 온 것을 감지하면 호출되는 콜백인
 	 * {@link IInternalEventCallback}을 설정한다.
 	 */
-	public final void setIInternalEventCallback(IInternalEventCallback callback) {
+	public final boolean setIInternalEventCallback(IInternalEventCallback callback) {
 		mIInternalEventCallback = callback;
+		if (mIInternalEventCallback != null) {
+			try {
+				mInternalOperationSupport
+						.registerCallback(mIInternalEventCallback);
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private class EventBroadcastReceiver extends BroadcastReceiver {
@@ -414,10 +425,10 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		mBlinkAppInfo.mDevice.MacAddress = mBlinkDevice.getAddress();
 		mBlinkAppInfo.mApp.PackageName = mPackageName;
 		mBlinkAppInfo.mApp.AppName = mAppName;
-
+		mBlinkAppInfo.mApp.AppIcon = null;
 		try {
 			mInternalOperationSupport.registerBlinkApp(mBlinkAppInfo);
-			mBlinkAppInfo = local.obtainBlinkApp();
+			mBlinkAppInfo.copyFromOtherObject(local.obtainBlinkApp());
 			return true;
 		} catch (Exception e) {
 

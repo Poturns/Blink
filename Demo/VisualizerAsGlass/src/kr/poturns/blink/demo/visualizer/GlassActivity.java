@@ -21,6 +21,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
 public class GlassActivity extends SupportMapActivity {
 	
 	private BlinkServiceInteraction mInteraction;
@@ -73,11 +75,14 @@ public class GlassActivity extends SupportMapActivity {
 				Toast.makeText(getApplicationContext(), "Binder Service Connected!", Toast.LENGTH_SHORT).show();
 
 				BlinkAppInfo mBlinkAppInfo = mInteraction.obtainBlinkApp();
-				//TODO: Type은 추가할 수 있는 상수 타입으로.. (C에서 다른 타입명으로 정의하듯..String이지만 타입을 다르게.. )
-				mBlinkAppInfo.addMeasurement("Location", "Location_Axis", "String", "Location Axis");
-				//TODO: AppInfo에 Function을 등록하더라도 실제 Function을 제공하는 것에 대한 신뢰성 보장이 되지 않음..
-				mBlinkAppInfo.addFunction("LightOn", "Turn On the Light", "kr.poturns.blink.demo.visualizer.action.lighton", Function.TYPE_BROADCAST);
-				mInteraction.registerBlinkApp(mBlinkAppInfo);
+				
+				if(!mBlinkAppInfo.isExist){
+					//TODO: Type은 추가할 수 있는 상수 타입으로.. (C에서 다른 타입명으로 정의하듯..String이지만 타입을 다르게.. )
+					mBlinkAppInfo.addMeasurement("Location", "Location_Axis", "String", "Location Axis");
+					//TODO: AppInfo에 Function을 등록하더라도 실제 Function을 제공하는 것에 대한 신뢰성 보장이 되지 않음..
+					mBlinkAppInfo.addFunction("LightOn", "Turn On the Light", "kr.poturns.blink.demo.visualizer.action.lighton", Function.TYPE_BROADCAST);
+					mInteraction.registerBlinkApp(mBlinkAppInfo);
+				}
 				
 				if (mInteraction != null) {
 					mInteraction.startBroadcastReceiver();

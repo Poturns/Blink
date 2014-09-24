@@ -31,13 +31,16 @@ import android.widget.Toast;
 public class InBodyFragment extends SwipeEventFragment implements
 		OnClickListener, IInternalEventCallback {
 	public static int CODE_INBODY = 0x01;
-
+	BlinkServiceInteraction mInteraction;
+	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.fragment_inbody, container, false);
 		v.findViewById(R.id.inbody_go_fitness).setOnClickListener(this);
 		v.findViewById(R.id.inbody_update).setOnClickListener(this);
+		mInteraction = mActivityInterface.getBlinkServiceInteraction();
+		mInteraction.setIInternalEventCallback(this);
 		return v;
 	}
 
@@ -63,8 +66,6 @@ public class InBodyFragment extends SwipeEventFragment implements
 
 		case R.id.inbody_update:
 			// 운동하기 액티비티 열기
-			BlinkServiceInteraction mInteraction = mActivityInterface
-					.getBlinkServiceInteraction();
 			if (mInteraction == null) {
 				Toast.makeText(getActivity(), "서비스에 연결할 수 없습니다.",
 						Toast.LENGTH_SHORT).show();
@@ -77,10 +78,6 @@ public class InBodyFragment extends SwipeEventFragment implements
 		default:
 			break;
 		}
-	}
-
-	public void setInbodyData(InBodyData inbodydata) {
-
 	}
 
 	@Override
@@ -96,10 +93,16 @@ public class InBodyFragment extends SwipeEventFragment implements
 	}
 
 	@Override
-	public void onReceiveData(int arg0, CallbackData arg1)
+	public void onReceiveData(int code, CallbackData data)
 			throws RemoteException {
 		// TODO Auto-generated method stub
-
+		if(code==CODE_INBODY){
+			if(data.Result==false){
+				Toast.makeText(getActivity(), "인바디 데이터를 받을 수 없습니다.", Toast.LENGTH_SHORT);
+				return;
+			}
+			data
+		}
 	}
 
 }

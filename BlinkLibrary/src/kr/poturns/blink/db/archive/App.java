@@ -34,6 +34,7 @@ public class App implements IDatabaseObject,Parcelable{
 		ret += "DeviceId : "+DeviceId+"\r\n";
 		ret += "PackageName : "+PackageName+"\r\n";
 		ret += "AppName : "+AppName+"\r\n";
+		ret += "AppIcon : "+AppIcon+"\r\n";
 		ret += "Version : "+Version+"\r\n";
 		return ret;
 	}
