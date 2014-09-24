@@ -9,37 +9,39 @@ import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.bluetooth.BluetoothGatt;
 
 /**
- * Blink Network를 나타내는 클래스.
- * NetworkMap은 Linked와 Connected로 연결 상태를 구분하는데,
- * Linked 상태는 자신과는 직접적으로 연결되어 있지 않지만 연결되어있는 디바이스를 통해 연결되어 있는 상태이다.
- * Connected 상태는 자신과 직접적으로 연결되어 있는 상태이다. 
+ * Blink Network를 나타내는 클래스.<br>
+ * NetworkMap은 Linked와 Connected로 연결 상태를 구분하는데,<br>
+ * Linked 상태는 자신과는 직접적으로 연결되어 있지 않지만 연결되어있는 디바이스를 통해 연결되어 있는 상태이다.<br>
+ * Connected 상태는 자신과 직접적으로 연결되어 있는 상태이다. <br>
+ * <br>
  * 
- * <p>또한 NetworkMap은 네트워크를 그룹 별로 관리한다.
+ * <p>
+ * 또한 NetworkMap은 네트워크를 그룹 별로 관리한다.
  * 
  * @author Yeonho.Kim
  * @since 2014.09.07
- *
+ * 
  */
 class NetworkMap {
 
 	// *** FIELD DECLARATION *** //
 	private String GroupID;
 	private String GroupName;
-	
+
 	private final ArrayList<BlinkDevice> LINKED_LIST;
 	private final HashMap<BlinkDevice, Object> CONNECTED_MAP;
 	private final HashMap<BlinkDevice, Object> LINKED_MAP;
 
 	public NetworkMap(String groupID) {
 		GroupID = groupID;
-		
+
 		LINKED_LIST = new ArrayList<BlinkDevice>();
 		LINKED_LIST.add(BlinkDevice.HOST);
-		
+
 		CONNECTED_MAP = new HashMap<BlinkDevice, Object>();
 		LINKED_MAP = new HashMap<BlinkDevice, Object>();
 	}
-	
+
 	/**
 	 * 
 	 * @param device
@@ -47,7 +49,7 @@ class NetworkMap {
 	 */
 	void addLink(BlinkDevice device) {
 		LINKED_MAP.put(device, CONNECTED_MAP.get(device));
-		
+
 		if (LINKED_LIST.add(device))
 			Collections.sort(LINKED_LIST);
 	}
@@ -63,7 +65,7 @@ class NetworkMap {
 		if (LINKED_LIST.add(device))
 			Collections.sort(LINKED_LIST);
 	}
-	
+
 	/**
 	 * 
 	 * @param device
@@ -72,10 +74,10 @@ class NetworkMap {
 	Object removeLink(BlinkDevice device) {
 		if (LINKED_LIST.remove(device))
 			Collections.sort(LINKED_LIST);
-		
+
 		return LINKED_MAP.remove(device);
 	}
-	
+
 	/**
 	 * 
 	 * @param device
@@ -84,12 +86,12 @@ class NetworkMap {
 	void addConnection(BlinkDevice device, Object obj) {
 		if (obj instanceof ClassicLinkThread || obj instanceof BluetoothGatt) {
 			CONNECTED_MAP.put(device, obj);
-			
+
 			if (LINKED_LIST.add(device))
 				Collections.sort(LINKED_LIST);
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param device
@@ -98,7 +100,7 @@ class NetworkMap {
 	Object removeConnection(BlinkDevice device) {
 		if (LINKED_LIST.remove(device))
 			Collections.sort(LINKED_LIST);
-		
+
 		return CONNECTED_MAP.remove(device);
 	}
 
@@ -110,8 +112,8 @@ class NetworkMap {
 			if (obj != null) {
 				if (obj instanceof BluetoothGatt)
 					((BluetoothGatt) obj).close();
-				
-				else if (obj instanceof ClassicLinkThread) 
+
+				else if (obj instanceof ClassicLinkThread)
 					((ClassicLinkThread) obj).destroyThread();
 			}
 		}
@@ -123,14 +125,13 @@ class NetworkMap {
 	public void refresh() {
 		Collections.sort(LINKED_LIST);
 	}
-	
 
 	/**
 	 * 
 	 * @return
 	 */
 	public BlinkDevice getLinkedCenterDevice() {
-		return LINKED_LIST.get(LINKED_LIST.size()-1);
+		return LINKED_LIST.get(LINKED_LIST.size() - 1);
 	}
 
 	/**
@@ -144,11 +145,11 @@ class NetworkMap {
 			if (device.getIdentity() == identity)
 				mList.add(device);
 		}
-		
+
 		BlinkDevice[] mArray = new BlinkDevice[mList.size()];
 		return mList.toArray(mArray);
 	}
-	
+
 	/**
 	 * 
 	 * @return
@@ -157,7 +158,7 @@ class NetworkMap {
 		BlinkDevice[] mArray = new BlinkDevice[LINKED_LIST.size()];
 		return LINKED_LIST.toArray(mArray);
 	}
-	
+
 	/**
 	 * 
 	 * @return
@@ -166,7 +167,7 @@ class NetworkMap {
 		BlinkDevice[] lists = new BlinkDevice[CONNECTED_MAP.size()];
 		return CONNECTED_MAP.keySet().toArray(lists);
 	}
-	
+
 	/**
 	 * 
 	 * @param device
@@ -175,21 +176,19 @@ class NetworkMap {
 	Object getConnectionObject(BlinkDevice device) {
 		if (device == null)
 			return null;
-		
+
 		return CONNECTED_MAP.get(device);
 	}
-	
-	
 
 	// *** Getter & Setter *** //
 	public final String getGroupID() {
 		return GroupID;
 	}
-	
+
 	public final String getGroupName() {
 		return GroupName;
 	}
-	
+
 	public void setGroupName(String name) {
 		GroupName = name;
 	}

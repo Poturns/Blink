@@ -178,10 +178,13 @@ class DataSelectFragment extends Fragment {
 							.setCompoundDrawablesRelativeWithIntrinsicBounds(
 									PrivateUtil.obtainAppIcon(app,
 											getResources()), null, null, null);
+					String title = measurement.MeasurementName;
+					if (title == null)
+						title = PrivateUtil
+								.obtainSplitMeasurementSchema(measurement);
 					((TextView) v
 							.findViewById(R.id.res_blink_fragment_list_recent_measurement))
-							.setText(PrivateUtil
-									.obtainSplitMeasurementSchema(measurement));
+							.setText(title);
 					((TextView) v
 							.findViewById(R.id.res_blink_fragment_list_recent_datetime))
 							.setText(mManager.obtainMeasurementDataDateTime(
@@ -347,7 +350,7 @@ class DataSelectFragment extends Fragment {
 						Function function = (Function) item;
 						head.setText(function.Function);
 						head.setCompoundDrawablesRelativeWithIntrinsicBounds(
-								R.drawable.res_blink_ic_action_statistics_function,
+								R.drawable.res_blink_ic_action_action_function,
 								0, 0, 0);
 						tail.setText(function.Description);
 					}

@@ -33,8 +33,14 @@
         </activity>
 
         <service
+            android:name="kr.poturns.blink.demo.fitnessapp.HeartBeatService"
+            android:icon="@drawable/ic_action_health_heart" >
+        </service>
+        <!-- Blink Service attribute -->
+        <service
             android:name="kr.poturns.blink.internal.BlinkLocalService"
             android:exported="true"
+            android:label="@string/res_bllink_app_name"
             android:process="kr.poturns.blink.internal" >
             <intent-filter>
                 <action android:name="kr.poturns.blink.internal.BlinkLocalService" />
@@ -44,11 +50,7 @@
         <activity
             android:name="kr.poturns.blink.external.ServiceControlActivity"
             android:exported="true"
-            android:icon="@drawable/res_blink_ic_launcher"
-            android:label="@string/res_bllink_app_name"
-            android:process="kr.poturns.blink.internal"
-            android:screenOrientation="locked"
-            android:theme="@android:style/Theme.Holo.Light" >
+            android:process="kr.poturns.blink.internal" >
         </activity>
     </application>
 

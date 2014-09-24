@@ -10,6 +10,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+/**
+ * Blink database가 아닌 내부의 DB를 관리하는 Helper class
+ * 
+ * @author Myungjin.Kim
+ */
 public class SQLiteHelper extends SQLiteOpenHelper {
 	private static final String TAG = SQLiteHelper.class.getSimpleName();
 	public static final String TABLE_PUSH_UP = "PUSHUP";

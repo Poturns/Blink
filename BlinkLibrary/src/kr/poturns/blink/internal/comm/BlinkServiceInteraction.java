@@ -1,6 +1,5 @@
 package kr.poturns.blink.internal.comm;
 
-import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -23,11 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.ContentObserver;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.IBinder;
@@ -70,8 +65,10 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	private String mAppName = "";
 
 	public BlinkAppInfo mBlinkAppInfo;
-	public Local local;
-	public Remote remote;
+	// TODO 외부에서 접근은 가능하나 변경은 못하게 해야함 by MyungJin.Kim
+	/** */
+	public final Local local = new Local();
+	public final Remote remote = new Remote();
 	Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 	boolean isRegisteredReceiver = false;
@@ -119,9 +116,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		CONTEXT.getContentResolver().registerContentObserver(
 				SqliteManager.URI_OBSERVER_SYNC, false, mContentObserver);
 
-		local = new Local();
-		remote = new Remote();
-
 		/**
 		 * Setting Application Info
 		 */
@@ -132,7 +126,9 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	}
 
 	/**
-	 * Boradcast와 Callback을 등록하지 않는 생성자
+	 * Broadcast와 Callback을 등록하지 않는 생성자<br>
+	 * <br>
+	 * {@code BlinkServiceInteration(context, null, null)}을 호출하는 것과 동일하다.
 	 * 
 	 * @param context
 	 */
@@ -150,7 +146,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			mInternalOperationSupport = BlinkSupportBinder.asInterface(service);
 			if (mInternalOperationSupport == null) {
 				onServiceFailed();
-
 			} else {
 				try {
 					mInternalOperationSupport.registerApplicationInfo(
@@ -221,7 +216,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	public final void requestConfigurationChange(String... keys) {
 		if (keys != null) {
 			for (String key : keys) {
-
+				// TODO config setting
 			}
 		}
 
@@ -229,9 +224,21 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		CONTEXT.sendBroadcast(intent, PERMISSION_LISTEN_STATE_MESSAGE);
 	}
 
+	/**
+	 * {@link BlinkDevice}의 연결 상태가 변했을 때 호출 되는 콜백인{@link IBlinkEventBroadcast}를
+	 * 설정한다.
+	 */
 	public final void setOnBlinkEventBroadcast(
 			IBlinkEventBroadcast iBlinkEventBroadcast) {
 		mBlinkEventBroadcast = iBlinkEventBroadcast;
+	}
+
+	/**
+	 * Blink Service를 통해 외부 디바이스에서 데이터가 온 것을 감지하면 호출되는 콜백인
+	 * {@link IInternalEventCallback}을 설정한다.
+	 */
+	public final void setIInternalEventCallback(IInternalEventCallback callback) {
+		mIInternalEventCallback = callback;
 	}
 
 	private class EventBroadcastReceiver extends BroadcastReceiver {
@@ -407,13 +414,13 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		mBlinkAppInfo.mDevice.MacAddress = mBlinkDevice.getAddress();
 		mBlinkAppInfo.mApp.PackageName = mPackageName;
 		mBlinkAppInfo.mApp.AppName = mAppName;
-		
+
 		try {
 			mInternalOperationSupport.registerBlinkApp(mBlinkAppInfo);
 			mBlinkAppInfo = local.obtainBlinkApp();
 			return true;
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 			return false;
 		}
@@ -432,7 +439,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			mInternalOperationSupport.registerBlinkApp(mBlinkAppInfo);
 			return true;
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 			return false;
 		}
@@ -456,7 +463,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		try {
 			mInternalOperationSupport.openControlActivity();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		}
 	}
@@ -515,10 +522,10 @@ public class BlinkServiceInteraction implements ServiceConnection,
 				mBlinkDatabaseManager.registerMeasurementData(mBlinkAppInfo,
 						obj);
 			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
+
 				e.printStackTrace();
 			} catch (IllegalArgumentException e) {
-				// TODO Auto-generated catch block
+
 				e.printStackTrace();
 			}
 		}
@@ -585,13 +592,13 @@ public class BlinkServiceInteraction implements ServiceConnection,
 						DateTimeFrom, DateTimeTo, ContainType);
 				return gson.fromJson(json, type);
 			} catch (InstantiationException e) {
-				// TODO Auto-generated catch block
+
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
-				// TODO Auto-generated catch block
+
 				e.printStackTrace();
 			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
+
 				e.printStackTrace();
 			}
 			return null;
@@ -708,7 +715,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @return
 		 */
 		public Local clear() {
-			// TODO Auto-generated method stub
 			mBlinkDatabaseManager.clear();
 			return this;
 		}
@@ -720,7 +726,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @return
 		 */
 		public Local queryDevice(String where) {
-			// TODO Auto-generated method stub
 			mBlinkDatabaseManager.queryDevice(where);
 			return this;
 		}
@@ -733,7 +738,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @return
 		 */
 		public Local queryApp(String where) {
-			// TODO Auto-generated method stub
+
 			mBlinkDatabaseManager.queryApp(where);
 			return this;
 		}
@@ -746,7 +751,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @return
 		 */
 		public Local queryFunction(String where) {
-			// TODO Auto-generated method stub
+
 			mBlinkDatabaseManager.queryFunction(where);
 			return this;
 		}
@@ -759,7 +764,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @return
 		 */
 		public Local queryMeasurement(String where) {
-			// TODO Auto-generated method stub
+
 			mBlinkDatabaseManager.queryMeasurement(where);
 			return this;
 		}
@@ -772,7 +777,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @return
 		 */
 		public Local queryMeasurementData(String where) {
-			// TODO Auto-generated method stub
 			mBlinkDatabaseManager.queryMeasurementData(where);
 			return this;
 		}
@@ -783,7 +787,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @return
 		 */
 		public List<Device> getDeviceList() {
-			// TODO Auto-generated method stub
 			return mBlinkDatabaseManager.getDeviceList();
 		}
 
@@ -793,7 +796,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @param mDeviceList
 		 */
 		public void setDeviceList(List<Device> mDeviceList) {
-			// TODO Auto-generated method stub
 			mBlinkDatabaseManager.setDeviceList(mDeviceList);
 		}
 
@@ -803,7 +805,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @return
 		 */
 		public List<App> getAppList() {
-			// TODO Auto-generated method stub
 			return mBlinkDatabaseManager.getAppList();
 		}
 
@@ -813,7 +814,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @param mAppList
 		 */
 		public void setAppList(List<App> mAppList) {
-			// TODO Auto-generated method stub
 			mBlinkDatabaseManager.setAppList(mAppList);
 		}
 
@@ -823,7 +823,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @return
 		 */
 		public List<Function> getFunctionList() {
-			// TODO Auto-generated method stub
 			return mBlinkDatabaseManager.getFunctionList();
 		}
 
@@ -833,7 +832,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @param mFunctionList
 		 */
 		public void setFunctionList(List<Function> mFunctionList) {
-			// TODO Auto-generated method stub
 			mBlinkDatabaseManager.setFunctionList(mFunctionList);
 		}
 
@@ -843,7 +841,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @return
 		 */
 		public List<Measurement> getMeasurementList() {
-			// TODO Auto-generated method stub
 			return mBlinkDatabaseManager.getMeasurementList();
 		}
 
@@ -853,7 +850,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @param mMeasurementList
 		 */
 		public void setMeasurementList(List<Measurement> mMeasurementList) {
-			// TODO Auto-generated method stub
 			mBlinkDatabaseManager.setMeasurementList(mMeasurementList);
 		}
 
@@ -863,7 +859,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @return
 		 */
 		public List<MeasurementData> getMeasurementDataList() {
-			// TODO Auto-generated method stub
+
 			return mBlinkDatabaseManager.getMeasurementDataList();
 		}
 
@@ -874,7 +870,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 */
 		public void setMeasurementDataList(
 				List<MeasurementData> mMeasurementDataList) {
-			// TODO Auto-generated method stub
+
 			mBlinkDatabaseManager.setMeasurementDataList(mMeasurementDataList);
 		}
 	}
@@ -895,7 +891,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			try {
 				mInternalOperationSupport.setRequestPolicy(requestPolicy);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
+
 				e.printStackTrace();
 			}
 		}
@@ -994,7 +990,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			try {
 				mInternalOperationSupport.startFunction(function, requestCode);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
+
 				e.printStackTrace();
 			}
 		}
@@ -1009,7 +1005,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 */
 		public void sendMeasurementData(final BlinkAppInfo targetBlinkAppInfo,
 				final String json, final int requestCode) {
-		
+			//전송시간이 오래걸릴 경우 block 되어 어플리케이션이 죽는 경우가 발생하여 thread로 처리
 			new Thread(){
 				public void run() {
 					try {
@@ -1022,7 +1018,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 				}
 				};
 			}.start();
-			
 		}
 	}
 
@@ -1034,7 +1029,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			Log.i("test", "btn_sendMessage");
 			mInternalOperationSupport.SyncBlinkApp();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		}
 	}
@@ -1044,7 +1039,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			Log.i("test", "btn_sendMessage");
 			mInternalOperationSupport.SyncMeasurementData();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		}
 	}

@@ -11,7 +11,7 @@ import android.widget.FrameLayout;
 /**
  * 
  * @author Yeonho.Kim
- *
+ * 
  */
 public class BlinkTopView extends FrameLayout implements OnTouchListener {
 
@@ -19,12 +19,12 @@ public class BlinkTopView extends FrameLayout implements OnTouchListener {
 		super(context);
 
 		setOnTouchListener(this);
-		
+
 		final Button b = new Button(context);
 		b.setFocusable(true);
 		b.setOnClickListener(new OnClickListener() {
 			int num = 0;
-			
+
 			@Override
 			public void onClick(View v) {
 				b.setText("TEST BUTTON " + "_" + (num++));
@@ -32,14 +32,14 @@ public class BlinkTopView extends FrameLayout implements OnTouchListener {
 		});
 		b.setText("TEST BUTTON");
 		addView(b);
-		
+
 		setVisibility(GONE);
 	}
-	
+
 	public void show() {
 		setVisibility(VISIBLE);
 	}
-	
+
 	public void hide() {
 		setVisibility(GONE);
 	}
@@ -49,6 +49,4 @@ public class BlinkTopView extends FrameLayout implements OnTouchListener {
 		Log.d("onTouch", event.getX() + ", " + event.getY());
 		return false;
 	}
-
-	
 }

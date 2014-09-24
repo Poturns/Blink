@@ -70,6 +70,7 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 
 			@Override
 			public boolean onLongClick(View v) {
+				mSetSeekBarValueMax = 2;
 				fetchDeviceListFromBluetooth();
 				return true;
 			}
@@ -196,17 +197,16 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 	@Override
 	public void onDeviceListChanged() {
 		mCircularHelper.drawCircularView(getDeviceList());
-	}
-
-	@Override
-	public void onDeviceListChangeCompleted() {
-		super.onDeviceListChangeCompleted();
-		if (mSetSeekBarValueMax == 1) {
+		switch (mSetSeekBarValueMax) {
+		case 1:
 			mSeekBar.setProgress(100);
-		} else if (mSetSeekBarValueMax == 2) {
+			break;
+		case 2:
 			mSeekBar.setProgress(0);
+			break;
+		default:
+			return;
 		}
 		mSetSeekBarValueMax = 0;
-		mCircularHelper.drawCircularView(getDeviceList());
 	}
 }

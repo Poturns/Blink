@@ -86,9 +86,6 @@ final class ConnectionFragment extends Fragment {
 		/** Device 리스트가 변경되었을 때 호출된다. */
 		void onDeviceListChanged();
 
-		/** Device 리스트 변경 작업이 종료되었을 때 호출된다. */
-		void onDeviceListChangeCompleted();
-
 		/** Bluetooth Discovery가 종료되었을 때, 호출된다. */
 		void onDiscoveryFinished();
 
@@ -141,6 +138,17 @@ final class ConnectionFragment extends Fragment {
 						IInternalOperationSupport iSupport) {
 					mBlinkOperation = iSupport;
 					mActivityInterface.setInternalOperationSupport(iSupport);
+					try {
+						for (BlinkDevice device : iSupport
+								.obtainCurrentDiscoveryList()) {
+							mDeviceList.add(device);
+						}
+						if (mCurrentChildFragmentInterface != null)
+							mCurrentChildFragmentInterface
+									.onDeviceListChanged();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 
 				@Override
@@ -222,8 +230,11 @@ final class ConnectionFragment extends Fragment {
 	 */
 	final void connectOrDisConnectDevice(BlinkDevice device,
 			DeviceConnectionResultListener l) {
-		new ConnectionTask(getActivity(), device, !device.isConnected(), l)
-				.forceLoad();
+		if (device.isConnected()) {
+			new ConnectionTask(getActivity(), device, false, l).forceLoad();
+		} else {
+			new ConnectionTask(getActivity(), device, true, l).forceLoad();
+		}
 		mConnectionTasking = true;
 		onPreLoading();
 	}
@@ -282,11 +293,13 @@ final class ConnectionFragment extends Fragment {
 	 * {@link #onDeviceListLoadFailed()}가 호출된다.
 	 */
 	final void retainConnectedDevicesFromList() {
-		onPreLoading();
-		if (!retainConnectedDevicesFromListInternal()) {
-			mCurrentChildFragmentInterface.onDeviceListChangeCompleted();
+		// onPreLoading();
+		if (retainConnectedDevicesFromListInternal()) {
+			mCurrentChildFragmentInterface.onDeviceListChanged();
+		} else {
+			mCurrentChildFragmentInterface.onDeviceListLoadFailed();
 		}
-		onPostLoading();
+		// onPostLoading();
 	}
 
 	/**
@@ -324,7 +337,7 @@ final class ConnectionFragment extends Fragment {
 			mCurrentChildFragmentInterface.onDeviceListChanged();
 		} catch (RemoteException e) {
 			e.printStackTrace();
-			onDeviceListLoadFailed();
+			mCurrentChildFragmentInterface.onDiscoveryFailed();
 		}
 	}
 
@@ -353,12 +366,6 @@ final class ConnectionFragment extends Fragment {
 		}
 		if (mCurrentChildFragmentInterface != null)
 			mCurrentChildFragmentInterface.onPostLoading();
-	}
-
-	/** Device 리스트의 변경이 실패하였을 때 호출된다. */
-	void onDeviceListLoadFailed() {
-		getActivity().setProgressBarIndeterminateVisibility(false);
-		mCurrentChildFragmentInterface.onDeviceListLoadFailed();
 	}
 
 	/**
@@ -702,8 +709,6 @@ final class ConnectionFragment extends Fragment {
 
 		@Override
 		public void onDeviceListLoadFailed() {
-			Toast.makeText(getActivity(), "operation failed!",
-					Toast.LENGTH_SHORT).show();
 		}
 
 		@Override
@@ -794,6 +799,7 @@ final class ConnectionFragment extends Fragment {
 					device.getName()
 							+ getString(R.string.res_blink_device_connected),
 					Toast.LENGTH_SHORT).show();
+			onDeviceListChanged();
 		}
 
 		@Override
@@ -825,9 +831,11 @@ final class ConnectionFragment extends Fragment {
 		 *            true - 추가 / false - 추가하지 않음
 		 */
 		void showHostDeviceToList(boolean show) {
-			if (show
-					&& !mParentFragment.mDeviceList
-							.contains(mParentFragment.mHostDevice)) {
+			if (show) {
+				// 이미 있으면 새로 추가하지는 않음
+				if (mParentFragment.mDeviceList
+						.contains(mParentFragment.mHostDevice))
+					return;
 				mParentFragment.mDeviceList.add(0, mParentFragment.mHostDevice);
 			} else {
 				mParentFragment.mDeviceList.remove(mParentFragment.mHostDevice);
@@ -853,7 +861,8 @@ final class ConnectionFragment extends Fragment {
 			getActivity().setProgressBarIndeterminateVisibility(false);
 			onPostLoading();
 			onDeviceListChanged();
-			Toast.makeText(getActivity(), "Bluetooth discovery was finished.",
+			Toast.makeText(getActivity(),
+					R.string.res_blink_bluetooth_discovery_finished,
 					Toast.LENGTH_SHORT).show();
 		}
 
@@ -861,10 +870,5 @@ final class ConnectionFragment extends Fragment {
 		public void onDiscoveryFailed() {
 			mParentFragment.mFetchTasking = false;
 		}
-
-		@Override
-		public void onDeviceListChangeCompleted() {
-		}
-
 	}
 }

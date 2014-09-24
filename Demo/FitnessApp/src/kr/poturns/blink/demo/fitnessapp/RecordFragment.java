@@ -16,6 +16,11 @@ import com.handstudio.android.hzgrapherlib.vo.GraphNameBox;
 import com.handstudio.android.hzgrapherlib.vo.bargraph.BarGraph;
 import com.handstudio.android.hzgrapherlib.vo.bargraph.BarGraphVO;
 
+/**
+ * 기록된 운동량을 그래프로 보여주는 Fragment
+ * 
+ * @author Myungjin.Kim
+ */
 public class RecordFragment extends SwipeEventFragment {
 	private SQLiteHelper mSqLiteHelper;
 	private String mCurrentDisplayDbTable = SQLiteHelper.TABLE_PUSH_UP;
@@ -81,7 +86,7 @@ public class RecordFragment extends SwipeEventFragment {
 	 * <br>
 	 * SITUP <br>
 	 * | <br>
-	 * pushup - heartbeat(예정)<br>
+	 * pushup<br>
 	 * | <br>
 	 * SQUAT
 	 */
@@ -93,6 +98,8 @@ public class RecordFragment extends SwipeEventFragment {
 				mCurrentDisplayDbTable = SQLiteHelper.TABLE_SIT_UP;
 			else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SQUAT))
 				mCurrentDisplayDbTable = SQLiteHelper.TABLE_PUSH_UP;
+			else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SIT_UP))
+				mCurrentDisplayDbTable = SQLiteHelper.TABLE_SQUAT;
 			else
 				return false;
 			drawGraphWithNewFragment(R.animator.slide_in_up,
@@ -103,9 +110,10 @@ public class RecordFragment extends SwipeEventFragment {
 				mCurrentDisplayDbTable = SQLiteHelper.TABLE_SQUAT;
 			else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SIT_UP))
 				mCurrentDisplayDbTable = SQLiteHelper.TABLE_PUSH_UP;
+			else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SQUAT))
+				mCurrentDisplayDbTable = SQLiteHelper.TABLE_SIT_UP;
 			else
 				return false;
-			// mCurrentDisplayDbTable = SQLiteHelper.TABLE_HEART_BEAT;
 			drawGraphWithNewFragment(R.animator.slide_in_bottom,
 					R.animator.slide_out_up);
 			return true;
@@ -165,8 +173,18 @@ public class RecordFragment extends SwipeEventFragment {
 			title = "스쿼트";
 		if (mShowCalorie)
 			title += " (KCal)";
-		int color = getResources().getColor(R.color.main);
-
+		
+		int color;
+		if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_PUSH_UP)) {
+			color = getResources().getColor(R.color.orange);
+		} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SIT_UP)) {
+			color = getResources().getColor(R.color.green);
+		} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SQUAT)) {
+			color = getResources().getColor(R.color.blue);
+		} else {
+			color = getResources().getColor(R.color.orange);
+		}
+		
 		ArrayList<BarGraph> arrGraph = new ArrayList<BarGraph>();
 		arrGraph.add(new BarGraph(title, color, array));
 
@@ -179,15 +197,14 @@ public class RecordFragment extends SwipeEventFragment {
 		vo.setMaxValueY(max);
 		int increment = (int) Math.abs(list.get(0) - list.get(1));
 		vo.setIncrementX(4);
-		vo.setIncrementY(increment<1?10:increment);
+		vo.setIncrementY(increment < 1 ? 10 : increment);
 		vo.setGraphNameBox(new GraphNameBox());
 		vo.setAnimation(new GraphAnimation(GraphAnimation.LINEAR_ANIMATION,
 				GraphAnimation.DEFAULT_DURATION));
 		vo.setAnimationShow(true);
-		vo.setTextX(50);
-		vo.setTextY(30);
+		vo.setXAxisTextSize(50);
+		vo.setYAxisTextSize(30);
 		GraphNameBox box = new GraphNameBox();
-		box.setNameboxColor(color);
 		box.setNameboxTextSize(60);
 		box.setNameboxColor(Color.BLACK);
 		box.setNameboxPadding(20);
