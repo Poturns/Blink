@@ -379,6 +379,8 @@ class DataSelectFragment extends Fragment {
 								.getActionBar().getTitle(), getActivity()
 								.getActionBar().getSubtitle());
 					}
+					//TODO Function를 나타내는 Item을 선택하였을 때,
+					// Function 실행요청을 보내야 하나?
 				}
 			});
 			return v;

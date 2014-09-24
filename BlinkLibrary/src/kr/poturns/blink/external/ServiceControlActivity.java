@@ -216,6 +216,22 @@ public final class ServiceControlActivity extends Activity implements
 		}
 	}
 
+	/**
+	 * <hr>
+	 * <b>1.</b> SlidingPaneLayout 이 먼저 이벤트를 받는다.<br>
+	 * 
+	 * <br>
+	 * <b>2.</b>위에서 처리가 되지 않은 경우 FragmentManager의 BackStack을 pop한다.
+	 * 
+	 * <br>
+	 * <br>
+	 * <b>3.</b>BackStack에서 pop할 것이 없었다면 현재 보여지는 Fragment를 검사한다.
+	 * 
+	 * <br>
+	 * <br>
+	 * <b>4.</b>현재 보여지는 Fragment가 ConnectionFragment이면 종료하고,<br>
+	 * 아니면 ConnectionFragment 화면으로 이동한다.<br>
+	 * */
 	@Override
 	public void onBackPressed() {
 		// 1.화면이 작다.
@@ -228,8 +244,20 @@ public final class ServiceControlActivity extends Activity implements
 				&& getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT
 				&& mSlidingPaneLayout.isOpen())
 			mSlidingPaneLayout.closePane();
-		else
-			super.onBackPressed();
+		else {
+			// backstack에 저장되어 있는 Fragment 복귀
+			if (!getFragmentManager().popBackStackImmediate()) {
+				// 복귀할 것이 없을 때,
+				// 현재 Fragment가 ConnectionFragment가 아닌 경우
+				// ConnectionFragment로 이동한다.
+				if (mCurrentPageSelection != 0) {
+					transitFragment(0, null);
+				} else {
+					finish();
+				}
+			}
+		}
+
 	}
 
 	@Override
