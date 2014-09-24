@@ -103,7 +103,7 @@ public class SupportMapActivity extends NMapActivity {
 				if (!mMapView.isAutoRotateEnabled()) {
 					mMyLocationOverlay.setCompassHeadingVisible(true);
 					mMapCompassManager.enableCompass();
-					mMapView.setAutoRotateEnabled(true, false);
+					mMapView.setAutoRotateEnabled(false, false);
 					
 				} else {
 					stopMyLocation();
@@ -121,7 +121,10 @@ public class SupportMapActivity extends NMapActivity {
 					return;
 				}
 			}
+			
 		}
+		
+		
 	}
 
 	private void stopMyLocation() {
@@ -132,8 +135,6 @@ public class SupportMapActivity extends NMapActivity {
 				mMyLocationOverlay.setCompassHeadingVisible(false);
 
 				mMapCompassManager.disableCompass();
-
-				mMapView.setAutoRotateEnabled(false, false);
 			}
 		}
 	}

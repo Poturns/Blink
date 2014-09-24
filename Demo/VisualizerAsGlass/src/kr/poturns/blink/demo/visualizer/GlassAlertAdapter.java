@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 import android.content.Context;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 
 public class GlassAlertAdapter extends BaseAdapter {
   
+	private final static long MESSAGE_APPEAR_TIME = 12000;
 	private final Context CONTEXT;
 	private final Queue<String> ALERT_LIST;
 	
@@ -51,5 +53,15 @@ public class GlassAlertAdapter extends BaseAdapter {
 	public void pushNewMessage(String message) {
 		ALERT_LIST.add(message);
 		notifyDataSetChanged();
+		
+		new Handler().postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				if (!ALERT_LIST.isEmpty()) {
+					ALERT_LIST.remove();
+					notifyDataSetChanged();
+				}
+			}
+		}, MESSAGE_APPEAR_TIME);
 	}
 }

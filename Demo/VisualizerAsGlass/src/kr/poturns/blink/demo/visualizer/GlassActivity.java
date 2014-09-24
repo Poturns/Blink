@@ -8,12 +8,13 @@ import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
+
+import org.json.JSONObject;
+
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -29,6 +30,8 @@ public class GlassActivity extends SupportMapActivity {
 	private ListView mAlertList;
 	private GlassAlertAdapter mAlertAdapter;
 	
+	private boolean isEmergency = false;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -39,15 +42,18 @@ public class GlassActivity extends SupportMapActivity {
 		IInternalEventCallback.Stub mIInternalEventCallback = new IInternalEventCallback.Stub() {
 		      
 		      @Override
-		      public void onReceiveData(int arg0, CallbackData arg1) throws RemoteException {
+		      public void onReceiveData(int arg0, CallbackData callbackData) throws RemoteException {
 		    	  if (mAlertAdapter == null)
 		    		  return;
 		    	  
 		    	  // Data 받음..
-		    	  String data = arg1.InDeviceData == null? arg1.OutDeviceData : (arg1.InDeviceData + arg1.OutDeviceData);
-		    	  mAlertAdapter.pushNewMessage(data);
+		    	  String data = callbackData.InDeviceData == null? callbackData.OutDeviceData : (callbackData.InDeviceData + callbackData.OutDeviceData);
 		    	  
-		    	  onHeartbeat(100);
+		    	  try {
+			    	  JSONObject mJsonObj = new JSONObject(data);
+			    	  onHeartbeat(mJsonObj.getInt("bpm"));
+			    	  
+		    	  } catch (Exception e) { ; }
 		      }
 		   }; 
 		
@@ -77,16 +83,25 @@ public class GlassActivity extends SupportMapActivity {
 			
 			@Override
 			public void onDeviceConnected(BlinkDevice device) {
+				mAlertAdapter.pushNewMessage(device.getName() + " Connected !");
+				
 				boolean isDeviceConnected = mInteraction.isDeviceConnected();
 				setControlActivityVisibility(!isDeviceConnected);
-				setMapVisibility(isDeviceConnected);
+				
+				mHeartbeatImageView.setVisibility(View.VISIBLE);
+				mHeartbeatTextView.setVisibility(View.VISIBLE);
 			}
 			
 			@Override
 			public void onDeviceDisconnected(BlinkDevice device) {
+				mAlertAdapter.pushNewMessage(device.getName() + " Disonnected !");
+				
 				boolean isDeviceConnected = mInteraction.isDeviceConnected();
 				setControlActivityVisibility(!isDeviceConnected);
-				setMapVisibility(isDeviceConnected);
+				setMapVisibility(false);
+
+				mHeartbeatImageView.setVisibility(View.INVISIBLE);
+				mHeartbeatTextView.setVisibility(View.INVISIBLE);
 			}
 			
 		};
@@ -94,6 +109,11 @@ public class GlassActivity extends SupportMapActivity {
 		if (mInteraction != null) {
 			mInteraction.startService();
 		}
+		
+		// TEST
+		//mHeartbeatImageView.setVisibility(View.VISIBLE);
+		//mHeartbeatTextView.setVisibility(View.VISIBLE);
+		//setMapVisibility(true);
 	}
 	
 	
@@ -106,11 +126,11 @@ public class GlassActivity extends SupportMapActivity {
 			
 			boolean isDeviceConnected = mInteraction.isDeviceConnected();
 			setControlActivityVisibility(!isDeviceConnected);
-			setMapVisibility(!isDeviceConnected);
+			setMapVisibility(isDeviceConnected && isEmergency);
 		}
 		
 		// TEST
-		mAlertAdapter.pushNewMessage("HELLO");
+		//onHeartbeat(50);
 	}
 	
 	@Override
@@ -130,8 +150,6 @@ public class GlassActivity extends SupportMapActivity {
 	}
 
 	private void initiateComponent() {
-
-		
 		Button mControllerBtn = (Button) findViewById(R.id.glass_btn_controller);
 		mControllerBtn.setOnClickListener(new OnClickListener() {
 			
@@ -144,17 +162,14 @@ public class GlassActivity extends SupportMapActivity {
 		
 		mAlertList = (ListView) findViewById(R.id.glass_alertlist);
 		mAlertAdapter = new GlassAlertAdapter(this);
+		mAlertAdapter.pushNewMessage("Welcome to Visualizer !! ");
+		mAlertAdapter.pushNewMessage("You are watching ahead on wearing glasses. ");
 		mAlertList.setAdapter(mAlertAdapter);
-		mAlertList.setOnItemClickListener(new OnItemClickListener() {
-
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				onHeartbeat(100);
-			}
-		});
 		
 		mHeartbeatImageView = (ImageView) findViewById(R.id.heartbeat_image);
+		mHeartbeatImageView.setVisibility(View.INVISIBLE);
 		mHeartbeatTextView = (TextView) findViewById(R.id.heartbeat_figure);
+		mHeartbeatTextView.setVisibility(View.INVISIBLE);
 	}
 	
 	private void setControlActivityVisibility(boolean enabled) {
@@ -170,7 +185,7 @@ public class GlassActivity extends SupportMapActivity {
 			public void run() {
 				mHeartbeatImageView.setImageResource(R.drawable.heartbeat1);
 			}
-		}, 1000);
+		}, 5000);
 		
 		mHeartbeatTextView.setText(String.valueOf(heartbeat));
 		mHeartbeatTextView.postDelayed(new Runnable(){
@@ -178,6 +193,27 @@ public class GlassActivity extends SupportMapActivity {
 			public void run() {
 				mHeartbeatTextView.setText(null);
 			}
-		}, 1000);
+		}, 5000);
+		
+		if (isEmergency(heartbeat))
+			onEmergency(heartbeat);
 	}
+
+	private boolean isEmergency(int heartbeat) {
+		if (isEmergency) {
+			setMapVisibility(false);
+			findViewById(R.id.glass_frame).setBackground(null);
+		}
+		
+		return isEmergency = (heartbeat < 80 || heartbeat > 120);
+	}
+	
+	private void onEmergency(int heartbeat) {
+		setMapVisibility(true);
+		
+		findViewById(R.id.glass_frame).setBackgroundResource(R.drawable.emergency_surface);
+		
+		mAlertAdapter.pushNewMessage("Emergency!! Low Heartbeat : " + heartbeat);
+	}
+	
 }

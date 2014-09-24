@@ -2,7 +2,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="10dp" >
+    android:layout_margin="10dp"
+    android:paddingLeft = "10dp"
+    android:paddingRight = "10dp" >
     
 	<TextView 
 	    android:id="@+id/glass_listitem_content"
