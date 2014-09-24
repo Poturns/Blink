@@ -150,7 +150,6 @@ public class GlassActivity extends SupportMapActivity {
 
 	private void initiateComponent() {
 
-		
 		Button mControllerBtn = (Button) findViewById(R.id.glass_btn_controller);
 		mControllerBtn.setOnClickListener(new OnClickListener() {
 			
