@@ -50,6 +50,8 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 								: R.drawable.res_blink_ic_action_device_access_bluetooth,
 						0, 0);
 				String name = device.getName();
+				if (name == null || name.equals(""))
+					name = "NoName";
 				// TODO 현재 ChildView 크기 만큼, 표시되는 이름 길이 줄이기
 				// int size = getSize();
 				// if(name!=null && device.getName().length())

@@ -3,6 +3,7 @@ package kr.poturns.blink.external;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import kr.poturns.blink.R;
 import kr.poturns.blink.db.archive.App;
@@ -19,13 +20,13 @@ import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.AsyncTaskLoader;
-import android.content.Context;
 import android.graphics.Point;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.RemoteException;
 import android.support.v13.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -68,6 +69,8 @@ final class ConnectionFragment extends Fragment {
 	boolean mFetchTasking = false;
 	/** UI를 표시하는 ChildFragment */
 	IConnectionCallback mCurrentChildFragmentInterface;
+
+	static final Handler sHandler = new Handler();
 
 	/** ConnectionFragment의 UI와 작업의 Callback을 처리하는 interface */
 	interface IConnectionCallback extends IBlinkEventBroadcast {
@@ -138,6 +141,8 @@ final class ConnectionFragment extends Fragment {
 						IInternalOperationSupport iSupport) {
 					mBlinkOperation = iSupport;
 					mActivityInterface.setInternalOperationSupport(iSupport);
+
+					// 기존에 discovery 된 장비들을 불러온다.
 					try {
 						for (BlinkDevice device : iSupport
 								.obtainCurrentDiscoveryList()) {
@@ -173,14 +178,25 @@ final class ConnectionFragment extends Fragment {
 
 				@Override
 				public void onDiscoveryStarted() {
-					mCurrentChildFragmentInterface.onDiscoveryStarted();
+					sHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							ConnectionFragment.this.mCurrentChildFragmentInterface
+									.onDiscoveryStarted();
+						}
+					});
 				}
 
 				@Override
 				public void onDiscoveryFinished() {
-					mCurrentChildFragmentInterface.onDiscoveryFinished();
+					sHandler.postDelayed(new Runnable() {
+						@Override
+						public void run() {
+							ConnectionFragment.this.mCurrentChildFragmentInterface
+									.onDiscoveryFinished();
+						}
+					}, 1000);
 				}
-
 			};
 			mActivityInterface.setServiceInteration(mInteraction);
 			mInteraction.startService();
@@ -230,10 +246,17 @@ final class ConnectionFragment extends Fragment {
 	 */
 	final void connectOrDisConnectDevice(BlinkDevice device,
 			DeviceConnectionResultListener l) {
+		if (mConnectionTasking) {
+			Toast.makeText(getActivity(), "already connection tasking", 1000)
+					.show();
+			return;
+		}
 		if (device.isConnected()) {
-			new ConnectionTask(getActivity(), device, false, l).forceLoad();
+			mConnectionThread = new ConnectionTaskThread(device, false, l);
+			mConnectionThread.start();
 		} else {
-			new ConnectionTask(getActivity(), device, true, l).forceLoad();
+			mConnectionThread = new ConnectionTaskThread(device, true, l);
+			mConnectionThread.start();
 		}
 		mConnectionTasking = true;
 		onPreLoading();
@@ -386,53 +409,89 @@ final class ConnectionFragment extends Fragment {
 				.commit();
 	}
 
-	/** BlinkDevice의 연결 작업을 비동기적으로 수행하는 Loader */
-	class ConnectionTask extends AsyncTaskLoader<Boolean> {
+	/** BlinkDevice의 연결 작업을 비동기적으로 수행하는 Thread */
+	ConnectionTaskThread mConnectionThread;
+
+	/** BlinkDevice의 연결 작업을 비동기적으로 수행하는 Thread */
+	class ConnectionTaskThread extends Thread {
 		private BlinkDevice mDevice;
 		private boolean mIsConnectTask;
+		private DeviceConnectionResultListener l;
+		private AtomicBoolean mWating = new AtomicBoolean(true);
+		private boolean mResult = false;
+		private final String TAG = ConnectionTaskThread.class.getSimpleName();
 
-		public ConnectionTask(Context context, BlinkDevice device,
-				boolean isConnectTask, final DeviceConnectionResultListener l) {
-			super(context);
-			this.mIsConnectTask = isConnectTask;
+		public ConnectionTaskThread(BlinkDevice device, boolean isConnectTask,
+				final DeviceConnectionResultListener l) {
 			this.mDevice = device;
-			this.registerListener(0,
-					new AsyncTaskLoader.OnLoadCompleteListener<Boolean>() {
-						public void onLoadComplete(
-								android.content.Loader<Boolean> loader,
-								Boolean result) {
-							onPostLoading();
-							// 비 동기 작업이 성공 했고,
-							// 요청 boolean값과 연결 상태 boolean 값이 다른 경우
-							// 작업의 성공이라고 판단한다.
-							if (result
-									&& (mIsConnectTask ^ mDevice.isConnected())) {
-								// 연결 요청 이었을 경우 두 번째 인자에 true가
-								// 해제 요청 이었을 경우 false가 전달된다.
-								l.onResult(mDevice, mIsConnectTask, false);
-								mCurrentChildFragmentInterface
-										.onDeviceListChanged();
-							} else {
-								l.onResult(mDevice, false, true);
-							}
-							loader.abandon();
-						}
-					});
+			this.mIsConnectTask = isConnectTask;
+			this.l = l;
+
+			// 어떠한 경우에도 앱이 종료되면 이 Thread는 종료됨.
+			setDaemon(true);
 		}
 
 		@Override
-		public Boolean loadInBackground() {
+		public void run() {
+			Log.e(TAG, "connection thread start!");
 			try {
 				if (mIsConnectTask) {
 					mBlinkOperation.connectDevice(mDevice);
 				} else {
 					mBlinkOperation.disconnectDevice(mDevice);
 				}
-				return true;
+				mResult = true;
 			} catch (Exception e) {
 				e.printStackTrace();
-				return false;
+				mResult = false;
 			}
+			mDevice = null;
+			long startTime = System.currentTimeMillis();
+			// wait
+			while (mWating.get()) {
+				// 15초 기다린다.
+				if (System.currentTimeMillis() - startTime > 15000) {
+					sHandler.post(new Runnable() {
+
+						@Override
+						public void run() {
+							ConnectionFragment.this.onPostLoading();
+							Toast.makeText(
+									getActivity(),
+									R.string.res_blink_bluetooth_discovery_failed,
+									Toast.LENGTH_SHORT).show();
+							ConnectionFragment.this.mCurrentChildFragmentInterface
+									.onDiscoveryFailed();
+						}
+					});
+					Log.e(TAG, "connection callback not responding");
+					ConnectionFragment.this.mConnectionThread = null;
+					return;
+				}
+			}
+
+			// must wake from onDeviceConnected() / onDeviceDisConnected()
+
+			if (mDevice != null) {
+				Log.d(TAG, "connection callback response");
+				sHandler.post(new Runnable() {
+
+					@Override
+					public void run() {
+						l.onResult(mDevice, mDevice.isConnected(), mResult);
+						ConnectionFragment.this.onPostLoading();
+					}
+				});
+			}
+
+			Log.d(TAG, "Thread terminated");
+			ConnectionFragment.this.mConnectionThread = null;
+		}
+
+		/** block된 Thread를 깨운다. */
+		public void wakeUp(BlinkDevice device) {
+			this.mDevice = device;
+			mWating.getAndSet(false);
 		}
 	}
 
@@ -792,31 +851,48 @@ final class ConnectionFragment extends Fragment {
 				return super.onOptionsItemSelected(item);
 		}
 
+		/** 연결 요청 Thread 에게 연결 결과를 알린다. */
+		private void wakeConnectionThread(BlinkDevice device) {
+			if (mParentFragment.mConnectionThread != null) {
+				mParentFragment.mConnectionThread.wakeUp(device);
+			}
+		}
+
 		@Override
 		public void onDeviceConnected(BlinkDevice device) {
+			Log.d("ConnectionFragment", "onDeviceConnected : " + device);
 			Toast.makeText(
 					getActivity(),
 					device.getName()
 							+ getString(R.string.res_blink_device_connected),
 					Toast.LENGTH_SHORT).show();
+			wakeConnectionThread(device);
 			onDeviceListChanged();
 		}
 
 		@Override
 		public void onDeviceDisconnected(BlinkDevice device) {
+			Log.d("ConnectionFragment", "onDeviceDisConnected : " + device);
 			if (getActivity() != null)
 				Toast.makeText(
 						getActivity(),
 						device.getName()
 								+ getString(R.string.res_blink_device_disconnected),
 						Toast.LENGTH_SHORT).show();
+			wakeConnectionThread(device);
 			onDeviceListChanged();
 		}
 
 		@Override
 		public void onDeviceDiscovered(BlinkDevice device) {
-			getDeviceList().add(device);
-			onDeviceListChanged();
+			mParentFragment.mDeviceList.add(device);
+			sHandler.postDelayed(new Runnable() {
+
+				@Override
+				public void run() {
+					onDeviceListChanged();
+				}
+			}, 100);
 		}
 
 		/** 다른 Fragment로 UI를 변경한다. */
@@ -858,8 +934,8 @@ final class ConnectionFragment extends Fragment {
 		@Override
 		public void onDiscoveryFinished() {
 			mParentFragment.mFetchTasking = false;
-			getActivity().setProgressBarIndeterminateVisibility(false);
 			onPostLoading();
+			obtainDiscoveryList();
 			onDeviceListChanged();
 			Toast.makeText(getActivity(),
 					R.string.res_blink_bluetooth_discovery_finished,
