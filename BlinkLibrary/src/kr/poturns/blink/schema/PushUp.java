@@ -1,7 +1,5 @@
 package kr.poturns.blink.schema;
 
-import kr.poturns.blink.schema.DefaultSchema;
-
 /** category : fitness */
 public class PushUp extends DefaultSchema {
 	public int count;

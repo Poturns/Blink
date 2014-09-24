@@ -9,7 +9,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 /**
- * Blink 라이브러리를 사용하는 어플리케이션의 정보를 나타내는 클래스이다. <br>
+ * Blink 라이브러리를 사용하는 어플리케이션의 정보를 포괄적으로 나타내는 클래스이다. <br>
  * <li>해당 어플리케이션이 속한 Device 정보 : {@link BlinkAppInfo#mDevice}</li> <li>해당 어플리케이션
  * 정보 : {@link BlinkAppInfo#mApp}</li> <li>해당 어플리케이션이 실행 시킬 수 있는 기능 정보 :
  * {@link BlinkAppInfo#mFunctionList}</li> <li>해당 어플리케이션이 측정하는 데이터의 정보 :
@@ -22,7 +22,7 @@ import android.os.Parcelable;
  * @see Measurement
  */
 public class BlinkAppInfo implements Parcelable, IDatabaseObject {
-	private final String tag = "BlinkAppInfo";
+	// private final String tag = "BlinkAppInfo";
 
 	public boolean isExist;
 	public Device mDevice;
@@ -93,7 +93,6 @@ public class BlinkAppInfo implements Parcelable, IDatabaseObject {
 	 */
 	@Override
 	public boolean checkIntegrity() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

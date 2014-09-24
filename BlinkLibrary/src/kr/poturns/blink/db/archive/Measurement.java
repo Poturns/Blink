@@ -6,47 +6,61 @@ import android.os.Parcelable;
 
 /**
  * Measurement 테이블과 맵핑되는 클래스
+ * 
+ * <br>
+ * <br>
+ * <b>Blink Database</b>에서 <b>Application</b>이 <b>측정할 수 있는 데이터</b>를 의미한다.
+ * 
  * @author Jiwon
- *
+ * 
  */
-public class Measurement implements IDatabaseObject, Parcelable{
-	public static String TYPE_STRING = "string";
-	public static String TYPE_INT = "int";
-	public static String TYPE_DOUBLE = "double";
-	public static String TYPE_FLOAT = "float";
-	public static String TYPE_SHORT = "short";
-	
+public class Measurement implements IDatabaseObject, Parcelable {
+	/* 측정한 데이터의 타입을 나타낸다. */
+	public static final String TYPE_STRING = "string";
+	public static final String TYPE_INT = "int";
+	public static final String TYPE_DOUBLE = "double";
+	public static final String TYPE_FLOAT = "float";
+	public static final String TYPE_SHORT = "short";
+
+	/** Measurement가 속한 App의 ID */
 	public int AppId;
+	/** Measurement의 ID */
 	public int MeasurementId;
+	/** Measurement의 이름 */
 	public String MeasurementName;
+	/** Measurement의 Schema */
 	public String Measurement;
+	/** Measurement의 타입 */
 	public String Type;
+	/** Measurement의 설명 */
 	public String Description;
-	
-	public Measurement(){
+
+	public Measurement() {
 		this.AppId = -1;
 		this.Description = "";
 	}
-	public Measurement(String MeasurementName,String Measurement,String Type,String Description){
+
+	public Measurement(String MeasurementName, String Measurement, String Type,
+			String Description) {
 		this.MeasurementName = MeasurementName;
 		this.Measurement = Measurement;
 		this.Type = Type;
 		this.Description = Description;
 	}
-	public MeasurementData obtainMeasurement(){
+
+	public MeasurementData obtainMeasurement() {
 		MeasurementData mMeasurementData = new MeasurementData();
 		mMeasurementData.MeasurementId = this.MeasurementId;
 		return mMeasurementData;
 	}
-	
-	
-	public String toString(){
+
+	public String toString() {
 		String ret = "";
-		ret += "DeviceAppId : "+AppId+"\r\n";
-		ret += "MeasurementId : "+MeasurementId+"\r\n";
-		ret += "Measurement : "+Measurement+"\r\n";
-		ret += "Type : "+Type+"\r\n";
-		ret += "Description : "+Description+"\r\n";
+		ret += "DeviceAppId : " + AppId + "\r\n";
+		ret += "MeasurementId : " + MeasurementId + "\r\n";
+		ret += "Measurement : " + Measurement + "\r\n";
+		ret += "Type : " + Type + "\r\n";
+		ret += "Description : " + Description + "\r\n";
 		return ret;
 	}
 
@@ -55,44 +69,47 @@ public class Measurement implements IDatabaseObject, Parcelable{
 	 */
 	@Override
 	public boolean checkIntegrity() {
-		// TODO Auto-generated method stub
-		if(Measurement!=null&&Type!=null&&Measurement.length()>0&&Type.length()>0)return true;
+		if (Measurement != null && Type != null && Measurement.length() > 0
+				&& Type.length() > 0)
+			return true;
 		return false;
 	}
-	
-	/**
+
+	/*
 	 * Parcelable 구현 매소드들
 	 */
 
 	@Override
 	public int describeContents() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	public static final Parcelable.Creator<Measurement> CREATOR = new Parcelable.Creator<Measurement>() {
-		 public Measurement createFromParcel(Parcel in) {
-		 	return new Measurement(in);
-		 }
-	        
-		 public Measurement[] newArray( int size ) {
-			 return new Measurement[size];
-		 }
+		public Measurement createFromParcel(Parcel in) {
+			return new Measurement(in);
+		}
+
+		public Measurement[] newArray(int size) {
+			return new Measurement[size];
+		}
 	};
-	
+
 	@Override
 	public void writeToParcel(Parcel dest, int flags) {
-		// TODO Auto-generated method stub
 		dest.writeString(JsonManager.gson.toJson(this));
 	}
-	public Measurement(Parcel in){
+
+	public Measurement(Parcel in) {
 		readFromParcel(in);
 	}
-	public void readFromParcel(Parcel in){
-		Measurement mMeasurement = JsonManager.gson.fromJson(in.readString(), Measurement.class);
+
+	public void readFromParcel(Parcel in) {
+		Measurement mMeasurement = JsonManager.gson.fromJson(in.readString(),
+				Measurement.class);
 		CopyFromOtherObject(mMeasurement);
 	}
-	public void CopyFromOtherObject(Measurement mMeasurement){
+
+	public void CopyFromOtherObject(Measurement mMeasurement) {
 		this.AppId = mMeasurement.AppId;
 		this.MeasurementId = mMeasurement.MeasurementId;
 		this.Measurement = mMeasurement.Measurement;

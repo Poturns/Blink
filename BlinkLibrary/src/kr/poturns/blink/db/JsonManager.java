@@ -19,7 +19,7 @@ import com.google.gson.reflect.TypeToken;
  *
  */
 public class JsonManager {
-	private final String tag = "JsonManager";
+	//private final String tag = "JsonManager";
 	public static Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	
 	public static String obtainJsonBlinkAppInfo(ArrayList<BlinkAppInfo> mList){

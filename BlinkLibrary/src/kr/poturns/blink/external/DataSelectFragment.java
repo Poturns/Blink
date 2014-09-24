@@ -405,7 +405,7 @@ class DataSelectFragment extends Fragment {
 				CharSequence subTitle) {
 			Bundle bundle = new Bundle(arg);
 			bundle.putCharSequence("title", title);
-			bundle.putCharSequence("sub", subTitle);
+			bundle.putCharSequence("subTitle", subTitle);
 			Fragment f = new DataViewFragment();
 			f.setArguments(bundle);
 			getFragmentManager()
