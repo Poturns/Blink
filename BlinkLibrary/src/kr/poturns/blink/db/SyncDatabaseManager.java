@@ -247,7 +247,7 @@ public class SyncDatabaseManager extends BlinkDatabaseManager {
 		if (where == null || where.equals(""))
 			return;
 
-		String query = "update MeasurementData set " + set + " where " + where;
+		String query = "update SyncMeasurementData set " + set + " where " + where;
 		mSQLiteDatabase.execSQL(query);
 	}
 

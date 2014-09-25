@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
+import kr.poturns.blink.schema.Body;
 import kr.poturns.blink.schema.HeartBeat;
 import kr.poturns.blink.schema.Inbody;
 import kr.poturns.blink.schema.PushUp;
@@ -19,6 +20,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 public class HisotryActivity extends ListActivity implements OnItemClickListener{
 	public static int HISTORY_INBODY = 0x01;
@@ -48,10 +50,7 @@ public class HisotryActivity extends ListActivity implements OnItemClickListener
 		mInbodyList = null;
 		if(history==0x01){
 			((TextView)findViewById(R.id.history_subtitle)).setText("Inbody History");
-			mInbodyList = mBlinkServiceInteraction.local.obtainMeasurementData(Inbody.class);
-//			mInbodyList = new ArrayList<Inbody>();
-//			mInbodyList.add(new Inbody());
-//			mInbodyList.add(new Inbody());
+			mInbodyList = mBlinkServiceInteraction.local.obtainMeasurementData(Inbody.class,new TypeToken<ArrayList<Inbody>>(){}.getType());
 			
 			Inbody mInbody;
 			for(int i=0;i<mInbodyList.size();i++){
@@ -67,9 +66,9 @@ public class HisotryActivity extends ListActivity implements OnItemClickListener
 			}
 		}else if(history==0x02){
 			((TextView)findViewById(R.id.history_subtitle)).setText("Excercise History");
-			List<PushUp> mPushUpList = mBlinkServiceInteraction.local.obtainMeasurementData(PushUp.class);
-			List<Squat> mSquatList = mBlinkServiceInteraction.local.obtainMeasurementData(Squat.class);
-			List<SitUp> mSitUpList = mBlinkServiceInteraction.local.obtainMeasurementData(SitUp.class);
+			List<PushUp> mPushUpList = mBlinkServiceInteraction.local.obtainMeasurementData(PushUp.class,new TypeToken<ArrayList<PushUp>>(){}.getType());
+			List<Squat> mSquatList = mBlinkServiceInteraction.local.obtainMeasurementData(Squat.class,new TypeToken<ArrayList<Squat>>(){}.getType());
+			List<SitUp> mSitUpList = mBlinkServiceInteraction.local.obtainMeasurementData(SitUp.class,new TypeToken<ArrayList<SitUp>>(){}.getType());
 			PushUp mPushUp;
 			for(int i=0;i<mPushUpList.size();i++){
 				mPushUp = mPushUpList.get(i);
@@ -100,7 +99,7 @@ public class HisotryActivity extends ListActivity implements OnItemClickListener
 			
 		}else if(history==0x03){
 			((TextView)findViewById(R.id.history_subtitle)).setText("Heart History");
-			List<HeartBeat> mHeartBeatList = mBlinkServiceInteraction.local.obtainMeasurementData(HeartBeat.class);
+			List<HeartBeat> mHeartBeatList = mBlinkServiceInteraction.local.obtainMeasurementData(HeartBeat.class,new TypeToken<ArrayList<HeartBeat>>(){}.getType());
 			HeartBeat mHeartBeat;
 			for(int i=0;i<mHeartBeatList.size();i++){
 				mHeartBeat = mHeartBeatList.get(i);
