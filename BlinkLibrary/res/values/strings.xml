@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Blink Service가 Android에서 구동 중 일 때 표시 될 이름 -->
     <string name="res_bllink_app_name">BlinkControl</string>
-    
     <string name="res_blink_internal_baseservice_unable_alert">BLINK 서비스를 구동할 수 없습니다!</string>
     <string name="res_blink_internal_baseservice_exit_alert">BLINK 서비스를 종료합니다.</string>
 
+    <!-- Blink Control Activity 에서 왼쪽 메뉴의 항목들 -->
     <string-array name="res_blink_activity_sercive_control_menu_array">
         <item>연결 상태</item>
         <item>측정 데이터</item>

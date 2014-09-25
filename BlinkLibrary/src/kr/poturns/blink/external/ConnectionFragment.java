@@ -212,6 +212,20 @@ final class ConnectionFragment extends Fragment {
 	}
 
 	@Override
+	public void onResume() {
+		if (mInteraction != null)
+			mInteraction.startBroadcastReceiver();
+		super.onResume();
+	}
+
+	@Override
+	public void onPause() {
+		if (mInteraction != null)
+			mInteraction.stopBroadcastReceiver();
+		super.onPause();
+	}
+
+	@Override
 	public void onDestroy() {
 		mInteraction.setOnBlinkEventBroadcast(null);
 		getActivity().setProgressBarIndeterminateVisibility(false);

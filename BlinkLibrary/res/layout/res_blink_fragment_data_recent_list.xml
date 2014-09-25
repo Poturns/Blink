@@ -21,6 +21,8 @@
         android:background="@android:color/darker_gray" />
 
     <include
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/res_blink_list_side_margin"
         android:layout_marginRight="@dimen/res_blink_list_side_margin"
         layout="@layout/res_blink_view_listview" />

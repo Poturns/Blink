@@ -1,6 +1,7 @@
 package kr.poturns.blink.internal.comm;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 import kr.poturns.blink.db.BlinkDatabaseManager;
@@ -14,6 +15,7 @@ import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.internal.BlinkLocalService;
 import kr.poturns.blink.internal.DeviceAnalyzer;
+import kr.poturns.blink.schema.Eye;
 import kr.poturns.blink.util.FileUtil;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
@@ -32,6 +34,7 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * Blink 어플리케이션과 서비스 간의 통신을 도와주는 클래스</br> 안드로이드 서비스 구조에서 ServiceConnection이며
@@ -237,7 +240,8 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	 * Blink Service를 통해 외부 디바이스에서 데이터가 온 것을 감지하면 호출되는 콜백인
 	 * {@link IInternalEventCallback}을 설정한다.
 	 */
-	public final boolean setIInternalEventCallback(IInternalEventCallback callback) {
+	public final boolean setIInternalEventCallback(
+			IInternalEventCallback callback) {
 		mIInternalEventCallback = callback;
 		if (mIInternalEventCallback != null) {
 			try {
@@ -520,8 +524,8 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		}
 
 		/**
-		 * MeasurementData를 객체 형태로 등록한다.</br> 반드시 등록한 BlinkAppInfo에 Measurement를
-		 * 등록했어야 한다.
+		 * MeasurementData를 객체 형태로 등록한다.<br>
+		 * 반드시 등록한 BlinkAppInfo에 Measurement를 등록했어야 한다.
 		 * 
 		 * @param obj
 		 *            : 등록할 데이터를 가지고 있는 객체
@@ -533,54 +537,47 @@ public class BlinkServiceInteraction implements ServiceConnection,
 				mBlinkDatabaseManager.registerMeasurementData(mBlinkAppInfo,
 						obj);
 			} catch (IllegalAccessException e) {
-
 				e.printStackTrace();
 			} catch (IllegalArgumentException e) {
-
 				e.printStackTrace();
 			}
 		}
 
 		/**
-		 * Class를 통해 데이터를 얻어온다.</br> Class와 함께 데이터를 반환 받을 타입을 매개변수로 넘겨야 한다.</br>
-		 * 기본적으로 SqliteManager.CONTAIN_DEFAULT로 동작한다. </br> {@code example :
-		 * ArrayList<Eye> EyeList =
-		 * mBlinkServiceInteraction.local.obtainMeasurementData(Eye.class,new
-		 * TypeToken<ArrayList<Eye>>() .getType());}
+		 * Class를 통해 데이터를 얻어온다.<br>
+		 * 반환 받을 데이터 리스트의 타입을 명시해 주어야 한다.<br>
+		 * <br>
+		 * {@code obtainMeasurementData(Class<T> obj, SqliteManager.CONTAIN_DEFAULT)}
+		 * 를 호출하는 것과 동일하다.
 		 * 
 		 * @param obj
 		 *            : 얻으려는 데이터의 클래스
 		 * @param type
 		 *            : 반환받을 클래스 타입
-		 * @return
+		 * @return 원하는 데이터의 리스트, 없으면 빈 리스트 또는 null
 		 */
-		public <Object> Object obtainMeasurementData(Class<?> obj, Type type) {
+		public <T> List<T> obtainMeasurementData(Class<T> obj) {
 			return obtainMeasurementData(obj, null, null,
-					SqliteManager.CONTAIN_DEFAULT, type);
+					SqliteManager.CONTAIN_DEFAULT);
 		}
 
 		/**
-		 * Class를 통해 데이터를 얻어온다.</br> Class와 함께 데이터를 반환 받을 타입을 매개변수로 넘겨야 한다.</br>
-		 * {@code example : ArrayList<Eye> EyeList =
-		 * mBlinkServiceInteraction.local
-		 * .obtainMeasurementData(Eye.class,SqliteManager.CONTAIN_FIELD,new
-		 * TypeToken<ArrayList<Eye>>() .getType());}
+		 * Class를 통해 데이터를 얻어온다.<br>
+		 * 반환 받을 데이터 리스트의 타입을 명시해 주어야 한다.
 		 * 
 		 * @param obj
 		 *            : 얻으려는 데이터의 클래스
 		 * @param ContainType
 		 *            : 검색 타입 (SqliteManager.CONTAIN~)
-		 * @param type
-		 *            : 반환받을 클래스 타입
-		 * @return
+		 * @return 원하는 데이터의 리스트, 없으면 빈 리스트 또는 null
 		 */
-		public <Object> Object obtainMeasurementData(Class<?> obj,
-				int ContainType, Type type) {
-			return obtainMeasurementData(obj, null, null, ContainType, type);
+		public <T> List<T> obtainMeasurementData(Class<T> obj, int ContainType) {
+			return obtainMeasurementData(obj, null, null, ContainType);
 		}
 
 		/**
-		 * Class를 통해 데이터를 얻어온다.</br> Class와 함께 데이터를 반환 받을 타입을 매개변수로 넘겨야 한다.</br>
+		 * Class를 통해 데이터를 얻어온다.<br>
+		 * 반환 받을 데이터 리스트의 타입을 명시해 주어야 한다.
 		 * 
 		 * @param obj
 		 *            : 얻으려는 데이터의 클래스
@@ -590,26 +587,21 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 *            : 데이터 종료 일시
 		 * @param ContainType
 		 *            : 검색 타입 (SqliteManager.CONTAIN~)
-		 * @param type
-		 *            : 반환받을 클래스 타입
-		 * @return
+		 * @return 원하는 데이터의 리스트, 없으면 빈 리스트 또는 null
 		 */
-		public <Object> Object obtainMeasurementData(Class<?> obj,
-				String DateTimeFrom, String DateTimeTo, int ContainType,
-				Type type) {
+		public <T> List<T> obtainMeasurementData(Class<T> obj,
+				String DateTimeFrom, String DateTimeTo, int ContainType) {
 			String json;
 			try {
 				json = mBlinkDatabaseManager.obtainMeasurementData(obj,
 						DateTimeFrom, DateTimeTo, ContainType);
-				return gson.fromJson(json, type);
+				return gson.fromJson(json, new TypeToken<ArrayList<T>>() {
+				}.getType());
 			} catch (InstantiationException e) {
-
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
-
 				e.printStackTrace();
 			} catch (ClassNotFoundException e) {
-
 				e.printStackTrace();
 			}
 			return null;
@@ -633,6 +625,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 					mMeasurementList, DateTimeFrom, DateTimeTo);
 		}
 
+		/** Function 실행 요청을 보낸다. */
 		public void startFunction(Function function) {
 			if (function.Type == Function.TYPE_ACTIVITY)
 				CONTEXT.startActivity(new Intent(function.Action)
@@ -647,7 +640,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * 로그를 얻어온다.
 		 * 
 		 * @param Device
-		 *            : 다바이스 이름
+		 *            : 디바이스 이름
 		 * @param App
 		 *            : 패키지 이름
 		 * @param Type
@@ -668,7 +661,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * 로그를 얻어온다.
 		 * 
 		 * @param Device
-		 *            : 다바이스 이름
+		 *            : 디바이스 이름
 		 * @param App
 		 *            : 패키지 이름
 		 * @param DateTimeFrom
@@ -686,7 +679,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * 로그를 얻어온다.
 		 * 
 		 * @param Device
-		 *            : 다바이스 이름
+		 *            : 디바이스 이름
 		 * @param DateTimeFrom
 		 *            : 로그 시작 일시
 		 * @param DateTimeTo
@@ -731,10 +724,13 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		}
 
 		/**
-		 * Device를 검색하는 쿼리로 조건을 매개변수로 받는다. 결과는 DeviceList에 저장된다.
+		 * Device를 검색한다. <br>
+		 * <br>
+		 * 결과는 {@link #getDeviceList()}통해 얻을 수 있다.
 		 * 
 		 * @param where
 		 * @return
+		 * @see #setDeviceList(List)
 		 */
 		public Local queryDevice(String where) {
 			mBlinkDatabaseManager.queryDevice(where);
@@ -742,50 +738,63 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		}
 
 		/**
-		 * App을 검색하는 쿼리로 조건을 매개변수로 받는다. 기본적으로 DeviceList에 저장되어 있는 Device 객체의 Id를
-		 * 조건으로 설정한다. 결과는 AppList에 저장된다.
+		 * Local instance에 저장되어있는 Device를 통해 Deivce를 검색한다. <br>
+		 * <br>
+		 * 결과는 {@link #getAppList()}통해 얻을 수 있다.
 		 * 
 		 * @param where
-		 * @return
+		 *            검색 조건
+		 * @return {@code Local} instance itself
+		 * @see #setDeviceList(List)
+		 * @see #queryDevice(String)
 		 */
 		public Local queryApp(String where) {
-
 			mBlinkDatabaseManager.queryApp(where);
 			return this;
 		}
 
 		/**
-		 * Function을 검색하는 쿼리로 조건을 매개변수로 받는다. 기본적으로 AppList에 저장되어 있는 App 객체의 Id를
-		 * 조건으로 설정한다. 결과는 FunctionList에 저장된다.
+		 * Local instance에 저장되어있는 App을 통해 Function을 검색한다. <br>
+		 * <br>
+		 * 결과는 {@link #getFunctionList()}통해 얻을 수 있다.
 		 * 
 		 * @param where
-		 * @return
+		 *            검색 조건
+		 * @return {@code Local} instance itself
+		 * @see #setAppList(List)
+		 * @see #queryApp(String)
 		 */
 		public Local queryFunction(String where) {
-
 			mBlinkDatabaseManager.queryFunction(where);
 			return this;
 		}
 
 		/**
-		 * Measurement을 검색하는 쿼리로 조건을 매개변수로 받는다. 기본적으로 AppList에 저장되어 있는 App 객체의
-		 * Id를 조건으로 설정한다. 결과는 MeasurementList에 저장된다
+		 * Local instance에 저장되어있는 App을 통해 Measurement를 검색한다. <br>
+		 * <br>
+		 * 결과는 {@link #getMeasurementList()}통해 얻을 수 있다.
 		 * 
 		 * @param where
-		 * @return
+		 *            검색 조건
+		 * @return {@code Local} instance itself
+		 * @see #setAppList(List)
+		 * @see #queryApp(String)
 		 */
 		public Local queryMeasurement(String where) {
-
 			mBlinkDatabaseManager.queryMeasurement(where);
 			return this;
 		}
 
 		/**
-		 * MeasurementData을 검색하는 쿼리로 조건을 매개변수로 받는다. 기본적으로 MeasurementList에 저장되어
-		 * 있는 Measurement 객체의 Id를 조건으로 설정한다. 결과는 MeasurementDataList에 저장된다.
+		 * Local instance에 저장되어있는 Measurement를 통해 MeasurementData를 검색한다. <br>
+		 * <br>
+		 * 결과는 {@link #getMeasurementDataList()}통해 얻을 수 있다.
 		 * 
 		 * @param where
-		 * @return
+		 *            검색 조건
+		 * @return {@code Local} instance itself
+		 * @see #setMeasurementList(List)
+		 * @see #queryMeasurement(String)
 		 */
 		public Local queryMeasurementData(String where) {
 			mBlinkDatabaseManager.queryMeasurementData(where);
@@ -793,9 +802,10 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		}
 
 		/**
-		 * DeviceList를 리턴한다.
+		 ** 검색된 Device의 리스트를 반환한다.
 		 * 
-		 * @return
+		 * @return {@link #setDeviceList(List)}또는 {@link #queryDevice(String)}을
+		 *         통해 설정된 Device의 리스트
 		 */
 		public List<Device> getDeviceList() {
 			return mBlinkDatabaseManager.getDeviceList();
@@ -805,15 +815,17 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * DeviceList를 변경한다.
 		 * 
 		 * @param mDeviceList
+		 *            변경할 리스트
 		 */
 		public void setDeviceList(List<Device> mDeviceList) {
 			mBlinkDatabaseManager.setDeviceList(mDeviceList);
 		}
 
 		/**
-		 * AppList를 리턴한다.
+		 * 검색된 App의 리스트를 반환한다.
 		 * 
-		 * @return
+		 * @return {@link #setAppList(List)}또는 {@link #queryApp(String)}을 통해 설정된
+		 *         App의 리스트
 		 */
 		public List<App> getAppList() {
 			return mBlinkDatabaseManager.getAppList();
@@ -823,15 +835,18 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * AppList를 변경한다.
 		 * 
 		 * @param mAppList
+		 *            변경할 리스트
 		 */
-		public void setAppList(List<App> mAppList) {
+		public Local setAppList(List<App> mAppList) {
 			mBlinkDatabaseManager.setAppList(mAppList);
+			return this;
 		}
 
 		/**
-		 * FunctionList를 리턴한다.
+		 * 검색된 Function의 리스트를 반환한다.
 		 * 
-		 * @return
+		 * @return {@link #setFunctionList(List)}또는
+		 *         {@link #queryFunction(String)}을 통해 설정된 Function의 리스트
 		 */
 		public List<Function> getFunctionList() {
 			return mBlinkDatabaseManager.getFunctionList();
@@ -842,14 +857,16 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * 
 		 * @param mFunctionList
 		 */
-		public void setFunctionList(List<Function> mFunctionList) {
+		public Local setFunctionList(List<Function> mFunctionList) {
 			mBlinkDatabaseManager.setFunctionList(mFunctionList);
+			return this;
 		}
 
 		/**
-		 * MeasurementList를 리턴한다.
+		 * 검색된 Measurement의 리스트를 반환한다.
 		 * 
-		 * @return
+		 * @return {@link #setMeasurementList(List)}또는
+		 *         {@link #queryMeasurement(String)}을 통해 설정된 Measurement의 리스트
 		 */
 		public List<Measurement> getMeasurementList() {
 			return mBlinkDatabaseManager.getMeasurementList();
@@ -859,18 +876,21 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * MeasurementList를 변경한다.
 		 * 
 		 * @param mMeasurementList
+		 *            변경할 리스트
 		 */
-		public void setMeasurementList(List<Measurement> mMeasurementList) {
+		public Local setMeasurementList(List<Measurement> mMeasurementList) {
 			mBlinkDatabaseManager.setMeasurementList(mMeasurementList);
+			return this;
 		}
 
 		/**
-		 * MeasurementDataList를 리턴한다.
+		 * 검색된 MeasurementData의 리스트를 반환한다.
 		 * 
-		 * @return
+		 * @return {@link #setMeasurementDataList(List)}또는
+		 *         {@link #queryMeasurementData(String)}을 통해 설정된 Measurement의
+		 *         리스트
 		 */
 		public List<MeasurementData> getMeasurementDataList() {
-
 			return mBlinkDatabaseManager.getMeasurementDataList();
 		}
 
@@ -878,16 +898,18 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * MeasurementDataList를 변경한다.
 		 * 
 		 * @param mMeasurementDataList
+		 *            변경할 리스트
 		 */
-		public void setMeasurementDataList(
+		public Local setMeasurementDataList(
 				List<MeasurementData> mMeasurementDataList) {
-
 			mBlinkDatabaseManager.setMeasurementDataList(mMeasurementDataList);
+			return this;
 		}
 	}
 
 	/**
-	 * Remote와 통신할 수 있는 코드를 가지고 있는 클래스</br> 결과는 callback으로 넘겨진다.
+	 * Remote와 통신할 수 있는 코드를 가지고 있는 클래스<br>
+	 * 결과는 callback으로 넘겨진다.
 	 * 
 	 * @author mementohora
 	 * 
@@ -1001,7 +1023,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			try {
 				mInternalOperationSupport.startFunction(function, requestCode);
 			} catch (Exception e) {
-
 				e.printStackTrace();
 			}
 		}
@@ -1016,17 +1037,16 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 */
 		public void sendMeasurementData(final BlinkAppInfo targetBlinkAppInfo,
 				final String json, final int requestCode) {
-			//전송시간이 오래걸릴 경우 block 되어 어플리케이션이 죽는 경우가 발생하여 thread로 처리
-			new Thread(){
+			// 전송시간이 오래걸릴 경우 block 되어 어플리케이션이 죽는 경우가 발생하여 thread로 처리
+			new Thread() {
 				public void run() {
 					try {
-					targetBlinkAppInfo.mApp.AppIcon = null;
-					mInternalOperationSupport.sendMeasurementData(
-							targetBlinkAppInfo, json, requestCode);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+						targetBlinkAppInfo.mApp.AppIcon = null;
+						mInternalOperationSupport.sendMeasurementData(
+								targetBlinkAppInfo, json, requestCode);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				};
 			}.start();
 		}
@@ -1040,7 +1060,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			Log.i("test", "btn_sendMessage");
 			mInternalOperationSupport.SyncBlinkApp();
 		} catch (Exception e) {
-
 			e.printStackTrace();
 		}
 	}
@@ -1050,7 +1069,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			Log.i("test", "btn_sendMessage");
 			mInternalOperationSupport.SyncMeasurementData();
 		} catch (Exception e) {
-
 			e.printStackTrace();
 		}
 	}
@@ -1070,13 +1088,10 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	 */
 	public boolean isDeviceConnected() {
 		BlinkDevice[] devices = null;
-
 		try {
 			if (mInternalOperationSupport != null)
 				devices = mInternalOperationSupport.obtainConnectedDeviceList();
-
 		} catch (RemoteException e) {
-			;
 		}
 		return !(devices == null || devices.length == 0);
 	}
