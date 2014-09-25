@@ -1,4 +1,4 @@
-package com.example.auctionrealtimetest;
+package kr.poturns.blink.demo.healthmanager;
 
 import java.util.ArrayList;
 
@@ -14,34 +14,38 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+/**
+ * 
+ * @author Ho.Kwon
+ * @since 2014.09.23
+ * 
+ *
+ */
+public class InbodyDetailActivity extends ListActivity {
+    
+    ArrayList<InbodyListDomain> listItems=new ArrayList<InbodyListDomain>(); // InbodyListÎ•º Í¥ÄÎ¶¨Ìï† ArrayList.
 
-public class AuctionListActivity extends ListActivity {
-    //LIST OF ARRAY STRINGS WHICH WILL SERVE AS LIST ITEMS
-    ArrayList<InbodyListDomain> listItems=new ArrayList<InbodyListDomain>();
 
-    //DEFINING A STRING ADAPTER WHICH WILL HANDLE THE DATA OF THE LISTVIEW
-    CustomBaseAdapter adapter;
+    InbodyDetailAdapter adapter; // ListView Í¥ÄÎ¶¨Ïö©  Adapter
 
-    //RECORDING HOW MANY TIMES THE BUTTON HAS BEEN CLICKED
-    int clickCounter=0;
+
     Button button_fat;
     Button button_avg;
-    Button button_muscle;
+    Button button_muscle; // Í∞Å Ï≤¥Ìòï Î≥Ñ Îç∞Ïù¥ÌÑ∞ Î∞úÏÉù Î≤ÑÌäº
+    
     ImageView bodytypeImage;
     TextView bodytypeText;
+    
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
-        setContentView(R.layout.activity_auction_list);
+        setContentView(R.layout.activity_inbody_detail_list);
       //R.id\
      
     
-        adapter = new CustomBaseAdapter(this,listItems);
-        /*
-        adapter=new Adapter<InbodyListDomain>(this,
-            R.layout.activity_auction_list,
-            listItems);*/
+        adapter = new InbodyDetailAdapter(this,listItems); // ÎèôÏ†Å Î¶¨Ïä§Ìä∏ Í¥ÄÎ¶¨ Adapter
         setListAdapter(adapter);
+        
         bodytypeImage = (ImageView)findViewById(R.id.bodytypeimage);
         bodytypeText = (TextView)findViewById(R.id.bodytypetext);
         
@@ -49,18 +53,18 @@ public class AuctionListActivity extends ListActivity {
         button_muscle = (Button)findViewById(R.id.musclebodytypeBtn);
         button_avg = (Button)findViewById(R.id.avgbodytypeBtn);
        
-        button_fat.setOnClickListener(new Button.OnClickListener(){
+        button_fat.setOnClickListener(new Button.OnClickListener(){ // fat person inbody Ï†ïÎ≥¥ Î∞úÏÉù.
 
 			@Override
 			public void onClick(View arg0) {
 				Log.i("auction", "click!!");
 				// TODO Auto-generated method stub
 				bodytypeImage.setImageResource(R.drawable.fatperson_white);
-				bodytypeText.setText("√º«¸ : ∫Ò∏∏«¸");
+				bodytypeText.setText("Ï≤¥Ìòï : ÎπÑÎßåÌòï");
 				 listItems.clear();
 				//  adapter.notifyDataSetChanged();
 				  adapter.setBodyType("fat");
-				for(int i=0; i<11; i++){
+				for(int i=0; i<11; i++){ //
 			     InbodyListDomain inbodyListDomain = new InbodyListDomain();
 			        listItems.add(inbodyListDomain);
 			        adapter.notifyDataSetChanged();
@@ -68,13 +72,13 @@ public class AuctionListActivity extends ListActivity {
 			}
         	
         });
-        button_avg.setOnClickListener(new Button.OnClickListener(){
+        button_avg.setOnClickListener(new Button.OnClickListener(){// average person inbody Ï†ïÎ≥¥ Î∞úÏÉù.
 
  			@Override
  			public void onClick(View arg0) {
  				Log.i("auction", "click!!");
  				bodytypeImage.setImageResource(R.drawable.avgperson_white);
- 				bodytypeText.setText("√º«¸ : ∆Ú±’«¸");
+ 				bodytypeText.setText("Ï≤¥Ìòï : ÌèâÍ∑†Ìòï");
  				 listItems.clear();
 				 
 				  adapter.setBodyType("avg");
@@ -87,22 +91,19 @@ public class AuctionListActivity extends ListActivity {
  			}
          	
          });
-        button_muscle.setOnClickListener(new Button.OnClickListener(){
+        button_muscle.setOnClickListener(new Button.OnClickListener(){// muscle person inbody Ï†ïÎ≥¥ Î∞úÏÉù.
 
  			@Override
  			public void onClick(View arg0) {
  				Log.i("auction", "click!!");
  				 adapter.setBodyType("muscle");
  				bodytypeImage.setImageResource(R.drawable.musclebodytype);
- 				bodytypeText.setText("√º«¸ : ±Ÿ¿∞«¸");
+ 				bodytypeText.setText("Ï≤¥Ìòï : Í∑ºÏú°Ìòï");
  				// listItems=new ArrayList<InbodyListDomain>();
  				 listItems.clear();
  				// TODO Auto-generated method stub
  				for(int i=0; i<11; i++){
  			     InbodyListDomain inbodyListDomain = new InbodyListDomain();
- 			    inbodyListDomain.setAuctionItemEndFlag("¡æ∑·");
- 		        inbodyListDomain.setAuctionItemName("æ∆±‚øÎ«∞");
- 		        inbodyListDomain.setAuctionItemPrice("12000");
  			        listItems.add(inbodyListDomain);
  			        adapter.notifyDataSetChanged();
  				}
@@ -111,24 +112,5 @@ public class AuctionListActivity extends ListActivity {
          });
     }
 
-    //METHOD WHICH WILL HANDLE DYNAMIC INSERTION
-    public void add(View v) {
-    	//Intent intent = new Intent(AuctionListActivity.this, AuctionAddActivty.class);
-    	
-    	//startActivity(intent);
-        InbodyListDomain inbodyListDomain = new InbodyListDomain();
-        inbodyListDomain.setAuctionItemEndFlag("¡æ∑·");
-        inbodyListDomain.setAuctionItemName("æ∆±‚øÎ«∞");
-        inbodyListDomain.setAuctionItemPrice("12000");
-        listItems.add(inbodyListDomain);
-        adapter.notifyDataSetChanged();
-    }
-    @Override
-    protected void onResume() {
-    	// TODO Auto-generated method stub
-    	super.onResume();
-    //	listItems.clear();
-    //	adapter.notifyDataSetChanged();
-    	//ø©±‚º≠ «◊ªÛ clear«œ∞Ì dbø°º≠ ∫“∑ØøÕæﬂ∞⁄≥◊
-    }
+
 }

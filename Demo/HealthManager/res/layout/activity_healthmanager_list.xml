@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#ffffff"
+    android:orientation="vertical" >
+
+
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#f4988c"
+        android:orientation="vertical" >
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="300dip"
+            android:background="@drawable/key"
+          />
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="50dip"
+            android:layout_gravity=""
+            android:layout_marginTop="3dip"
+            android:background="#000000"
+            android:gravity="bottom|center_horizontal"
+            android:text="Health Manager"
+            android:textColor="#ffffff"
+            android:textSize="30dip"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="40dip"
+            android:gravity="top|center_horizontal"
+            android:background="#000000"
+            android:text="Blink Library Used "
+            android:textColor="#636363"
+            android:textSize="20dip"
+            android:textStyle="bold" />
+      
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/indobyRelativeLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="40dip"
+        android:layout_marginLeft="3dip"
+        android:layout_marginRight="3dip"
+        android:layout_marginTop="10dip"
+        android:background="@drawable/list_selector_blue"
+        android:orientation="horizontal" 
+        android:clickable="true">
+
+        <ImageView
+            android:layout_width="40dip"
+            android:layout_height="40dip"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:background="#287cb4"
+            android:src="@drawable/icon_inbody_white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:text="인바디"
+            android:textColor="#ffffff"
+            android:textSize="20dip" />
+    </RelativeLayout>
+
+    <RelativeLayout
+           android:id="@+id/exerciseRelativeLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="40dip"
+        android:layout_marginLeft="3dip"
+        android:layout_marginRight="3dip"
+        android:layout_marginTop="10dip"
+        android:background="@drawable/list_selector_green"
+        android:orientation="horizontal"
+        android:clickable="true" >
+
+        <ImageView
+            android:layout_width="40dip"
+            android:layout_height="40dip"
+            android:layout_centerVertical="true"
+            android:background="#339148"
+            android:src="@drawable/icon_excercise_white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:text="운동"
+            android:textColor="#ffffff"
+            android:textSize="20dip" />
+    </RelativeLayout>
+
+    <RelativeLayout
+          android:id="@+id/heartRelativeLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="40dip"
+        android:layout_marginLeft="3dip"
+        android:layout_marginRight="3dip"
+        android:layout_marginTop="10dip"
+        android:background="@drawable/list_selector_red"
+        android:orientation="horizontal"
+        android:clickable="true" >
+
+        <ImageView
+            android:layout_width="40dip"
+            android:layout_height="40dip"
+            android:layout_centerVertical="true"
+            android:background="#bb382b"
+            android:src="@drawable/icon_heart_white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:text="심장 박동 수"
+            android:textColor="#ffffff"
+            android:textSize="20dip" />
+    </RelativeLayout>
+
+</LinearLayout>

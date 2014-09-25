@@ -47,7 +47,7 @@ public class MessageProcessor {
 		// mSqliteManager = new SqliteManager(context);
 	}
 
-	/**
+	/**@author Ho Kwon
 	 * 블루투스 디바이스로부터 수신한 {@link BlinkDevice} 메세지를 처리한다.
 	 * 
 	 * @param blinkMessage

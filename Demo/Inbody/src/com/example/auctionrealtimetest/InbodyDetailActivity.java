@@ -32,14 +32,14 @@ public class InbodyDetailActivity extends ListActivity {
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
-        setContentView(R.layout.activity_auction_list);
+        setContentView(R.layout.activity_inbody_detail_list);
       //R.id\
      
     
         adapter = new CustomBaseAdapter(this,listItems);
         /*
         adapter=new Adapter<InbodyListDomain>(this,
-            R.layout.activity_auction_list,
+            R.layout.activity_inbody_detail_list,
             listItems);*/
         setListAdapter(adapter);
         bodytypeImage = (ImageView)findViewById(R.id.bodytypeimage);
@@ -56,7 +56,7 @@ public class InbodyDetailActivity extends ListActivity {
 				Log.i("auction", "click!!");
 				// TODO Auto-generated method stub
 				bodytypeImage.setImageResource(R.drawable.fatperson_white);
-				bodytypeText.setText("Ã¼Çü : ºñ¸¸Çü");
+				bodytypeText.setText("ì²´å ì™ì˜™ : å ì™ì˜™å ì™ì˜™");
 				 listItems.clear();
 				//  adapter.notifyDataSetChanged();
 				  adapter.setBodyType("fat");
@@ -74,7 +74,7 @@ public class InbodyDetailActivity extends ListActivity {
  			public void onClick(View arg0) {
  				Log.i("auction", "click!!");
  				bodytypeImage.setImageResource(R.drawable.avgperson_white);
- 				bodytypeText.setText("Ã¼Çü : Æò±ÕÇü");
+ 				bodytypeText.setText("ì²´å ì™ì˜™ : å ì™ì˜™å ì™ì˜™å ï¿½);
  				 listItems.clear();
 				 
 				  adapter.setBodyType("avg");
@@ -94,15 +94,12 @@ public class InbodyDetailActivity extends ListActivity {
  				Log.i("auction", "click!!");
  				 adapter.setBodyType("muscle");
  				bodytypeImage.setImageResource(R.drawable.musclebodytype);
- 				bodytypeText.setText("Ã¼Çü : ±ÙÀ°Çü");
+ 				bodytypeText.setText("ì²´å ì™ì˜™ : å ì™ì˜™å ì™ì˜™å ì™ì˜™");
  				// listItems=new ArrayList<InbodyListDomain>();
  				 listItems.clear();
  				// TODO Auto-generated method stub
  				for(int i=0; i<11; i++){
  			     InbodyListDomain inbodyListDomain = new InbodyListDomain();
- 			    inbodyListDomain.setAuctionItemEndFlag("Á¾·á");
- 		        inbodyListDomain.setAuctionItemName("¾Æ±â¿ëÇ°");
- 		        inbodyListDomain.setAuctionItemPrice("12000");
  			        listItems.add(inbodyListDomain);
  			        adapter.notifyDataSetChanged();
  				}
@@ -111,24 +108,4 @@ public class InbodyDetailActivity extends ListActivity {
          });
     }
 
-    //METHOD WHICH WILL HANDLE DYNAMIC INSERTION
-    public void add(View v) {
-    	//Intent intent = new Intent(AuctionListActivity.this, AuctionAddActivty.class);
-    	
-    	//startActivity(intent);
-        InbodyListDomain inbodyListDomain = new InbodyListDomain();
-        inbodyListDomain.setAuctionItemEndFlag("Á¾·á");
-        inbodyListDomain.setAuctionItemName("¾Æ±â¿ëÇ°");
-        inbodyListDomain.setAuctionItemPrice("12000");
-        listItems.add(inbodyListDomain);
-        adapter.notifyDataSetChanged();
-    }
-    @Override
-    protected void onResume() {
-    	// TODO Auto-generated method stub
-    	super.onResume();
-    //	listItems.clear();
-    //	adapter.notifyDataSetChanged();
-    	//¿©±â¼­ Ç×»ó clearÇÏ°í db¿¡¼­ ºÒ·¯¿Í¾ß°Ú³×
-    }
 }
