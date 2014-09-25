@@ -7,6 +7,7 @@ import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
 import kr.poturns.blink.demo.fitnessapp.schema.InBodyData;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -32,7 +33,7 @@ import com.google.gson.Gson;
  * 7) inbody_update : inbody 데이터 업데이트 버튼<br>
  * 
  * @author Jiwon
- * 
+ * @author Myungjin
  */
 public class InBodyFragment extends SwipeEventFragment implements
 		OnClickListener, IInternalEventCallback {
@@ -45,6 +46,7 @@ public class InBodyFragment extends SwipeEventFragment implements
 	TextView inbody_weight;
 	ProgressBar inbody_progressbar;
 	TextView inbody_progressbar_summary;
+	ProgressDialog progressDialog;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -52,7 +54,9 @@ public class InBodyFragment extends SwipeEventFragment implements
 		View v = inflater.inflate(R.layout.fragment_inbody, container, false);
 		v.findViewById(R.id.inbody_go_fitness).setOnClickListener(this);
 		v.findViewById(R.id.inbody_update).setOnClickListener(this);
-
+		progressDialog = new ProgressDialog(getActivity());
+		progressDialog.setIndeterminate(true);
+		progressDialog.setMessage("로딩중....");
 		// find view
 		inbody_date = (TextView) v.findViewById(R.id.inbody_date);
 		inbody_age_gender = (TextView) v.findViewById(R.id.inbody_age_gender);
@@ -90,26 +94,35 @@ public class InBodyFragment extends SwipeEventFragment implements
 
 	@Override
 	public void onClick(View v) {
-		// TODO Auto-generated method stub
 		switch (v.getId()) {
 		case R.id.inbody_go_fitness:
 			// 운동하기 액티비티 열기
 			mActivityInterface.attachFragment(new FitnessFragment(), null);
 			break;
-
 		case R.id.inbody_update:
-			// 운동하기 액티비티 열기
+			// 인바디 데이터 얻어오기
 			if (mInteraction == null) {
 				Toast.makeText(getActivity(), "서비스에 연결할 수 없습니다.",
 						Toast.LENGTH_SHORT).show();
 				return;
 			}
-			mInteraction.remote.obtainMeasurementData(InBodyData.class,
-					CODE_INBODY);
+			mInteraction.remote.obtainMeasurementData(
+					kr.poturns.blink.schema.Inbody.class, CODE_INBODY);
+			progressDialog.show();
 			break;
-
 		default:
 			break;
+		}
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		if (getArguments().getBoolean("hasNotInbody")) {
+			mActivityInterface.getBlinkServiceInteraction().remote
+					.obtainMeasurementData(
+							kr.poturns.blink.schema.Inbody.class, CODE_INBODY);
+			progressDialog.show();
 		}
 	}
 
@@ -130,6 +143,7 @@ public class InBodyFragment extends SwipeEventFragment implements
 			throws RemoteException {
 		switch (code) {
 		case CODE_INBODY:
+			progressDialog.dismiss();
 			if (!data.Result) {
 				Toast.makeText(getActivity(), "인바디 데이터를 받을 수 없습니다.",
 						Toast.LENGTH_SHORT).show();
@@ -151,8 +165,8 @@ public class InBodyFragment extends SwipeEventFragment implements
 		}
 	}
 
-	public void updateView(InBodyData mInbodyData) {
-		if (mInbodyData == null) {
+	private void updateView(InBodyData inbodyData) {
+		if (inbodyData == null) {
 			inbody_date.setText("");
 			inbody_age_gender.setText("정보가 없습니다.");
 			inbody_weight.setText("업데이트를 해주세요.");
@@ -160,10 +174,22 @@ public class InBodyFragment extends SwipeEventFragment implements
 			inbody_progressbar_summary.setText("");
 		} else {
 			inbody_date.setText("");
-			inbody_age_gender.setText("");
-			inbody_weight.setText("");
-			inbody_progressbar.setProgress(0);
-			inbody_progressbar_summary.setText("");
+			inbody_age_gender.setText(inbodyData.age + " 세 ("
+					+ inbodyData.gender + ")");
+			inbody_weight.setText(Integer.toString(inbodyData.weight));
+			inbody_progressbar.setMax(inbodyData.needcalorie);
+			int todayExersisedCalorie = FitnessUtil
+					.getTodayBurnedCalorie(getActivity());
+
+			// 오늘 운동한 칼로리 / 총 소모해야할 칼로리
+			inbody_progressbar_summary.setText(Integer
+					.toString(todayExersisedCalorie)
+					+ " / "
+					+ inbodyData.needcalorie);
+			if (inbodyData.needcalorie < todayExersisedCalorie)
+				todayExersisedCalorie = inbodyData.needcalorie;
+			// 오늘 운동한 만큼 프로그레스 설정
+			inbody_progressbar.setProgress(todayExersisedCalorie);
 		}
 	}
 

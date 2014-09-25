@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry exported="true" kind="lib" path="libs/android-support-v13.jar" sourcepath="D:/eclipse/android-sdks/extras/android/support/v4/src/"/>
 	<classpathentry exported="true" kind="lib" path="libs/ActionBarToggle.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/gson-2.2.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/gson-2.2.4.jar" sourcepath="/Gson"/>
 	<classpathentry exported="true" kind="lib" path="libs/com.handstudio.android.hzgrapher.jar" sourcepath="/HzGrapherLibrary/src"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>

@@ -9,9 +9,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
+import java.util.Calendar;
 
 import kr.poturns.blink.demo.fitnessapp.schema.InBodyData;
 import android.content.Context;
+
 /** @author Myungjin.Kim */
 public class FitnessUtil {
 	public static final String FILE_INBODY = "inbody";
@@ -90,5 +92,25 @@ public class FitnessUtil {
 			} catch (IOException e) {
 			}
 		}
+	}
+
+	/** 오늘 운동한 횟수를 얻는다. */
+	public static int getTodayExerciseCount(Context context, String table) {
+		Calendar c = Calendar.getInstance();
+		return SQLiteHelper.getInstance(context).select(table,
+				String.valueOf(c.get(Calendar.YEAR)),
+				c.get(c.get(Calendar.MONTH) + 1), c.get(Calendar.DATE));
+	}
+
+	/** 오늘 소모한 총 칼로리 양을 얻는다. */
+	public static int getTodayBurnedCalorie(Context context) {
+		double squatCal = calculateCalorie(SQLiteHelper.TABLE_SQUAT,
+				getTodayExerciseCount(context, SQLiteHelper.TABLE_SQUAT));
+		double pushupCal = calculateCalorie(SQLiteHelper.TABLE_PUSH_UP,
+				getTodayExerciseCount(context, SQLiteHelper.TABLE_PUSH_UP));
+		double situpCal = calculateCalorie(SQLiteHelper.TABLE_SIT_UP,
+				getTodayExerciseCount(context, SQLiteHelper.TABLE_SIT_UP));
+
+		return (int) (situpCal + pushupCal + squatCal);
 	}
 }

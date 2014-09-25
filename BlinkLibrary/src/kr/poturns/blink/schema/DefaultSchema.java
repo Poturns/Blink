@@ -5,6 +5,7 @@ package kr.poturns.blink.schema;
  * schema 클래스로 사용하기 위해서는 이 클래스를 상속받아야한다.
  * @author mementohora
  *
+ *
  */
 public abstract class DefaultSchema {
 	public String DateTime;
