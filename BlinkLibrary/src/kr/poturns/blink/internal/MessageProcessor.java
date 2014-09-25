@@ -51,9 +51,9 @@ public class MessageProcessor {
 	
 
 	
-	/**
+	/**@author Ho Kwon
 	 * 블루투스 디바이스로부터 수신한 {@link BlinkDevice} 메세지를 처리한다.
-	 * BlinkMessage는 시작, 최종 목표, 데이터를 정의한 클래스
+	 * BlinkMessage는 시작, 최종 목표, 데이터 종류, 데이터를 정의한 클래스
 	 * BlinkDevice는 다음 hop으로 연결하기 위한 정보(현재 Device와 직접 연결된 ConntionThread를 얻기 위한 용도)
 	 * @param message
 	 * @param fromDevice

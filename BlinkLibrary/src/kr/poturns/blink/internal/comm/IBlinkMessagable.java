@@ -3,6 +3,7 @@ package kr.poturns.blink.internal.comm;
 /**
  * 
  * @author Yeonho.Kim
+ * @author Ho Kwon
  * @since 2014.08.28
  *
  */
