@@ -22,8 +22,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-
 public class GlassActivity extends SupportMapActivity {
 
 	private BlinkServiceInteraction mInteraction;
@@ -51,6 +49,7 @@ public class GlassActivity extends SupportMapActivity {
 		    	  
 		    	  // Data 받음..
 		    	  String data = callbackData.InDeviceData == null? callbackData.OutDeviceData : (callbackData.InDeviceData + callbackData.OutDeviceData);
+		    	  Log.d("onReceiveData", data);
 		    	  
 		    	  try {
 			    	  JSONObject mJsonObj = new JSONObject(data);
@@ -101,7 +100,6 @@ public class GlassActivity extends SupportMapActivity {
 					boolean isDeviceConnected = mInteraction
 							.isDeviceConnected();
 					setControlActivityVisibility(!isDeviceConnected);
-					setMapVisibility(!isDeviceConnected);
 				}
 			}
 
