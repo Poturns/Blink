@@ -3,7 +3,6 @@ package kr.poturns.blink.schema;
 /** category : fitness */
 public class PushUp extends DefaultSchema {
 	public int count;
-	public String DateTime;
 
 	public PushUp() {
 	}

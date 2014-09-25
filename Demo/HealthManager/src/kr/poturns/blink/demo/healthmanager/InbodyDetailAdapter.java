@@ -1,6 +1,6 @@
 package kr.poturns.blink.demo.healthmanager;
 
-import kr.poturns.blink.demo.healthmanager.schema.InbodyDomain;
+import kr.poturns.blink.schema.Inbody;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,12 +12,12 @@ import android.widget.TextView;
 public class InbodyDetailAdapter extends BaseAdapter {
 
 	private LayoutInflater inflater = null;
-	private InbodyDomain mInbodyDomain = null;
+	private Inbody mInbody = null;
 	private ViewHolder viewHolder = null;
 
-	public InbodyDetailAdapter(Context c, InbodyDomain mInbodyDomain) {
+	public InbodyDetailAdapter(Context c, Inbody mInbody) {
 		this.inflater = LayoutInflater.from(c);
-		this.mInbodyDomain = mInbodyDomain;
+		this.mInbody = mInbody;
 	}
 
 	// Adapter가 관리할 Data의 개수를 설정 합니다.
@@ -28,8 +28,8 @@ public class InbodyDetailAdapter extends BaseAdapter {
 
 	// Adapter가 관리하는 Data의 Item 의 Position을 <객체> 형태로 얻어 옵니다.
 	@Override
-	public InbodyDomain getItem(int position) {
-		return mInbodyDomain;
+	public Inbody getItem(int position) {
+		return mInbody;
 	}
 
 	// Adapter가 관리하는 Data의 Item 의 position 값의 ID 를 얻어 옵니다.
@@ -57,57 +57,57 @@ public class InbodyDetailAdapter extends BaseAdapter {
 		if (position == 0) {
 			viewHolder.iv_icon.setImageResource(R.drawable.personalinfo);
 			viewHolder.tv_domain.setText("성별");
-			viewHolder.tv_data.setText(mInbodyDomain.gender);
+			viewHolder.tv_data.setText(mInbody.gender);
 		} else if (position == 1) {
 			viewHolder.iv_icon.setImageResource(R.drawable.personalinfo);
 			viewHolder.tv_domain.setText("나이");
-			viewHolder.tv_data.setText(""+mInbodyDomain.age);
+			viewHolder.tv_data.setText(""+mInbody.age);
 		} else if (position == 2) {
 			viewHolder.iv_icon.setImageResource(R.drawable.bodycm);
 			viewHolder.tv_domain.setText("키");
-			viewHolder.tv_data.setText(mInbodyDomain.height+"cm");
+			viewHolder.tv_data.setText(mInbody.height+"cm");
 		}
 		if (position == 3) {
 			viewHolder.iv_icon.setImageResource(R.drawable.bodykg);
 			viewHolder.tv_domain.setText("체중");
-			viewHolder.tv_data.setText(mInbodyDomain.weight+"kg");
+			viewHolder.tv_data.setText(mInbody.weight+"kg");
 		} else if (position == 4) {
 			((TextView) v2.findViewById(R.id.auctionItemName)).setText("근육량");
-			((TextView) v2.findViewById(R.id.auctionItemPrice)).setText(mInbodyDomain.muscle+"kg");
+			((TextView) v2.findViewById(R.id.auctionItemPrice)).setText(mInbody.muscle+"kg");
 			((ImageView) v2.findViewById(R.id.list_image)).setImageResource(R.drawable.musclekg);
 			v2.setPadding(0, 10, 0, 0);
 			return v2;
 		} else if (position == 5) {
 			((TextView) v2.findViewById(R.id.auctionItemName)).setText("지방량"); 
-			((TextView) v2.findViewById(R.id.auctionItemPrice)).setText(mInbodyDomain.fat+"kg"); 
+			((TextView) v2.findViewById(R.id.auctionItemPrice)).setText(mInbody.fat+"kg"); 
 			((ImageView) v2.findViewById(R.id.list_image)).setImageResource(R.drawable.fatkg); 
 			return v2;
 		}
 		if (position == 6) {
 			((TextView) v2.findViewById(R.id.auctionItemName)).setText("체중조절"); 
-			((TextView) v2.findViewById(R.id.auctionItemPrice)).setText(mInbodyDomain.needweight+"kg"); // city temperature
+			((TextView) v2.findViewById(R.id.auctionItemPrice)).setText(mInbody.needweight+"kg"); // city temperature
 			((ImageView) v2.findViewById(R.id.list_image)).setImageResource(R.drawable.bodycontrol); 
 			return v2;
 		} else if (position == 7) {
 			((TextView) v2.findViewById(R.id.auctionItemName)).setText("근육조절"); 
-			((TextView) v2.findViewById(R.id.auctionItemPrice)).setText(mInbodyDomain.needmuscle+"kg"); // city temperature
+			((TextView) v2.findViewById(R.id.auctionItemPrice)).setText(mInbody.needmuscle+"kg"); // city temperature
 			((ImageView) v2.findViewById(R.id.list_image)).setImageResource(R.drawable.musclecontrol);
 			return v2;
 		} else if (position == 8) {
 			((TextView) v2.findViewById(R.id.auctionItemName)).setText("지방조절");
-			((TextView) v2.findViewById(R.id.auctionItemPrice))	.setText(mInbodyDomain.needfat+"kg"); // city temperature
+			((TextView) v2.findViewById(R.id.auctionItemPrice))	.setText(mInbody.needfat+"kg"); // city temperature
 			((ImageView) v2.findViewById(R.id.list_image)).setImageResource(R.drawable.fatcontrol); 
 			return v2;
 		} else if (position == 9) {
 			((TextView) v3.findViewById(R.id.auctionItemName)).setText("기초대사량"); 
-			((TextView) v3.findViewById(R.id.auctionItemPrice)).setText(mInbodyDomain.usecalorie+"kcal"); // city temperature
+			((TextView) v3.findViewById(R.id.auctionItemPrice)).setText(mInbody.usecalorie+"kcal"); // city temperature
 			((ImageView) v3.findViewById(R.id.list_image)).setImageResource(R.drawable.metabolismamount);
 			v3.setPadding(0, 10, 0, 0);
 			// thumb image
 			return v3;
 		} else if (position == 10) {
 			((TextView) v3.findViewById(R.id.auctionItemName)).setText("필요 운동량");
-			((TextView) v3.findViewById(R.id.auctionItemPrice)).setText(mInbodyDomain.needcalorie+"kcal"); // city temperature
+			((TextView) v3.findViewById(R.id.auctionItemPrice)).setText(mInbody.needcalorie+"kcal"); // city temperature
 			((ImageView) v3.findViewById(R.id.list_image)).setImageResource(R.drawable.neededexcerciseamount); // thumb image
 			return v3;
 		} 
@@ -134,7 +134,7 @@ public class InbodyDetailAdapter extends BaseAdapter {
 
 	private void free() {
 		inflater = null;
-		mInbodyDomain = null;
+		mInbody = null;
 		viewHolder = null;
 	}
 

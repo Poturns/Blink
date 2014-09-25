@@ -8,6 +8,14 @@
         android:minSdkVersion="8"
         android:targetSdkVersion="17" />
 
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="kr.poturns.blink.permission.LISTEN_STATE_MESSAGE" />
+    
     <application
         android:name=".HealthManagerApplication"
         android:allowBackup="true"
@@ -31,6 +39,23 @@
         </activity>
         <activity android:name="kr.poturns.blink.demo.healthmanager.HisotryActivity" 
             android:theme="@android:style/Theme.NoTitleBar">
+        </activity>
+        
+        <!-- Blink Service attribute -->
+        <service
+            android:name="kr.poturns.blink.internal.BlinkLocalService"
+            android:exported="true"
+            android:label="@string/res_bllink_app_name"
+            android:process="kr.poturns.blink.internal" >
+            <intent-filter>
+                <action android:name="kr.poturns.blink.internal.BlinkLocalService" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name="kr.poturns.blink.external.ServiceControlActivity"
+            android:exported="true"
+            android:process="kr.poturns.blink.internal" >
         </activity>
     </application>
 

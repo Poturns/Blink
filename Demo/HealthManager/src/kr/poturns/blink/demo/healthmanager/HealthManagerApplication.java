@@ -1,16 +1,11 @@
 package kr.poturns.blink.demo.healthmanager;
-import java.util.List;
-
 import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.CallbackData;
-import kr.poturns.blink.db.archive.Function;
-import kr.poturns.blink.db.archive.MeasurementData;
-import kr.poturns.blink.demo.healthmanager.schema.InbodyDomain;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
+import kr.poturns.blink.schema.Inbody;
 import android.app.Application;
-import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 import android.widget.Toast;
@@ -20,9 +15,7 @@ import com.google.gson.GsonBuilder;
 
 public class HealthManagerApplication extends Application {
 	public static int RESPONSE_CODE_INBODY_DATA = 0;
-	public static int REPONSE_CODE_HEARTRATE_CHECK = 1;
 	
-	private BlinkAppInfo mBlinkAppInfo;
 	private BlinkServiceInteraction mBlinkServiceInteraction;
 	Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	@Override
@@ -35,8 +28,9 @@ public class HealthManagerApplication extends Application {
 			public void onServiceConnected(IInternalOperationSupport iSupport) {
 				// TODO Auto-generated method stub
 				super.onServiceConnected(iSupport);
-				mBlinkAppInfo = mBlinkServiceInteraction.obtainBlinkApp();
+				BlinkAppInfo mBlinkAppInfo = mBlinkServiceInteraction.obtainBlinkApp();
 				if(!mBlinkAppInfo.isExist){
+					mBlinkAppInfo.addMeasurement(Inbody.class);
 					mBlinkServiceInteraction.registerBlinkApp(mBlinkAppInfo);
 				}
 			}
@@ -59,6 +53,7 @@ public class HealthManagerApplication extends Application {
 		this.mBlinkServiceInteraction = mBlinkServiceInteraction;
 	};
 	
+	
 	IInternalEventCallback.Stub mIInternalEventCallback = new IInternalEventCallback.Stub() {
 		@Override
         public void onReceiveData(int code, CallbackData data)
@@ -70,14 +65,11 @@ public class HealthManagerApplication extends Application {
 			//인바디앱으로부터 데이터 받음
 			else if(code==RESPONSE_CODE_INBODY_DATA){
 				Toast.makeText(HealthManagerApplication.this, "인바디로부터 데이터를 받았습니다.", Toast.LENGTH_SHORT).show();
-				InbodyDomain mInbodyDomain = gson.fromJson(data.OutDeviceData,InbodyDomain.class);
+				Inbody mInbodyDomain = gson.fromJson(data.OutDeviceData,Inbody.class);
 				mBlinkServiceInteraction.local.registerMeasurementData(mInbodyDomain);
 	        }
         }
 
 	};
 	
-	public void obtainData(){
-		List<MeasurementData> MeasurementDataList = mBlinkServiceInteraction.local.obtainMeasurementData(MeasurementData.class);
-	}
 }
