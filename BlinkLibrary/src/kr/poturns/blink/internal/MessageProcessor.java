@@ -15,6 +15,7 @@ import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
 import kr.poturns.blink.internal.comm.BlinkMessage.Builder;
 import kr.poturns.blink.internal.comm.IBlinkMessagable;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.util.Log;
 
@@ -113,8 +114,11 @@ public class MessageProcessor {
 						.obtainJsonBlinkAppInfo(mergedBlinkAppInfoList);
 				builder_success.setMessage(jsonResponseMessage);
 				BlinkMessage successBlinkMessage = builder_success.build();
+				sendBroadCast(successBlinkMessage);
+				
+				/*
 				sendBlinkMessageTo(successBlinkMessage,
-						BlinkDevice.load(blinkMessage.getSourceAddress())); // 여기를 브로드 캐스트.
+						BlinkDevice.load(blinkMessage.getSourceAddress())); */// 여기를 브로드 캐스트.
 				setSynchronizing(false);
 			}
 			// 동기화 시작할때 Sync 플래그를 true로, 끝날 때 false로 설정하여 추가 동기화를 막는다.
