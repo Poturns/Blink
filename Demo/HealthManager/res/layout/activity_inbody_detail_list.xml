@@ -6,56 +6,6 @@
     android:layout_height="fill_parent" 
     android:background="#ffffff"
    >
-
-    <TableRow
-        android:id="@+id/tableRow3"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:paddingTop="5dp" >
-
-        <Button
-        
-        android:id="@+id/avgbodytypeBtn"
-        android:textSize="20dip"
-        android:text="보통 체형"
-         android:layout_width="100dip"
-        android:layout_height="wrap_content"
-        android:background="#f2ad12"
-        android:layout_marginRight="2dip"
-        android:textColor="#ffffff"
-        />
-
-    <Button
-        
-        android:id="@+id/musclebodytypeBtn"
-        android:textSize="20dip"
-        android:text="근육 체형"
-       android:layout_width="100dip"
-        android:layout_height="wrap_content"
-        android:background="#f2ad12"
-       android:layout_marginRight="2dip"
-        android:textColor="#ffffff"
-        />
-
-        <Button
-        
-        android:id="@+id/fatbodytypeBtn"
-        android:textSize="20dip"
-        android:text="비만 체형"
-        android:layout_width="100dip"
-        android:layout_height="wrap_content"
-        android:background="#f2ad12"
-      
-        android:textColor="#ffffff"
-        />
-    </TableRow>
-
-    
-    
-    
-    
-
    
     <ImageView
         android:id="@+id/bodytypeimage"
@@ -83,7 +33,7 @@
        android:layout_width="match_parent"
        android:layout_height="wrap_content" >
 
-Hello</TextView>
+	</TextView>
   <ListView
       android:id="@android:id/list"
       android:layout_width="fill_parent"

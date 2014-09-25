@@ -44,7 +44,8 @@
     </LinearLayout>
 
     <RelativeLayout
-        android:id="@+id/indobyRelativeLayout"
+        android:id="@+id/button_main_indoby"
+        android:onClick="onClick"
         android:layout_width="fill_parent"
         android:layout_height="40dip"
         android:layout_marginLeft="3dip"
@@ -73,15 +74,16 @@
     </RelativeLayout>
 
     <RelativeLayout
-           android:id="@+id/exerciseRelativeLayout"
-        android:layout_width="fill_parent"
-        android:layout_height="40dip"
-        android:layout_marginLeft="3dip"
-        android:layout_marginRight="3dip"
-        android:layout_marginTop="10dip"
-        android:background="@drawable/list_selector_green"
-        android:orientation="horizontal"
-        android:clickable="true" >
+		android:id="@+id/button_main_excercise"
+		android:onClick="onClick"
+		android:layout_width="fill_parent"
+	        android:layout_height="40dip"
+	        android:layout_marginLeft="3dip"
+	        android:layout_marginRight="3dip"
+	        android:layout_marginTop="10dip"
+	        android:background="@drawable/list_selector_green"
+	        android:orientation="horizontal"
+	        android:clickable="true" >
 
         <ImageView
             android:layout_width="40dip"
@@ -101,7 +103,8 @@
     </RelativeLayout>
 
     <RelativeLayout
-          android:id="@+id/heartRelativeLayout"
+          android:id="@+id/button_main_heart"
+          android:onClick="onClick"
         android:layout_width="fill_parent"
         android:layout_height="40dip"
         android:layout_marginLeft="3dip"

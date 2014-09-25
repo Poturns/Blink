@@ -1,8 +1,10 @@
 package kr.poturns.blink.demo.healthmanager;
 
-public class InbodyHistoryListDomain {
+public class HistoryDomain {
+	int icon;
 	String name;
 	String date;
+	
 	public String getName() {
 		return name;
 	}
@@ -15,5 +17,4 @@ public class InbodyHistoryListDomain {
 	public void setDate(String date) {
 		this.date = date;
 	}
-	
 }
