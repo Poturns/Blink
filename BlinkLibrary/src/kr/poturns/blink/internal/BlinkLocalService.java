@@ -170,7 +170,19 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 						.equals(BlinkDevice.HOST.getAddress())) {
 					Log.i(NAME, "I am Center Device!!");
 					// 브로드캐스트 실행
-
+					BlinkMessage mBlinkMessage = new BlinkMessage.Builder()
+					.setDestinationDevice((String) null)
+					.setDestinationApplication(null)
+					.setSourceDevice(BlinkDevice.HOST)
+					.setSourceApplication(
+							"kr.poturns.blink.internal.BlinkLocalService")
+					.setMessage(
+							gson.toJson(mSyncDatabaseManager
+									.obtainBlinkApp()))
+					.setType(
+							IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC)
+					.setCode(0).build();
+					mMessageProcessor.sendBroadCast(mBlinkMessage);
 				} else {
 					Log.i(NAME, "I am not Center Device!!");
 					// BlinkMessage 생성

@@ -2,15 +2,17 @@ package com.example.auctionrealtimetest;
 
 import java.util.ArrayList;
 
-import kr.poturns.blink.demo.inbody.R;
-import kr.poturns.demo.CustomBaseAdapter;
-import kr.poturns.demo.InbodyListDomain;
-import android.app.ListActivity;
 import android.os.Bundle;
+import android.app.Activity;
+import android.app.ListActivity;
+import android.content.Intent;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 public class InbodyDetailActivity extends ListActivity {
@@ -54,7 +56,7 @@ public class InbodyDetailActivity extends ListActivity {
 				Log.i("auction", "click!!");
 				// TODO Auto-generated method stub
 				bodytypeImage.setImageResource(R.drawable.fatperson_white);
-				bodytypeText.setText("체占쏙옙 : 占쏙옙占쏙옙");
+				bodytypeText.setText("체형 : 비만형");
 				 listItems.clear();
 				//  adapter.notifyDataSetChanged();
 				  adapter.setBodyType("fat");
@@ -72,7 +74,7 @@ public class InbodyDetailActivity extends ListActivity {
  			public void onClick(View arg0) {
  				Log.i("auction", "click!!");
  				bodytypeImage.setImageResource(R.drawable.avgperson_white);
- 				bodytypeText.setText("체占쏙옙 : 占쏙옙占쏙옙占�");
+ 				bodytypeText.setText("체형 : 평균형");
  				 listItems.clear();
 				 
 				  adapter.setBodyType("avg");
@@ -92,7 +94,7 @@ public class InbodyDetailActivity extends ListActivity {
  				Log.i("auction", "click!!");
  				 adapter.setBodyType("muscle");
  				bodytypeImage.setImageResource(R.drawable.musclebodytype);
- 				bodytypeText.setText("체占쏙옙 : 占쏙옙占쏙옙占쏙옙");
+ 				bodytypeText.setText("체형 : 근육형");
  				// listItems=new ArrayList<InbodyListDomain>();
  				 listItems.clear();
  				// TODO Auto-generated method stub

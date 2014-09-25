@@ -468,7 +468,7 @@ public class SyncDatabaseManager extends BlinkDatabaseManager {
 
 				// SystemDatabase에 추가한다.
 				for (BlinkAppInfo mBlinkAppInfo : AddedBlinkAppList) {
-					registerBlinkApp(mBlinkAppInfo);
+					registerBlinkAppSync(mBlinkAppInfo);
 				}
 				mSQLiteDatabase.setTransactionSuccessful();
 			} catch (Exception e) {
