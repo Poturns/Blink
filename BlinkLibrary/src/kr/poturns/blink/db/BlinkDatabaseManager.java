@@ -294,7 +294,17 @@ public class BlinkDatabaseManager extends SqliteManager {
 		if (mAppList.size() == 0)
 			return false;
 		// 등록된 디바이스 리스트 확인
-		queryDevice("DeviceId=" + mAppList.get(0).DeviceId);
+		
+		where = "DeviceId in (";
+		// 등록된 앱 리스트 확인
+		for (int i = 0; i < mAppList.size(); i++) {
+			where += mAppList.get(i).DeviceId;
+			if (i < mAppList.size() - 1)
+				where += ",";
+		}
+		where += ")";
+		
+		queryDevice(where);
 		if (mDeviceList.size() == 0)
 			return false;
 		// 디바이스 이름 비교
