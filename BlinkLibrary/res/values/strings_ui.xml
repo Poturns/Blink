@@ -1,52 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- SearchView의 Hint -->
     <string name="res_blink_hint">검색어를 입력하세요</string>
+    <!-- LogViewFragment에서 리스트 타이틀 -->
     <string name="res_blink_fragment_logview_title_device">기기</string>
+    <!-- LogViewFragment에서 리스트 타이틀 -->
     <string name="res_blink_fragment_logview_title_app">앱</string>
+    <!-- LogViewFragment에서 리스트 타이틀 -->
     <string name="res_blink_fragment_logview_title_content">내용</string>
+    <!-- LogViewFragment에서 리스트 타이틀 -->
     <string name="res_blink_fragment_logview_title_datetime">시간</string>
+    <!-- OptionsMenu 에서의 '검색'을 나타내는 액션 -->
     <string name="res_blink_action_search">검색</string>
+    <!-- OptionsMenu 에서의 '새로고침'을 나타내는 액션 -->
     <string name="res_blink_action_refresh">새로고침</string>
+    <!-- OptionsMenu 에서의 '보기 전환'을 나타내는 액션 -->
     <string name="res_blink_action_view_change">보기 전환</string>
+    <!-- OptionsMenu 에서의 '그래픽으로 보기'를 나타내는 액션 -->
     <string name="res_blink_action_show_as_graphic">그래픽으로 보기</string>
+    <!-- OptionsMenu 에서의 '리스트로 보기'를 나타내는 액션 -->
     <string name="res_blink_action_show_as_list">리스트로 보기</string>
+    <!-- OptionsMenu 에서의 '연결된 장비만 보기'를 나타내는 액션 -->
     <string name="res_blink_action_show_only_connected">연결된 장비만 보기</string>
+    <!-- Empty View의 내용 -->
     <string name="res_blink_empty_data">데이터가 없습니다.</string>
+    <!-- 데이터를 삭제하기 직전에 표시되는 문자 -->
     <string name="res_blink_confirm_delete">정말 삭제하시겠습니까?</string>
+    <!-- 데이터가 삭제되었다는 것을 알린다. -->
     <string name="res_blink_deleted">삭제되었습니다.</string>
+    <!-- 작업이 실패하였다는 것을 알린다. -->
     <string name="res_blink_fail">실패하였습니다.</string>
+    <!-- 장비와 연결되었음을 표시 -->
     <string name="res_blink_device_connected"> 이(가) 연결되었습니다.</string>
+    <!-- 장비와 연결해제되었음을 표시 -->
     <string name="res_blink_device_disconnected"> 이(가) 연결해제되었습니다.</string>
-    <string name="res_blink_choose_content">이동할 항목을 선택하세요.</string>
-    <string name="res_blink_show_db_info">DB</string>
-    <string name="res_blink_show_log_info">Log</string>
+    <!-- 최근 변경된 Measurement List화면의 제목 -->
     <string name="res_blink_recent_list">최근 변경된 Measurement 리스트</string>
+    <!-- 측정 데이터 화면의 제목 -->
     <string name="res_blink_measurement_data">측정 데이터</string>
+    <!-- 장비의 Bluetooth 정보 제목 -->
     <string name="res_blink_blink_state_macaddress">MacAddress :</string>
+    <!-- 장비의 Bluetooth 정보 제목 -->
     <string name="res_blink_blink_state_type">디바이스 타입 :</string>
+    <!-- 장비의 Bluetooth 정보 제목 -->
     <string name="res_blink_blink_state_connection">연결 상태 :</string>
+    <!-- 장비의 Bluetooth 정보 제목 -->
     <string name="res_blink_blink_state_support_library">BlinkLibrary 지원 :</string>
+    <!-- 장비의 Bluetooth 정보 제목 -->
     <string name="res_blink_blink_state_auto_connect">자동 연결 :</string>
+    <!-- 장비의 Bluetooth 정보 제목 -->
     <string name="res_blink_blink_state_ble">BLE 지원 :</string>
+    <!-- Bluetooth가 활성화 되어있지 않음을 표시 -->
     <string name="res_blink_bluetooth_disabled">Bluetooth가 활성화 되어있지 않습니다.</string>
+    <!-- Bluetooth Discovery가 진행중임을 표시 -->
     <string name="res_blink_discovery_is_running">이미 탐색 중 입니다.</string>
-    <string name="res_blink_blink_service_disabled">Blink Service와의 연결이 종료되었습니다. </string>
+    <!-- Blink Service가 사용 불가능함을 표시 -->
+    <string name="res_blink_blink_service_disabled">Blink Service의 사용이 불가능 합니다.</string>
+    <!-- Blink Service와의 연결이 실패하였음을 표시 -->
     <string name="res_blink_blink_service_failed">Blink Service와의 연결이 실패하였습니다.</string>
+    <!-- drag&drop 하여 장비 연결을 시도하라는 것을 알려준다. -->
     <string name="res_blink_drop_to_connect">Drop here to connect</string>
+    <!-- drag&drop 하여 장비 연결해제를 시도하라는 것을 알려준다. -->
     <string name="res_blink_drop_to_disconnect">Drop here to disconnect</string>
+    <!-- Bluetooth Discovery가 완료되었음을 표시 -->
     <string name="res_blink_bluetooth_discovery_finished">Bluetooth 탐색을 완료하였습니다.</string>
+    <!-- Bluetooth Discovery가 실패하였음을 표시 -->
     <string name="res_blink_bluetooth_discovery_failed">Bluetooth 탐색요청에 실패하였습니다.</string>
 
+    <!-- '연결 상태'에서 표시할 장비 정보들 -->
     <string-array name="res_blink_dialog_connect_page_titles">
         <item>Bluetooth 정보</item>
         <item>Device 정보</item>
     </string-array>
+    <!-- 측정 데이터를 보여줄 방법들 -->
     <string-array name="res_blink_dialog_data_page_titles">
         <item>측정 그래프</item>
         <item>측정 리스트</item>
     </string-array>
 
+    <!-- 색 : Light Gray (#00101010) -->
     <color name="res_blink_light_gray">#00101010</color>
 
 </resources>

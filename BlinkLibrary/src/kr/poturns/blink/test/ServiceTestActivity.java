@@ -50,7 +50,7 @@ import android.widget.Toast;
 
 public class ServiceTestActivity extends Activity implements OnClickListener {
 	private final String tag = "ServiceTestActivity";
-	
+
 	TextView resultView;
 	Button button1, button2, button3, button4, button5, button6;
 	Button button7, button8, button9, button10, button11, button12;
@@ -61,13 +61,13 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 	IInternalOperationSupport iSupport;
 	BlinkDevice Xdevice;
 	Gson gson = new GsonBuilder().setPrettyPrinting().create();
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.res_blink_service_test);
 
-		interaction = new BlinkServiceInteraction(this,null,eventCallback) {
+		interaction = new BlinkServiceInteraction(this, null, eventCallback) {
 
 			@Override
 			public void onServiceFailed() {
@@ -87,7 +87,7 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 			@Override
 			public void onDeviceDiscovered(BlinkDevice device) {
 				resultView.append("DISCOVERED : " + device.getAddress()
-						+ " >> " + device.getName() + "\n"); 
+						+ " >> " + device.getName() + "\n");
 			}
 
 			@Override
@@ -102,20 +102,21 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 				resultView.append("DISCONNECTED!! " + device.getAddress()
 						+ " >> " + device.getName() + "\n");
 			}
-			
+
 			@Override
 			public void onIdentityChanged(Identity identity) {
-				resultView.append("IDENTITY CHANGED!! " + identity.toString() + "\n");
+				resultView.append("IDENTITY CHANGED!! " + identity.toString()
+						+ "\n");
 			}
-			
+
 			@Override
 			public void onDiscoveryStarted() {
-				resultView.append("DISCOVERY START\n"); 
+				resultView.append("DISCOVERY START\n");
 			}
-			
+
 			@Override
 			public void onDiscoveryFinished() {
-				resultView.append("DISCOVERY FINISH\n"); 
+				resultView.append("DISCOVERY FINISH\n");
 			}
 		};
 		interaction.startService();
@@ -234,14 +235,15 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 				dialog.show();
 
 			} else if (v.getId() == R.id.button7) {
-				//iSupport.sendBlinkMessages(Xdevice, "Hello " + Xdevice.getName());
+				// iSupport.sendBlinkMessages(Xdevice, "Hello " +
+				// Xdevice.getName());
 
 			} else if (v.getId() == R.id.button8) {
 
 			} else if (v.getId() == R.id.button9) {
-				final BlinkDevice[] devices = iSupport.obtainConnectedDeviceList();
-				
-				
+				final BlinkDevice[] devices = iSupport
+						.obtainConnectedDeviceList();
+
 				final ArrayList<String> addresses = new ArrayList<String>();
 				if (devices != null)
 					for (BlinkDevice device : devices)
@@ -284,42 +286,51 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 				iSupport.stopListeningAsServer();
 
 			} else if (v.getId() == R.id.button12) {
-				
+
 			} else if (v.getId() == R.id.button13) {
 				exampleRegisterBlinkApp();
 			} else if (v.getId() == R.id.button14) {
 				exampleRegisterMeasurementDatabase();
 			} else if (v.getId() == R.id.button15) {
-				//function
+				// function
 				SyncDatabaseManager sdm = new SyncDatabaseManager(this);
 				mBlinkAppInfo = interaction.local.obtainBlinkApp();
-				interaction.local.queryDevice("Device!='"+mBlinkAppInfo.mDevice.Device+"'").queryApp("").queryFunction("");
-				List<Function> mFunctionList = interaction.local.getFunctionList();
-				Log.i("Blink","function size : "+mFunctionList.size());
-				if(mFunctionList.size()>0){
-					for(int i=0;i<mFunctionList.size();i++){
-						interaction.remote.startFunction(mFunctionList.get(i), 100);
+				interaction.local
+						.queryDevice(
+								"Device!='" + mBlinkAppInfo.mDevice.Device
+										+ "'").queryApp("").queryFunction("");
+				List<Function> mFunctionList = interaction.local
+						.getFunctionList();
+				Log.i("Blink", "function size : " + mFunctionList.size());
+				if (mFunctionList.size() > 0) {
+					for (int i = 0; i < mFunctionList.size(); i++) {
+						interaction.remote.startFunction(mFunctionList.get(i),
+								100);
 					}
-				}else {
-					Toast.makeText(this, "외부 디바이스 기능이 없습니다.", Toast.LENGTH_SHORT);
+				} else {
+					Toast.makeText(this, "외부 디바이스 기능이 없습니다.",
+							Toast.LENGTH_SHORT);
 				}
 			} else if (v.getId() == R.id.button16) {
-				List<BlinkAppInfo> mBlinkAppInfoList = interaction.local.obtainBlinkAppAll();
+				List<BlinkAppInfo> mBlinkAppInfoList = interaction.local
+						.obtainBlinkAppAll();
 				mBlinkAppInfo = interaction.local.obtainBlinkApp();
 				MeasurementData newData = new MeasurementData();
 				newData.Data = "100";
 				newData.DateTime = "2014-09-15 00:00:00";
-				
+
 				boolean isSend = false;
-				for(int i=0;i<mBlinkAppInfoList.size();i++){
-					interaction.remote.sendMeasurementData(mBlinkAppInfoList.get(i), gson.toJson(newData), 101);
+				for (int i = 0; i < mBlinkAppInfoList.size(); i++) {
+					interaction.remote
+							.sendMeasurementData(mBlinkAppInfoList.get(i),
+									gson.toJson(newData), 101);
 					isSend = true;
 				}
-				if(!isSend){
-					Toast.makeText(this, "데이터를 보낼 타겟이 없습니다.", Toast.LENGTH_SHORT);
+				if (!isSend) {
+					Toast.makeText(this, "데이터를 보낼 타겟이 없습니다.",
+							Toast.LENGTH_SHORT);
 				}
-				
-				
+
 			} else if (v.getId() == R.id.button17) {
 				interaction.SyncBlinkApp();
 			} else if (v.getId() == R.id.button18) {
@@ -338,72 +349,81 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 		public void onReceiveData(int arg0, CallbackData arg1)
 				throws RemoteException {
 			// TODO Auto-generated method stub
-			Log.i(tag, "Code : "+arg0);
-			Log.i(tag, "InDeviceData : "+arg1.InDeviceData);
-			Log.i(tag, "OutDeviceData : "+arg1.OutDeviceData);
-			Log.i(tag, "Result : "+arg1.Result);
-			Log.i(tag, "ResultDetail : "+arg1.ResultDetail);
-			
-//			if(arg0==0){
-//				if(arg1.InDeviceData!=null){
-//					List<Eye> mEyeList = gson.fromJson(arg1.InDeviceData, new TypeToken<List<Eye>>(){}.getType());
-//					for(int i=0;i<mEyeList.size();i++){
-//						Log.i(tag, "Eye - left_sight : "+mEyeList.get(i).left_sight+" right_sight : "+mEyeList.get(i).right_sight+ " DateTime : "+mEyeList.get(i).DateTime);
-//					}
-//				}
-//				if(arg1.OutDeviceData!=null){
-//					List<Eye> mEyeList = gson.fromJson(arg1.OutDeviceData, new TypeToken<List<Eye>>(){}.getType());
-//					for(int i=0;i<mEyeList.size();i++){
-//						Log.i(tag, "Eye - left_sight : "+mEyeList.get(i).left_sight+" right_sight : "+mEyeList.get(i).right_sight+ " DateTime : "+mEyeList.get(i).DateTime);
-//					}
-//				}
-//			}
-//			else if(arg0==1){
-//				if(arg1.InDeviceData!=null){
-//					List<MeasurementData> mMeasurementList = gson.fromJson(arg1.InDeviceData, new TypeToken<List<MeasurementData>>(){}.getType());
-//					Log.i(tag, mMeasurementList.toString());
-//				}
-//				if(arg1.OutDeviceData!=null){
-//					List<MeasurementData> mMeasurementList = gson.fromJson(arg1.OutDeviceData, new TypeToken<List<MeasurementData>>(){}.getType());
-//					Log.i(tag, mMeasurementList.toString());
-//				}
-//			}
+			Log.i(tag, "Code : " + arg0);
+			Log.i(tag, "InDeviceData : " + arg1.InDeviceData);
+			Log.i(tag, "OutDeviceData : " + arg1.OutDeviceData);
+			Log.i(tag, "Result : " + arg1.Result);
+			Log.i(tag, "ResultDetail : " + arg1.ResultDetail);
+
+			// if(arg0==0){
+			// if(arg1.InDeviceData!=null){
+			// List<Eye> mEyeList = gson.fromJson(arg1.InDeviceData, new
+			// TypeToken<List<Eye>>(){}.getType());
+			// for(int i=0;i<mEyeList.size();i++){
+			// Log.i(tag,
+			// "Eye - left_sight : "+mEyeList.get(i).left_sight+" right_sight : "+mEyeList.get(i).right_sight+
+			// " DateTime : "+mEyeList.get(i).DateTime);
+			// }
+			// }
+			// if(arg1.OutDeviceData!=null){
+			// List<Eye> mEyeList = gson.fromJson(arg1.OutDeviceData, new
+			// TypeToken<List<Eye>>(){}.getType());
+			// for(int i=0;i<mEyeList.size();i++){
+			// Log.i(tag,
+			// "Eye - left_sight : "+mEyeList.get(i).left_sight+" right_sight : "+mEyeList.get(i).right_sight+
+			// " DateTime : "+mEyeList.get(i).DateTime);
+			// }
+			// }
+			// }
+			// else if(arg0==1){
+			// if(arg1.InDeviceData!=null){
+			// List<MeasurementData> mMeasurementList =
+			// gson.fromJson(arg1.InDeviceData, new
+			// TypeToken<List<MeasurementData>>(){}.getType());
+			// Log.i(tag, mMeasurementList.toString());
+			// }
+			// if(arg1.OutDeviceData!=null){
+			// List<MeasurementData> mMeasurementList =
+			// gson.fromJson(arg1.OutDeviceData, new
+			// TypeToken<List<MeasurementData>>(){}.getType());
+			// Log.i(tag, mMeasurementList.toString());
+			// }
+			// }
 		}
 
 	};
 
-	public void run(){
+	public void run() {
 		Log.i(tag, "TestArchive Run!!");
-//		exampleShowActivity();
-//		exampleRemoteCall();
-//		exampleRegisterBlinkApp();
-//		exmampleRegisterExternalBlinkApp();
-//		exampleObtainBlinkAppAll();
-//		exampleObtainMeasurementDataById();
-//		exampleObtainBlinkApp();
-//		exampleRegisterMeasurementDatabase();
-//		exampleObtainMeasurementDatabase();
-//		exampleLogAll();
-//		exampleStartFuntion();
-//		exampleBlinkDatabaseManager();
-//		exampleRemoteCall();
-//		exampleSyncDatabase();
-//		exampleDatabaseMessage();
+		// exampleShowActivity();
+		// exampleRemoteCall();
+		// exampleRegisterBlinkApp();
+		// exmampleRegisterExternalBlinkApp();
+		// exampleObtainBlinkAppAll();
+		// exampleObtainMeasurementDataById();
+		// exampleObtainBlinkApp();
+		// exampleRegisterMeasurementDatabase();
+		// exampleObtainMeasurementDatabase();
+		// exampleLogAll();
+		// exampleStartFuntion();
+		// exampleBlinkDatabaseManager();
+		// exampleRemoteCall();
+		// exampleSyncDatabase();
+		// exampleDatabaseMessage();
 	}
-	
+
 	public void exampleShowActivity() {
 		// TODO Auto-generated method stub
 		interaction.openControlActivity();
 	}
+
 	private void exampleDatabaseMessage() {
-	    // TODO Auto-generated method stub
+		// TODO Auto-generated method stub
 		DatabaseMessage mDatabaseMessage = new DatabaseMessage.Builder()
-		.setCondition("Condition1")
-		.setDateTimeFrom("DateTimeFrom1")
-		.setDateTimeTo("DateTimeTo1")
-		.setType(DatabaseMessage.OBTAIN_DATA_BY_CLASS)
-		.build();
-		
+				.setCondition("Condition1").setDateTimeFrom("DateTimeFrom1")
+				.setDateTimeTo("DateTimeTo1")
+				.setType(DatabaseMessage.OBTAIN_DATA_BY_CLASS).build();
+
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		String ret = gson.toJson(mDatabaseMessage);
 		Log.i(tag, ret);
@@ -411,78 +431,90 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 		Log.i(tag, mDatabaseMessage.getCondition());
 		Log.i(tag, mDatabaseMessage.getDateTimeFrom());
 		Log.i(tag, mDatabaseMessage.getDateTimeTo());
-		Log.i(tag, ""+mDatabaseMessage.getType());
-    }
+		Log.i(tag, "" + mDatabaseMessage.getType());
+	}
+
 	private void exampleSyncDatabase() {
-	    // TODO Auto-generated method stub
+		// TODO Auto-generated method stub
 		SyncDatabaseManager mSyncDatabaseManager = new SyncDatabaseManager(this);
 		ArrayList<BlinkAppInfo> BlinkAppInfoList = new ArrayList<BlinkAppInfo>();
 		BlinkAppInfo mBlinkAppInfo;
-		
+
 		BlinkAppInfoList.clear();
 		int testMeasurementId = 1;
-		//wearable 테스트케이스 생성
-		for(int i=1;i<31;i++){
+		// wearable 테스트케이스 생성
+		for (int i = 1; i < 31; i++) {
 			mBlinkAppInfo = new BlinkAppInfo();
 			mBlinkAppInfo.mDevice.DeviceId = i;
 			mBlinkAppInfo.mDevice.Device = "MJ-G2";
-			mBlinkAppInfo.mDevice.MacAddress = "58:A2:B5:54:2D:A9"+i;
-			
-			mBlinkAppInfo.mApp.PackageName = "TestPackageName"+i;
-			mBlinkAppInfo.mApp.AppName = "TestAppName"+i;
+			mBlinkAppInfo.mDevice.MacAddress = "58:A2:B5:54:2D:A9" + i;
+
+			mBlinkAppInfo.mApp.PackageName = "TestPackageName" + i;
+			mBlinkAppInfo.mApp.AppName = "TestAppName" + i;
 			mBlinkAppInfo.mApp.AppId = i;
 			mBlinkAppInfo.mApp.DeviceId = i;
-			
-			mBlinkAppInfo.addFunction("TestFunction"+i, "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY);
-			mBlinkAppInfo.addFunction("TestFunction"+i, "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_SERIVCE);
-			mBlinkAppInfo.addFunction("TestFunction"+i, "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_BROADCAST);
-			for(int j=0;j<mBlinkAppInfo.mFunctionList.size();j++){
+
+			mBlinkAppInfo.addFunction("TestFunction" + i, "TestFunction" + i,
+					"com.example.servicetestapp.TestActivity",
+					Function.TYPE_ACTIVITY);
+			mBlinkAppInfo.addFunction("TestFunction" + i, "TestFunction" + i,
+					"com.example.servicetestapp.TestActivity",
+					Function.TYPE_SERIVCE);
+			mBlinkAppInfo.addFunction("TestFunction" + i, "TestFunction" + i,
+					"com.example.servicetestapp.TestActivity",
+					Function.TYPE_BROADCAST);
+			for (int j = 0; j < mBlinkAppInfo.mFunctionList.size(); j++) {
 				mBlinkAppInfo.mFunctionList.get(j).AppId = i;
 			}
 			mBlinkAppInfo.addMeasurement(Eye.class);
 			mBlinkAppInfo.addMeasurement(Body.class);
 			mBlinkAppInfo.addMeasurement(Heart.class);
-			for(int j=0;j<mBlinkAppInfo.mMeasurementList.size();j++){
+			for (int j = 0; j < mBlinkAppInfo.mMeasurementList.size(); j++) {
 				mBlinkAppInfo.mMeasurementList.get(j).AppId = i;
 				mBlinkAppInfo.mMeasurementList.get(j).MeasurementId = testMeasurementId++;
 			}
-			
+
 			BlinkAppInfoList.add(mBlinkAppInfo);
 		}
 		mSyncDatabaseManager.wearable.syncBlinkDatabase(BlinkAppInfoList);
-		
-//		BlinkAppObjctList.clear();
-//		//main 테스트케이스 생성
-//		for(int i=1;i<31;i++){
-//			mBlinkAppInfo = new BlinkAppInfo();
-//			mBlinkAppInfo.mDevice.DeviceId = i;
-//			mBlinkAppInfo.mDevice.Device = "MJ-G2";
-//			mBlinkAppInfo.mDevice.MacAddress = "58:A2:B5:54:2D:A9";
-//			mBlinkAppInfo.mApp.PackageName = "TestPackageName"+i;
-//			mBlinkAppInfo.mApp.AppName = "TestAppName"+i;
-//			mBlinkAppInfo.addFunction("TestFunction"+i, "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY);
-//			mBlinkAppInfo.addFunction("TestFunction"+i, "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_SERIVCE);
-//			mBlinkAppInfo.addFunction("TestFunction"+i, "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_BROADCAST);
-//			mBlinkAppInfo.addMeasurement(Eye.class);
-//			mBlinkAppInfo.addMeasurement(Body.class);
-//			mBlinkAppInfo.addMeasurement(Heart.class);
-//			BlinkAppObjctList.add(mBlinkAppInfo);
-//		}
-//		mSyncDatabaseManager.main.syncBlinkApp(BlinkAppObjctList);
-    }
+
+		// BlinkAppObjctList.clear();
+		// //main 테스트케이스 생성
+		// for(int i=1;i<31;i++){
+		// mBlinkAppInfo = new BlinkAppInfo();
+		// mBlinkAppInfo.mDevice.DeviceId = i;
+		// mBlinkAppInfo.mDevice.Device = "MJ-G2";
+		// mBlinkAppInfo.mDevice.MacAddress = "58:A2:B5:54:2D:A9";
+		// mBlinkAppInfo.mApp.PackageName = "TestPackageName"+i;
+		// mBlinkAppInfo.mApp.AppName = "TestAppName"+i;
+		// mBlinkAppInfo.addFunction("TestFunction"+i,
+		// "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY);
+		// mBlinkAppInfo.addFunction("TestFunction"+i,
+		// "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_SERIVCE);
+		// mBlinkAppInfo.addFunction("TestFunction"+i,
+		// "TestFunction"+i,"com.example.servicetestapp.TestActivity",Function.TYPE_BROADCAST);
+		// mBlinkAppInfo.addMeasurement(Eye.class);
+		// mBlinkAppInfo.addMeasurement(Body.class);
+		// mBlinkAppInfo.addMeasurement(Heart.class);
+		// BlinkAppObjctList.add(mBlinkAppInfo);
+		// }
+		// mSyncDatabaseManager.main.syncBlinkApp(BlinkAppObjctList);
+	}
+
 	private void exampleRemoteCall() {
 		// TODO Auto-generated method stub
 		interaction.remote.obtainMeasurementData(Eye.class, 0);
-		
-//		interaction.local.queryDevice("").queryApp("").queryMeasurement("");
-//		interaction.remote.obtainMeasurementData(interaction.local.getMeasurementList(), null, null, 1);
+
+		// interaction.local.queryDevice("").queryApp("").queryMeasurement("");
+		// interaction.remote.obtainMeasurementData(interaction.local.getMeasurementList(),
+		// null, null, 1);
 	}
-	
+
 	/**
 	 * BlinkDatabaseManager 사용법을 설명하는 예제
 	 */
 	private void exampleBlinkDatabaseManager() {
-	    // TODO Auto-generated method stub
+		// TODO Auto-generated method stub
 		interaction.local.queryDevice("");
 		List<Device> mDeviceList = interaction.local.getDeviceList();
 		interaction.local.queryApp("");
@@ -490,216 +522,241 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 		interaction.local.queryFunction("");
 		List<Function> mFunctionList = interaction.local.getFunctionList();
 		interaction.local.queryMeasurement("");
-		List<Measurement> mMeasurementList = interaction.local.getMeasurementList();
+		List<Measurement> mMeasurementList = interaction.local
+				.getMeasurementList();
 		interaction.local.queryMeasurementData("");
-		List<MeasurementData> mMeasurementDataList = interaction.local.getMeasurementDataList();
-		
-		Log.i(tag,"Device List :");
-		for(int i=0;i<mDeviceList.size();i++){
-			Log.i(tag,mDeviceList.get(i).toString());
+		List<MeasurementData> mMeasurementDataList = interaction.local
+				.getMeasurementDataList();
+
+		Log.i(tag, "Device List :");
+		for (int i = 0; i < mDeviceList.size(); i++) {
+			Log.i(tag, mDeviceList.get(i).toString());
 		}
-		Log.i(tag,"App List :");
-		for(int i=0;i<mAppList.size();i++){
-			Log.i(tag,mAppList.get(i).toString());
+		Log.i(tag, "App List :");
+		for (int i = 0; i < mAppList.size(); i++) {
+			Log.i(tag, mAppList.get(i).toString());
 		}
-		Log.i(tag,"Function List :");
-		for(int i=0;i<mFunctionList.size();i++){
-			Log.i(tag,mFunctionList.get(i).toString());
+		Log.i(tag, "Function List :");
+		for (int i = 0; i < mFunctionList.size(); i++) {
+			Log.i(tag, mFunctionList.get(i).toString());
 		}
-		Log.i(tag,"Measurement List :");
-		for(int i=0;i<mMeasurementList.size();i++){
-			Log.i(tag,mMeasurementList.get(i).toString());
+		Log.i(tag, "Measurement List :");
+		for (int i = 0; i < mMeasurementList.size(); i++) {
+			Log.i(tag, mMeasurementList.get(i).toString());
 		}
-		Log.i(tag,"MeasurementData List :");
-		for(int i=0;i<mMeasurementDataList.size();i++){
-			Log.i(tag,mMeasurementDataList.get(i).toString());
+		Log.i(tag, "MeasurementData List :");
+		for (int i = 0; i < mMeasurementDataList.size(); i++) {
+			Log.i(tag, mMeasurementDataList.get(i).toString());
 		}
-    }
+	}
+
 	/**
-	 * Function의 인텐트를 실행하는 예제
-	 * Function 클래스를 startFunction 매서드에 매개변수로 넘겨주면 서비스에서 Intent를 날려준다.
+	 * Function의 인텐트를 실행하는 예제 Function 클래스를 startFunction 매서드에 매개변수로 넘겨주면 서비스에서
+	 * Intent를 날려준다.
 	 */
 	private void exampleStartFuntion() {
 		// TODO Auto-generated method stub
 		Log.i(tag, "exampleStartFuntion");
 		mBlinkAppInfo = interaction.local.obtainBlinkApp();
 		ArrayList<Function> mFunctionList;
-		if(mBlinkAppInfo.isExist){
+		if (mBlinkAppInfo.isExist) {
 			mFunctionList = mBlinkAppInfo.mFunctionList;
-			Log.i(tag, "mFunctionList size : "+mFunctionList.size());
-			for(int i=0;i<mFunctionList.size();i++){
+			Log.i(tag, "mFunctionList size : " + mFunctionList.size());
+			for (int i = 0; i < mFunctionList.size(); i++) {
 				Log.i(tag, mFunctionList.get(i).toString());
 				interaction.local.startFunction(mFunctionList.get(i));
 			}
 		}
 	}
+
 	/**
-	 * BlinkApp를 등록하는 예제
-	 * 먼저 obtainBlinkApp()를 통해 BlinkApp를 Device 이름과 App 패키지명으로
-	 * 기존에 등록되어있는 것이 있는지 확인한다.
-	 * mBlinkAppInfo.isExist 통해 등록되어있지 않으면 기능과 측정값을 등록하고
-	 * mBlinkServiceManager.registerBlinkApp() 호출을 통해 등록한다.
-	 * 측정값 등록은 클래스를 넣으면 자동으로 필드에 맞추어 등록을 해준다.
+	 * BlinkApp를 등록하는 예제 먼저 obtainBlinkApp()를 통해 BlinkApp를 Device 이름과 App 패키지명으로
+	 * 기존에 등록되어있는 것이 있는지 확인한다. mBlinkAppInfo.isExist 통해 등록되어있지 않으면 기능과 측정값을 등록하고
+	 * mBlinkServiceManager.registerBlinkApp() 호출을 통해 등록한다. 측정값 등록은 클래스를 넣으면
+	 * 자동으로 필드에 맞추어 등록을 해준다.
 	 */
-	public void exampleRegisterBlinkApp(){
+	public void exampleRegisterBlinkApp() {
 		Log.i(tag, "exampleRegisterBlinkApp");
-		//BlinkApp 객체 얻기, 기존에 등록되어있으면 등록되어있는 값을 넣어준다.
+		// BlinkApp 객체 얻기, 기존에 등록되어있으면 등록되어있는 값을 넣어준다.
 		mBlinkAppInfo = interaction.local.obtainBlinkApp();
-		if(!mBlinkAppInfo.isExist){
-			//등록되어있지 않으면 추가적으로 등록할 함수, 측정값을 추가하고 등록한다.
-			mBlinkAppInfo.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY);
-			mBlinkAppInfo.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_SERIVCE);
-			mBlinkAppInfo.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_BROADCAST);
+		if (!mBlinkAppInfo.isExist) {
+			// 등록되어있지 않으면 추가적으로 등록할 함수, 측정값을 추가하고 등록한다.
+			mBlinkAppInfo.addFunction("TestAcitivity", "두번째 액티비티 실행",
+					"com.example.servicetestapp.TestActivity",
+					Function.TYPE_ACTIVITY);
+			mBlinkAppInfo.addFunction("TestAcitivity", "두번째 액티비티 실행",
+					"com.example.servicetestapp.TestActivity",
+					Function.TYPE_SERIVCE);
+			mBlinkAppInfo.addFunction("TestAcitivity", "두번째 액티비티 실행",
+					"com.example.servicetestapp.TestActivity",
+					Function.TYPE_BROADCAST);
 			mBlinkAppInfo.addMeasurement(Eye.class);
 			mBlinkAppInfo.addMeasurement(Body.class);
 			mBlinkAppInfo.addMeasurement(Heart.class);
-			//sqlite에 등록하는 함수
+			// sqlite에 등록하는 함수
 			interaction.registerBlinkApp(mBlinkAppInfo);
 		}
 	}
-	
-	public void exmampleRegisterExternalBlinkApp(){
-		//외부 디바이스 임시 등록
+
+	public void exmampleRegisterExternalBlinkApp() {
+		// 외부 디바이스 임시 등록
 		mBlinkAppInfo = interaction.local.obtainBlinkApp();
 		mBlinkAppInfo.mDevice.Device = "MJ-G2";
 		mBlinkAppInfo.mDevice.MacAddress = "58:A2:B5:54:2D:A9";
 		mBlinkAppInfo.mApp.PackageName = "TextPackageName";
 		mBlinkAppInfo.mApp.AppName = "TextAppName";
 		mBlinkAppInfo.mFunctionList.clear();
-		mBlinkAppInfo.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_ACTIVITY);
-		mBlinkAppInfo.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_SERIVCE);
-		mBlinkAppInfo.addFunction("TestAcitivity", "두번째 액티비티 실행","com.example.servicetestapp.TestActivity",Function.TYPE_BROADCAST);
+		mBlinkAppInfo.addFunction("TestAcitivity", "두번째 액티비티 실행",
+				"com.example.servicetestapp.TestActivity",
+				Function.TYPE_ACTIVITY);
+		mBlinkAppInfo.addFunction("TestAcitivity", "두번째 액티비티 실행",
+				"com.example.servicetestapp.TestActivity",
+				Function.TYPE_SERIVCE);
+		mBlinkAppInfo.addFunction("TestAcitivity", "두번째 액티비티 실행",
+				"com.example.servicetestapp.TestActivity",
+				Function.TYPE_BROADCAST);
 		mBlinkAppInfo.mMeasurementList.clear();
 		mBlinkAppInfo.addMeasurement(Eye.class);
 		mBlinkAppInfo.addMeasurement(Body.class);
 		mBlinkAppInfo.addMeasurement(Heart.class);
 		interaction.registerExternalBlinkApp(mBlinkAppInfo);
 	}
-	
+
 	/**
 	 * 등록되어있는 mBlinkAppInfo를 얻어오는 예제
 	 */
-	public void exampleObtainBlinkApp(){
+	public void exampleObtainBlinkApp() {
 		Log.i(tag, "exampleObtainBlinkApp");
 		mBlinkAppInfo = interaction.local.obtainBlinkApp();
-		if(mBlinkAppInfo.isExist){
+		if (mBlinkAppInfo.isExist) {
 			Log.i(tag, "등록된 디바이스와 어플리케이션이 있으면");
-			Log.i(tag, "length : "+mBlinkAppInfo.mApp.AppIcon.length);
+			Log.i(tag, "length : " + mBlinkAppInfo.mApp.AppIcon.length);
 			/**
-			 * 이미지 사용방법
-			 * byte[]를 Bitmap으로 변환 후 ImageView에 설정
+			 * 이미지 사용방법 byte[]를 Bitmap으로 변환 후 ImageView에 설정
 			 */
-		}else {
+		} else {
 			Log.i(tag, "등록된 디바이스와 어플리케이션이 없으면");
 		}
 	}
-	
+
 	/**
 	 * 등록되어있는 모든 mBlinkAppInfo를 얻어오는 예제
 	 */
-	public void exampleObtainBlinkAppAll(){
+	public void exampleObtainBlinkAppAll() {
 		Log.i(tag, "exampleObtainBlinkAppAll");
-		List<BlinkAppInfo> mBlinkAppInfoList = interaction.local.obtainBlinkAppAll();
+		List<BlinkAppInfo> mBlinkAppInfoList = interaction.local
+				.obtainBlinkAppAll();
 		BlinkAppInfo BlinkAppInfo = null;
-		for(int i=0;i<mBlinkAppInfoList.size();i++){
+		for (int i = 0; i < mBlinkAppInfoList.size(); i++) {
 			BlinkAppInfo = mBlinkAppInfoList.get(i);
-			Log.i(tag, i+" sdo :"+BlinkAppInfo.toString());
+			Log.i(tag, i + " sdo :" + BlinkAppInfo.toString());
 		}
 	}
-	
+
 	/**
 	 * mBlinkAppInfo의 ID로 얻어오는 예제
 	 */
-	public void exampleObtainMeasurementDataById(){
+	public void exampleObtainMeasurementDataById() {
 		Log.i(tag, "exampleObtainMeasurementDataById");
-		List<BlinkAppInfo> mBlinkAppInfoList = interaction.local.obtainBlinkAppAll();
-		for(int i=0;i<mBlinkAppInfoList.size();i++){
-			List<MeasurementData> mMeasurementDataList = interaction.local.obtainMeasurementData(mBlinkAppInfoList.get(i).mMeasurementList, null, null);
-			for(int j=0;j<mMeasurementDataList.size();j++){
-				Log.i(tag, "MeasurementData "+j+" \n"+mMeasurementDataList.get(j).toString());
+		List<BlinkAppInfo> mBlinkAppInfoList = interaction.local
+				.obtainBlinkAppAll();
+		for (int i = 0; i < mBlinkAppInfoList.size(); i++) {
+			List<MeasurementData> mMeasurementDataList = interaction.local
+					.obtainMeasurementData(
+							mBlinkAppInfoList.get(i).mMeasurementList, null,
+							null);
+			for (int j = 0; j < mMeasurementDataList.size(); j++) {
+				Log.i(tag, "MeasurementData " + j + " \n"
+						+ mMeasurementDataList.get(j).toString());
 			}
 		}
 	}
-	
+
 	/**
-	 * 측정값을 저장하는 예제
-	 * 이 예제에서는 Eye, Body, Heart 세 개의 클래스에서
-	 * 랜덤하게 100개씩 생성하여 등록하는 예제이다.
-	 * mBlinkServiceManager.registerMeasurementData(mBlinkAppInfo,mEye) 에서
+	 * 측정값을 저장하는 예제 이 예제에서는 Eye, Body, Heart 세 개의 클래스에서 랜덤하게 100개씩 생성하여 등록하는
+	 * 예제이다. mBlinkServiceManager.registerMeasurementData(mBlinkAppInfo,mEye) 에서
 	 * mBlinkAppInfo와 해당 객체를 매개변수로 전달하면 등록을 해준다.
 	 */
-	public void exampleRegisterMeasurementDatabase(){
+	public void exampleRegisterMeasurementDatabase() {
 		Log.i(tag, "exampleRegisterMeasurementDatabase");
-//		mBlinkAppInfo = interaction.local.obtainBlinkApp();
-		List<BlinkAppInfo> mBlinkAppInfoList = interaction.local.obtainBlinkAppAll();
-		for(int j=0;j<mBlinkAppInfoList.size();j++){
+		// mBlinkAppInfo = interaction.local.obtainBlinkApp();
+		List<BlinkAppInfo> mBlinkAppInfoList = interaction.local
+				.obtainBlinkAppAll();
+		for (int j = 0; j < mBlinkAppInfoList.size(); j++) {
 			Log.i(tag, mBlinkAppInfoList.get(j).toString());
 			mBlinkAppInfo = mBlinkAppInfoList.get(j);
-			if(mBlinkAppInfo.isExist){
+			if (mBlinkAppInfo.isExist) {
 				try {
 					Eye mEye;
 					Body mBody;
 					Heart mHeart;
 					Random random = new Random();
-					for(int i=0;i<10;i++){
+					for (int i = 0; i < 10; i++) {
 						mEye = new Eye();
-						mEye.left_sight = Math.round(random.nextDouble()*10d)/10d;
-						mEye.right_sight = Math.round(random.nextDouble()*10d)/10d;
+						mEye.left_sight = Math.round(random.nextDouble() * 10d) / 10d;
+						mEye.right_sight = Math
+								.round(random.nextDouble() * 10d) / 10d;
 						interaction.local.registerMeasurementData(mEye);
 					}
-					for(int i=0;i<10;i++){
+					for (int i = 0; i < 10; i++) {
 						mBody = new Body();
-						mBody.height = Math.round(random.nextFloat()*10f)/10f+random.nextInt(50)+140;
-						mBody.weight = Math.round(random.nextFloat()*10f)/10f+random.nextInt(50)+40;
+						mBody.height = Math.round(random.nextFloat() * 10f)
+								/ 10f + random.nextInt(50) + 140;
+						mBody.weight = Math.round(random.nextFloat() * 10f)
+								/ 10f + random.nextInt(50) + 40;
 						interaction.local.registerMeasurementData(mBody);
 					}
-					
-					for(int i=0;i<10;i++){
+
+					for (int i = 0; i < 10; i++) {
 						mHeart = new Heart();
-						mHeart.beatrate = random.nextInt(20)+60;
+						mHeart.beatrate = random.nextInt(20) + 60;
 						interaction.local.registerMeasurementData(mHeart);
 					}
-				
-					
+
 				} catch (IllegalArgumentException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-			}else {
+			} else {
 				return;
 			}
 		}
 	}
-	
+
 	/**
-	 * 측정값을 얻어오는 예제
-	 * mBlinkServiceManager.obtainMeasurementData(class); 와 같이 얻고 싶은 데이터의 
-	 * 클래스를 넘기면 ArrayList<class> 형식으로 반환해준다.
-	 * 반환받는 형식에 맞추어 리턴을 해주기 때문에 대입되는 변수의 타입이 중요하다.
-	 * ArrayList<Eye> mEyeList = mBlinkServiceManager.obtainMeasurementData(Eye.class);
-	 * 위의 경우 해당 함수는 ArrayList<Eye>로 반환해준다.
+	 * 측정값을 얻어오는 예제 mBlinkServiceManager.obtainMeasurementData(class); 와 같이 얻고
+	 * 싶은 데이터의 클래스를 넘기면 ArrayList<class> 형식으로 반환해준다. 반환받는 형식에 맞추어 리턴을 해주기 때문에
+	 * 대입되는 변수의 타입이 중요하다. ArrayList<Eye> mEyeList =
+	 * mBlinkServiceManager.obtainMeasurementData(Eye.class); 위의 경우 해당 함수는
+	 * ArrayList<Eye>로 반환해준다.
 	 */
-	public void exampleObtainMeasurementDatabase(){
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		ArrayList<Eye> mEyeList = interaction.local.obtainMeasurementData(Eye.class,SqliteManager.CONTAIN_FIELD,new TypeToken<ArrayList<Eye>>(){}.getType());
-		for(int i=0;i<mEyeList.size();i++){
-			Log.i(tag, "Eye - left_sight : "+mEyeList.get(i).left_sight+" right_sight : "+mEyeList.get(i).right_sight+ " DateTime : "+mEyeList.get(i).DateTime);
+	public void exampleObtainMeasurementDatabase() {
+		List<Eye> mEyeList = interaction.local.obtainMeasurementData(Eye.class,
+				SqliteManager.CONTAIN_FIELD);
+		for (int i = 0; i < mEyeList.size(); i++) {
+			Log.i(tag, "Eye - left_sight : " + mEyeList.get(i).left_sight
+					+ " right_sight : " + mEyeList.get(i).right_sight
+					+ " DateTime : " + mEyeList.get(i).DateTime);
 		}
-		ArrayList<Body> mBodyList = interaction.local.obtainMeasurementData(Body.class,new TypeToken<ArrayList<Body>>(){}.getType());
-		for(int i=0;i<mBodyList.size();i++){
-			Log.i(tag, "Body - height : "+mBodyList.get(i).height+" weight : "+mBodyList.get(i).weight+ " DateTime : "+mBodyList.get(i).DateTime);
+		List<Body> mBodyList = interaction.local
+				.obtainMeasurementData(Body.class);
+		for (int i = 0; i < mBodyList.size(); i++) {
+			Log.i(tag, "Body - height : " + mBodyList.get(i).height
+					+ " weight : " + mBodyList.get(i).weight + " DateTime : "
+					+ mBodyList.get(i).DateTime);
 		}
-		ArrayList<Heart> mHeartList = interaction.local.obtainMeasurementData(Heart.class,new TypeToken<ArrayList<Heart>>(){}.getType());
-		for(int i=0;i<mHeartList.size();i++){
-			Log.i(tag, "Heart - beatrate : "+mHeartList.get(i).beatrate+" DateTime : "+mHeartList.get(i).DateTime);
+		List<Heart> mHeartList = interaction.local
+				.obtainMeasurementData(Heart.class);
+		for (int i = 0; i < mHeartList.size(); i++) {
+			Log.i(tag, "Heart - beatrate : " + mHeartList.get(i).beatrate
+					+ " DateTime : " + mHeartList.get(i).DateTime);
 		}
 	}
-	
-	
-	public void exampleLogAll(){
+
+	public void exampleLogAll() {
 		Log.i(tag, "exampleLogAll");
 		List<BlinkLog> mDeviceAppLogList = interaction.local.obtainLog();
-		for(int i=0;i<mDeviceAppLogList.size();i++){
+		for (int i = 0; i < mDeviceAppLogList.size(); i++) {
 			Log.i(tag, mDeviceAppLogList.get(i).toString());
 		}
 	}
