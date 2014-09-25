@@ -14,6 +14,7 @@ import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
 import kr.poturns.blink.internal.comm.BlinkMessage.Builder;
 import kr.poturns.blink.internal.comm.IBlinkMessagable;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.util.Log;
 
@@ -187,12 +188,10 @@ public class MessageProcessor {
 				ServiceKeeper.getInstance(OPERATOR_CONTEXT).handleNetworkSync(
 						mHashSet, device.getGroupID());
 
-				ServiceKeeper
-						.getInstance(OPERATOR_CONTEXT)
+				ServiceKeeper.getInstance(OPERATOR_CONTEXT)
 						.transferSystemSync(device,
 								IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC);
-				// BlinkMessage successBlinkMessage = builder_success.build();
-				// sendBlinkMessageTo(successBlinkMessage, device);
+				
 			}/*
 			 * -> 일단 fromdevice로 보내면 되겠네 if (i am main) { BlinkDevice = } else
 			 * if (i am wearable) {
