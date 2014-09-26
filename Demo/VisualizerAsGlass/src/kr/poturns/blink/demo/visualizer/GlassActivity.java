@@ -51,18 +51,23 @@ public class GlassActivity extends SupportMapActivity {
 		      @Override
 		      public void onReceiveData(int arg0, CallbackData callbackData) throws RemoteException {
 		    	  // Data 받음..
-		    	  String data = callbackData.InDeviceData == null? callbackData.OutDeviceData : (callbackData.InDeviceData + callbackData.OutDeviceData);
+		    	  final String data = callbackData.InDeviceData == null? callbackData.OutDeviceData : (callbackData.InDeviceData + callbackData.OutDeviceData);
 		    	  Log.d("onReceiveData", data);
 		    	  
 		    	  if (mAlertAdapter == null)
 		    		  return;
+		    	  runOnUiThread(new Runnable(){
+		    		  @Override
+		    		public void run() {
+		    			  try {
+					    	  JSONObject mJsonObj = new JSONObject(data);
+					    	  Log.d("BPM", mJsonObj.getInt("bpm") + "");
+					    	  onHeartbeat(mJsonObj.getInt("bpm"));
+					    	  
+				    	  } catch (Exception e) { ; }
+		    		}
+		    	  });
 		    	  
-		    	  try {
-			    	  JSONObject mJsonObj = new JSONObject(data);
-			    	  Log.d("BPM", mJsonObj.getInt("bpm") + "");
-			    	  onHeartbeat(mJsonObj.getInt("bpm"));
-			    	  
-		    	  } catch (Exception e) { ; }
 		      }
 		   }; 
 		
@@ -143,10 +148,6 @@ public class GlassActivity extends SupportMapActivity {
 			Log.i("Blink","mInteraction.startService()");
 			mInteraction.startService();
 			mInteraction.startBroadcastReceiver();
-
-			boolean isDeviceConnected = mInteraction.isDeviceConnected();
-			setControlActivityVisibility(!isDeviceConnected);
-			setMapVisibility(isDeviceConnected && isEmergency);
 		}
 		
 		// TEST
@@ -160,6 +161,14 @@ public class GlassActivity extends SupportMapActivity {
 		super.onResume();
 		// TEST
 		/*onHeartbeat(50);*/
+
+		boolean isDeviceConnected = mInteraction.isDeviceConnected();
+		setControlActivityVisibility(!isDeviceConnected);
+		setMapVisibility(isDeviceConnected && isEmergency);
+
+		mHeartbeatImageView.setVisibility(isDeviceConnected? View.VISIBLE : View.INVISIBLE);
+		mHeartbeatTextView.setVisibility(isDeviceConnected? View.VISIBLE : View.INVISIBLE);
+		
 	}
 
 	@Override

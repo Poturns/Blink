@@ -434,7 +434,7 @@ public class SyncDatabaseManager extends BlinkDatabaseManager {
 			if (getDeviceList().size() == 0)
 				return;
 			int oldSeq = obtainSequence(getDeviceList().get(0).DeviceId);
-			if (oldSeq > 0) {
+			if (oldSeq != 0) {
 				updateSyncMeasurementData("MeasurementDataId=" + seq,
 						"DeviceId=" + getDeviceList().get(0).DeviceId);
 			} else {
