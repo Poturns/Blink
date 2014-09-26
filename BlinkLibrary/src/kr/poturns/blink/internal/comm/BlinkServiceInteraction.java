@@ -178,11 +178,12 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	 * onServiceConnected()가 호출된다.
 	 */
 	public final void startService() {
+		Log.i("Blink", "interaction start service");
 		Intent intent = new Intent(BlinkLocalService.INTENT_ACTION_NAME);
 		intent.putExtra(BlinkLocalService.INTENT_EXTRA_SOURCE_PACKAGE,
 				CONTEXT.getPackageName());
 
-		CONTEXT.startService(intent);
+//		CONTEXT.startService(intent);
 		CONTEXT.bindService(intent, this, Context.BIND_AUTO_CREATE);
 	}
 
@@ -190,10 +191,21 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	 * 언바인드한다. 다른 바인드된 어플리케이션이 있을 경우 종료되지 않는다.
 	 */
 	public final void stopService() {
+		Log.i("Blink", "interaction stopService");
 		Intent intent = new Intent(BlinkLocalService.INTENT_ACTION_NAME);
 		intent.putExtra(BlinkLocalService.INTENT_EXTRA_SOURCE_PACKAGE,
 				CONTEXT.getPackageName());
 
+		
+		if(mIInternalEventCallback!=null){
+	         try {
+	            mInternalOperationSupport.unregisterCallback(mIInternalEventCallback);
+	         } catch (RemoteException e) {
+	            // TODO Auto-generated catch block
+	            e.printStackTrace();
+	         }
+	    }
+		
 		CONTEXT.unbindService(this);
 		stopBroadcastReceiver();
 		// CONTEXT.stopService(intent);

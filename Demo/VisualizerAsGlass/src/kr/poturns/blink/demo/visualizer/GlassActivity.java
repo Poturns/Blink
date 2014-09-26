@@ -6,12 +6,14 @@ import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.demo.visualizer.map.SupportMapActivity;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
+import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 
 import org.json.JSONObject;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
@@ -25,11 +27,14 @@ import android.widget.Toast;
 public class GlassActivity extends SupportMapActivity {
 
 	private BlinkServiceInteraction mInteraction;
+	private IInternalOperationSupport mSupport;
 
 	private ImageView mHeartbeatImageView;
 	private TextView mHeartbeatTextView;
 	private ListView mAlertList;
 	private GlassAlertAdapter mAlertAdapter;
+	
+	private Handler mHandler;
 	
 	private boolean isEmergency = false;
 	
@@ -44,6 +49,7 @@ public class GlassActivity extends SupportMapActivity {
 		      
 		      @Override
 		      public void onReceiveData(int arg0, CallbackData callbackData) throws RemoteException {
+		    	  
 		    	  if (mAlertAdapter == null)
 		    		  return;
 		    	  
@@ -53,67 +59,18 @@ public class GlassActivity extends SupportMapActivity {
 		    	  
 		    	  try {
 			    	  JSONObject mJsonObj = new JSONObject(data);
+			    	  Log.d("BPM", mJsonObj.getInt("bpm") + "");
 			    	  onHeartbeat(mJsonObj.getInt("bpm"));
 			    	  
 		    	  } catch (Exception e) { ; }
 		      }
 		   }; 
 		
-		mInteraction = new BlinkServiceInteraction(this, null, mIInternalEventCallback) {
+		   IBlinkEventBroadcast iBlinkEventBroadcast = new IBlinkEventBroadcast() {
 			
 			@Override
-			public void onServiceFailed() {
-				Toast.makeText(getApplicationContext(), "Failed...",
-						Toast.LENGTH_SHORT).show();
-			}
-
-			@Override
-			public void onServiceDisconnected() {
-				Toast.makeText(getApplicationContext(), "Disconnected...",
-						Toast.LENGTH_SHORT).show();
-			}
-
-			@Override
-			public void onServiceConnected(IInternalOperationSupport iSupport) {
-				Log.i("Glass", "onServiceConnected");
-				Toast.makeText(getApplicationContext(),
-						"Binder Service Connected!", Toast.LENGTH_SHORT).show();
-
-				BlinkAppInfo mBlinkAppInfo = mInteraction.obtainBlinkApp();
-
-				if (!mBlinkAppInfo.isExist) {
-					// TODO: Type은 추가할 수 있는 상수 타입으로.. (C에서 다른 타입명으로
-					// 정의하듯..String이지만 타입을 다르게.. )
-					mBlinkAppInfo.addMeasurement("Location", "Location_Axis",
-							"String", "Location Axis");
-					// TODO: AppInfo에 Function을 등록하더라도 실제 Function을 제공하는 것에 대한
-					// 신뢰성 보장이 되지 않음..
-					mBlinkAppInfo.addFunction("LightOn", "Turn On the Light",
-							"kr.poturns.blink.demo.visualizer.action.lighton",
-							Function.TYPE_BROADCAST);
-					mInteraction.registerBlinkApp(mBlinkAppInfo);
-				}
-
-				if (mInteraction != null) {
-					mInteraction.startBroadcastReceiver();
-
-					boolean isDeviceConnected = mInteraction
-							.isDeviceConnected();
-					setControlActivityVisibility(!isDeviceConnected);
-				}
-			}
-
-			@Override
-			public void onDeviceConnected(BlinkDevice device) {
-				mAlertAdapter.pushNewMessage(device.getName() + " Connected !");
-				
-				boolean isDeviceConnected = mInteraction.isDeviceConnected();
-				setControlActivityVisibility(!isDeviceConnected);
-				
-				mHeartbeatImageView.setVisibility(View.VISIBLE);
-				mHeartbeatTextView.setVisibility(View.VISIBLE);
-			}
-
+			public void onDeviceDiscovered(BlinkDevice device) { }
+			
 			@Override
 			public void onDeviceDisconnected(BlinkDevice device) {
 				mAlertAdapter.pushNewMessage(device.getName() + " Disonnected !");
@@ -125,48 +82,97 @@ public class GlassActivity extends SupportMapActivity {
 				mHeartbeatImageView.setVisibility(View.INVISIBLE);
 				mHeartbeatTextView.setVisibility(View.INVISIBLE);
 			}
+			
+			@Override
+			public void onDeviceConnected(BlinkDevice device) {
+				mAlertAdapter.pushNewMessage(device.getName() + " Connected !");
+				
+				boolean isDeviceConnected = mInteraction.isDeviceConnected();
+				setControlActivityVisibility(!isDeviceConnected);
+				
+				mHeartbeatImageView.setVisibility(View.VISIBLE);
+				mHeartbeatTextView.setVisibility(View.VISIBLE);
+			}
+		};
+		
+		mInteraction = new BlinkServiceInteraction(this, iBlinkEventBroadcast, mIInternalEventCallback) {
+			
+			@Override
+			public void onServiceFailed() {
+				Toast.makeText(getApplicationContext(), "Failed...",
+						Toast.LENGTH_SHORT).show();
+			}
 
+			@Override
+			public void onServiceDisconnected() {
+				Toast.makeText(getApplicationContext(), "Disconnected...", Toast.LENGTH_SHORT).show();
+				mSupport = null;
+			}
+
+			@Override
+			public void onServiceConnected(IInternalOperationSupport iSupport) {
+				Log.i("Glass", "onServiceConnected");
+				Toast.makeText(getApplicationContext(),"Binder Service Connected!", Toast.LENGTH_SHORT).show();
+				
+				mSupport = iSupport;
+				
+				BlinkAppInfo mBlinkAppInfo = mInteraction.obtainBlinkApp();
+
+				if (!mBlinkAppInfo.isExist) {
+					// TODO: Type은 추가할 수 있는 상수 타입으로.. (C에서 다른 타입명으로
+					// 정의하듯..String이지만 타입을 다르게.. )
+					mBlinkAppInfo.addMeasurement("Location", "Location_Axis", "String", "Location Axis");
+					// TODO: AppInfo에 Function을 등록하더라도 실제 Function을 제공하는 것에 대한
+					// 신뢰성 보장이 되지 않음..
+					mBlinkAppInfo.addFunction("LightOn", "Turn On the Light",
+							"kr.poturns.blink.demo.visualizer.action.lighton",
+							Function.TYPE_BROADCAST);
+					mInteraction.registerBlinkApp(mBlinkAppInfo);
+				}
+
+				if (mInteraction != null) {
+					mInteraction.startBroadcastReceiver();
+
+					boolean isDeviceConnected = mInteraction.isDeviceConnected();
+					setControlActivityVisibility(!isDeviceConnected);
+				}
+			}
 		};
 
 		if (mInteraction != null) {
+			Log.i("Blink","mInteraction.startService()");
 			mInteraction.startService();
-		}
-		
-		// TEST
-		//mHeartbeatImageView.setVisibility(View.VISIBLE);
-		//mHeartbeatTextView.setVisibility(View.VISIBLE);
-		//setMapVisibility(true);
-	}
-
-	@Override
-	protected void onResume() {
-		super.onResume();
-
-		if (mInteraction != null) {
 			mInteraction.startBroadcastReceiver();
 
 			boolean isDeviceConnected = mInteraction.isDeviceConnected();
 			setControlActivityVisibility(!isDeviceConnected);
 			setMapVisibility(isDeviceConnected && isEmergency);
 		}
-
+		
 		// TEST
-		//onHeartbeat(50);
+		/*mHeartbeatImageView.setVisibility(View.VISIBLE);
+		mHeartbeatTextView.setVisibility(View.VISIBLE);
+		setMapVisibility(true);*/
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		// TEST
+		/*onHeartbeat(50);*/
 	}
 
 	@Override
 	protected void onPause() {
-		if (mInteraction != null)
-			mInteraction.stopBroadcastReceiver();
-
 		super.onPause();
 	}
 
 	@Override
 	protected void onDestroy() {
-		if (mInteraction != null)
+		if (mInteraction != null) {
+			mInteraction.stopBroadcastReceiver();
 			mInteraction.stopService();
-
+		}
 		super.onDestroy();
 	}
 
@@ -191,6 +197,8 @@ public class GlassActivity extends SupportMapActivity {
 		mHeartbeatImageView.setVisibility(View.INVISIBLE);
 		mHeartbeatTextView = (TextView) findViewById(R.id.heartbeat_figure);
 		mHeartbeatTextView.setVisibility(View.INVISIBLE);
+		
+		mHandler = new Handler();
 	}
 
 	private void setControlActivityVisibility(boolean enabled) {
@@ -199,39 +207,46 @@ public class GlassActivity extends SupportMapActivity {
 		mControllerBtn.setClickable(enabled);
 	}
 
+	private Runnable mRunnableOnHeartbeat = new Runnable() {
+		@Override
+		public void run() {
+			mHeartbeatImageView.setImageResource(R.drawable.heartbeat1);
+			mHeartbeatTextView.setText(null);
+		}
+		
+	};
+	
 	private void onHeartbeat(int heartbeat) {
+		mHandler.removeCallbacks(mRunnableOnHeartbeat);
+		
 		mHeartbeatImageView.setImageResource(R.drawable.heartbeat2);
-		mHeartbeatImageView.postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				mHeartbeatImageView.setImageResource(R.drawable.heartbeat1);
-			}
-		}, 5000);
 		mHeartbeatTextView.setText(String.valueOf(heartbeat));
-		mHeartbeatTextView.postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				mHeartbeatTextView.setText(null);
-			}
-		}, 5000);
+		
+		mHandler.postDelayed(mRunnableOnHeartbeat, 3000);
 		
 		if (isEmergency(heartbeat))
 			onEmergency(heartbeat);
 	}
 
 	private boolean isEmergency(int heartbeat) {
-		if (isEmergency) {
-			setMapVisibility(false);
-			findViewById(R.id.glass_frame).setBackground(null);
-		}
-		
 		return isEmergency = (heartbeat < 80 || heartbeat > 120);
 	}
 	
+	private Runnable mRunnableOnEmergency = new Runnable() {
+		@Override
+		public void run() {
+			setMapVisibility(false);
+			findViewById(R.id.glass_frame).setBackground(null);
+		}
+	};
+	
 	private void onEmergency(int heartbeat) {
-		setMapVisibility(true);
+		mHandler.removeCallbacks(mRunnableOnEmergency);
 		
+		setMapVisibility(true);
 		findViewById(R.id.glass_frame).setBackgroundResource(R.drawable.emergency_surface);
+		
+		mHandler.postDelayed(mRunnableOnEmergency, 5000);
 		
 		mAlertAdapter.pushNewMessage("Emergency!! Low Heartbeat : " + heartbeat);
 	}

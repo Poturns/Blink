@@ -229,6 +229,9 @@ public class MessageProcessor {
 			} else if (blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SUCCESS) {
 				Log.i("acceptBlinkMessage",
 						"TYPE_RESPONSE_MEASUREMENTDATA_SUCCESS");
+				if(SERVICE_KEEPER.obtainBinder(
+						blinkMessage.getDestinationApplication())==null)Log.i("Blink", "binder null");
+				if(blinkMessage==null)Log.i("Blink", "BlinkMessage null");
 				SERVICE_KEEPER.obtainBinder(
 						blinkMessage.getDestinationApplication())
 						.callbackData(blinkMessage.getCode(),

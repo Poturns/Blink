@@ -55,20 +55,24 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 
 	@Override
 	public IBinder onBind(Intent intent) {
+		Log.i("Blink", "onbind");
 		String packageName = intent.getStringExtra(INTENT_EXTRA_SOURCE_PACKAGE);
 		if (packageName == null)
 			return null;
-
+		Log.i("Blink", packageName);
 		try {
 			BlinkSupportBinder mBinder = mServiceKeeper
 					.obtainBinder(packageName);
+			Log.i("Blink", ""+mBinder);
 			if (mBinder == null) {
 				mBinder = new BlinkSupportBinder(this);
 				mServiceKeeper.registerBinder(packageName, mBinder);
+				Log.i("Blink", "binder new");
 			}
 			return mBinder.asBinder();
 
 		} catch (Exception e) {
+			Log.i("Blink", "exception");
 			return null;
 		}
 	}
