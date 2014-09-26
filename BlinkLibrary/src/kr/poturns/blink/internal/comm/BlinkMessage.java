@@ -10,7 +10,8 @@ import com.google.gson.GsonBuilder;
 /**
  * 
  * @author Yeonho.Kim
- *
+ * @author Ho.Kwon
+ * 
  */
 public class BlinkMessage implements Serializable, IBlinkMessagable {
 

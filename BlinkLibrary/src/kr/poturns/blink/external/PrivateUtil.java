@@ -5,6 +5,9 @@ import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.internal.comm.BlinkDevice;
+import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.res.Configuration;
@@ -14,6 +17,12 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.v13.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TabHost;
 
 /** external package 내부에서 사용 될 Util Class */
 class PrivateUtil {
@@ -64,7 +73,8 @@ class PrivateUtil {
 	 * @param resources
 	 *            display metric 정보를 가져올 resources
 	 * @return App Icon이 존재하면 해당 App Icon을 나타내는 Drawable,<br>
-	 *         없거나 가져오는데 실패하면 {@link R.drawable#res_blink_ic_action_android}을 가져온다.
+	 *         없거나 가져오는데 실패하면 {@link R.drawable#res_blink_ic_action_android}을
+	 *         가져온다.
 	 */
 	public static Drawable obtainAppIcon(App app, Resources resources) {
 		Drawable drawable = null;
@@ -182,5 +192,99 @@ class PrivateUtil {
 		if (bundle == null)
 			return null;
 		return bundle.getParcelable(EXTRA_DEVICE_MEASUREMENT);
+	}
+
+	public static abstract class ViewPagerFragmentProxy {
+		protected TabHost mTabHost;
+		protected ViewPager mViewPager;
+
+		abstract protected String[] getTitles();
+
+		abstract protected Activity getActivity();
+
+		abstract protected FragmentManager getFragmentManager();
+
+		public View onCreateView(LayoutInflater inflater, ViewGroup container,
+				Bundle savedInstanceState) {
+			final View v = inflater.inflate(
+					R.layout.res_blink_dialog_fragment_connection_device_info,
+					container, false);
+			mTabHost = (TabHost) v.findViewById(android.R.id.tabhost);
+			mTabHost.setup();
+			TabHost.TabContentFactory factory = new TabHost.TabContentFactory() {
+
+				@Override
+				public View createTabContent(String tag) {
+					View v = new View(getActivity());
+					v.setMinimumWidth(0);
+					v.setMinimumHeight(0);
+					v.setTag(tag);
+					return v;
+				}
+			};
+			final String[] pageTitles = getActivity().getResources()
+					.getStringArray(R.array.res_blink_dialog_data_page_titles);
+			int i = 0;
+			for (String title : pageTitles) {
+				mTabHost.addTab(mTabHost.newTabSpec(String.valueOf(i++))
+						.setIndicator(title).setContent(factory));
+			}
+
+			mTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+				@Override
+				public void onTabChanged(String tabId) {
+					navigateTab(Integer.valueOf(tabId), false);
+				}
+			});
+			mViewPager = (ViewPager) v
+					.findViewById(R.id.res_blink_dialog_deviceinfo_viewpager);
+			mViewPager
+					.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+						@Override
+						public void onPageSelected(int position) {
+							navigateTab(position, true);
+						}
+					});
+			mViewPager
+					.setAdapter(new FragmentPagerAdapter(getFragmentManager()) {
+
+						@Override
+						public int getCount() {
+							return getViewPagerCount();
+						}
+
+						@Override
+						public Fragment getItem(int position) {
+							return getViewPagerPage(position);
+						}
+					});
+			return v;
+		}
+
+		/** ViewPager를 한 페이지를 구성하는 Fragment를 얻는다. */
+		abstract protected Fragment getViewPagerPage(int position);
+
+		abstract protected int getViewPagerCount();
+
+		/**
+		 * {@link ViewPager}또는 {@link TabHost}의 page를 이동한다.
+		 * 
+		 * @param position
+		 *            움직일 page또는 tab의 인덱스
+		 * @param isFromPager
+		 *            이동 요청이 {@link ViewPager}로 부터 왔는지 여부
+		 */
+		protected void navigateTab(int position, boolean isFromPager) {
+			if (isFromPager) {
+				mTabHost.setCurrentTab(position);
+			} else {
+				mViewPager.setCurrentItem(position);
+			}
+		}
+
+		public void onDestroyView() {
+			mTabHost = null;
+			mViewPager = null;
+		}
 	}
 }

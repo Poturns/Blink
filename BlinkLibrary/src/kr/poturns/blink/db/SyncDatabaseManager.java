@@ -247,7 +247,7 @@ public class SyncDatabaseManager extends BlinkDatabaseManager {
 		if (where == null || where.equals(""))
 			return;
 
-		String query = "update MeasurementData set " + set + " where " + where;
+		String query = "update SyncMeasurementData set " + set + " where " + where;
 		mSQLiteDatabase.execSQL(query);
 	}
 
@@ -468,7 +468,7 @@ public class SyncDatabaseManager extends BlinkDatabaseManager {
 
 				// SystemDatabase에 추가한다.
 				for (BlinkAppInfo mBlinkAppInfo : AddedBlinkAppList) {
-					registerBlinkApp(mBlinkAppInfo);
+					registerBlinkAppSync(mBlinkAppInfo);
 				}
 				mSQLiteDatabase.setTransactionSuccessful();
 			} catch (Exception e) {

@@ -204,7 +204,21 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 		CONTEXT.getContentResolver().notifyChange(URI_OBSERVER_BLINKAPP, null);
 		Log.i(tag, "registerBlinkApp OK");
 	}
-
+	
+	/**
+	 * BlinkAppSync에서 동기화를 위해 호출하는 매소드
+	 * URI_OBSERVER_BLINKAPP를 통해 알리지 않는다.
+	 */
+	public void registerBlinkAppSync(BlinkAppInfo mBlinkAppInfo) {
+		registerDevice(mBlinkAppInfo);
+		obtainDeviceList(mBlinkAppInfo);
+		registerApp(mBlinkAppInfo);
+		obtainApp(mBlinkAppInfo);
+		registerFunction(mBlinkAppInfo);
+		registerMeasurement(mBlinkAppInfo);
+		Log.i(tag, "registerBlinkAppSync OK");
+	}
+	
 	/**
 	 * 주어진 device, PackageName으로 BlinkAppInfo를 검색한다. 없을 경우 기본 값들을 설정하고 isExist에
 	 * false를 설정하여 리턴한다. 사용자는 isExist를 확인하여 없을 경우 사용할 Function과 Measurement를

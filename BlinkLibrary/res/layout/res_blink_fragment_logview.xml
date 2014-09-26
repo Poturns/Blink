@@ -8,8 +8,6 @@
         android:id="@+id/res_blink_fragment_logview_table_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
         android:layout_marginBottom="1dp"
         android:orientation="horizontal" >
 
@@ -62,6 +60,8 @@
         android:background="@android:color/darker_gray" />
 
     <include
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
         layout="@layout/res_blink_view_listview" />
 

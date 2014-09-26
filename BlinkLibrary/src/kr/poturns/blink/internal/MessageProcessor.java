@@ -49,10 +49,10 @@ public class MessageProcessor {
 	}
 
 	/**
-	 * 블루투스 디바이스로부터 수신한 {@link BlinkDevice} 메세지를 처리한다.
-	 * 
-	 * @param blinkMessage
-	 *            시작, 최종 목표, 데이터가 포함되어있는 '전달 할 데이터'
+	 * @author Ho Kwon 블루투스 디바이스로부터 수신한 {@link BlinkDevice} 메세지를 처리한다.
+	 *         BlinkMessage는 시작, 최종 목표, 데이터 종류, 데이터를 정의한 클래스 BlinkDevice는 다음
+	 *         hop으로 연결하기 위한 정보(현재 Device와 직접 연결된 ConntionThread를 얻기 위한 용도)
+	 * @param message
 	 * @param fromDevice
 	 *            다음 hop으로 연결하기 위한 정보 <br>
 	 *            <tr>
@@ -71,21 +71,20 @@ public class MessageProcessor {
 			currentDevice = BlinkDevice.HOST;
 		}
 
-		// Message의 최종 목적지가 현재 디바이스 일 때
 		if (blinkMessage.getDestinationAddress().equals(currentAddress)) {
+			// Message의최종목적지가현재디바이스일때
 
 			BlinkMessage.Builder builder_success = new Builder();
-
-			// 이 시점에서 못불러오는 경우는 없는가??
 			builder_success.setDestinationDevice(BlinkDevice.load(blinkMessage
-					.getSourceAddress()));
+					.getSourceAddress()));// 이 시점에서 못불러오는 경우는 없는가??
 			builder_success.setDestinationApplication(blinkMessage
 					.getSourceApplication());
 			builder_success.setCode(blinkMessage.getCode());
 
 			int blinkMessage_type = blinkMessage.getType();
 			// 동기화 시작할때 Sync 플래그를 true로, 끝날 때 false로 설정하여 추가 동기화를 막는다.
-			if (blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC) {//
+			if (blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC) // 브로드 캐스트
+			{
 				Log.i("Blink", "TYPE_REQUEST_BlinkAppInfo_SYNC");
 				setSynchronizing(true);
 				builder_success
@@ -114,8 +113,8 @@ public class MessageProcessor {
 						.obtainJsonBlinkAppInfo(mergedBlinkAppInfoList);
 				builder_success.setMessage(jsonResponseMessage);
 				BlinkMessage successBlinkMessage = builder_success.build();
-				sendBlinkMessageTo(successBlinkMessage,
-						BlinkDevice.load(blinkMessage.getSourceAddress()));
+				sendBroadCast(successBlinkMessage);
+
 				setSynchronizing(false);
 			}
 			// 동기화 시작할때 Sync 플래그를 true로, 끝날 때 false로 설정하여 추가 동기화를 막는다.
@@ -188,13 +187,16 @@ public class MessageProcessor {
 				ServiceKeeper.getInstance(OPERATOR_CONTEXT).handleNetworkSync(
 						mHashSet, device.getGroupID());
 
-				ServiceKeeper.getInstance(OPERATOR_CONTEXT)
+				ServiceKeeper
+						.getInstance(OPERATOR_CONTEXT)
 						.transferSystemSync(device,
 								IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC);
-				
+
 			}/*
-			 * -> 일단 fromdevice로 보내면 되겠네 if (i am main) { BlinkDevice = } else
-			 * if (i am wearable) {
+			 * -> 일단 fromdevice로 보내면 되겠네 
+			 * if (i am main) { 
+			 * 	BlinkDevice = 
+			 * } else if (i am wearable) {
 			 * 
 			 * }
 			 */
@@ -282,6 +284,7 @@ public class MessageProcessor {
 				builder.setSourceDevice(currentDevice);
 				builder.setSourceApplication(blinkMessage
 						.getDestinationApplication());
+
 				builder.setDestinationDevice(BlinkDevice.load(blinkMessage
 						.getSourceAddress()));
 				builder.setDestinationApplication(blinkMessage
@@ -348,16 +351,16 @@ public class MessageProcessor {
 		 * 
 		 * 원래 send쪽에서는 처리안하려 했는데 동기화 때문에......
 		 */
-		// obtainCurrentCenterDevice => 현재 연결된 네트워크 중 CenterDevice를 가져온다 없을 시 null.
-		
-		//동기화 중간에 재동기화 요청을 할 수 없도록 리턴
-//		if(message.getType()==IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC || message.getType()==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
-//			if(isSynchronizing()){
-//				Log.d("sendBlinkMessageTo", "Synchronizing...");
-//				return;
-//			}
-//		}
-		
+		// obtainCurrentCenterDevice => 현재 연결된 네트워크 중 CenterDevice를 가져온다 없을 시
+		// null.
+
+		// 동기화 중간에 재동기화 요청을 할 수 없도록 리턴
+		// if(message.getType()==IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC
+		// ||
+		// message.getType()==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
+		// if(isSynchronizing())return;
+		// }
+
 		BlinkDevice centerDevice = null;
 		if (SERVICE_KEEPER.obtainCurrentCenterDevice() != BlinkDevice.HOST) {
 			Log.d("sendBlinkMessageTo", "i am not center");
@@ -367,9 +370,8 @@ public class MessageProcessor {
 				message.setDestinationAddress(centerDevice.getAddress());
 				toDevice = centerDevice;
 
-			} else {
-				// Node : Wearable, Hop : 1. Main 2. X(Wearable 1 to 1
-				// Connect)-> 이 경우도 무조건 Center로 보내면 된다.
+			} else { // Node : Wearable, Hop : 1. Main 2. X(Wearable 1 to 1
+						// Connect)-> 이 경우도 무조건 Center로 보내면 된다.
 
 			}
 		} else {
@@ -381,11 +383,13 @@ public class MessageProcessor {
 
 		SERVICE_KEEPER.sendMessageToDevice(toDevice, message);
 		Log.d("Blink", "sendBlinkMessage in Message send!");
-		//동기화 메시지를 전송했으므로 동기화중으로 설정
-//		if(message.getType()==IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC || message.getType()==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
-//			setSynchronizing(true);
-//		}
-		
+		// 동기화 메시지를 전송했으므로 동기화중으로 설정
+		// if(message.getType()==IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC
+		// ||
+		// message.getType()==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
+		// setSynchronizing(true);
+		// }
+
 	}
 
 	private void handleSystemMessage(BlinkMessage message) {
@@ -419,5 +423,21 @@ public class MessageProcessor {
 	public void setSynchronizing(boolean synchronizing) {
 		Log.d("sendBlinkMessageTo", "Set Synchronizing " + synchronizing);
 		Synchronizing = synchronizing;
+	}
+
+	/**
+	 * 함수를 실행시켜주는 매소드 바인더나 MessageProcessor로부터 호출된다.
+	 * 
+	 * @param
+	 */
+	public void sendBroadCast(BlinkMessage blinkMessage) {
+
+		for (int i = 0; i < SERVICE_KEEPER.obtainConnectedDevices().length; i++) {
+			BlinkDevice toDevice = SERVICE_KEEPER.obtainConnectedDevices()[i];
+
+			if (toDevice != SERVICE_KEEPER.obtainCurrentCenterDevice()) {
+				sendBlinkMessageTo(blinkMessage, toDevice);
+			}
+		}
 	}
 }

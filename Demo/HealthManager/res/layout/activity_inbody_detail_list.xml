@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" 
+    android:background="#ffffff"
+   >
+   
+    <ImageView
+        android:id="@+id/bodytypeimage"
+        android:layout_width="fill_parent"
+        android:layout_height="100dip"
+        android:layout_marginTop="2dip"
+            android:layout_marginLeft="2dip"
+      android:layout_marginRight="2dip"
+        android:src="@drawable/avgperson_white"
+        android:background="#eac540"
+        >
+         
+        
+    </ImageView>
+
+   <TextView
+       android:id="@+id/bodytypetext"
+       android:layout_marginLeft="2dip"
+       android:layout_marginRight="2dip"
+       android:background="#eac540"
+       android:textColor="#ffffff"
+       android:text="보통형"
+       android:textSize="15dip"
+       android:gravity="center"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content" >
+
+	</TextView>
+  <ListView
+      android:id="@android:id/list"
+      android:layout_width="fill_parent"
+      android:layout_height="wrap_content"
+      android:divider="#ffffff"
+      android:dividerHeight="2dp"
+      android:layout_marginTop="5dip"
+  
+      android:listSelector="@drawable/list_selector_blue">
+    </ListView>
+	
+</LinearLayout>

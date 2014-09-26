@@ -10,6 +10,7 @@ import kr.poturns.blink.schema.PushUp;
 import kr.poturns.blink.schema.SitUp;
 import kr.poturns.blink.schema.Squat;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -46,7 +47,7 @@ public class MainActivity extends Activity implements ActivityInterface {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
+
 		// Blink 서비스 시작
 		mInteraction = new BlinkServiceInteraction(this, null, null) {
 
@@ -78,14 +79,14 @@ public class MainActivity extends Activity implements ActivityInterface {
 		};
 		mInteraction.startBroadcastReceiver();
 		mInteraction.startService();
-		
+
 		// 심박수 측정 서비스 시작/종료
 		startOrStopService(PreferenceManager.getDefaultSharedPreferences(this)
 				.getBoolean(SettingFragment.KEY_MEASURE_HEARTBEAT, false));
 		IntentFilter filter = new IntentFilter(
 				HeartBeatService.WIDGET_HEART_BEAT_ACTION);
 		registerReceiver(mHeartBeatReciever, filter);
-		
+
 		// 화면 제스처 등록
 		mGestureDetector = new GestureDetector(this,
 				new GestureDetector.SimpleOnGestureListener() {
@@ -117,7 +118,7 @@ public class MainActivity extends Activity implements ActivityInterface {
 						return false;
 					}
 				});
-		
+
 		// View 설정 & 화면 크기 제한
 		View container = findViewById(R.id.root).findViewById(R.id.container);
 
@@ -139,10 +140,51 @@ public class MainActivity extends Activity implements ActivityInterface {
 		else
 			layoutParam.width = layoutParam.height = size.y - pageRowMargin;
 		container.setLayoutParams(layoutParam);
-		
+
 		// 홈 화면으로 이동
 		attachFragment(new HomeFragment(), null, R.animator.slide_in_right,
 				R.animator.slide_out_left);
+	}
+
+	@Override
+	protected void onPostCreate(Bundle savedInstanceState) {
+		super.onPostCreate(savedInstanceState);
+		try {
+			if (FitnessUtil.readInBodyFromFile(this) == null) {
+				showDialog();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			showDialog();
+		}
+	}
+
+	private void showDialog() {
+		View content = View.inflate(this, R.layout.main_inbody_alert, null);
+
+		final AlertDialog dialog = new AlertDialog.Builder(this)
+				.setView(content).setCancelable(true).create();
+		dialog.show();
+		content.findViewById(R.id.button_load).setOnClickListener(
+				new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						dialog.dismiss();
+						Bundle b = new Bundle();
+						b.putBoolean("hasNotInbody", true);
+						attachFragment(new InBodyFragment(), b);
+					}
+				});
+		
+		// 5초 뒤 다이얼로그 종료
+		content.postDelayed(new Runnable() {
+
+			@Override
+			public void run() {
+				dialog.dismiss();
+			}
+		}, 5000);
 	}
 
 	@Override

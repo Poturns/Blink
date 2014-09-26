@@ -388,7 +388,7 @@ public class ServiceKeeper {
 		if (type != BlinkMessage.TYPE_REQUEST_NETWORK_SYNC)
 			sendMessageToDevice(targetDevice, mBlinkMessage);
 		else {
-			//new MessageProcessor(KEEPER_CONTEXT).sendBroadcast(mBlinkMessage);
+			new MessageProcessor(KEEPER_CONTEXT).sendBroadCast(mBlinkMessage);
 		}
 		
 		Log.e("ServiceKeeper_transferSystemSync", mBlinkMessage.getMessage());

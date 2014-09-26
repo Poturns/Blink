@@ -1,3 +1,4 @@
+
 package kr.poturns.blink.demo.visualizer;
 
 import kr.poturns.blink.db.archive.BlinkAppInfo;
@@ -192,7 +193,7 @@ public class GlassActivity extends SupportMapActivity {
 		mAlertAdapter.pushNewMessage("Welcome to Visualizer !! ");
 		mAlertAdapter.pushNewMessage("You are watching ahead on wearing glasses. ");
 		mAlertList.setAdapter(mAlertAdapter);
-		
+
 		mHeartbeatImageView = (ImageView) findViewById(R.id.heartbeat_image);
 		mHeartbeatImageView.setVisibility(View.INVISIBLE);
 		mHeartbeatTextView = (TextView) findViewById(R.id.heartbeat_figure);
