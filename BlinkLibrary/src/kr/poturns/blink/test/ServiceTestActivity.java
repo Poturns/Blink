@@ -731,22 +731,19 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 	 * ArrayList<Eye>로 반환해준다.
 	 */
 	public void exampleObtainMeasurementDatabase() {
-		List<Eye> mEyeList = interaction.local.obtainMeasurementData(Eye.class,
-				SqliteManager.CONTAIN_FIELD);
+		List<Eye> mEyeList = interaction.local.obtainMeasurementData(Eye.class);
 		for (int i = 0; i < mEyeList.size(); i++) {
 			Log.i(tag, "Eye - left_sight : " + mEyeList.get(i).left_sight
 					+ " right_sight : " + mEyeList.get(i).right_sight
 					+ " DateTime : " + mEyeList.get(i).DateTime);
 		}
-		List<Body> mBodyList = interaction.local
-				.obtainMeasurementData(Body.class);
+		List<Body> mBodyList = interaction.local.obtainMeasurementData(Body.class);
 		for (int i = 0; i < mBodyList.size(); i++) {
 			Log.i(tag, "Body - height : " + mBodyList.get(i).height
 					+ " weight : " + mBodyList.get(i).weight + " DateTime : "
 					+ mBodyList.get(i).DateTime);
 		}
-		List<Heart> mHeartList = interaction.local
-				.obtainMeasurementData(Heart.class);
+		List<Heart> mHeartList = interaction.local.obtainMeasurementData(Heart.class);
 		for (int i = 0; i < mHeartList.size(); i++) {
 			Log.i(tag, "Heart - beatrate : " + mHeartList.get(i).beatrate
 					+ " DateTime : " + mHeartList.get(i).DateTime);

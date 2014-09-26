@@ -1,4 +1,4 @@
-package kr.poturns.blink.demo.healthmanager.schema;
+package kr.poturns.blink.schema;
 
 /**
  * type 종류
@@ -9,7 +9,7 @@ package kr.poturns.blink.demo.healthmanager.schema;
  * @author mementohora
  *
  */
-public class InbodyDomain {
+public class Inbody extends DefaultSchema{
 	public String type;
 	public String gender;
 	public int age;
@@ -23,7 +23,7 @@ public class InbodyDomain {
 	public int usecalorie;
 	public int needcalorie;
 	
-	public InbodyDomain(){
+	public Inbody(){
 		type="평균형";
 		gender="남자";
 		age=25;

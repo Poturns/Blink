@@ -261,7 +261,14 @@ public final class ServiceControlActivity extends Activity implements
 	}
 
 	@Override
-	protected void onDestroy() {
+	protected void onResume() {
+		if (mInteraction != null)
+			mInteraction.startBroadcastReceiver();
+		super.onResume();
+	}
+
+	@Override
+	protected void onPause() {
 		if (mInteraction != null) {
 			try {
 				mInteraction.stopService();
@@ -270,6 +277,11 @@ public final class ServiceControlActivity extends Activity implements
 				e.printStackTrace();
 			}
 		}
+		super.onPause();
+	}
+
+	@Override
+	protected void onDestroy() {
 		if (mSqliteManagerExtended != null)
 			mSqliteManagerExtended.close();
 		super.onDestroy();

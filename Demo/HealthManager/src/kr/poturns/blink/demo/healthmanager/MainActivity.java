@@ -21,15 +21,18 @@ public class MainActivity extends Activity{
 		 Intent intent;
 		 switch (v.getId()) {
 		case R.id.button_main_indoby:
-			intent = new Intent(MainActivity.this, InbodyDetailActivity.class);
+			intent = new Intent(MainActivity.this, HisotryActivity.class);
+			intent.putExtra("HISTORY", HisotryActivity.HISTORY_INBODY);
 			startActivity(intent);
 			break;
 		case R.id.button_main_excercise:
 			intent = new Intent(MainActivity.this, HisotryActivity.class);
+			intent.putExtra("HISTORY", HisotryActivity.HISTORY_EXERCISE);
 			startActivity(intent);
 			break;
 		case R.id.button_main_heart:
 			intent = new Intent(MainActivity.this, HisotryActivity.class);
+			intent.putExtra("HISTORY", HisotryActivity.HISTORY_HEART);
 			startActivity(intent);
 			break;
 		default:

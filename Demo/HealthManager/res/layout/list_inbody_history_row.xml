@@ -19,7 +19,7 @@
          >
 	
         <ImageView
-            android:id="@+id/list_image"
+            android:id="@+id/history_icon"
             android:layout_width="50dip"
             android:layout_height="40dip"
             android:layout_gravity="top"
@@ -29,12 +29,8 @@
 
     </LinearLayout>
 
-    <!-- Rightend Arrow -->
-
-    <!-- City-->
-
     <TextView
-        android:id="@+id/auctionItemName"
+        android:id="@+id/history_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
@@ -49,7 +45,7 @@
     <!-- Weather Information-->
 
     <TextView
-        android:id="@+id/auctionItemPrice"
+        android:id="@+id/history_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/auctionItemName"

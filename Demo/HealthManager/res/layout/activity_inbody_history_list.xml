@@ -15,6 +15,7 @@
     </TextView>
 
     <TextView
+        android:id="@+id/history_subtitle"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:gravity="center"

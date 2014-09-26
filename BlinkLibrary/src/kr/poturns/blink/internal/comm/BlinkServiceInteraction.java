@@ -1,8 +1,9 @@
 package kr.poturns.blink.internal.comm;
 
-import java.lang.reflect.Type;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
 import kr.poturns.blink.db.BlinkDatabaseManager;
 import kr.poturns.blink.db.SqliteManager;
@@ -15,7 +16,7 @@ import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.internal.BlinkLocalService;
 import kr.poturns.blink.internal.DeviceAnalyzer;
-import kr.poturns.blink.schema.Eye;
+import kr.poturns.blink.schema.DefaultSchema;
 import kr.poturns.blink.util.FileUtil;
 import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
@@ -34,11 +35,12 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 
 /**
- * Blink 어플리케이션과 서비스 간의 통신을 도와주는 클래스</br> 안드로이드 서비스 구조에서 ServiceConnection이며
- * 어플리케이션에서 서비스를 호출할 수 있도록 매소드를 정의하고 있다.</br>
+ * Blink 어플리케이션과 서비스 간의 통신을 도와주는 클래스<br>
+ * 안드로이드 서비스 구조에서 ServiceConnection이며 어플리케이션에서 서비스를 호출할 수 있도록 매소드를 정의하고 있다.<br>
  * 
  * @author Jiwon.Kim
  * @author Yeonho.Kim
@@ -67,14 +69,16 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	private String mPackageName = "";
 	private String mAppName = "";
 
-	public BlinkAppInfo mBlinkAppInfo;
-	// TODO 외부에서 접근은 가능하나 변경은 못하게 해야함 by MyungJin.Kim
-	/** */
+	BlinkAppInfo mBlinkAppInfo;
+	/** Local device에 요청하는 객체 */
 	public final Local local = new Local();
+	/** Remote device에 요청하는 객체 */
 	public final Remote remote = new Remote();
 	Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
 	boolean isRegisteredReceiver = false;
+
+	// Blink Library를 위한 외부 디렉토리를 생성한다.
 	static {
 		FileUtil.createExternalDirectory();
 	}
@@ -85,7 +89,9 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	 * @param context
 	 *            : Android Context 객체
 	 * @param iBlinkEventBroadcast
-	 *            : Broadcast를 받을 리스너
+	 *            : {@link BlinkDevice}의 상태 변화가 감지되었을 때, 콜백 될 리스너 <br>
+	 *            <t><t><b>* {@link #startBroadcastReceiver()}를 호출하여야 콜백이
+	 *            호출된다.</b><br>
 	 * @param iInternalEventCallback
 	 *            : 외부 데이터를 받을 콜백
 	 */
@@ -96,10 +102,10 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		EVENT_BR = new EventBroadcastReceiver();
 		FILTER = new IntentFilter();
 
-		FILTER.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED); // 블루투스 탐색
-																		// 시작
-		FILTER.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED); // 블루투스 탐색
-																		// 종료
+		// 블루투스 탐색 시작
+		FILTER.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+		// 블루투스 탐색 종료
+		FILTER.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
 
 		FILTER.addAction(BROADCAST_DEVICE_DISCOVERED);
 		FILTER.addAction(BROADCAST_DEVICE_CONNECTED);
@@ -107,7 +113,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		FILTER.addAction(BROADCAST_DEVICE_IDENTITY_CHANGED);
 
 		FILTER.addAction(BROADCAST_CONFIGURATION_CHANGED);
-		FILTER.addAction(BROADCAST_MESSAGE_RECEIVED_FOR_TEST); // FOR TEST
+		// FILTER.addAction(BROADCAST_MESSAGE_RECEIVED_FOR_TEST); // FOR TEST
 
 		mBlinkEventBroadcast = iBlinkEventBroadcast;
 		mIInternalEventCallback = iInternalEventCallback;
@@ -202,6 +208,10 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		// CONTEXT.stopService(intent);
 	}
 
+	/**
+	 * {@link BlinkDevice}의 연결 상태가 변했을 때 {@link IBlinkEventBroadcast} 콜백이 호출 되도록
+	 * 설정한다.
+	 */
 	public final void startBroadcastReceiver() {
 		if (!isRegisteredReceiver)
 			CONTEXT.registerReceiver(EVENT_BR, FILTER);
@@ -209,6 +219,10 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		isRegisteredReceiver = true;
 	}
 
+	/**
+	 * {@link BlinkDevice}의 연결 상태가 변했을 때 {@link IBlinkEventBroadcast} 콜백이 호출 되지
+	 * 않도록 설정한다.
+	 */
 	public final void stopBroadcastReceiver() {
 		if (isRegisteredReceiver)
 			CONTEXT.unregisterReceiver(EVENT_BR);
@@ -216,6 +230,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		isRegisteredReceiver = false;
 	}
 
+	/** Blink Service의 설정값을 변경하도록 요청한다. */
 	public final void requestConfigurationChange(String... keys) {
 		if (keys != null) {
 			for (String key : keys) {
@@ -248,7 +263,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 				mInternalOperationSupport
 						.registerCallback(mIInternalEventCallback);
 			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				return false;
 			}
@@ -359,7 +373,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	public void onDeviceDisconnected(BlinkDevice device) {
 		if (mBlinkEventBroadcast != null)
 			mBlinkEventBroadcast.onDeviceDisconnected(device);
-
 	}
 
 	/**
@@ -454,7 +467,6 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			mInternalOperationSupport.registerBlinkApp(mBlinkAppInfo);
 			return true;
 		} catch (Exception e) {
-
 			e.printStackTrace();
 			return false;
 		}
@@ -595,8 +607,11 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			try {
 				json = mBlinkDatabaseManager.obtainMeasurementData(obj,
 						DateTimeFrom, DateTimeTo, ContainType);
-				return gson.fromJson(json, new TypeToken<ArrayList<T>>() {
-				}.getType());
+
+				// FIXME class cast Exception
+				return gsonTreeMapConvert(obj,
+						gson.fromJson(json, new TypeToken<ArrayList<T>>() {
+						}.getType()));
 			} catch (InstantiationException e) {
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
@@ -605,6 +620,63 @@ public class BlinkServiceInteraction implements ServiceConnection,
 				e.printStackTrace();
 			}
 			return null;
+		}
+
+		/** Gson으로 얻은 객체를 변환한다. */
+		private final <T> List<T> gsonTreeMapConvert(Class<T> clazz,
+				Object gsonTreeObject) {
+			@SuppressWarnings("unchecked")
+			List<LinkedTreeMap<String, Object>> list = (List<LinkedTreeMap<String, Object>>) gsonTreeObject;
+			List<T> dataList = new ArrayList<T>();
+
+			for (LinkedTreeMap<String, Object> map : list) {
+				try {
+					T data = clazz.newInstance();
+					for (Entry<String, Object> entry : map.entrySet()) {
+						try {
+							Field field = clazz.getField(entry.getKey());
+							field.setAccessible(true);
+							// check primitive type
+							checkTypeAndPut(field, data, entry.getValue());
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+					dataList.add(data);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			return dataList;
+		}
+
+		/**
+		 * object.field = value
+		 * 
+		 * @param field
+		 *            object의 한 필드
+		 * @param object
+		 *            field가 속한 객체
+		 * @param value
+		 *            설정할 field의 값
+		 */
+		private void checkTypeAndPut(Field field, Object object, Object value)
+				throws Exception {
+			if (field.getType().equals(Integer.TYPE)) {
+				field.setInt(object, ((Double) value).intValue());
+			} else if (field.getType().equals(Byte.TYPE)) {
+				field.setByte(object, (Byte) value);
+			} else if (field.getType().equals(Double.TYPE)) {
+				field.setDouble(object, (Double) value);
+			} else if (field.getType().equals(Short.TYPE)) {
+				field.setShort(object, (Short) value);
+			} else if (field.getType().equals(Long.TYPE)) {
+				field.setLong(object, (Long) value);
+			} else if (field.getType().equals(Float.TYPE)) {
+				field.setFloat(object, (Float) value);
+			} else {
+				field.set(object, value);
+			}
 		}
 
 		/**
@@ -938,7 +1010,8 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @param RequestCode
 		 *            : 요청을 구분할 수 있는 코드로 콜백에서 responseCode와 동일하다.
 		 */
-		public void obtainMeasurementData(Class<?> obj, int RequestCode) {
+		public void obtainMeasurementData(Class<? extends DefaultSchema> obj,
+				int RequestCode) {
 			obtainMeasurementData(obj, null, null,
 					SqliteManager.CONTAIN_DEFAULT, RequestCode);
 		}
@@ -954,8 +1027,8 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @param RequestCode
 		 *            : 요청을 구분할 수 있는 코드로 콜백에서 responseCode와 동일하다.
 		 */
-		public void obtainMeasurementData(Class<?> obj, int ContainType,
-				int RequestCode) {
+		public void obtainMeasurementData(Class<? extends DefaultSchema> obj,
+				int ContainType, int RequestCode) {
 			obtainMeasurementData(obj, null, null, ContainType, RequestCode);
 		}
 
@@ -974,8 +1047,9 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 * @param RequestCode
 		 *            : 요청을 구분할 수 있는 코드로 콜백에서 responseCode와 동일하다.
 		 */
-		public void obtainMeasurementData(Class<?> obj, String DateTimeFrom,
-				String DateTimeTo, int ContainType, int RequestCode) {
+		public void obtainMeasurementData(Class<? extends DefaultSchema> obj,
+				String DateTimeFrom, String DateTimeTo, int ContainType,
+				int RequestCode) {
 			String ClassName = obj.getName();
 			try {
 				mInternalOperationSupport.obtainMeasurementData(ClassName,

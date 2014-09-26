@@ -5,7 +5,6 @@ import java.util.List;
 import kr.poturns.blink.R;
 import kr.poturns.blink.external.CircularViewHelper.OnDragAndDropListener;
 import kr.poturns.blink.external.ConnectionFragment.BaseConnectionFragment;
-import kr.poturns.blink.external.ConnectionFragment.DeviceConnectionResultListener;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.content.Context;
 import android.os.Bundle;
@@ -17,7 +16,6 @@ import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.SlidingDrawer;
 import android.widget.TextView;
-import android.widget.Toast;
 
 @SuppressWarnings("deprecation")
 /** Bluetooth Device의 연결 상태를 그래픽으로 나타내는 Fragment 클래스*/
@@ -139,32 +137,8 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 
 		@Override
 		public void onDrop(View view) {
-			connectOrDisConnectDevice(
-					(BlinkDevice) mCircularHelper.getViewTag(view),
-					new DeviceConnectionResultListener() {
-						@Override
-						public void onResult(BlinkDevice device,
-								boolean connectionResult, boolean isTaskFailed) {
-							if (isTaskFailed)
-								Toast.makeText(getActivity(),
-										"connection task was failed!",
-										Toast.LENGTH_SHORT).show();
-							else {
-								if (connectionResult)
-									Toast.makeText(
-											getActivity(),
-											device.getName()
-													+ " was connected!",
-											Toast.LENGTH_SHORT).show();
-								else
-									Toast.makeText(
-											getActivity(),
-											device.getName()
-													+ " was disconnected!",
-											Toast.LENGTH_SHORT).show();
-							}
-						}
-					});
+			connectOrDisConnectDevice((BlinkDevice) mCircularHelper
+					.getViewTag(view));
 		}
 
 		@Override
