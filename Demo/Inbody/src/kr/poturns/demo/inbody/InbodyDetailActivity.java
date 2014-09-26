@@ -44,7 +44,14 @@ public class InbodyDetailActivity extends ListActivity {
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
 		setContentView(R.layout.activity_inbody_detail_list);
-
+		mInteraction = new BlinkServiceInteraction(this) {
+			@Override
+			public void onServiceConnected(
+					IInternalOperationSupport iSupport) {
+				InbodyDetailActivity.this.mIInternalOperationSupport = iSupport;
+			}
+		};
+		mInteraction.startService();
 		bodytypeImage = (ImageView) findViewById(R.id.bodytypeimage);
 		bodytypeText = (TextView) findViewById(R.id.bodytypetext);
 		/*
@@ -123,6 +130,7 @@ public class InbodyDetailActivity extends ListActivity {
 
 			@Override
 			public void onClick(View arg0) {
+				Log.i("Inbody", "전송!");
 				// TODO Auto-generated method stub
 				sendInbodyRemote(mInbodyDomain);
 			}
@@ -133,7 +141,7 @@ public class InbodyDetailActivity extends ListActivity {
 	public void sendInbodyRemote(InbodyDomain inbody) {
 
 		final int REQUEST_CODE = 0;
-		final String REMOTE_APP_PACKAGE_NAME = "kr.poturns.blink.demo.healthmanagerr";
+		final String REMOTE_APP_PACKAGE_NAME = "kr.poturns.blink.demo.healthmanager";
 		Gson mGson = new GsonBuilder().setPrettyPrinting().create();
 
 		if (mIInternalOperationSupport != null) {
