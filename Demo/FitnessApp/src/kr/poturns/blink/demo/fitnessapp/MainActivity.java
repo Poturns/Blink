@@ -10,9 +10,11 @@ import kr.poturns.blink.schema.PushUp;
 import kr.poturns.blink.schema.SitUp;
 import kr.poturns.blink.schema.Squat;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Point;
@@ -46,7 +48,7 @@ public class MainActivity extends Activity implements ActivityInterface {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
+
 		// Blink 서비스 시작
 		mInteraction = new BlinkServiceInteraction(this, null, null) {
 
@@ -78,14 +80,14 @@ public class MainActivity extends Activity implements ActivityInterface {
 		};
 		mInteraction.startBroadcastReceiver();
 		mInteraction.startService();
-		
+
 		// 심박수 측정 서비스 시작/종료
 		startOrStopService(PreferenceManager.getDefaultSharedPreferences(this)
 				.getBoolean(SettingFragment.KEY_MEASURE_HEARTBEAT, false));
 		IntentFilter filter = new IntentFilter(
 				HeartBeatService.WIDGET_HEART_BEAT_ACTION);
 		registerReceiver(mHeartBeatReciever, filter);
-		
+
 		// 화면 제스처 등록
 		mGestureDetector = new GestureDetector(this,
 				new GestureDetector.SimpleOnGestureListener() {
@@ -117,7 +119,7 @@ public class MainActivity extends Activity implements ActivityInterface {
 						return false;
 					}
 				});
-		
+
 		// View 설정 & 화면 크기 제한
 		View container = findViewById(R.id.root).findViewById(R.id.container);
 
@@ -139,7 +141,7 @@ public class MainActivity extends Activity implements ActivityInterface {
 		else
 			layoutParam.width = layoutParam.height = size.y - pageRowMargin;
 		container.setLayoutParams(layoutParam);
-		
+
 		// 홈 화면으로 이동
 		attachFragment(new HomeFragment(), null, R.animator.slide_in_right,
 				R.animator.slide_out_left);
@@ -309,6 +311,36 @@ public class MainActivity extends Activity implements ActivityInterface {
 				}
 			});
 			return v;
+		}
+
+		@Override
+		public void onActivityCreated(Bundle savedInstanceState) {
+			try {
+				if (FitnessUtil.readInBodyFromFile(getActivity()) == null) {
+					showDialog();
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				showDialog();
+			}
+			super.onActivityCreated(savedInstanceState);
+		}
+
+		private void showDialog() {
+			new AlertDialog.Builder(getActivity())
+					.setTitle("인바디 데이터 없음!")
+					.setPositiveButton("가져오기",
+							new DialogInterface.OnClickListener() {
+
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
+									Bundle b = new Bundle();
+									b.putBoolean("hasNotInbody", true);
+									mActivityInterface.attachFragment(
+											new InBodyFragment(), b);
+								}
+							}).setNegativeButton("나중에", null).create().show();
 		}
 
 		@Override

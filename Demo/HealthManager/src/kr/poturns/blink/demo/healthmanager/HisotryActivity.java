@@ -50,7 +50,7 @@ public class HisotryActivity extends ListActivity implements OnItemClickListener
 		mInbodyList = null;
 		if(history==0x01){
 			((TextView)findViewById(R.id.history_subtitle)).setText("Inbody History");
-			mInbodyList = mBlinkServiceInteraction.local.obtainMeasurementData(Inbody.class,new TypeToken<ArrayList<Inbody>>(){}.getType());
+			mInbodyList = mBlinkServiceInteraction.local.obtainMeasurementData(Inbody.class);
 			
 			Inbody mInbody;
 			for(int i=0;i<mInbodyList.size();i++){
@@ -66,9 +66,9 @@ public class HisotryActivity extends ListActivity implements OnItemClickListener
 			}
 		}else if(history==0x02){
 			((TextView)findViewById(R.id.history_subtitle)).setText("Excercise History");
-			List<PushUp> mPushUpList = mBlinkServiceInteraction.local.obtainMeasurementData(PushUp.class,new TypeToken<ArrayList<PushUp>>(){}.getType());
-			List<Squat> mSquatList = mBlinkServiceInteraction.local.obtainMeasurementData(Squat.class,new TypeToken<ArrayList<Squat>>(){}.getType());
-			List<SitUp> mSitUpList = mBlinkServiceInteraction.local.obtainMeasurementData(SitUp.class,new TypeToken<ArrayList<SitUp>>(){}.getType());
+			List<PushUp> mPushUpList = mBlinkServiceInteraction.local.obtainMeasurementData(PushUp.class);
+			List<Squat> mSquatList = mBlinkServiceInteraction.local.obtainMeasurementData(Squat.class);
+			List<SitUp> mSitUpList = mBlinkServiceInteraction.local.obtainMeasurementData(SitUp.class);
 			PushUp mPushUp;
 			for(int i=0;i<mPushUpList.size();i++){
 				mPushUp = mPushUpList.get(i);
@@ -99,7 +99,7 @@ public class HisotryActivity extends ListActivity implements OnItemClickListener
 			
 		}else if(history==0x03){
 			((TextView)findViewById(R.id.history_subtitle)).setText("Heart History");
-			List<HeartBeat> mHeartBeatList = mBlinkServiceInteraction.local.obtainMeasurementData(HeartBeat.class,new TypeToken<ArrayList<HeartBeat>>(){}.getType());
+			List<HeartBeat> mHeartBeatList = mBlinkServiceInteraction.local.obtainMeasurementData(HeartBeat.class);
 			HeartBeat mHeartBeat;
 			for(int i=0;i<mHeartBeatList.size();i++){
 				mHeartBeat = mHeartBeatList.get(i);

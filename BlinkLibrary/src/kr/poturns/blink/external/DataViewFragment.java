@@ -11,17 +11,16 @@ import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
+import android.app.Activity;
 import android.app.Fragment;
+import android.app.FragmentManager;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v13.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TabHost;
 import android.widget.TextView;
 
 import com.handstudio.android.hzgrapherlib.graphview.BubbleGraphView;
@@ -38,8 +37,43 @@ class DataViewFragment extends Fragment {
 	App mApp;
 	Measurement mMeasurement;
 	SqliteManagerExtended mManager;
-	private TabHost mTabHost;
-	private ViewPager mViewPager;
+	PrivateUtil.ViewPagerFragmentProxy fragmentProxy = new PrivateUtil.ViewPagerFragmentProxy() {
+		@Override
+		protected String[] getTitles() {
+			return getResources().getStringArray(
+					R.array.res_blink_dialog_data_page_titles);
+		}
+
+		@Override
+		protected int getViewPagerCount() {
+			return 2;
+		}
+
+		@Override
+		protected Fragment getViewPagerPage(int position) {
+			switch (position) {
+			case 0:
+				if (mManager.obtainMeasurementDataListSize(mMeasurement) == 0) {
+					// 불러올 데이터가 없는 경우 측정 리스트 Fragment를 불러오게 한다.
+					return new DataMeasurementDataListFragment();
+				} else {
+					return new DataMeasurementsLineGraphFragment();
+				}
+			default:
+				return new DataMeasurementDataListFragment();
+			}
+		}
+
+		@Override
+		protected FragmentManager getFragmentManager() {
+			return DataViewFragment.this.getChildFragmentManager();
+		}
+
+		@Override
+		protected Activity getActivity() {
+			return DataViewFragment.this.getActivity();
+		}
+	};
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -58,85 +92,14 @@ class DataViewFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		final View v = inflater.inflate(
-				R.layout.res_blink_dialog_fragment_connection_device_info,
-				container, false);
-		mTabHost = (TabHost) v.findViewById(android.R.id.tabhost);
-		mTabHost.setup();
-		TabHost.TabContentFactory factory = new TabHost.TabContentFactory() {
-
-			@Override
-			public View createTabContent(String tag) {
-				View v = new View(getActivity());
-				v.setMinimumWidth(0);
-				v.setMinimumHeight(0);
-				v.setTag(tag);
-				return v;
-			}
-		};
-		final String[] pageTitles = getResources().getStringArray(
-				R.array.res_blink_dialog_data_page_titles);
-		int i = 0;
-		for (String title : pageTitles) {
-			mTabHost.addTab(mTabHost.newTabSpec(String.valueOf(i++))
-					.setIndicator(title).setContent(factory));
-		}
-
-		mTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
-			@Override
-			public void onTabChanged(String tabId) {
-				navigateTab(Integer.valueOf(tabId), false);
-			}
-		});
-		mViewPager = (ViewPager) v
-				.findViewById(R.id.res_blink_dialog_deviceinfo_viewpager);
-		mViewPager
-				.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-					@Override
-					public void onPageSelected(int position) {
-						navigateTab(position, true);
-					}
-				});
-		mViewPager.setAdapter(new FragmentPagerAdapter(this
-				.getChildFragmentManager()) {
-
-			@Override
-			public int getCount() {
-				return 2;
-			}
-
-			@Override
-			public Fragment getItem(int position) {
-				switch (position) {
-				case 0:
-					if (mManager.obtainMeasurementDataListSize(mMeasurement) == 0) {
-						// 불러올 데이터가 없는 경우 측정 리스트 Fragment를 불러오게 한다.
-						return new DataMeasurementDataListFragment();
-					} else {
-						return new DataMeasurementsLineGraphFragment();
-					}
-				default:
-					return new DataMeasurementDataListFragment();
-				}
-			}
-		});
-		return v;
+		return fragmentProxy.onCreateView(inflater, container,
+				savedInstanceState);
 	}
 
-	/**
-	 * {@link ViewPager}또는 {@link TabHost}의 page를 이동한다.
-	 * 
-	 * @param position
-	 *            움직일 page또는 tab의 인덱스
-	 * @param isFromPager
-	 *            이동 요청이 {@link ViewPager}로 부터 왔는지 여부
-	 */
-	protected void navigateTab(int position, boolean isFromPager) {
-		if (isFromPager) {
-			mTabHost.setCurrentTab(position);
-		} else {
-			mViewPager.setCurrentItem(position);
-		}
+	@Override
+	public void onDestroyView() {
+		fragmentProxy.onDestroyView();
+		super.onDestroyView();
 	}
 
 	@Override
@@ -156,13 +119,6 @@ class DataViewFragment extends Fragment {
 		getActivity().getActionBar().setTitle(arg.getCharSequence("title"));
 		getActivity().getActionBar().setSubtitle(
 				arg.getCharSequence("subTitle"));
-	}
-
-	@Override
-	public void onDestroyView() {
-		mTabHost = null;
-		mViewPager = null;
-		super.onDestroyView();
 	}
 
 	/** 해당 Device의 App의 Measurement의 Data들을 line graph형태로 보여준다. */

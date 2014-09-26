@@ -164,7 +164,7 @@ class SqliteManagerExtended extends SqliteManager {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			return null;
+			return list;
 		} finally {
 			cursor.close();
 		}

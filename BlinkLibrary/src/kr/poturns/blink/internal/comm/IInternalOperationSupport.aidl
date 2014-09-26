@@ -12,7 +12,7 @@ import kr.poturns.blink.db.archive.Device;
 import kr.poturns.blink.db.archive.App;
 
 /**
- *
+ * Blink Service Process와 통신하는 IPC Binder
  * @author Yeonho.Kim
  * @since 2014.08.05
  *
@@ -61,13 +61,13 @@ interface IInternalOperationSupport {
 	void stopListeningAsServer();
 
 	/**
-	 *
+	 * 기기와 해당 {@code BlinkDevice}를 연결한다.
 	 *
 	 */
 	void connectDevice(inout BlinkDevice device);
 	
 	/**
-	 *
+	 * 기기와 해당 {@code BlinkDevice}를 연결해제 한다.
 	 *
 	 */
 	void disconnectDevice(inout BlinkDevice device);
