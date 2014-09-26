@@ -155,6 +155,9 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 												R.string.res_blink_fail,
 												Toast.LENGTH_SHORT).show();
 									}
+									// 디렉토리 복구 && DB 파일 생성
+									FileUtil.createExternalDirectory();
+									new SqliteManagerExtended(getActivity());
 								}
 							}).create().show();
 			return true;
