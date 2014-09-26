@@ -1,6 +1,6 @@
 package kr.poturns.blink.external;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -254,8 +254,24 @@ final class ConnectionFragment extends Fragment {
 				}
 			}
 		});
+		sHandler.removeCallbacks(mProgressDismissAction);
+		sHandler.postDelayed(mProgressDismissAction, PROGRESS_WATING_TIME);
 		onPreLoading(true);
 	}
+
+	/** ProgressDialog가 최대로 보여질 시간 */
+	private static final long PROGRESS_WATING_TIME = 20 * 1000;
+	/** (실행중인) ProgressDialog를 dismiss하는 Action */
+	Runnable mProgressDismissAction = new Runnable() {
+
+		@Override
+		public void run() {
+			if (mProgressDialog != null) {
+				mProgressDialog.dismiss();
+				mCurrentChildFragmentInterface.onDeviceListChanged();
+			}
+		}
+	};
 
 	/**
 	 * Bluetooth Discovery를 시작해서 주변에 발견된 BlinkDevice의 list를 비동기적으로 가져온다. <br>
@@ -336,7 +352,7 @@ final class ConnectionFragment extends Fragment {
 	 */
 	private final boolean retainConnectedDevicesFromListInternal() {
 		boolean result = true;
-		List<BlinkDevice> list = Collections.synchronizedList(mDeviceList);
+		List<BlinkDevice> list = new ArrayList<BlinkDevice>(mDeviceList);
 
 		for (BlinkDevice device : list) {
 			if (!device.isConnected()) {
@@ -730,10 +746,12 @@ final class ConnectionFragment extends Fragment {
 		 */
 		private void logAndPostAboutConnection(final BlinkDevice device,
 				String logMsg, final int toastTextRes) {
+			sHandler.removeCallbacks(mParentFragment.mProgressDismissAction);
 			Log.d("ConnectionFragment", logMsg + device);
 			sHandler.post(new Runnable() {
 				@Override
 				public void run() {
+					mParentFragment.mProgressDialog.dismiss();
 					Toast.makeText(getActivity(),
 							device.getName() + getString(toastTextRes),
 							Toast.LENGTH_SHORT).show();

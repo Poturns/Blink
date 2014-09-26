@@ -118,7 +118,7 @@ public class InBodyFragment extends SwipeEventFragment implements
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		if (getArguments().getBoolean("hasNotInbody")) {
+		if (getArguments() != null && getArguments().getBoolean("hasNotInbody")) {
 			mActivityInterface.getBlinkServiceInteraction().remote
 					.obtainMeasurementData(
 							kr.poturns.blink.schema.Inbody.class, CODE_INBODY);
@@ -139,26 +139,34 @@ public class InBodyFragment extends SwipeEventFragment implements
 	}
 
 	@Override
-	public void onReceiveData(int code, CallbackData data)
+	public void onReceiveData(int code, final CallbackData data)
 			throws RemoteException {
 		switch (code) {
 		case CODE_INBODY:
-			progressDialog.dismiss();
-			if (!data.Result) {
-				Toast.makeText(getActivity(), "인바디 데이터를 받을 수 없습니다.",
-						Toast.LENGTH_SHORT).show();
-				return;
-			} else {
-				InBodyData mInbodyData = gson.fromJson(data.OutDeviceData,
-						InBodyData.class);
-				try {
-					FitnessUtil.saveInBodyFile(getActivity(), mInbodyData);
-				} catch (IOException e) {
-					e.printStackTrace();
-					return;
+			getActivity().runOnUiThread(new Runnable() {
+
+				@Override
+				public void run() {
+					progressDialog.dismiss();
+					if (!data.Result) {
+						Toast.makeText(getActivity(), "인바디 데이터를 받을 수 없습니다.",
+								Toast.LENGTH_SHORT).show();
+						return;
+					} else {
+						InBodyData mInbodyData = gson.fromJson(
+								data.OutDeviceData, InBodyData.class);
+						try {
+							FitnessUtil.saveInBodyFile(getActivity(),
+									mInbodyData);
+						} catch (IOException e) {
+							e.printStackTrace();
+							return;
+						}
+						updateView(mInbodyData);
+					}
 				}
-				updateView(mInbodyData);
-			}
+			});
+
 			break;
 		default:
 			break;

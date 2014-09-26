@@ -14,7 +14,6 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Point;
@@ -145,6 +144,47 @@ public class MainActivity extends Activity implements ActivityInterface {
 		// 홈 화면으로 이동
 		attachFragment(new HomeFragment(), null, R.animator.slide_in_right,
 				R.animator.slide_out_left);
+	}
+
+	@Override
+	protected void onPostCreate(Bundle savedInstanceState) {
+		super.onPostCreate(savedInstanceState);
+		try {
+			if (FitnessUtil.readInBodyFromFile(this) == null) {
+				showDialog();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			showDialog();
+		}
+	}
+
+	private void showDialog() {
+		View content = View.inflate(this, R.layout.main_inbody_alert, null);
+
+		final AlertDialog dialog = new AlertDialog.Builder(this)
+				.setView(content).setCancelable(true).create();
+		dialog.show();
+		content.findViewById(R.id.button_load).setOnClickListener(
+				new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						dialog.dismiss();
+						Bundle b = new Bundle();
+						b.putBoolean("hasNotInbody", true);
+						attachFragment(new InBodyFragment(), b);
+					}
+				});
+		
+		// 5초 뒤 다이얼로그 종료
+		content.postDelayed(new Runnable() {
+
+			@Override
+			public void run() {
+				dialog.dismiss();
+			}
+		}, 5000);
 	}
 
 	@Override
@@ -311,36 +351,6 @@ public class MainActivity extends Activity implements ActivityInterface {
 				}
 			});
 			return v;
-		}
-
-		@Override
-		public void onActivityCreated(Bundle savedInstanceState) {
-			try {
-				if (FitnessUtil.readInBodyFromFile(getActivity()) == null) {
-					showDialog();
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-				showDialog();
-			}
-			super.onActivityCreated(savedInstanceState);
-		}
-
-		private void showDialog() {
-			new AlertDialog.Builder(getActivity())
-					.setTitle("인바디 데이터 없음!")
-					.setPositiveButton("가져오기",
-							new DialogInterface.OnClickListener() {
-
-								@Override
-								public void onClick(DialogInterface dialog,
-										int which) {
-									Bundle b = new Bundle();
-									b.putBoolean("hasNotInbody", true);
-									mActivityInterface.attachFragment(
-											new InBodyFragment(), b);
-								}
-							}).setNegativeButton("나중에", null).create().show();
 		}
 
 		@Override
