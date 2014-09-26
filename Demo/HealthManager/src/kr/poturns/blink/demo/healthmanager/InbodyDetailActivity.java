@@ -5,6 +5,7 @@ import android.app.ListActivity;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.google.gson.Gson;
 /**
@@ -20,6 +21,7 @@ public class InbodyDetailActivity extends ListActivity {
     InbodyDetailAdapter adapter; // ListView 관리용  Adapter
 
     ImageView bodytypeImage;
+    TextView bodytypetext;
     Gson gson = new Gson();
     @Override
     public void onCreate(Bundle icicle) {
@@ -29,6 +31,7 @@ public class InbodyDetailActivity extends ListActivity {
         mInbody = gson.fromJson(getIntent().getStringExtra("Inbody"), Inbody.class);
         
         bodytypeImage = (ImageView)findViewById(R.id.bodytypeimage);
+        bodytypetext = (TextView)findViewById(R.id.bodytypetext);
         if(mInbody.type.equals("비만형")){
         	bodytypeImage.setImageResource(R.drawable.fatperson_white);
         }else if(mInbody.type.equals("평균형")){
@@ -36,6 +39,7 @@ public class InbodyDetailActivity extends ListActivity {
         }else if(mInbody.type.equals("근육형")){
         	bodytypeImage.setImageResource(R.drawable.musclebodytype);
         }
+        bodytypetext.setText(mInbody.type);
         
         adapter = new InbodyDetailAdapter(this,mInbody); // 동적 리스트 관리 Adapter
         setListAdapter(adapter);

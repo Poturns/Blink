@@ -58,13 +58,12 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 		String packageName = intent.getStringExtra(INTENT_EXTRA_SOURCE_PACKAGE);
 		if (packageName == null)
 			return null;
-
 		try {
 			BlinkSupportBinder mBinder = mServiceKeeper
-					.obtainBinder(packageName);
+					.obtainBinder();
 			if (mBinder == null) {
 				mBinder = new BlinkSupportBinder(this);
-				mServiceKeeper.registerBinder(packageName, mBinder);
+				mServiceKeeper.registerBinder(mBinder);
 			}
 			return mBinder.asBinder();
 
@@ -72,7 +71,6 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 			return null;
 		}
 	}
-
 	@Override
 	public boolean onUnbind(Intent intent) {
 		String packageName = intent.getStringExtra(INTENT_EXTRA_SOURCE_PACKAGE);

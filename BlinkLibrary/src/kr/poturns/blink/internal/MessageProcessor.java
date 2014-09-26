@@ -224,17 +224,12 @@ public class MessageProcessor {
 
 			} else if (blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_FUNCTION_SUCCESS) {
 				Log.i("acceptBlinkMessage", "TYPE_RESPONSE_FUNCTION_SUCCESS");
-				SERVICE_KEEPER.obtainBinder(
-						blinkMessage.getDestinationApplication())
-						.callbackData(blinkMessage.getCode(),
-								blinkMessage.getMessage(), true);
+				SERVICE_KEEPER.obtainBinder().callbackData(blinkMessage.getCode(),blinkMessage.getMessage(), true,blinkMessage.getDestinationApplication());
 			} else if (blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SUCCESS) {
 				Log.i("acceptBlinkMessage",
 						"TYPE_RESPONSE_MEASUREMENTDATA_SUCCESS");
-				SERVICE_KEEPER.obtainBinder(
-						blinkMessage.getDestinationApplication())
-						.callbackData(blinkMessage.getCode(),
-								blinkMessage.getMessage(), true);
+				if(SERVICE_KEEPER.obtainBinder()==null)Log.i("Blink", "binder nul1!!");
+				SERVICE_KEEPER.obtainBinder().callbackData(blinkMessage.getCode(),blinkMessage.getMessage(), true,blinkMessage.getDestinationApplication());
 			}
 			// Sync 플래그를 false로 변경하여 동기화 요청을 할 수 있도록 한다.
 			else if (blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SYNC_SUCCESS) {

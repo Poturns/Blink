@@ -36,6 +36,8 @@ public class HeartBeatService extends Service {
 	private static final String TAG = HeartBeatService.class.getSimpleName();
 	BlinkServiceInteraction mInteraction;
 	IInternalOperationSupport mIInternalOperationSupport;
+	/** 디버깅 용도*/
+	private boolean DEBUG = true;
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -94,6 +96,7 @@ public class HeartBeatService extends Service {
 		public void run() {
 			Log.d(TAG, "HeartBeat Thread started internal");
 			progress = 0;
+			int count = 0;
 			Intent intent = new Intent(WIDGET_HEART_BEAT_ACTION);
 			while (true) {
 				synchronized (this) {
@@ -104,7 +107,10 @@ public class HeartBeatService extends Service {
 					}
 				}
 				if (progress == HEART_BEAT_COUNT_INTERVAL) {
+					count++;
 					int bpm = generateHeartBeat();
+					if (DEBUG && count % 3 == 0)
+						bpm = 140;
 					intent.putExtra(WIDGET_HEART_BEAT_VALUE, bpm);
 					sendBroadcast(intent);
 					Log.d(TAG, "HeartBeat Thread send broadcast, HeartBeat : "
@@ -128,21 +134,24 @@ public class HeartBeatService extends Service {
 		}
 
 		private void sendHeartBeatRemote(int bpm) {
-			if(bpm < 1)
+			if (bpm < 1)
 				return;
 			if (mIInternalOperationSupport != null) {
+				boolean result = false;
 				for (BlinkAppInfo info : mInteraction.local.obtainBlinkAppAll()) {
 					if (info.mApp.PackageName.equals(REMOTE_APP_PACKAGE_NAME)) {
 						mInteraction.remote.sendMeasurementData(info, mGson
 								.toJson(new HeartBeat(bpm, DateTimeUtil
 										.getTimeString())), REQUEST_CODE);
 						Log.d(TAG, "send HeartBeat : " + bpm + " // to "
-								+ REMOTE_APP_PACKAGE_NAME);
-						return;
+								+ REMOTE_APP_PACKAGE_NAME + " // "
+								+ info.mDevice.MacAddress);
+						result = true;
 					}
 				}
-				Log.e(TAG, "Cannot reach remote device : "
-						+ REMOTE_APP_PACKAGE_NAME);
+				if (!result)
+					Log.e(TAG, "Cannot reach remote device : "
+							+ REMOTE_APP_PACKAGE_NAME);
 			} else {
 				Log.e(TAG, "Blink Service Support == null");
 			}

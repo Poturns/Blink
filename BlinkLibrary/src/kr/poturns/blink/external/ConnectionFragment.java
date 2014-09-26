@@ -1,6 +1,5 @@
 package kr.poturns.blink.external;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -254,8 +253,24 @@ final class ConnectionFragment extends Fragment {
 				}
 			}
 		});
+		sHandler.removeCallbacks(mProgressDismissAction);
+		sHandler.postDelayed(mProgressDismissAction, PROGRESS_WATING_TIME);
 		onPreLoading(true);
 	}
+
+	/** ProgressDialog가 최대로 보여질 시간 */
+	private static final long PROGRESS_WATING_TIME = 20 * 1000;
+	/** (실행중인) ProgressDialog를 dismiss하는 Action */
+	Runnable mProgressDismissAction = new Runnable() {
+
+		@Override
+		public void run() {
+			if (mProgressDialog != null) {
+				mProgressDialog.dismiss();
+				mCurrentChildFragmentInterface.onDeviceListChanged();
+			}
+		}
+	};
 
 	/**
 	 * Bluetooth Discovery를 시작해서 주변에 발견된 BlinkDevice의 list를 비동기적으로 가져온다. <br>
@@ -315,7 +330,7 @@ final class ConnectionFragment extends Fragment {
 	}
 
 	/**
-	 * 현재 device 리스트에서 연결된 device만 남긴다.<br>
+	 * 연결된 device만 가져온다.<br>
 	 * <br>
 	 * * 작업에 성공하면 {@link #onDeviceListChanged()} , 실패하면
 	 * {@link #onDeviceListLoadFailed()}가 호출된다.
@@ -335,22 +350,18 @@ final class ConnectionFragment extends Fragment {
 	 * 실제 작업을 수행한다.
 	 */
 	private final boolean retainConnectedDevicesFromListInternal() {
-		boolean result = true;
-		List<BlinkDevice> list = Collections.synchronizedList(mDeviceList);
-
-		for (BlinkDevice device : list) {
-			if (!device.isConnected()) {
-				result &= list.remove(device);
-			}
-		}
-
-		// removed sucessfully!
-		if (result) {
+		try {
 			mDeviceList.clear();
-			mDeviceList.addAll(list);
+			for (BlinkDevice device : mBlinkOperation
+					.obtainConnectedDeviceList()) {
+				mDeviceList.add(device);
+			}
+			mCurrentChildFragmentInterface.onDeviceListChanged();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
 		}
-
-		return result;
+		return true;
 	}
 
 	/** 현재 DeviceList에 이전에 Discovery된 Device의 목록을 유지한다. */
@@ -730,10 +741,12 @@ final class ConnectionFragment extends Fragment {
 		 */
 		private void logAndPostAboutConnection(final BlinkDevice device,
 				String logMsg, final int toastTextRes) {
+			sHandler.removeCallbacks(mParentFragment.mProgressDismissAction);
 			Log.d("ConnectionFragment", logMsg + device);
 			sHandler.post(new Runnable() {
 				@Override
 				public void run() {
+					mParentFragment.mProgressDialog.dismiss();
 					Toast.makeText(getActivity(),
 							device.getName() + getString(toastTextRes),
 							Toast.LENGTH_SHORT).show();

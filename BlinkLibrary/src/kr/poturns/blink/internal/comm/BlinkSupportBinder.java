@@ -65,7 +65,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	/**
 	 * 바인더와 연결된 어플리케이션의 디바이스명, 패키지명, 앱 이름
 	 */
-	String mDeviceName, mPackageName, mAppName;
 
 	int requestPolicy = REQUEST_TYPE_DUAL_DEVICE;
 	Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -88,16 +87,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	}
 
 	/**
-	 * 어플리케이션의 패키지명과 앱이름을 바인더에 저장한다.
-	 */
-	@Override
-	public void registerApplicationInfo(String PackageName, String AppName)
-			throws RemoteException {
-		this.mPackageName = PackageName;
-		this.mAppName = AppName;
-	}
-
-	/**
 	 * 데이터 요청 정책을 설정한다. 현재 사용하지 않는다.
 	 */
 	@Override
@@ -115,11 +104,11 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	 * 어플리케이션으로부터 콜백을 받아서 등록한다. 콜백은 ServiceKeeper에 저장된다.
 	 */
 	@Override
-	public final boolean registerCallback(IInternalEventCallback callback)
+	public final boolean registerCallback(IInternalEventCallback callback,String packageName)
 			throws RemoteException {
 		ServiceKeeper mServiceKeeper = ServiceKeeper.getInstance(CONTEXT);
 		if (callback != null) {
-			mServiceKeeper.addRemoteCallbackList(mPackageName, callback);
+			mServiceKeeper.addRemoteCallbackList(packageName, callback);
 			return true;
 		}
 		return false;
@@ -129,11 +118,11 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	 * 어플리케이션으로부터 콜백을 제거한다. 콜백은 ServiceKeeper에 저장되어 있다.
 	 */
 	@Override
-	public final boolean unregisterCallback(IInternalEventCallback callback)
+	public final boolean unregisterCallback(IInternalEventCallback callback,String packageName)
 			throws RemoteException {
 		ServiceKeeper mServiceKeeper = ServiceKeeper.getInstance(CONTEXT);
 		if (callback != null) {
-			return mServiceKeeper.removeRemoteCallbackList(mPackageName,
+			return mServiceKeeper.removeRemoteCallbackList(packageName,
 					callback);
 		}
 		return false;
@@ -151,11 +140,11 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	 * @param result
 	 *            : 통신이 정상적으로 되었는지 결과
 	 */
-	public void callbackData(int responseCode, String data, boolean result) {
+	public void callbackData(int responseCode, String data, boolean result,String packageName) {
 		Log.i(TAG, "Binder callbackData");
 		ServiceKeeper mServiceKeeper = ServiceKeeper.getInstance(CONTEXT);
 		RemoteCallbackList<IInternalEventCallback> mRemoteCallbackList = mServiceKeeper
-				.obtainRemoteCallbackList(mPackageName);
+				.obtainRemoteCallbackList(packageName);
 		if (mRemoteCallbackList == null) {
 			Log.i(TAG, "Binder mRemoteCallbackList is null");
 			return;
@@ -207,7 +196,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	 */
 	@Override
 	public void obtainMeasurementData(String ClassName, String DateTimeFrom,
-			String DateTimeTo, int ContainType, int requestCode)
+			String DateTimeTo, int ContainType, int requestCode,String packageName)
 			throws RemoteException {
 		Log.i(TAG, "Binder obtainMeasurementData");
 	
@@ -237,7 +226,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 						.setDestinationDevice((String) null)
 						.setDestinationApplication(null)
 						.setSourceDevice(mBlinkDevice)
-						.setSourceApplication(mPackageName)
+						.setSourceApplication(packageName)
 						.setMessage(gson.toJson(mDatabaseMessage))
 						.setType(IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA)
 						.setCode(requestCode).build();
@@ -254,7 +243,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 						.contentEquals(mBlinkDevice.getAddress())) {
 					Log.i(TAG, "Binder obtainMeasurementData : I am center");
 					mCallbackData.ResultDetail = CallbackData.ERROR_CENTER_DEVICE;
-					callbackData(requestCode, null, false);
+					callbackData(requestCode, null, false,packageName);
 				} else {
 					Log.i(TAG, "Binder obtainMeasurementData : I am not center");
 					CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage,
@@ -269,11 +258,11 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 									DateTimeTo, ContainType);
 					CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
 				}
-				callbackData(requestCode, null, false);
+				callbackData(requestCode, null, false,packageName);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			callbackData(requestCode, null, false);
+			callbackData(requestCode, null, false,packageName);
 		}
 	
 	}
@@ -284,7 +273,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	 */
 	@Override
 	public void obtainMeasurementDataById(List<Measurement> mMeasurementList,
-			String DateTimeFrom, String DateTimeTo, int requestCode)
+			String DateTimeFrom, String DateTimeTo, int requestCode,String packageName)
 			throws RemoteException {
 
 		CallbackData mCallbackData = new CallbackData();
@@ -308,7 +297,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 					.setDestinationDevice((String) null)
 					.setDestinationApplication(null)
 					.setSourceDevice(mBlinkDevice)
-					.setSourceApplication(mPackageName)
+					.setSourceApplication(packageName)
 					.setMessage(gson.toJson(mDatabaseMessage))
 					.setType(IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA)
 					.setCode(requestCode).build();
@@ -327,7 +316,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 			if (ServiceKeeper.getInstance(CONTEXT).obtainCurrentCenterDevice()
 					.getAddress().contentEquals(mBlinkDevice.getAddress())) {
 				mCallbackData.ResultDetail = CallbackData.ERROR_CENTER_DEVICE;
-				callbackData(requestCode, null, false);
+				callbackData(requestCode, null, false,packageName);
 			} else
 				CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage,
 						null);
@@ -342,7 +331,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 				mCallbackData.InDeviceData = gson.toJson(InDeviceData);
 				CALLBACK_DATA_MAP.put(requestCode, mCallbackData);
 			}
-			callbackData(requestCode, null, false);
+			callbackData(requestCode, null, false,packageName);
 		}
 	}
 
@@ -350,7 +339,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	 * 외부 디바이스로 기능을 호출하는 메시지를 보낸다.
 	 */
 	@Override
-	public void startFunction(Function function, int requestCode)
+	public void startFunction(Function function, int requestCode,String packageName)
 			throws RemoteException {
 
 		CallbackData mCallbackData = new CallbackData();
@@ -369,7 +358,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 					.setDestinationDevice(BlinkDevice.load(device.MacAddress))
 					.setDestinationApplication(app.PackageName)
 					.setSourceDevice(BlinkDevice.update(mBlinkDevice))
-					.setSourceApplication(mPackageName)
+					.setSourceApplication(packageName)
 					.setMessage(gson.toJson(function))
 					.setType(IBlinkMessagable.TYPE_REQUEST_FUNCTION)
 					.setCode(requestCode).build();
@@ -377,7 +366,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 					BlinkDevice.load(device.MacAddress));
 		} else {
 			mCallbackData.ResultDetail = CallbackData.ERROR_NO_OUT_DEVICE;
-			callbackData(requestCode, null, false);
+			callbackData(requestCode, null, false,packageName);
 		}
 	}
 
@@ -391,7 +380,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	 */
 	@Override
 	public void sendMeasurementData(BlinkAppInfo targetBlinkAppInfo,
-			String json, int requestCode) throws RemoteException {
+			String json, int requestCode,String packageName) throws RemoteException {
 		Log.i("Blink", "sendMeasurementData");
 
 		CallbackData mCallbackData = new CallbackData();
@@ -403,7 +392,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		// 해당 BlinkApp이 없을 경우
 		if (!targetBlinkAppInfo.isExist) {
 			mCallbackData.ResultDetail = CallbackData.ERROR_CONNECT_FAIL;
-			callbackData(requestCode, null, false);
+			callbackData(requestCode, null, false,packageName);
 		}
 		// 타겟 디바이스가 자신이 아니면 메시지를 보낸다.
 		else if (!targetBlinkAppInfo.mDevice.MacAddress
@@ -417,7 +406,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 					.setDestinationApplication(
 							targetBlinkAppInfo.mApp.PackageName)
 					.setSourceDevice(BlinkDevice.update(mBlinkDevice))
-					.setSourceApplication(mPackageName)
+					.setSourceApplication(packageName)
 					.setMessage(json)
 					.setType(
 							IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SUCCESS)
@@ -430,11 +419,11 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 				.contentEquals(mBlinkDevice.getAddress())) {
 			// 다른 어플리케이션의 콜백 호출
 			ServiceKeeper.getInstance(CONTEXT)
-					.obtainBinder(targetBlinkAppInfo.mApp.PackageName)
-					.callbackData(requestCode, json, true);
+					.obtainBinder()
+					.callbackData(requestCode, json, true,packageName);
 			// 자기 자신에게 reponse를 보냄
 			mCallbackData.ResultDetail = CallbackData.ERROR_NO_OUT_DEVICE;
-			callbackData(requestCode, null, true);
+			callbackData(requestCode, null, true,packageName);
 		}
 	}
 
