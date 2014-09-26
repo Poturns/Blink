@@ -8,6 +8,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 /**
+ * implements {@link IBlinkMessagable}<br>
+ * Blink Library를 사용하는 디바이스 간 통신을 위해서 사용되는 Message이며
+ * 전송을 원하는 데이터를 Json 형태로 저장하며 송신/수신하는 디바이스 및 앱의 정보를 가진 일종의 프로토콜 클래스
+ * Type : 메세지의 전송용도
+ * Code : 메세지의 고유번호 (요청/응답 번호)
  * 
  * @author Yeonho.Kim
  * @author Ho.Kwon
@@ -30,12 +35,9 @@ public class BlinkMessage implements Serializable, IBlinkMessagable {
 	private String SourceApplication;
 	private String DestinationAddress;
 	private String DestinationApplication;
-	
-	/**
-	 * BlinkMessage의 메세지 전송 용도 -> IBlinkMessageable Interface의 TYPE_으로 시작하는 변수 
-	 * 
-	 * @see {@link IBlinkMessageable}
-	 */
+
+	 
+	 
 	private int Type;
 	private int Code; 
 	private boolean Reliable;
@@ -70,9 +72,11 @@ public class BlinkMessage implements Serializable, IBlinkMessagable {
 	
 	// *** BUILDER DECLARATION *** //
 	/**
+	 * BlinkMessage를 만드는 Builder Class
+	 * Builder Class를 통해 BlinkMessage에 내부 정보를 넣고 객체를 return 받을 수 있다. 
 	 * 
 	 * @author Yeonho.Kim
-	 *
+	 * @author Ho.Kwon
 	 */
 	public static class Builder {
 

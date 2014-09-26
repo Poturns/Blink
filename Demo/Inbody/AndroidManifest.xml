@@ -29,6 +29,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+         <service
+            android:name="kr.poturns.blink.internal.BlinkLocalService"
+            android:exported="true"
+            android:label="@string/res_bllink_app_name"
+            android:process="kr.poturns.blink.internal" >
+            <intent-filter>
+                <action android:name="kr.poturns.blink.internal.BlinkLocalService" />
+            </intent-filter>
+        </service>
+
+        <activity
+            android:name="kr.poturns.blink.external.ServiceControlActivity"
+            android:exported="true"
+            android:process="kr.poturns.blink.internal" >
+        </activity>
     </application>
 
 </manifest>

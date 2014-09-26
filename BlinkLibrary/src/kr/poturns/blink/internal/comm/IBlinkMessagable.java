@@ -1,6 +1,7 @@
 package kr.poturns.blink.internal.comm;
 
-/**
+/**BlinkLibrary에 사용되는 메세시 프로토콜 중 기본 TYPE을 정의함.
+ * 각 종류마다 REQUEST/REPONSE/FAIL TYPE으로 나뉜다.
  * 
  * @author Yeonho.Kim
  * @author Ho Kwon
