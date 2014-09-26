@@ -259,7 +259,7 @@ final class ConnectionFragment extends Fragment {
 	}
 
 	/** ProgressDialog가 최대로 보여질 시간 */
-	private static final long PROGRESS_WATING_TIME = 20 * 1000;
+	private static final long PROGRESS_WATING_TIME = 10 * 1000;
 	/** (실행중인) ProgressDialog를 dismiss하는 Action */
 	Runnable mProgressDismissAction = new Runnable() {
 
