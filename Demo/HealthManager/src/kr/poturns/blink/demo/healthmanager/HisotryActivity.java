@@ -1,6 +1,8 @@
 package kr.poturns.blink.demo.healthmanager;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
@@ -51,7 +53,7 @@ public class HisotryActivity extends ListActivity implements OnItemClickListener
 		if(history==0x01){
 			((TextView)findViewById(R.id.history_subtitle)).setText("Inbody History");
 			mInbodyList = mBlinkServiceInteraction.local.obtainMeasurementData(Inbody.class);
-			
+			Collections.sort(mInbodyList,new DateCompare());
 			Inbody mInbody;
 			for(int i=0;i<mInbodyList.size();i++){
 				tHistoryDomain = new HistoryDomain();
@@ -96,6 +98,7 @@ public class HisotryActivity extends ListActivity implements OnItemClickListener
 				tHistoryDomain.date = mSitUp.DateTime;
 				inbodyHisoryList.add(tHistoryDomain);
 			}
+			Collections.sort(inbodyHisoryList,new HistoryDomainCompare());
 			
 		}else if(history==0x03){
 			((TextView)findViewById(R.id.history_subtitle)).setText("Heart History");
@@ -109,9 +112,9 @@ public class HisotryActivity extends ListActivity implements OnItemClickListener
 				tHistoryDomain.date = mHeartBeat.DateTime;
 				inbodyHisoryList.add(tHistoryDomain);
 			}
+			Collections.sort(inbodyHisoryList,new HistoryDomainCompare());
 		}
 		
-			
 		adapter = new HistoryAdapter(this,inbodyHisoryList,history,mInbodyList); // 동적 리스트 관리 Adapter
         setListAdapter(adapter);
 	}
@@ -124,4 +127,20 @@ public class HisotryActivity extends ListActivity implements OnItemClickListener
 		intent.putExtra("Inbody", gson.toJson(mInbodyList.get(position)));
 		startActivity(intent);
     }
+	
+	public class DateCompare implements Comparator<Inbody> {
+		public int compare(Inbody arg0, Inbody arg1) {
+			// TODO Auto-generated method stub
+			return arg0.DateTime.compareTo(arg1.DateTime);
+		}
+ 
+	}
+	
+	public class HistoryDomainCompare implements Comparator<HistoryDomain> {
+		public int compare(HistoryDomain arg0, HistoryDomain arg1) {
+			// TODO Auto-generated method stub
+			return arg0.date.compareTo(arg1.date);
+		}
+ 
+	}
 }

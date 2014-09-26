@@ -64,7 +64,7 @@ public class ServiceKeeper {
 	 * 디바이스와 연결되어 있는 Binder들을 관리하는 HashMap.
 	 * Application의 패키지명으로 Binder를 관리한다.
 	 */
-	private final HashMap<String, BlinkSupportBinder> BINDER_MAP;
+	private BlinkSupportBinder BINDER_MAP;
 	/**
 	 * 연결된 Binder의 Callback 객체들을 관리하는 HashMap.
 	 * Application의 패키지명으로 BinderCallback 객체를 관리한다.
@@ -84,7 +84,7 @@ public class ServiceKeeper {
 		DISCOVERY_SET = new HashSet<BlinkDevice>();
 		BLINK_NETWORK_MAP = new HashMap<String, NetworkMap>();
 		BLINK_NETWORK_MAP.put(null, new NetworkMap(null));
-		BINDER_MAP = new HashMap<String, BlinkSupportBinder>();
+		BINDER_MAP = null;
 		CALLBACK_MAP = new HashMap<String,RemoteCallbackList<IInternalEventCallback>>();
 	}
 
@@ -212,9 +212,9 @@ public class ServiceKeeper {
 	 * @param packageName
 	 * @param binder
 	 */
-	void registerBinder(String packageName, BlinkSupportBinder binder) {
-		if (packageName != null && binder != null)
-			BINDER_MAP.put(packageName, binder);
+	void registerBinder(BlinkSupportBinder binder) {
+		if (binder != null)
+			BINDER_MAP = binder;
 	}
 	
 	/**
@@ -224,10 +224,8 @@ public class ServiceKeeper {
 	 * @param packageName
 	 * @return 
 	 */
-	public BlinkSupportBinder obtainBinder(String packageName) {
-		if (packageName != null)
-			return BINDER_MAP.get(packageName);
-		return null;
+	public BlinkSupportBinder obtainBinder() {
+		return BINDER_MAP;
 	}
 	
 	/**
@@ -237,9 +235,7 @@ public class ServiceKeeper {
 	 * @return
 	 */
 	boolean releaseBinder(String packageName) {
-		if (packageName != null)
-			return (BINDER_MAP.remove(packageName) != null);
-		return false;
+		return true;
 	}
 
 	/**

@@ -44,12 +44,12 @@ public class GlassActivity extends SupportMapActivity {
 		      
 		      @Override
 		      public void onReceiveData(int arg0, CallbackData callbackData) throws RemoteException {
-		    	  if (mAlertAdapter == null)
-		    		  return;
-		    	  
 		    	  // Data 받음..
 		    	  String data = callbackData.InDeviceData == null? callbackData.OutDeviceData : (callbackData.InDeviceData + callbackData.OutDeviceData);
 		    	  Log.d("onReceiveData", data);
+		    	  
+		    	  if (mAlertAdapter == null)
+		    		  return;
 		    	  
 		    	  try {
 			    	  JSONObject mJsonObj = new JSONObject(data);

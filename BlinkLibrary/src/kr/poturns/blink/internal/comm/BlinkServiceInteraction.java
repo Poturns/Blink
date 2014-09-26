@@ -157,13 +157,11 @@ public class BlinkServiceInteraction implements ServiceConnection,
 				onServiceFailed();
 			} else {
 				try {
-					mInternalOperationSupport.registerApplicationInfo(
-							mPackageName, mAppName);
 					mBlinkDevice = mInternalOperationSupport.getBlinkDevice();
 
 					if (mIInternalEventCallback != null) {
 						mInternalOperationSupport
-								.registerCallback(mIInternalEventCallback);
+								.registerCallback(mIInternalEventCallback,mPackageName);
 					}
 
 				} catch (Exception e) {
@@ -202,8 +200,14 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		Intent intent = new Intent(BlinkLocalService.INTENT_ACTION_NAME);
 		intent.putExtra(BlinkLocalService.INTENT_EXTRA_SOURCE_PACKAGE,
 				CONTEXT.getPackageName());
-
+		try {
+			mInternalOperationSupport.unregisterCallback(mIInternalEventCallback, mPackageName);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		CONTEXT.unbindService(this);
+		
 		stopBroadcastReceiver();
 		// CONTEXT.stopService(intent);
 	}
@@ -261,7 +265,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		if (mIInternalEventCallback != null) {
 			try {
 				mInternalOperationSupport
-						.registerCallback(mIInternalEventCallback);
+						.registerCallback(mIInternalEventCallback,mPackageName);
 			} catch (RemoteException e) {
 				e.printStackTrace();
 				return false;
@@ -1054,7 +1058,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			String ClassName = obj.getName();
 			try {
 				mInternalOperationSupport.obtainMeasurementData(ClassName,
-						DateTimeFrom, DateTimeTo, ContainType, RequestCode);
+						DateTimeFrom, DateTimeTo, ContainType, RequestCode,mPackageName);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -1080,7 +1084,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			try {
 				mInternalOperationSupport
 						.obtainMeasurementDataById(mMeasurementList,
-								DateTimeFrom, DateTimeTo, RequestCode);
+								DateTimeFrom, DateTimeTo, RequestCode,mPackageName);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -1096,7 +1100,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 */
 		public void startFunction(Function function, int requestCode) {
 			try {
-				mInternalOperationSupport.startFunction(function, requestCode);
+				mInternalOperationSupport.startFunction(function, requestCode,mPackageName);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -1118,7 +1122,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 					try {
 						targetBlinkAppInfo.mApp.AppIcon = null;
 						mInternalOperationSupport.sendMeasurementData(
-								targetBlinkAppInfo, json, requestCode);
+								targetBlinkAppInfo, json, requestCode,mPackageName);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}

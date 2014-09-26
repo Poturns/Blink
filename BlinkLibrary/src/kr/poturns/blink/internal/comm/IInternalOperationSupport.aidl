@@ -22,12 +22,12 @@ interface IInternalOperationSupport {
 	/**
 	 * 서비스로부터 요청한 명령에 대한 반응을 얻을 수 있는  {@link IInternalEventCallback}을 등록한다.
 	 */
-	boolean registerCallback(IInternalEventCallback callback);
+	boolean registerCallback(IInternalEventCallback callback,String packageName);
 	
 	/**
 	 * 등록된 {@link IInternalEventCallback}을 제거한다.
 	 */
-	boolean unregisterCallback(IInternalEventCallback callback);
+	boolean unregisterCallback(IInternalEventCallback callback,String packageName);
 	
 	/**
 	 * 블루투스 Discovery를 시작한다. 
@@ -104,13 +104,12 @@ interface IInternalOperationSupport {
 	 *
 	 */
 	void setRequestPolicy(int requestPolicy);
-	void registerApplicationInfo(String PackageName,String AppName);
 	BlinkDevice getBlinkDevice();
 	void registerBlinkApp(in BlinkAppInfo mBlinkAppInfo);
-	void obtainMeasurementData(String ClassName,String DateTimeFrom,String DateTimeTo,int ContainType,int requestCode);
-	void obtainMeasurementDataById(inout List<Measurement> mMeasurementList,String DateTimeFrom,String DateTimeTo,int requestCode);
-	void startFunction(inout Function function,int requestCode);
-	void sendMeasurementData(inout BlinkAppInfo targetBlinkAppInfo,String json,int requestCode);
+	void obtainMeasurementData(String ClassName,String DateTimeFrom,String DateTimeTo,int ContainType,int requestCode,String packageName);
+	void obtainMeasurementDataById(inout List<Measurement> mMeasurementList,String DateTimeFrom,String DateTimeTo,int requestCode,String packageName);
+	void startFunction(inout Function function,int requestCode,String packageName);
+	void sendMeasurementData(inout BlinkAppInfo targetBlinkAppInfo,String json,int requestCode,String packageName);
 	
 	/**
 	 * 테스트를 위한 임시 매소드
