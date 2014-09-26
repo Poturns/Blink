@@ -3,6 +3,7 @@ package kr.poturns.blink.internal.comm;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import kr.poturns.blink.db.BlinkDatabaseManager;
@@ -35,7 +36,6 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.internal.LinkedTreeMap;
 import com.google.gson.reflect.TypeToken;
 
 /**
@@ -599,7 +599,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 *            : 데이터 종료 일시
 		 * @param ContainType
 		 *            : 검색 타입 (SqliteManager.CONTAIN~)
-		 * @return 원하는 데이터의 리스트, 없으면 빈 리스트 또는 null
+		 * @return 원하는 데이터의 리스트, 없으면 빈 리스트, 예외가 발생했을 경우 null
 		 */
 		public <T> List<T> obtainMeasurementData(Class<T> obj,
 				String DateTimeFrom, String DateTimeTo, int ContainType) {
@@ -608,7 +608,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 				json = mBlinkDatabaseManager.obtainMeasurementData(obj,
 						DateTimeFrom, DateTimeTo, ContainType);
 
-				// FIXME class cast Exception
+				// TODO class casting이 잘 되는지 확인할 것
 				return gsonTreeMapConvert(obj,
 						gson.fromJson(json, new TypeToken<ArrayList<T>>() {
 						}.getType()));
@@ -622,14 +622,15 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			return null;
 		}
 
-		/** Gson으로 얻은 객체를 변환한다. */
+		/** Gson으로 얻은 객체를 변환한다. 
+		 * @author Myungjin*/
 		private final <T> List<T> gsonTreeMapConvert(Class<T> clazz,
 				Object gsonTreeObject) {
 			@SuppressWarnings("unchecked")
-			List<LinkedTreeMap<String, Object>> list = (List<LinkedTreeMap<String, Object>>) gsonTreeObject;
+			List<Map<String, Object>> list = (List<Map<String, Object>>) gsonTreeObject;
 			List<T> dataList = new ArrayList<T>();
 
-			for (LinkedTreeMap<String, Object> map : list) {
+			for (Map<String, Object> map : list) {
 				try {
 					T data = clazz.newInstance();
 					for (Entry<String, Object> entry : map.entrySet()) {

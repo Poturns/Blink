@@ -118,7 +118,9 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 
 		for (int i = 0; i < size; i++) {
 			View v = list.get(i);
-			if (!((BlinkDevice) mCircularHelper.getViewTag(i)).isConnected())
+			if (((BlinkDevice) mCircularHelper.getViewTag(i)).isConnected()) {
+				v.setAlpha(1);
+			} else
 				v.setAlpha(((float) (100 - percent) / 100f));
 		}
 	}
