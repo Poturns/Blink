@@ -25,9 +25,9 @@ import android.widget.ListView;
 import dev.dworks.libs.actionbartoggle.ActionBarToggle;
 
 /**
- * Service에서 실행 되어, Blink Service와 일부 상호작용하는 {@link Activity}<br>
+ * Service에서 실행 되어, Blink Service와 일부 상호작용하는 {@link android.app.Activity}<br>
  * <br>
- * 이 {@link Activity}를 통해 다음과 같은 작업을 수행 할 수 있다. <br>
+ * 이 {@link android.app.Activity}를 통해 다음과 같은 작업을 수행 할 수 있다. <br>
  * <li>{@link BlinkDevice}의 연결 상태 표시 및 관리</li><br>
  * <li>BlinkDatabase 의 내용 표시</li><br>
  * <li>BlinkService Log 조회</li> <br>
@@ -51,9 +51,9 @@ public final class ServiceControlActivity extends Activity implements
 	/** {@link android.R.attr}에 정의되어있는 ListView의 ChildView의 padding */
 	int mListViewChildPaddingStart, mListViewChildPaddingEnd;
 	/**
-	 * {@link FragmentManager}의 BackStack을 삭제하기 위한 boolean 값 <br>
+	 * {@link android.app.FragmentManager}의 BackStack을 삭제하기 위한 boolean 값 <br>
 	 * <br>
-	 * {@link Activity}의 처음 실행시에는(
+	 * {@link android.app.Activity}의 처음 실행시에는(
 	 * {@link ServiceControlActivity#transitFragment(int, Bundle)}가 최초로 호출됨)
 	 * BackStack을 삭제하지 않고, <br>
 	 * 나중에 {@link ServiceControlActivity#transitFragment(int, Bundle)}가 호출 될 때

@@ -3,7 +3,6 @@ package kr.poturns.blink.db;
 import java.io.File;
 
 import kr.poturns.blink.util.FileUtil;
-import android.net.Uri;
 
 /**
  * Sqlite Database 파일을 생성, 수정하는 매소드와 관련 변수가 정의되어 있다.
@@ -50,23 +49,23 @@ public interface IBlinkDatabase {
 	 * example :
 	 * {@code getContentResolver().registerContentObserver(SqliteManager.URI_OBSERVER_BLINKAPP, false, mContentObserver);}
 	 */
-	public final static Uri URI_OBSERVER_BLINKAPP = Uri
+	public final static android.net.Uri URI_OBSERVER_BLINKAPP = android.net.Uri
 			.parse("blink://kr.poturns.blink/database/blinkappinfo");
 	/**
-	 * 데이터베이스가 변화했을 때 호출되는 Observer의 Uri MeasurementData가 추가됐을 때 해당 Uri로 호출된다.
+	 * 데이터베이스가 변화했을 때 호출되는 Observer의 android.net.Uri MeasurementData가 추가됐을 때 해당 android.net.Uri로 호출된다.
 	 * 옵저버를 등록해야 사용할 수 있다. <br>
 	 * example :
 	 * {@code getContentResolver().registerContentObserver(SqliteManager.URI_OBSERVER_MEASUREMENTDATA, false, mContentObserver);}
 	 */
-	public final static Uri URI_OBSERVER_MEASUREMENTDATA = Uri
+	public final static android.net.Uri URI_OBSERVER_MEASUREMENTDATA = android.net.Uri
 			.parse("blink://kr.poturns.blink/database/measurementdata");
 	/**
-	 * 데이터베이스가 변화했을 때 호출되는 Observer의 Uri BlinkAppInfo가 Sync됐을 때 해당 Uri로 호출된다.
+	 * 데이터베이스가 변화했을 때 호출되는 Observer의 android.net.Uri BlinkAppInfo가 Sync됐을 때 해당 android.net.Uri로 호출된다.
 	 * 옵저버를 등록해야 사용할 수 있다. <br>
 	 * example :
 	 * {@code getContentResolver().registerContentObserver(SqliteManager.URI_OBSERVER_SYNC, false, mContentObserver);}
 	 */
-	public final static Uri URI_OBSERVER_SYNC = Uri
+	public final static android.net.Uri URI_OBSERVER_SYNC = android.net.Uri
 			.parse("blink://kr.poturns.blink/database/blinkappinfo/sync");
 
 	/**

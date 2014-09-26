@@ -8,27 +8,22 @@ import java.util.List;
 import kr.poturns.blink.R;
 import android.annotation.SuppressLint;
 import android.content.ClipData;
-import android.content.Context;
-import android.content.res.TypedArray;
-import android.os.Handler;
 import android.os.Message;
 import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
 
 /**
  * 기존 존재하는 ViewGroup에 원의 형태로 ChildView를 추가해주고, <br>
  * 핵심 View와 기타 ChildView 와의 Drag and Drop event를 받기 쉽게 만들어주는 도우미 Class <br>
  * <br>
- * * 현재 지원하는 {@link ViewGroup}은 {@link FrameLayout}에 한정된다. <br>
+ * * 현재 지원하는 {@link android.view.ViewGroup}은 {@link android.widget.FrameLayout}에
+ * 한정된다. <br>
  * <br>
  * <b><사용 예시></b><br>
  * 
  * <pre class="prettyprint">
- * FrameLayout someFrameLayout = (FrameLayout) someParentView
+ * android.widget.FrameLayout someFrameLayout = (android.widget.FrameLayout) someParentView
  * 		.findViewById(R.id.someId);
  * 
  * int size = 11;
@@ -36,14 +31,14 @@ import android.widget.FrameLayout;
  * for (int i = 0; i &lt; size; i++) {
  * 	list.add(i);
  * }
- * TextView centerView = new TextView(someContext);
+ * android.widget.TextView centerView = new android.widget.TextView(someContext);
  * centerView.setText(&quot;center&quot;);
  * 
  * CircularViewHelper circularAdapter = new CircularViewHelper(someFrameLayout,
  * 		centerView) {
  * 	// childView의 형태를 정의
- * 	protected View getView(int position, Object object){
- * 		return View.inflate(....);
+ * 	protected android.view.View getView(int position, Object object){
+ * 		return android.view.View.inflate(....);
  * 	}
  * };
  * 
@@ -52,16 +47,16 @@ import android.widget.FrameLayout;
  * </pre>
  * 
  * 
- * @see ViewGroup
- * @see FrameLayout
+ * @see android.view.ViewGroup
+ * @see android.widget.FrameLayout
  * 
  * 
  */
 class CircularViewHelper {
-	private ViewGroup mViewGroup;
-	private List<View> mChildViewList;
-	private View mCenterView;
-	private Context mContext;
+	private android.view.ViewGroup mViewGroup;
+	private List<android.view.View> mChildViewList;
+	private android.view.View mCenterView;
+	private android.content.Context mContext;
 	private int mCenterViewId;
 	/** ChildView의 지름 */
 	private int mViewSize;
@@ -69,7 +64,7 @@ class CircularViewHelper {
 	private int mChildViewDistance;
 	/** ChildView 개수 */
 	private int mObjectSize;
-	private FrameLayout.LayoutParams mLayoutParams;
+	private android.widget.FrameLayout.LayoutParams mLayoutParams;
 	private static final int CENTER_VIEW_POSITION = -2;
 
 	/**
@@ -78,7 +73,7 @@ class CircularViewHelper {
 	 * @param viewGroup
 	 *            원형 View가 추가될 ViewGroup
 	 */
-	public CircularViewHelper(ViewGroup viewGroup) {
+	public CircularViewHelper(android.view.ViewGroup viewGroup) {
 		this(viewGroup, android.R.id.text1);
 	}
 
@@ -90,7 +85,7 @@ class CircularViewHelper {
 	 * @param centerViewId
 	 *            원 가운데 배치된 View의 id
 	 */
-	public CircularViewHelper(ViewGroup viewGroup, int centerViewId) {
+	public CircularViewHelper(android.view.ViewGroup viewGroup, int centerViewId) {
 		if (!checkVaildViewGroup(viewGroup))
 			throw new RuntimeException(
 					"CircularViewHelper only accept FrameLayout");
@@ -98,7 +93,7 @@ class CircularViewHelper {
 		mCenterView = viewGroup.findViewById(centerViewId);
 		this.mCenterViewId = centerViewId;
 		mContext = mViewGroup.getContext();
-		mChildViewList = new ArrayList<View>();
+		mChildViewList = new ArrayList<android.view.View>();
 	}
 
 	/**
@@ -109,29 +104,30 @@ class CircularViewHelper {
 	 * @param centerView
 	 *            원 가운데 배치된 View
 	 */
-	public CircularViewHelper(ViewGroup viewGroup, View centerView) {
+	public CircularViewHelper(android.view.ViewGroup viewGroup,
+			android.view.View centerView) {
 		if (!checkVaildViewGroup(viewGroup))
 			throw new RuntimeException(
 					"CircularViewHelper only accept FrameLayout");
 		this.mViewGroup = viewGroup;
 		mContext = mViewGroup.getContext();
-		mChildViewList = new ArrayList<View>();
+		mChildViewList = new ArrayList<android.view.View>();
 		mCenterView = centerView;
 		setCenterViewIdIfNotExist();
 	}
 
 	/* 현재 지원하는 ViewGroup에 맞는 ViewGroup instance 인지 검사한다 */
-	private boolean checkVaildViewGroup(ViewGroup viewGroup) {
-		return viewGroup instanceof FrameLayout;
+	private boolean checkVaildViewGroup(android.view.ViewGroup viewGroup) {
+		return viewGroup instanceof android.widget.FrameLayout;
 	}
 
 	/** 중앙에 배치된 View를 얻는다. */
-	public final View getCenterView() {
+	public final android.view.View getCenterView() {
 		return mCenterView;
 	}
 
 	/** 중앙에 배치될 View를 설정한다. */
-	public final void setCenterView(View centerView) {
+	public final void setCenterView(android.view.View centerView) {
 		if (mCenterView != null)
 			mViewGroup.removeView(mCenterView);
 		this.mCenterView = centerView;
@@ -141,8 +137,8 @@ class CircularViewHelper {
 	/* 중앙에 배치된 View의 Id가 없는 경우 설정한다. */
 	private void setCenterViewIdIfNotExist() {
 		mCenterViewId = mCenterView.getId();
-		if (mCenterViewId == View.NO_ID) {
-			mCenterViewId = View.generateViewId();
+		if (mCenterViewId == android.view.View.NO_ID) {
+			mCenterViewId = android.view.View.generateViewId();
 			mCenterView.setId(mCenterViewId);
 		}
 	}
@@ -169,8 +165,8 @@ class CircularViewHelper {
 		if (PrivateUtil.isScreenSizeSmall(mContext)) {
 			actionBarSize = 20;
 		} else {
-			final TypedArray styledAttributes = mContext.getTheme()
-					.obtainStyledAttributes(
+			final android.content.res.TypedArray styledAttributes = mContext
+					.getTheme().obtainStyledAttributes(
 							new int[] { android.R.attr.actionBarSize });
 			actionBarSize = (int) styledAttributes.getDimension(0, 0);
 			styledAttributes.recycle();
@@ -178,7 +174,8 @@ class CircularViewHelper {
 
 		mViewSize = (screenSize - actionBarSize) / Math.max(newSize, 8) * 2;
 		mChildViewDistance = (screenSize - mViewSize - actionBarSize * 2) / 2;
-		mLayoutParams = new FrameLayout.LayoutParams(mViewSize, mViewSize);
+		mLayoutParams = new android.widget.FrameLayout.LayoutParams(mViewSize,
+				mViewSize);
 		mLayoutParams.gravity = Gravity.CENTER;
 	}
 
@@ -209,7 +206,7 @@ class CircularViewHelper {
 		mObjectSize = datas.size();
 		measuringSpec(mObjectSize);
 		setCenterViewSpec();
-		View child;
+		android.view.View child;
 		int i = 0;
 		for (Object obj : datas) {
 			child = getView(mContext, i, obj);
@@ -234,8 +231,10 @@ class CircularViewHelper {
 	 * @param object
 	 *            - {@link Collection}의 data
 	 */
-	protected View getView(Context context, int position, Object object) {
-		return View.inflate(context, R.layout.res_blink_view_circular, null);
+	protected android.view.View getView(android.content.Context context,
+			int position, Object object) {
+		return android.view.View.inflate(context,
+				R.layout.res_blink_view_circular, null);
 	}
 
 	/** 현재 배치된 Child View의 개수를 얻는다. */
@@ -244,7 +243,8 @@ class CircularViewHelper {
 	}
 
 	/* 측정된 spec에 따라 Child View의 배치를 설정한다. */
-	private void setChildViewInfo(View childView, int postion, int size) {
+	private void setChildViewInfo(android.view.View childView, int postion,
+			int size) {
 		ViewInfoTag tag = new ViewInfoTag();
 		tag.mIsDrag = false;
 		tag.mViewId = postion;
@@ -264,31 +264,32 @@ class CircularViewHelper {
 	}
 
 	/** */
-	public final List<View> getChildViews() {
+	public final List<android.view.View> getChildViews() {
 		return mChildViewList;
 	}
 
 	/**/
-	private View.OnTouchListener mOnTouchListener = new View.OnTouchListener() {
+	private android.view.View.OnTouchListener mOnTouchListener = new android.view.View.OnTouchListener() {
 		@SuppressLint("ClickableViewAccessibility")
 		@Override
-		public boolean onTouch(final View v, MotionEvent event) {
+		public boolean onTouch(final android.view.View v, MotionEvent event) {
 			if (v.getAlpha() == 1.0f) {
 				ViewInfoTag tag = (ViewInfoTag) v.getTag();
 				tag.mIsDrag = true;
 				ClipData data = ClipData.newPlainText("", tag.toString());
-				v.startDrag(data, new View.DragShadowBuilder(v), v, 0);
+				v.startDrag(data, new android.view.View.DragShadowBuilder(v),
+						v, 0);
 			}
 			return true;
 		}
 	};
 	/* Touch 이벤트에서 Click 이벤트를 호출할 때 사용하는 Handler */
-	private static final Handler sHandler = new Handler() {
+	private static final android.os.Handler sHandler = new android.os.Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case ACTION_CLICK:
-				View v = (View) msg.obj;
+				android.view.View v = (android.view.View) msg.obj;
 				v.performClick();
 				break;
 			default:
@@ -300,10 +301,10 @@ class CircularViewHelper {
 	/** Touch 이벤트에서 Handler를 통해 Click 이벤트를 호출할 때 사용하는 상수 */
 	private static final int ACTION_CLICK = 888;
 	/* Drag 이벤트를 처리하는 리스너 */
-	private final View.OnDragListener mOnDragListener = new View.OnDragListener() {
+	private final android.view.View.OnDragListener mOnDragListener = new android.view.View.OnDragListener() {
 
 		@Override
-		public boolean onDrag(View v, DragEvent event) {
+		public boolean onDrag(android.view.View v, android.view.DragEvent event) {
 			final int action = event.getAction();
 			ViewInfoTag tag = (ViewInfoTag) v.getTag();
 
@@ -334,7 +335,7 @@ class CircularViewHelper {
 						mDragAndDropListener.onDrop(v);
 					}
 					// View의 Drag 이벤트 정보 초기화
-					tag.mDropViewId = View.NO_ID;
+					tag.mDropViewId = android.view.View.NO_ID;
 					tag.mIsDrag = false;
 					if (mDragAndDropListener != null)
 						mDragAndDropListener.onDropEnd(v, mCenterView);
@@ -346,7 +347,8 @@ class CircularViewHelper {
 		}
 
 		/* Drop 이벤트를 검사한다. */
-		private boolean checkDropEvent(View v, ViewInfoTag tag, DragEvent event) {
+		private boolean checkDropEvent(android.view.View v, ViewInfoTag tag,
+				android.view.DragEvent event) {
 			// View가 Drop되었을 때, Drop된 장소가 해당 View인 경우
 			// 즉 Click 이벤트를 실행하기 원하는 경우
 			// Click 이벤트를 실행하고, Drag 이벤트는 무시한다.
@@ -359,7 +361,7 @@ class CircularViewHelper {
 			}
 			// Center View로 Drop된 경우
 			if (tag.mViewPosition == CENTER_VIEW_POSITION) {
-				ViewInfoTag draggerTag = (ViewInfoTag) ((View) event
+				ViewInfoTag draggerTag = (ViewInfoTag) ((android.view.View) event
 						.getLocalState()).getTag();
 				draggerTag.mDropViewId = tag.mViewId;
 				return true;
@@ -388,7 +390,7 @@ class CircularViewHelper {
 	 * @throws ClassCastException
 	 * @see View#getTag()
 	 */
-	public final Object getViewTag(View childView) {
+	public final Object getViewTag(android.view.View childView) {
 		return ((ViewInfoTag) childView.getTag()).mTag;
 	}
 
@@ -399,7 +401,7 @@ class CircularViewHelper {
 	private static class ViewInfoTag {
 		public boolean mIsDrag;
 		public int mViewId;
-		public int mDropViewId = View.NO_ID;
+		public int mDropViewId = android.view.View.NO_ID;
 		public int mViewPosition;
 		public Object mTag;
 	}
@@ -422,7 +424,7 @@ class CircularViewHelper {
 		 * @param center
 		 *            중앙의 View
 		 */
-		public void onStartDrag(View view, View center);
+		public void onStartDrag(android.view.View view, android.view.View center);
 
 		/**
 		 * Drag하던 View가 중앙의 View에 Drop되었을 때, 호출 됨
@@ -430,7 +432,7 @@ class CircularViewHelper {
 		 * @param view
 		 *            Drag하던 뷰
 		 */
-		public void onDrop(View view);
+		public void onDrop(android.view.View view);
 
 		/**
 		 * 터치한 View의 Drag가 종료되었을 때, 호출된다.
@@ -440,6 +442,6 @@ class CircularViewHelper {
 		 * @param center
 		 *            중앙의 View
 		 */
-		public void onDropEnd(View view, View center);
+		public void onDropEnd(android.view.View view, android.view.View center);
 	}
 }
