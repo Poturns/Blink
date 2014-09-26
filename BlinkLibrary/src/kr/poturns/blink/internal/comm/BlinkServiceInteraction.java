@@ -190,7 +190,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		intent.putExtra(BlinkLocalService.INTENT_EXTRA_SOURCE_PACKAGE,
 				CONTEXT.getPackageName());
 
-//		CONTEXT.startService(intent);
+		CONTEXT.startService(intent);
 		CONTEXT.bindService(intent, this, Context.BIND_AUTO_CREATE);
 	}
 
@@ -613,7 +613,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			try {
 				json = mBlinkDatabaseManager.obtainMeasurementData(obj,
 						DateTimeFrom, DateTimeTo, ContainType);
-
+				Log.i("HealthManager", json);
 				// TODO class casting이 잘 되는지 확인할 것
 				return gsonTreeMapConvert(obj,
 						gson.fromJson(json, new TypeToken<ArrayList<T>>() {

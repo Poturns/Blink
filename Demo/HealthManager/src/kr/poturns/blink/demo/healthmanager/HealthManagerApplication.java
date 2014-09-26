@@ -64,8 +64,9 @@ public class HealthManagerApplication extends Application {
 			}
 			//인바디앱으로부터 데이터 받음
 			else if(code==RESPONSE_CODE_INBODY_DATA){
-				Log.i("HealthManager", "인바디로부터 데이터를 받았습니다.");
+				Log.i("HealthManager", data.OutDeviceData);
 				Inbody mInbodyDomain = gson.fromJson(data.OutDeviceData,Inbody.class);
+				Log.i("HealthManager", "나이 : "+mInbodyDomain.age);
 				mBlinkServiceInteraction.local.registerMeasurementData(mInbodyDomain);
 	        }
         }
