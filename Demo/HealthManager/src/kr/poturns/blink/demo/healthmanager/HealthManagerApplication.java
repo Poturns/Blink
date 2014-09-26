@@ -60,11 +60,11 @@ public class HealthManagerApplication extends Application {
                 throws RemoteException {
 	        // TODO Auto-generated method stub
 			if(data.Result==false){
-				Toast.makeText(HealthManagerApplication.this, "연결에 실패했습니다.", Toast.LENGTH_SHORT).show();
+				Log.i("HealthManager", "인바디로부터 데이터를 받을 수 없습니다.");
 			}
 			//인바디앱으로부터 데이터 받음
 			else if(code==RESPONSE_CODE_INBODY_DATA){
-				Toast.makeText(HealthManagerApplication.this, "인바디로부터 데이터를 받았습니다.", Toast.LENGTH_SHORT).show();
+				Log.i("HealthManager", "인바디로부터 데이터를 받았습니다.");
 				Inbody mInbodyDomain = gson.fromJson(data.OutDeviceData,Inbody.class);
 				mBlinkServiceInteraction.local.registerMeasurementData(mInbodyDomain);
 	        }
