@@ -245,7 +245,7 @@ public class ServiceKeeper {
 	 * @param callback
 	 */
 	public void addRemoteCallbackList(String packageName, IInternalEventCallback callback){
-		if(CALLBACK_MAP.get(packageName) == null)
+		//if(CALLBACK_MAP.get(packageName) == null)
 			CALLBACK_MAP.put(packageName, new RemoteCallbackList<IInternalEventCallback>());
 		
 		RemoteCallbackList<IInternalEventCallback> mRemoteCallbackList = CALLBACK_MAP.get(packageName);

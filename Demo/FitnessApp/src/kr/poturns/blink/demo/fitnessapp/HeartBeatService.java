@@ -128,21 +128,24 @@ public class HeartBeatService extends Service {
 		}
 
 		private void sendHeartBeatRemote(int bpm) {
-			if(bpm < 1)
+			if (bpm < 1)
 				return;
 			if (mIInternalOperationSupport != null) {
+				boolean result = false;
 				for (BlinkAppInfo info : mInteraction.local.obtainBlinkAppAll()) {
 					if (info.mApp.PackageName.equals(REMOTE_APP_PACKAGE_NAME)) {
 						mInteraction.remote.sendMeasurementData(info, mGson
 								.toJson(new HeartBeat(bpm, DateTimeUtil
 										.getTimeString())), REQUEST_CODE);
 						Log.d(TAG, "send HeartBeat : " + bpm + " // to "
-								+ REMOTE_APP_PACKAGE_NAME);
-						return;
+								+ REMOTE_APP_PACKAGE_NAME + " // "
+								+ info.mDevice.MacAddress);
+						result = true;
 					}
 				}
-				Log.e(TAG, "Cannot reach remote device : "
-						+ REMOTE_APP_PACKAGE_NAME);
+				if (!result)
+					Log.e(TAG, "Cannot reach remote device : "
+							+ REMOTE_APP_PACKAGE_NAME);
 			} else {
 				Log.e(TAG, "Blink Service Support == null");
 			}

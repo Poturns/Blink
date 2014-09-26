@@ -58,7 +58,6 @@ public final class BlinkLocalService extends BlinkLocalBaseService {
 		String packageName = intent.getStringExtra(INTENT_EXTRA_SOURCE_PACKAGE);
 		if (packageName == null)
 			return null;
-
 		try {
 			BlinkSupportBinder mBinder = mServiceKeeper
 					.obtainBinder();
