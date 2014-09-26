@@ -1,6 +1,5 @@
 package kr.poturns.blink.external;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -331,7 +330,7 @@ final class ConnectionFragment extends Fragment {
 	}
 
 	/**
-	 * 현재 device 리스트에서 연결된 device만 남긴다.<br>
+	 * 연결된 device만 가져온다.<br>
 	 * <br>
 	 * * 작업에 성공하면 {@link #onDeviceListChanged()} , 실패하면
 	 * {@link #onDeviceListLoadFailed()}가 호출된다.
@@ -351,22 +350,18 @@ final class ConnectionFragment extends Fragment {
 	 * 실제 작업을 수행한다.
 	 */
 	private final boolean retainConnectedDevicesFromListInternal() {
-		boolean result = true;
-		List<BlinkDevice> list = new ArrayList<BlinkDevice>(mDeviceList);
-
-		for (BlinkDevice device : list) {
-			if (!device.isConnected()) {
-				result &= list.remove(device);
-			}
-		}
-
-		// removed sucessfully!
-		if (result) {
+		try {
 			mDeviceList.clear();
-			mDeviceList.addAll(list);
+			for (BlinkDevice device : mBlinkOperation
+					.obtainConnectedDeviceList()) {
+				mDeviceList.add(device);
+			}
+			mCurrentChildFragmentInterface.onDeviceListChanged();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
 		}
-
-		return result;
+		return true;
 	}
 
 	/** 현재 DeviceList에 이전에 Discovery된 Device의 목록을 유지한다. */
