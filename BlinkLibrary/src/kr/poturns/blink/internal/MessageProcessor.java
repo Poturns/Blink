@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import kr.poturns.blink.db.JsonManager;
-import kr.poturns.blink.db.SqliteManager;
 import kr.poturns.blink.db.SyncDatabaseManager;
 import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.Function;
@@ -14,7 +13,6 @@ import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
 import kr.poturns.blink.internal.comm.BlinkMessage.Builder;
 import kr.poturns.blink.internal.comm.IBlinkMessagable;
-import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.util.Log;
 
@@ -25,6 +23,11 @@ import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 
 /**
+ * {@link BlinkDevice}로 부터 {@link BlinkMessage}를 받아 분석하여 라우팅 해주는 클래스<br>
+ * <br>
+ * 
+ * {@link BlinkMessage}의 {@link BlinkMessage#getType()}으로 얻을 수 있는 Type에 따라 적절한
+ * 응답을 보내준다.
  * 
  * @author YeonHo.Kim
  * @author Ho.Kwon
@@ -36,16 +39,11 @@ public class MessageProcessor {
 	private final BlinkLocalService OPERATOR_CONTEXT;
 	private final ServiceKeeper SERVICE_KEEPER;
 
-	private JsonManager mJsonManager;
-	private SqliteManager mSqliteManager;
 	private boolean Synchronizing = false;
 
 	public MessageProcessor(BlinkLocalBaseService context) {
 		OPERATOR_CONTEXT = (BlinkLocalService) context;
 		SERVICE_KEEPER = ServiceKeeper.getInstance(context);
-
-		mJsonManager = new JsonManager();
-		// mSqliteManager = new SqliteManager(context);
 	}
 
 	/**
@@ -126,7 +124,7 @@ public class MessageProcessor {
 						.setType(IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SYNC_SUCCESS);
 				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(
 						OPERATOR_CONTEXT);
-				
+
 				String jsonRequestMessage = blinkMessage.getMessage();
 				Type MeasurementDataType = new TypeToken<ArrayList<MeasurementData>>() {
 				}.getType();
@@ -224,12 +222,17 @@ public class MessageProcessor {
 
 			} else if (blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_FUNCTION_SUCCESS) {
 				Log.i("acceptBlinkMessage", "TYPE_RESPONSE_FUNCTION_SUCCESS");
-				SERVICE_KEEPER.obtainBinder().callbackData(blinkMessage.getCode(),blinkMessage.getMessage(), true,blinkMessage.getDestinationApplication());
+				SERVICE_KEEPER.obtainBinder().callbackData(
+						blinkMessage.getCode(), blinkMessage.getMessage(),
+						true, blinkMessage.getDestinationApplication());
 			} else if (blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SUCCESS) {
 				Log.i("acceptBlinkMessage",
 						"TYPE_RESPONSE_MEASUREMENTDATA_SUCCESS");
-				if(SERVICE_KEEPER.obtainBinder()==null)Log.i("Blink", "binder nul1!!");
-				SERVICE_KEEPER.obtainBinder().callbackData(blinkMessage.getCode(),blinkMessage.getMessage(), true,blinkMessage.getDestinationApplication());
+				if (SERVICE_KEEPER.obtainBinder() == null)
+					Log.i("Blink", "binder nul1!!");
+				SERVICE_KEEPER.obtainBinder().callbackData(
+						blinkMessage.getCode(), blinkMessage.getMessage(),
+						true, blinkMessage.getDestinationApplication());
 			}
 			// Sync 플래그를 false로 변경하여 동기화 요청을 할 수 있도록 한다.
 			else if (blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SYNC_SUCCESS) {
@@ -250,7 +253,6 @@ public class MessageProcessor {
 			} else {
 				// 해당 Device와 연결되지 않아서 Pass가 불가능할 때 FAIL Message를 보낸 디바이스쪽으로
 				// 보내준다.
-
 
 				// Set the type_response on type.
 				BlinkMessage.Builder builder = new BlinkMessage.Builder();
@@ -290,17 +292,16 @@ public class MessageProcessor {
 		}
 	}
 
-
 	/**
 	 * 해당 블루투스 디바이스로 {@link BlinkMessage} 메세지를 송신한다.
 	 * 
 	 * @param message
 	 * @param toDevice
-	 *     다음 hop으로 연결하기 위한 정보 <br>
+	 *            다음 hop으로 연결하기 위한 정보 <br>
 	 *            <tr>
 	 *            (현재 Device와 직접 연결된 ConntionThread를 얻기 위한 용도)
 	 * @author Ho.Kwon
-	*/
+	 */
 	public void sendBlinkMessageTo(BlinkMessage message, BlinkDevice toDevice) {
 		Log.d("sendBlinkMessageTo", "Send!!");
 
@@ -315,18 +316,16 @@ public class MessageProcessor {
 		if (SERVICE_KEEPER.obtainCurrentCenterDevice() != BlinkDevice.HOST) {
 			Log.d("sendBlinkMessageTo", "i am not center");
 			centerDevice = SERVICE_KEEPER.obtainCurrentCenterDevice();
-			if (message.getDestinationAddress() == null) { // Hop : Main, Node :
-															// Main
+			// Hop : Main, Node : Main
+			if (message.getDestinationAddress() == null) {
 				message.setDestinationAddress(centerDevice.getAddress());
 				toDevice = centerDevice;
-
-			} else { // Node : Wearable, Hop : 1. Main 2. X(Wearable 1 to 1
-						// Connect)-> 이 경우도 무조건 Center로 보내면 된다.
-
+			} else {
+				// Node : Wearable, Hop : 1. Main 2. X(Wearable 1 to 1
+				// Connect)-> 이 경우도 무조건 Center로 보내면 된다.
 			}
 		} else {
 			Log.d("sendBlinkMessageTo", "i am center");
-
 		}
 
 		SERVICE_KEEPER.sendMessageToDevice(toDevice, message);
@@ -339,7 +338,6 @@ public class MessageProcessor {
 		// }
 
 	}
-
 
 	/**
 	 * 함수를 실행시켜주는 매소드 바인더나 MessageProcessor로부터 호출된다.
@@ -368,6 +366,7 @@ public class MessageProcessor {
 
 	/**
 	 * 현재 디바이스에서 연결된 모든 디바이스들에게 blinkMessage를 broadcast 해준다.
+	 * 
 	 * @param blinkMessage
 	 * @author Ho.Kwon
 	 */
