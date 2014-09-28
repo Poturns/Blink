@@ -216,6 +216,7 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 		obtainApp(mBlinkAppInfo);
 		registerFunction(mBlinkAppInfo);
 		registerMeasurement(mBlinkAppInfo);
+		CONTEXT.getContentResolver().notifyChange(URI_OBSERVER_SYNC, null);
 		Log.i(tag, "registerBlinkAppSync OK");
 	}
 	
@@ -780,6 +781,8 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 			for (int j = 0; j < mMeasurementList.size(); j++) {
 				if (mMeasurementList.get(j).Measurement.contentEquals(ClassUtil
 						.obtainFieldSchema(mFields[i]))) {
+					Log.i("HealthManager", "new 등록 : "+mMeasurementList.get(j).Measurement+","+ClassUtil
+							.obtainFieldSchema(mFields[i]));
 					mMeasurementData.MeasurementId = mMeasurementList.get(j).MeasurementId;
 					mMeasurementData.Data = mFields[i].get(obj).toString();
 					// GroupId, MeasurementId, Data 등록
@@ -927,6 +930,7 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 			mMeasurementData = mMeasurementDataList.get(i);
 			tempObject = mObjectMap.get(mMeasurementData.GroupId);
 			if (tempObject == null) {
+				Log.i("HealthManager", "new 객체");
 				tempObject = c.newInstance();
 			}
 			setClassField(mFieldMap.get(mMeasurementData.MeasurementId),

@@ -32,31 +32,6 @@ public class BlinkDatabaseManager extends SqliteManager {
 	private List<Measurement> mMeasurementList = new ArrayList<Measurement>();
 	private List<MeasurementData> mMeasurementDataList = new ArrayList<MeasurementData>();
 
-	/**
-	 * 테스트 매소드 현재 변수들에 저장된 데이터를 로그캣에 보여준다.
-	 */
-	private void testBlinkDatabaseManager() {
-		Log.i(TAG, "Device List :");
-		for (int i = 0; i < mDeviceList.size(); i++) {
-			Log.i(TAG, mDeviceList.get(i).toString());
-		}
-		Log.i(TAG, "App List :");
-		for (int i = 0; i < mAppList.size(); i++) {
-			Log.i(TAG, mAppList.get(i).toString());
-		}
-		Log.i(TAG, "Function List :");
-		for (int i = 0; i < mFunctionList.size(); i++) {
-			Log.i(TAG, mFunctionList.get(i).toString());
-		}
-		Log.i(TAG, "Measurement List :");
-		for (int i = 0; i < mMeasurementList.size(); i++) {
-			Log.i(TAG, mMeasurementList.get(i).toString());
-		}
-		Log.i(TAG, "MeasurementData List :");
-		for (int i = 0; i < mMeasurementDataList.size(); i++) {
-			Log.i(TAG, mMeasurementDataList.get(i).toString());
-		}
-	}
 
 	/**
 	 * 생성자
@@ -113,7 +88,6 @@ public class BlinkDatabaseManager extends SqliteManager {
 		this.mAppList = this.obtainAppList(NewWhere);
 		mAppList.toString();
 
-		testBlinkDatabaseManager();
 		return this;
 	}
 
@@ -149,7 +123,6 @@ public class BlinkDatabaseManager extends SqliteManager {
 		this.mFunctionList = this.obtainFunctionList(NewWhere);
 		mFunctionList.toString();
 
-		testBlinkDatabaseManager();
 		return this;
 	}
 
@@ -185,7 +158,6 @@ public class BlinkDatabaseManager extends SqliteManager {
 		this.mMeasurementList = this.obtainMeasurementList(NewWhere);
 		mMeasurementList.toString();
 
-		testBlinkDatabaseManager();
 		return this;
 	}
 
@@ -223,7 +195,6 @@ public class BlinkDatabaseManager extends SqliteManager {
 		this.mMeasurementDataList = this.obtainMeasurementDataList(NewWhere);
 		mMeasurementDataList.toString();
 
-		testBlinkDatabaseManager();
 		return this;
 	}
 

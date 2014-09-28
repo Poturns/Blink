@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
-import kr.poturns.blink.schema.Body;
 import kr.poturns.blink.schema.HeartBeat;
 import kr.poturns.blink.schema.Inbody;
 import kr.poturns.blink.schema.PushUp;
@@ -15,6 +14,7 @@ import kr.poturns.blink.schema.Squat;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -22,7 +22,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 public class HisotryActivity extends ListActivity implements OnItemClickListener{
 	public static int HISTORY_INBODY = 0x01;
@@ -53,9 +52,12 @@ public class HisotryActivity extends ListActivity implements OnItemClickListener
 		if(history==0x01){
 			((TextView)findViewById(R.id.history_subtitle)).setText("Inbody History");
 			mInbodyList = mBlinkServiceInteraction.local.obtainMeasurementData(Inbody.class);
+			Log.i("HealthManager","size : "+mInbodyList.size());
 			Collections.sort(mInbodyList,new DateCompare());
 			Inbody mInbody;
+			Log.i("HealthManager","size : "+mInbodyList.size());
 			for(int i=0;i<mInbodyList.size();i++){
+				
 				tHistoryDomain = new HistoryDomain();
 				mInbody = mInbodyList.get(i);
 				if(mInbody.type.equals("비만형"))tHistoryDomain.icon = R.drawable.fatperson_white;
