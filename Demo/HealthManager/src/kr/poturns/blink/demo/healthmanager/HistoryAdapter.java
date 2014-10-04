@@ -6,6 +6,7 @@ import java.util.List;
 import kr.poturns.blink.schema.Inbody;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,6 +37,7 @@ public class HistoryAdapter extends BaseAdapter {
 	// Adapter가 관리할 Data의 개수를 설정 합니다.
 	@Override
 	public int getCount() {
+		Log.i("HealthManager","count : "+mHistoryDomainList.size());
 		return mHistoryDomainList.size();
 	}
 

@@ -15,6 +15,7 @@ import kr.poturns.blink.schema.Squat;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -98,6 +99,7 @@ public class HisotryActivity extends ListActivity implements OnItemClickListener
 				tHistoryDomain.date = mSitUp.DateTime;
 				inbodyHisoryList.add(tHistoryDomain);
 			}
+			Log.i("HealthManager","count : "+inbodyHisoryList.size());
 			Collections.sort(inbodyHisoryList,new HistoryDomainCompare());
 			
 		}else if(history==0x03){

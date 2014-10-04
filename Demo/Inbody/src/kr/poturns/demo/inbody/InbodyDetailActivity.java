@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * 
@@ -131,6 +132,7 @@ public class InbodyDetailActivity extends ListActivity {
 			@Override
 			public void onClick(View arg0) {
 				Log.i("Inbody", "전송!");
+				Toast.makeText(InbodyDetailActivity.this, "인바디 정보를 전송합니다 !!", 1500).show();
 				// TODO Auto-generated method stub
 				sendInbodyRemote(mInbodyDomain);
 			}

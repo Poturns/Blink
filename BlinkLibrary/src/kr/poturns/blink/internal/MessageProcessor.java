@@ -17,6 +17,7 @@ import kr.poturns.blink.internal.comm.IBlinkMessagable;
 import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -25,6 +26,10 @@ import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 
 /**
+ * BlinkMessage에 대한 송,수신 기능을 제공한다.
+ * 현재 디바이스 Idenity를 고려하여 전달한 BlinkDevice를 지정해주며
+ * 받은 메세지의 경우, BlinkMessage의 Type등을 고려하여 각 Type에 맞게 알맞은 기능을 제공한다. 
+ * 
  * 
  * @author YeonHo.Kim
  * @author Ho.Kwon
@@ -64,6 +69,8 @@ public class MessageProcessor {
 	public void acceptBlinkMessage(BlinkMessage blinkMessage,
 			BlinkDevice fromDevice) {
 		Log.d("acceptBlinkMessage", "accept start!!");
+		Log.d("acceptBlinkMessage", "Message target MacAddr="+blinkMessage.getDestinationAddress().toString());
+		
 		String currentAddress = null;
 		BlinkDevice currentDevice = null;
 
@@ -73,7 +80,6 @@ public class MessageProcessor {
 			currentAddress = BlinkDevice.HOST.getAddress();
 			currentDevice = BlinkDevice.HOST;
 		}
-
 		if (blinkMessage.getDestinationAddress().equals(currentAddress)) {
 			// Message의 최종목적지가 현재 디바이스일때
 
@@ -246,6 +252,9 @@ public class MessageProcessor {
 		} else { // message의 최종 목적지가 현재 디바이스가 아니여서 다른 디바이스로 Pass해야 할 때
 			if (BlinkDevice.load(blinkMessage.getDestinationAddress())
 					.isConnected()) {
+				Log.i("AcceptBlinkMessage", "Toss to OtherDevice");
+				sendBlinkMessageTo(blinkMessage, BlinkDevice.load(blinkMessage.getDestinationAddress()));
+			//	Toast.makeText(SERVICE_KEEPER, text, duration)
 
 			} else {
 				// 해당 Device와 연결되지 않아서 Pass가 불가능할 때 FAIL Message를 보낸 디바이스쪽으로
@@ -318,17 +327,18 @@ public class MessageProcessor {
 			if (message.getDestinationAddress() == null) { // Hop : Main, Node :
 															// Main
 				message.setDestinationAddress(centerDevice.getAddress());
-				toDevice = centerDevice;
+				
 
 			} else { // Node : Wearable, Hop : 1. Main 2. X(Wearable 1 to 1
 						// Connect)-> 이 경우도 무조건 Center로 보내면 된다.
 
 			}
+			toDevice = centerDevice;
 		} else {
 			Log.d("sendBlinkMessageTo", "i am center");
 
 		}
-
+		Log.d("SendBlinkMessage", "targetMac =="+message.getDestinationAddress());
 		SERVICE_KEEPER.sendMessageToDevice(toDevice, message);
 		Log.d("Blink", "sendBlinkMessage in Message send!");
 		// 동기화 메시지를 전송했으므로 동기화중으로 설정
