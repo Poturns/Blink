@@ -5,7 +5,6 @@ import java.io.IOException;
 import kr.poturns.blink.db.archive.CallbackData;
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
 import kr.poturns.blink.demo.fitnessapp.schema.InBodyData;
-import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import android.app.ProgressDialog;
 import android.os.Bundle;
@@ -20,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 
 /**
  * fragment_inbody xml<br>
@@ -38,7 +38,6 @@ import com.google.gson.Gson;
 public class InBodyFragment extends SwipeEventFragment implements
 		OnClickListener, IInternalEventCallback {
 	public static final int CODE_INBODY = 0x01;
-	BlinkServiceInteraction mInteraction;
 	Gson gson;
 
 	TextView inbody_date;
@@ -66,7 +65,6 @@ public class InBodyFragment extends SwipeEventFragment implements
 		inbody_progressbar_summary = (TextView) v
 				.findViewById(R.id.inbody_progressbar_summary);
 
-		mInteraction = mActivityInterface.getBlinkServiceInteraction();
 		gson = new Gson();
 
 		try {
@@ -101,13 +99,14 @@ public class InBodyFragment extends SwipeEventFragment implements
 			break;
 		case R.id.inbody_update:
 			// 인바디 데이터 얻어오기
-			if (mInteraction == null) {
+			if (mActivityInterface.getBlinkServiceInteraction() == null) {
 				Toast.makeText(getActivity(), "서비스에 연결할 수 없습니다.",
 						Toast.LENGTH_SHORT).show();
 				return;
 			}
-			mInteraction.remote.obtainMeasurementData(
-					kr.poturns.blink.schema.Inbody.class, CODE_INBODY);
+			mActivityInterface.getBlinkServiceInteraction().remote
+					.obtainMeasurementData(
+							kr.poturns.blink.schema.Inbody.class, CODE_INBODY);
 			progressDialog.show();
 			break;
 		default:
@@ -153,8 +152,23 @@ public class InBodyFragment extends SwipeEventFragment implements
 								Toast.LENGTH_SHORT).show();
 						return;
 					} else {
-						InBodyData mInbodyData = gson.fromJson(
-								data.OutDeviceData, InBodyData.class);
+						InBodyData mInbodyData;
+						try {
+							mInbodyData = gson.fromJson(data.OutDeviceData,
+									InBodyData.class);
+						} catch (JsonParseException e) {
+							e.printStackTrace();
+							Toast.makeText(getActivity(),
+									"받은 데이터가 없거나 잘못되었습니다.", Toast.LENGTH_SHORT)
+									.show();
+							return;
+						} catch (Exception e) {
+							e.printStackTrace();
+							Toast.makeText(getActivity(),
+									"인바디 데이터를 받을 수 없습니다.", Toast.LENGTH_SHORT)
+									.show();
+							return;
+						}
 						try {
 							FitnessUtil.saveInBodyFile(getActivity(),
 									mInbodyData);

@@ -95,6 +95,7 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 		String sql = "";
 
 		// Create DeviceAppList table sql statement
+		// TODO FK에 ON UPDATE ,ON DELETE CASCADE 를 적용? 
 		sql = "create table 'Device' ("
 				+ "'DeviceId' INTEGER PRIMARY KEY AUTOINCREMENT,"
 				+ "'Device' TEXT NOT NULL," + "'UUID' TEXT,"
@@ -176,13 +177,13 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 	 * @param db
 	 */
 	public void updateBlinkDatabase(SQLiteDatabase db) {
-		db.execSQL("DROP TABLE IF EXSITS Device");
-		db.execSQL("DROP TABLE IF EXSITS App");
-		db.execSQL("DROP TABLE IF EXSITS Measurement");
-		db.execSQL("DROP TABLE IF EXSITS Function");
-		db.execSQL("DROP TABLE IF EXSITS Data");
-		db.execSQL("DROP TABLE IF EXSITS MeasurementData");
-		db.execSQL("DROP TABLE IF EXSITS Log");
+		db.execSQL("DROP TABLE IF EXISTS Device");
+		db.execSQL("DROP TABLE IF EXISTS App");
+		db.execSQL("DROP TABLE IF EXISTS Measurement");
+		db.execSQL("DROP TABLE IF EXISTS Function");
+		db.execSQL("DROP TABLE IF EXISTS Data");
+		db.execSQL("DROP TABLE IF EXISTS MeasurementData");
+		db.execSQL("DROP TABLE IF EXISTS Log");
 		// 새로 생성될 수 있도록 onCreate() 메소드를 생성한다.
 		createBlinkDatabase(db);
 	}
@@ -204,10 +205,9 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 		CONTEXT.getContentResolver().notifyChange(URI_OBSERVER_BLINKAPP, null);
 		Log.i(tag, "registerBlinkApp OK");
 	}
-	
+
 	/**
-	 * BlinkAppSync에서 동기화를 위해 호출하는 매소드
-	 * URI_OBSERVER_BLINKAPP를 통해 알리지 않는다.
+	 * BlinkAppSync에서 동기화를 위해 호출하는 매소드 URI_OBSERVER_BLINKAPP를 통해 알리지 않는다.
 	 */
 	public void registerBlinkAppSync(BlinkAppInfo mBlinkAppInfo) {
 		registerDevice(mBlinkAppInfo);
@@ -219,7 +219,7 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 		CONTEXT.getContentResolver().notifyChange(URI_OBSERVER_SYNC, null);
 		Log.i(tag, "registerBlinkAppSync OK");
 	}
-	
+
 	/**
 	 * 주어진 device, PackageName으로 BlinkAppInfo를 검색한다. 없을 경우 기본 값들을 설정하고 isExist에
 	 * false를 설정하여 리턴한다. 사용자는 isExist를 확인하여 없을 경우 사용할 Function과 Measurement를
@@ -677,8 +677,9 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 					.getColumnIndex("GroupId"));
 			mMeasurementData.Data = mCursor.getString(mCursor
 					.getColumnIndex("Data"));
-			mMeasurementData.DateTime = mCursor.getString(mCursor
-					.getColumnIndex("DateTime"));
+			//TODO review
+			mMeasurementData.setDateTime(mCursor.getString(mCursor
+					.getColumnIndex("DateTime")));
 			mMeasurementDataList.add(mMeasurementData);
 		}
 		return mMeasurementDataList;
@@ -735,8 +736,9 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 					.getColumnIndex("GroupId"));
 			mMeasurementData.Data = mCursor.getString(mCursor
 					.getColumnIndex("Data"));
-			mMeasurementData.DateTime = mCursor.getString(mCursor
-					.getColumnIndex("DateTime"));
+			//TODO review
+			mMeasurementData.setDateTime(mCursor.getString(mCursor
+					.getColumnIndex("DateTime")));
 			mMeasurementDataList.add(mMeasurementData);
 		}
 		return mMeasurementDataList;
@@ -781,8 +783,10 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 			for (int j = 0; j < mMeasurementList.size(); j++) {
 				if (mMeasurementList.get(j).Measurement.contentEquals(ClassUtil
 						.obtainFieldSchema(mFields[i]))) {
-					Log.i("HealthManager", "new 등록 : "+mMeasurementList.get(j).Measurement+","+ClassUtil
-							.obtainFieldSchema(mFields[i]));
+					Log.i("HealthManager",
+							"new 등록 : " + mMeasurementList.get(j).Measurement
+									+ ","
+									+ ClassUtil.obtainFieldSchema(mFields[i]));
 					mMeasurementData.MeasurementId = mMeasurementList.get(j).MeasurementId;
 					mMeasurementData.Data = mFields[i].get(obj).toString();
 					// GroupId, MeasurementId, Data 등록
@@ -936,8 +940,10 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 			setClassField(mFieldMap.get(mMeasurementData.MeasurementId),
 					mMeasurementData.Data, tempObject);
 			// 클래스의 DateTime을 측정값이 등록된 시간으로 한다.
+			// TODO review plz
 			if (mDateTimeField != null)
-				mDateTimeField.set(tempObject, mMeasurementData.DateTime);
+				mDateTimeField.set(tempObject,
+						mMeasurementData.obtainDateTime());
 			mObjectMap.put(mMeasurementData.GroupId, tempObject);
 		}
 

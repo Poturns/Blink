@@ -9,7 +9,7 @@ package kr.poturns.blink.schema;
  * @author mementohora
  *
  */
-public class Inbody extends DefaultSchema{
+public class Inbody extends DefaultSchema.Base{
 	public String type;
 	public String gender;
 	public int age;

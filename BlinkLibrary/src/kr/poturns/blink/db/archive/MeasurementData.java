@@ -16,8 +16,8 @@ import android.os.Parcelable;
  * @author Jiwon
  * 
  */
-public class MeasurementData extends DefaultSchema implements IDatabaseObject,
-		Parcelable {
+public class MeasurementData extends DefaultSchema.Base implements
+		IDatabaseObject, Parcelable {
 	/** MeasurementData가 속한 Measurement의 ID */
 	public int MeasurementId;
 	/** MeasurementData의 ID */

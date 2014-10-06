@@ -1,7 +1,7 @@
 package kr.poturns.blink.schema;
 
 /** category : fitness */
-public class SitUp extends DefaultSchema {
+public class SitUp extends DefaultSchema.Base {
 	public int count;
 
 	public SitUp() {

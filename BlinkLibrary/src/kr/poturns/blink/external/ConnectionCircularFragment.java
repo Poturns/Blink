@@ -36,6 +36,7 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 		ViewGroup viewGroup = (ViewGroup) View.inflate(getActivity(),
 				R.layout.res_blink_fragment_circular_connection, null);
 		showHostDeviceToList(false);
+		//TODO Center View 를 Host device가 아닌 BLINK network에서 "Center" device로?
 		mCircularHelper = new CircularViewHelper(viewGroup, android.R.id.text1) {
 			@Override
 			protected View getView(Context context, int position, Object object) {

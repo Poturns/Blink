@@ -160,8 +160,8 @@ public class BlinkServiceInteraction implements ServiceConnection,
 					mBlinkDevice = mInternalOperationSupport.getBlinkDevice();
 
 					if (mIInternalEventCallback != null) {
-						mInternalOperationSupport
-								.registerCallback(mIInternalEventCallback,mPackageName);
+						mInternalOperationSupport.registerCallback(
+								mIInternalEventCallback, mPackageName);
 					}
 
 				} catch (Exception e) {
@@ -203,13 +203,14 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		intent.putExtra(BlinkLocalService.INTENT_EXTRA_SOURCE_PACKAGE,
 				CONTEXT.getPackageName());
 		try {
-			mInternalOperationSupport.unregisterCallback(mIInternalEventCallback, mPackageName);
+			mInternalOperationSupport.unregisterCallback(
+					mIInternalEventCallback, mPackageName);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		CONTEXT.unbindService(this);
-		
+
 		stopBroadcastReceiver();
 		// CONTEXT.stopService(intent);
 	}
@@ -266,8 +267,8 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		mIInternalEventCallback = callback;
 		if (mIInternalEventCallback != null) {
 			try {
-				mInternalOperationSupport
-						.registerCallback(mIInternalEventCallback,mPackageName);
+				mInternalOperationSupport.registerCallback(
+						mIInternalEventCallback, mPackageName);
 			} catch (RemoteException e) {
 				e.printStackTrace();
 				return false;
@@ -628,8 +629,11 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			return null;
 		}
 
-		/** Gson으로 얻은 객체를 변환한다. 
-		 * @author Myungjin*/
+		/**
+		 * Gson으로 얻은 객체를 변환한다.
+		 * 
+		 * @author Myungjin
+		 */
 		private final <T> List<T> gsonTreeMapConvert(Class<T> clazz,
 				Object gsonTreeObject) {
 			@SuppressWarnings("unchecked")
@@ -644,7 +648,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 							Field field = clazz.getField(entry.getKey());
 							field.setAccessible(true);
 							// check primitive type
-							checkTypeAndPut(field, data, entry.getValue());
+							checkTypeAndPut(data,field, entry.getValue());
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -660,14 +664,14 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		/**
 		 * object.field = value
 		 * 
-		 * @param field
-		 *            object의 한 필드
 		 * @param object
 		 *            field가 속한 객체
+		 * @param field
+		 *            object의 한 필드
 		 * @param value
 		 *            설정할 field의 값
 		 */
-		private void checkTypeAndPut(Field field, Object object, Object value)
+		private void checkTypeAndPut(Object object, Field field, Object value)
 				throws Exception {
 			if (field.getType().equals(Integer.TYPE)) {
 				field.setInt(object, ((Double) value).intValue());
@@ -1060,7 +1064,8 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			String ClassName = obj.getName();
 			try {
 				mInternalOperationSupport.obtainMeasurementData(ClassName,
-						DateTimeFrom, DateTimeTo, ContainType, RequestCode,mPackageName);
+						DateTimeFrom, DateTimeTo, ContainType, RequestCode,
+						mPackageName);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -1084,9 +1089,9 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		public void obtainMeasurementData(List<Measurement> mMeasurementList,
 				String DateTimeFrom, String DateTimeTo, int RequestCode) {
 			try {
-				mInternalOperationSupport
-						.obtainMeasurementDataById(mMeasurementList,
-								DateTimeFrom, DateTimeTo, RequestCode,mPackageName);
+				mInternalOperationSupport.obtainMeasurementDataById(
+						mMeasurementList, DateTimeFrom, DateTimeTo,
+						RequestCode, mPackageName);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -1102,7 +1107,8 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 */
 		public void startFunction(Function function, int requestCode) {
 			try {
-				mInternalOperationSupport.startFunction(function, requestCode,mPackageName);
+				mInternalOperationSupport.startFunction(function, requestCode,
+						mPackageName);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -1124,7 +1130,8 @@ public class BlinkServiceInteraction implements ServiceConnection,
 					try {
 						targetBlinkAppInfo.mApp.AppIcon = null;
 						mInternalOperationSupport.sendMeasurementData(
-								targetBlinkAppInfo, json, requestCode,mPackageName);
+								targetBlinkAppInfo, json, requestCode,
+								mPackageName);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}

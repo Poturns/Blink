@@ -338,7 +338,8 @@ class DataSelectFragment extends Fragment {
 							.findViewById(android.R.id.text2);
 					if (item instanceof Measurement) {
 						Measurement measurement = (Measurement) item;
-						head.setText(measurement.MeasurementName);
+						head.setText(measurement.MeasurementName + " / "
+								+ getMeasurementFieldFromSchema(measurement));
 						head.setCompoundDrawablesRelativeWithIntrinsicBounds(
 								R.drawable.res_blink_ic_action_statistics_chart,
 								0, 0, 0);
@@ -355,6 +356,15 @@ class DataSelectFragment extends Fragment {
 						tail.setText(function.Description);
 					}
 					return v;
+				}
+
+				private String getMeasurementFieldFromSchema(
+						Measurement measurement) {
+					String[] array = measurement.Measurement.split("/");
+					if (array.length > 1) {
+						return array[1];
+					} else
+						return measurement.Measurement;
 				}
 			};
 		}
@@ -379,7 +389,7 @@ class DataSelectFragment extends Fragment {
 								.getActionBar().getTitle(), getActivity()
 								.getActionBar().getSubtitle());
 					}
-					//TODO Function를 나타내는 Item을 선택하였을 때,
+					// TODO Function를 나타내는 Item을 선택하였을 때,
 					// Function 실행요청을 보내야 하나?
 				}
 			});

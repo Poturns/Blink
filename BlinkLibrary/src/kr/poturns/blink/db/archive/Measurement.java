@@ -9,7 +9,7 @@ import android.os.Parcelable;
  * 
  * <br>
  * <br>
- * <b>Blink Database</b>에서 <b>Application</b>이 <b>측정할 수 있는 데이터</b>를 의미한다.
+ * <b>Blink Database</b>에서 <b>Application</b>이 <b>측정할 수 있는 데이터의 정보</b>를 의미한다.
  * 
  * @author Jiwon
  * 
@@ -48,7 +48,12 @@ public class Measurement implements IDatabaseObject, Parcelable {
 		this.Description = Description;
 	}
 
-	public MeasurementData obtainMeasurement() {
+	/**
+	 * 현재 {@code Measurement}의 {@code MeasurementData} prototype을 만든다. <br>
+	 * <br>
+	 * 이 {@code MeasurementData}에는 measurementId를 제외한 모든 내용이 비어있다.
+	 */
+	public MeasurementData obtainMeasurementData() {
 		MeasurementData mMeasurementData = new MeasurementData();
 		mMeasurementData.MeasurementId = this.MeasurementId;
 		return mMeasurementData;
