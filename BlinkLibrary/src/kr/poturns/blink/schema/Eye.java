@@ -5,7 +5,7 @@ package kr.poturns.blink.schema;
  * @author mementohora
  *
  */
-public class Eye extends DefaultSchema{
+public class Eye extends DefaultSchema.Base{
 	public double left_sight;
 	public double right_sight;
 }

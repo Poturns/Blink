@@ -1,7 +1,7 @@
 package kr.poturns.blink.schema;
 
 /** category : health */
-public class HeartBeat extends DefaultSchema {
+public class HeartBeat extends DefaultSchema.Base {
 	public int bpm;
 
 	public HeartBeat(int bpm, String dateTime) {

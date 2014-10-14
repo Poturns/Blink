@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import kr.poturns.blink.db.JsonManager;
+import kr.poturns.blink.schema.DefaultSchema;
 import kr.poturns.blink.util.ClassUtil;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -47,31 +48,62 @@ public class BlinkAppInfo implements Parcelable, IDatabaseObject {
 		mFunctionList.add(new Function(Function, Description, Action, Type));
 	}
 
+	// FIXME 이 메소드를 사용하면, 적절한 스키마가 생성되지 않을 가능성이 있음
 	public void addMeasurement(String MeasurementName, String Measurement,
 			String Type, String Description) {
 		mMeasurementList.add(new Measurement(MeasurementName, Measurement,
 				Type, Description));
 	}
 
+	// FIXME 인자로 생성되는 Measurement는 스키마의 형태를 띄어야 하므로 사용자가 생성하기 어려울 수 있음
 	public MeasurementData obtainMeasurementData(String Measurement) {
 		for (int i = 0; i < mMeasurementList.size(); i++) {
 			if (mMeasurementList.get(i).Measurement.contentEquals(Measurement)) {
-				return mMeasurementList.get(i).obtainMeasurement();
+				return mMeasurementList.get(i).obtainMeasurementData();
+			}
+		}
+		return null;
+	}
+
+	public MeasurementData obtainMeasurementData(Measurement measurement) {
+		for (int i = 0; i < mMeasurementList.size(); i++) {
+			if (mMeasurementList.get(i).Measurement.equals(measurement)) {
+				return mMeasurementList.get(i).obtainMeasurementData();
 			}
 		}
 		return null;
 	}
 
 	// Java reflect을 이용한 Measurement 추가
-	public void addMeasurement(Class<?> obj) {
+	public void addMeasurement(Class<? extends DefaultSchema> obj) {
 		Field[] mFields = obj.getFields();
-		for (int i = 0; i < mFields.length; i++) {
-			if (mFields[i].getName().contentEquals("DateTime"))
+		for (Field field : mFields) {
+			if (field.getName().contentEquals("DateTime"))
 				continue;
 			Measurement mMeasurement = new Measurement(obj.getSimpleName(),
-					ClassUtil.obtainFieldSchema(mFields[i]), mFields[i]
-							.getType().getName(), "");
+					ClassUtil.obtainFieldSchema(field), field.getType()
+							.getName(), "");
 			mMeasurementList.add(mMeasurement);
+		}
+	}
+
+	/**
+	 * 측정 정보를 등록한다.
+	 * 
+	 * @param meaurementObject
+	 *            측정 데이터 클래스
+	 * @param description
+	 *            측정 데이터에 대한 설명
+	 */
+	public void addMeasurement(Class<? extends DefaultSchema> meaurementObject,
+			String description) {
+		Field[] mFields = meaurementObject.getFields();
+		for (Field field : mFields) {
+			if (field.getName().contentEquals("DateTime"))
+				continue;
+			mMeasurementList.add(new Measurement(meaurementObject
+					.getSimpleName(), ClassUtil.obtainFieldSchema(field), field
+					.getType().getName(), description));
 		}
 	}
 

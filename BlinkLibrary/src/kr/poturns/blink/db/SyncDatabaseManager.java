@@ -247,7 +247,8 @@ public class SyncDatabaseManager extends BlinkDatabaseManager {
 		if (where == null || where.equals(""))
 			return;
 
-		String query = "update SyncMeasurementData set " + set + " where " + where;
+		String query = "update SyncMeasurementData set " + set + " where "
+				+ where;
 		mSQLiteDatabase.execSQL(query);
 	}
 
@@ -496,7 +497,8 @@ public class SyncDatabaseManager extends BlinkDatabaseManager {
 					values.put("MeasurementId", mMeasurementData.MeasurementId);
 					values.put("GroupId", mMeasurementData.GroupId);
 					values.put("Data", mMeasurementData.Data);
-					values.put("DateTime", mMeasurementData.DateTime);
+					// TODO review plz
+					values.put("DateTime", mMeasurementData.obtainDateTime());
 					mSQLiteDatabase.insert("MeasurementData", null, values);
 					if (MaxId < mMeasurementData.MeasurementDataId) {
 						MaxId = mMeasurementData.MeasurementDataId;
