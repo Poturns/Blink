@@ -100,6 +100,7 @@ public class HisotryActivity extends ListActivity implements OnItemClickListener
 				tHistoryDomain.date = mSitUp.DateTime;
 				inbodyHisoryList.add(tHistoryDomain);
 			}
+			Log.i("HealthManager","count : "+inbodyHisoryList.size());
 			Collections.sort(inbodyHisoryList,new HistoryDomainCompare());
 			
 		}else if(history==0x03){
