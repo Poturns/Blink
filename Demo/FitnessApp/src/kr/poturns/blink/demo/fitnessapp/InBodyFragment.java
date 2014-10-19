@@ -1,15 +1,18 @@
 package kr.poturns.blink.demo.fitnessapp;
 
 import java.io.IOException;
+import java.util.List;
 
 import kr.poturns.blink.db.archive.CallbackData;
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
 import kr.poturns.blink.demo.fitnessapp.schema.InBodyData;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
+import kr.poturns.blink.schema.Inbody;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -20,6 +23,7 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * fragment_inbody xml<br>
@@ -106,7 +110,7 @@ public class InBodyFragment extends SwipeEventFragment implements
 			}
 			mActivityInterface.getBlinkServiceInteraction().remote
 					.obtainMeasurementData(
-							kr.poturns.blink.schema.Inbody.class, CODE_INBODY);
+							Inbody.class, CODE_INBODY);
 			progressDialog.show();
 			break;
 		default:
@@ -147,15 +151,24 @@ public class InBodyFragment extends SwipeEventFragment implements
 				@Override
 				public void run() {
 					progressDialog.dismiss();
-					if (!data.Result) {
+					if (data.InDeviceData==null && data.OutDeviceData==null) {
 						Toast.makeText(getActivity(), "인바디 데이터를 받을 수 없습니다.",
 								Toast.LENGTH_SHORT).show();
 						return;
 					} else {
-						InBodyData mInbodyData;
+						List<InBodyData> mInbodyList = null;
+						InBodyData mInbodyData = null;
 						try {
-							mInbodyData = gson.fromJson(data.OutDeviceData,
-									InBodyData.class);
+							if(data.OutDeviceData!=null){
+								mInbodyList = gson.fromJson(data.OutDeviceData,
+										new TypeToken<List<InBodyData>>(){}.getType());
+							}else if(data.InDeviceData!=null){
+								mInbodyList = gson.fromJson(data.InDeviceData,
+										new TypeToken<List<InBodyData>>(){}.getType());
+							}
+							mInbodyData = mInbodyList.get(mInbodyList.size()-1);
+							
+							
 						} catch (JsonParseException e) {
 							e.printStackTrace();
 							Toast.makeText(getActivity(),
@@ -198,7 +211,7 @@ public class InBodyFragment extends SwipeEventFragment implements
 			inbody_date.setText("");
 			inbody_age_gender.setText(inbodyData.age + " 세 ("
 					+ inbodyData.gender + ")");
-			inbody_weight.setText(Integer.toString(inbodyData.weight));
+			inbody_weight.setText("몸무게 : "+Integer.toString(inbodyData.weight)+" Kg");
 			inbody_progressbar.setMax(inbodyData.needcalorie);
 			int todayExersisedCalorie = FitnessUtil
 					.getTodayBurnedCalorie(getActivity());

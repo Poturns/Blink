@@ -138,6 +138,9 @@ public class InbodyDetailActivity extends ListActivity {
 			}
 			
 		});
+		
+		
+		button_avg.callOnClick();
 	}
 
 	public void sendInbodyRemote(InbodyDomain inbody) {
