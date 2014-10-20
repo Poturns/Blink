@@ -83,9 +83,6 @@ public class MainActivity extends Activity implements ActivityInterface {
 		// 심박수 측정 서비스 시작/종료
 		startOrStopService(PreferenceManager.getDefaultSharedPreferences(this)
 				.getBoolean(SettingFragment.KEY_MEASURE_HEARTBEAT, false));
-		IntentFilter filter = new IntentFilter(
-				HeartBeatService.WIDGET_HEART_BEAT_ACTION);
-		registerReceiver(mHeartBeatReciever, filter);
 
 		// 화면 제스처 등록
 		mGestureDetector = new GestureDetector(this,
@@ -151,15 +148,40 @@ public class MainActivity extends Activity implements ActivityInterface {
 		super.onPostCreate(savedInstanceState);
 		try {
 			if (FitnessUtil.readInBodyFromFile(this) == null) {
-				showDialog();
+				showInBodyUpdateDialog();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			showDialog();
+			showInBodyUpdateDialog();
 		}
 	}
 
-	private void showDialog() {
+	@Override
+	protected void onResume() {
+		IntentFilter filter = new IntentFilter(
+				HeartBeatService.WIDGET_HEART_BEAT_ACTION);
+		registerReceiver(mHeartBeatReciever, filter);
+		super.onResume();
+	}
+
+	@Override
+	protected void onPause() {
+		unregisterReceiver(mHeartBeatReciever);
+		super.onPause();
+	}
+
+	@Override
+	protected void onDestroy() {
+		try {
+			mInteraction.stopService();
+		} catch (Exception e) {
+			// ignore
+		}
+		SQLiteHelper.closeDB();
+		super.onDestroy();
+	}
+
+	private void showInBodyUpdateDialog() {
 		View content = View.inflate(this, R.layout.main_inbody_alert, null);
 
 		final AlertDialog dialog = new AlertDialog.Builder(this)
@@ -176,7 +198,7 @@ public class MainActivity extends Activity implements ActivityInterface {
 						attachFragment(new InBodyFragment(), b);
 					}
 				});
-		
+
 		// 5초 뒤 다이얼로그 종료
 		content.postDelayed(new Runnable() {
 
@@ -185,18 +207,6 @@ public class MainActivity extends Activity implements ActivityInterface {
 				dialog.dismiss();
 			}
 		}, 5000);
-	}
-
-	@Override
-	protected void onDestroy() {
-		try {
-			mInteraction.stopService();
-		} catch (Exception e) {
-			// ignore
-		}
-		SQLiteHelper.closeDB();
-		unregisterReceiver(mHeartBeatReciever);
-		super.onDestroy();
 	}
 
 	@Override
@@ -249,7 +259,14 @@ public class MainActivity extends Activity implements ActivityInterface {
 		return mISupport;
 	}
 
+	/** 심박수 정보를 전달해 줄 인터페이스 */
 	public static interface OnHeartBeatEventListener {
+		/**
+		 * 심박수 데이터가 왔을 때, 호출된다.
+		 * 
+		 * @param bpm
+		 *            심박수
+		 */
 		public void onHeartBeat(int bpm);
 	}
 
@@ -277,6 +294,7 @@ public class MainActivity extends Activity implements ActivityInterface {
 		public boolean onSwipe(Direction direction);
 	}
 
+	/** 기본적으로 {@link ActivityInterface}가지고 있는 Fragment */
 	public static abstract class SwipeEventFragment extends Fragment implements
 			SwipeListener {
 		protected ActivityInterface mActivityInterface;
@@ -365,17 +383,19 @@ public class MainActivity extends Activity implements ActivityInterface {
 		}
 	}
 
+	/** {@link HeartBeatService}로 부터 심박수 측정 정보를 받을 {@link BroadcastReceiver} */
 	BroadcastReceiver mHeartBeatReciever = new BroadcastReceiver() {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			if (intent.getAction().equals(
 					HeartBeatService.WIDGET_HEART_BEAT_ACTION)) {
-				/* 내부 DB와 BlinkDB에 심장박동수를 입력한다. */
 				int bpm = intent.getIntExtra(
 						HeartBeatService.WIDGET_HEART_BEAT_VALUE, 0);
 				if (bpm < 1)
 					return;
+
+				// 심박수 측정 이벤트 전달
 				if (mChildObject != null
 						&& mChildObject instanceof OnHeartBeatEventListener) {
 					((OnHeartBeatEventListener) mChildObject).onHeartBeat(bpm);

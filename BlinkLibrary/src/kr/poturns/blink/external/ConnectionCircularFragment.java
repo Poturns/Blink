@@ -33,21 +33,38 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
+		checkAndPutHostDevice();
 		ViewGroup viewGroup = (ViewGroup) View.inflate(getActivity(),
 				R.layout.res_blink_fragment_circular_connection, null);
-		showHostDeviceToList(false);
-		//TODO Center View 를 Host device가 아닌 BLINK network에서 "Center" device로?
-		mCircularHelper = new CircularViewHelper(viewGroup, android.R.id.text1) {
+		// TODO Center View 를 Host device가 아닌 BLINK network에서 "Center" device로?
+		// XXX 테스트 필요
+		mCircularHelper = new CircularViewHelper(viewGroup) {
 			@Override
 			protected View getView(Context context, int position, Object object) {
+				return drawView(context, (BlinkDevice) object, false);
+			}
+
+			@Override
+			protected View createCenterView(Context context, Object object) {
+				if (object == null)
+					return null;
+				return drawView(context, (BlinkDevice) object, true);
+			}
+
+			private View drawView(Context context, BlinkDevice device,
+					boolean isCenter) {
 				TextView view = (TextView) View.inflate(context,
 						R.layout.res_blink_view_circular, null);
-				BlinkDevice device = (BlinkDevice) object;
-				view.setCompoundDrawablesWithIntrinsicBounds(
-						0,
-						device.isConnected() ? R.drawable.res_blink_ic_action_device_access_bluetooth_connected
-								: R.drawable.res_blink_ic_action_device_access_bluetooth,
-						0, 0);
+				if (device.getAddress().equals(getHostDevice().getAddress())) {
+					view.setCompoundDrawablesWithIntrinsicBounds(0,
+							R.drawable.res_blink_ic_action_android, 0, 0);
+				} else {
+					view.setCompoundDrawablesWithIntrinsicBounds(
+							0,
+							device.isConnected() ? R.drawable.res_blink_ic_action_device_access_bluetooth_connected
+									: R.drawable.res_blink_ic_action_device_access_bluetooth,
+							0, 0);
+				}
 				String name = device.getName();
 				if (name == null || name.equals(""))
 					name = "NoName";
@@ -55,30 +72,17 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 				// int size = getSize();
 				// if(name!=null && device.getName().length())
 				view.setText(name);
+				if (isCenter) {
+					view.setOnLongClickListener(mCenterViewLongClick);
+				}
 				view.setOnClickListener(mOnClickListener);
+
 				return view;
 			}
 		};
-		TextView hostView = (TextView) mCircularHelper.getCenterView();
-		hostView.setText(getHostDevice().getName());
-		hostView.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				showHostDeviceInfoDialog();
-			}
-		});
-		hostView.setOnLongClickListener(new View.OnLongClickListener() {
-
-			@Override
-			public boolean onLongClick(View v) {
-				mSetSeekBarValueMax = 2;
-				fetchDeviceListFromBluetooth();
-				return true;
-			}
-		});
 		mCircularHelper.setOnDragAndDropListener(mDragAndDropListener);
+		mCircularHelper.setCenterViewFromObject(getCenterDevice());
 		mCircularHelper.drawCircularView(getDeviceList());
-
 		mSlidingDrawer = (SlidingDrawer) viewGroup
 				.findViewById(R.id.res_blink_fragment_circular_sliding_drawer);
 		mSlidingDrawer.animateOpen();
@@ -147,20 +151,24 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 		@Override
 		public void onStartDrag(View view, View center) {
 			view.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle_gray);
-			TextView centerView = (TextView) center;
-			centerView
-					.setText(getString(((BlinkDevice) mCircularHelper
-							.getViewTag(view)).isConnected() ? R.string.res_blink_drop_to_connect
-							: R.string.res_blink_drop_to_disconnect));
-			centerView
-					.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle_border);
+			if (center != null) {
+				TextView centerView = (TextView) center;
+				centerView
+						.setText(getString(((BlinkDevice) mCircularHelper
+								.getViewTag(view)).isConnected() ? R.string.res_blink_drop_to_connect
+								: R.string.res_blink_drop_to_disconnect));
+				centerView
+						.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle_border);
+			}
 		}
 
 		@Override
 		public void onDropEnd(View view, View center) {
-			center.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle);
 			view.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle);
-			((TextView) center).setText(getHostDevice().getName());
+			if (center != null) {
+				center.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle);
+				((TextView) center).setText(getHostDevice().getName());
+			}
 		}
 	};
 	private View.OnClickListener mOnClickListener = new View.OnClickListener() {
@@ -173,9 +181,23 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 		}
 	};
 
+	private View.OnLongClickListener mCenterViewLongClick = new View.OnLongClickListener() {
+
+		@Override
+		public boolean onLongClick(View v) {
+			mSetSeekBarValueMax = 2;
+			fetchDeviceListFromBluetooth();
+			return true;
+		}
+	};
+
 	@Override
 	public void onDeviceListChanged() {
+		super.onDeviceListChanged();
+		mCircularHelper.setCenterViewFromObject(getCenterDevice());
+		checkAndPutHostDevice();
 		mCircularHelper.drawCircularView(getDeviceList());
+
 		switch (mSetSeekBarValueMax) {
 		case 1:
 			mSeekBar.setProgress(100);
@@ -187,5 +209,11 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 			return;
 		}
 		mSetSeekBarValueMax = 0;
+	}
+
+	private void checkAndPutHostDevice() {
+		if (!getDeviceList().contains(BlinkDevice.HOST)) {
+			getDeviceList().add(BlinkDevice.HOST);
+		}
 	}
 }

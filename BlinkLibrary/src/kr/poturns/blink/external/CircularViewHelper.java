@@ -66,6 +66,7 @@ class CircularViewHelper {
 	private int mObjectSize;
 	private android.widget.FrameLayout.LayoutParams mLayoutParams;
 	private static final int CENTER_VIEW_POSITION = -2;
+	private static final int VIEW_NO_ID = -99;
 
 	/**
 	 * CircularViewHelper instance를 생성한다.
@@ -74,7 +75,7 @@ class CircularViewHelper {
 	 *            원형 View가 추가될 ViewGroup
 	 */
 	public CircularViewHelper(android.view.ViewGroup viewGroup) {
-		this(viewGroup, android.R.id.text1);
+		this(viewGroup, VIEW_NO_ID);
 	}
 
 	/**
@@ -90,7 +91,8 @@ class CircularViewHelper {
 			throw new RuntimeException(
 					"CircularViewHelper only accept FrameLayout");
 		this.mViewGroup = viewGroup;
-		mCenterView = viewGroup.findViewById(centerViewId);
+		if (centerViewId != VIEW_NO_ID)
+			mCenterView = viewGroup.findViewById(centerViewId);
 		this.mCenterViewId = centerViewId;
 		mContext = mViewGroup.getContext();
 		mChildViewList = new ArrayList<android.view.View>();
@@ -134,10 +136,44 @@ class CircularViewHelper {
 		setCenterViewIdIfNotExist();
 	}
 
+	/**
+	 * 중앙에 배치될 View를 설정한다.<br>
+	 * <br>
+	 * 생성되는 View를 커스터마이징하려면
+	 * {@link CircularViewHelper#createCenterView(android.content.Context, Object)}
+	 * 를 재정의 한다.
+	 * 
+	 * @param obj
+	 *            생성하려는 View와 관련된 객체
+	 */
+	public final void setCenterViewFromObject(Object obj) {
+		setCenterView(createCenterView(mContext, obj));
+	}
+
+	/**
+	 * CenterView를 생성한다.
+	 * 
+	 * @param context
+	 *            {@link CircularViewHelper}의 Context
+	 * @param object
+	 *            생성하려는 View와 관련된 객체
+	 * @return CircularViewHelper에 가운데에 위치하려는 View
+	 * @see {@link CircularViewHelper#setCenterViewFromObject(Object)}
+	 * */
+	protected android.view.View createCenterView(
+			android.content.Context context, Object object) {
+		return android.view.View.inflate(context,
+				R.layout.res_blink_view_circular, null);
+	}
+
 	/* 중앙에 배치된 View의 Id가 없는 경우 설정한다. */
 	private void setCenterViewIdIfNotExist() {
+		if (mCenterView == null) {
+			mCenterViewId = VIEW_NO_ID;
+			return;
+		}
 		mCenterViewId = mCenterView.getId();
-		if (mCenterViewId == android.view.View.NO_ID) {
+		if (mCenterViewId == VIEW_NO_ID) {
 			mCenterViewId = android.view.View.generateViewId();
 			mCenterView.setId(mCenterViewId);
 		}
@@ -181,6 +217,8 @@ class CircularViewHelper {
 
 	/** 중앙의 View를 현재 Spec에 맞게 다시 그리고, 필요하다면 주어진 ViewGroup에 추가한다 */
 	private void setCenterViewSpec() {
+		if (mCenterView == null)
+			return;
 		ViewInfoTag tag = new ViewInfoTag();
 		tag.mIsDrag = false;
 		tag.mViewPosition = CENTER_VIEW_POSITION;

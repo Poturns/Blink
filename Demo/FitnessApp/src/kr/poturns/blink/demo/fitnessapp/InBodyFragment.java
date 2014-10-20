@@ -12,7 +12,6 @@ import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -109,8 +108,7 @@ public class InBodyFragment extends SwipeEventFragment implements
 				return;
 			}
 			mActivityInterface.getBlinkServiceInteraction().remote
-					.obtainMeasurementData(
-							Inbody.class, CODE_INBODY);
+					.obtainMeasurementData(Inbody.class, CODE_INBODY);
 			progressDialog.show();
 			break;
 		default:
@@ -151,7 +149,7 @@ public class InBodyFragment extends SwipeEventFragment implements
 				@Override
 				public void run() {
 					progressDialog.dismiss();
-					if (data.InDeviceData==null && data.OutDeviceData==null) {
+					if (data.InDeviceData == null && data.OutDeviceData == null) {
 						Toast.makeText(getActivity(), "인바디 데이터를 받을 수 없습니다.",
 								Toast.LENGTH_SHORT).show();
 						return;
@@ -159,16 +157,17 @@ public class InBodyFragment extends SwipeEventFragment implements
 						List<InBodyData> mInbodyList = null;
 						InBodyData mInbodyData = null;
 						try {
-							if(data.OutDeviceData!=null){
+							if (data.OutDeviceData != null) {
 								mInbodyList = gson.fromJson(data.OutDeviceData,
-										new TypeToken<List<InBodyData>>(){}.getType());
-							}else if(data.InDeviceData!=null){
+										new TypeToken<List<InBodyData>>() {
+										}.getType());
+							} else if (data.InDeviceData != null) {
 								mInbodyList = gson.fromJson(data.InDeviceData,
-										new TypeToken<List<InBodyData>>(){}.getType());
+										new TypeToken<List<InBodyData>>() {
+										}.getType());
 							}
-							mInbodyData = mInbodyList.get(mInbodyList.size()-1);
-							
-							
+							mInbodyData = mInbodyList.get(mInbodyList.size() - 1);
+
 						} catch (JsonParseException e) {
 							e.printStackTrace();
 							Toast.makeText(getActivity(),
@@ -193,7 +192,6 @@ public class InBodyFragment extends SwipeEventFragment implements
 					}
 				}
 			});
-
 			break;
 		default:
 			break;
@@ -206,14 +204,18 @@ public class InBodyFragment extends SwipeEventFragment implements
 			inbody_age_gender.setText("정보가 없습니다.");
 			inbody_weight.setText("업데이트를 해주세요.");
 			inbody_progressbar.setProgress(0);
-			inbody_progressbar_summary.setText("");
+			double todayExersisedCalorie = FitnessUtil
+					.getTodayBurnedCalorie(getActivity());
+			inbody_progressbar_summary.setText(Double
+					.toString(todayExersisedCalorie) + " KCal 소모");
 		} else {
 			inbody_date.setText("");
 			inbody_age_gender.setText(inbodyData.age + " 세 ("
 					+ inbodyData.gender + ")");
-			inbody_weight.setText("몸무게 : "+Integer.toString(inbodyData.weight)+" Kg");
+			inbody_weight.setText("몸무게 : "
+					+ Integer.toString(inbodyData.weight) + " Kg");
 			inbody_progressbar.setMax(inbodyData.needcalorie);
-			int todayExersisedCalorie = FitnessUtil
+			int todayExersisedCalorie = (int) FitnessUtil
 					.getTodayBurnedCalorie(getActivity());
 
 			// 오늘 운동한 칼로리 / 총 소모해야할 칼로리
