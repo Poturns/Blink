@@ -13,6 +13,7 @@ import java.util.Calendar;
 
 import kr.poturns.blink.demo.fitnessapp.schema.InBodyData;
 import android.content.Context;
+import android.util.Log;
 
 /** @author Myungjin.Kim */
 public class FitnessUtil {
@@ -111,6 +112,7 @@ public class FitnessUtil {
 		double situpCal = calculateCalorie(SQLiteHelper.TABLE_SIT_UP,
 				getTodayExerciseCount(context, SQLiteHelper.TABLE_SIT_UP));
 
+		Log.i("test", "소모칼리로 : "+(int) (situpCal + pushupCal + squatCal));
 		return (int) (situpCal + pushupCal + squatCal);
 	}
 }

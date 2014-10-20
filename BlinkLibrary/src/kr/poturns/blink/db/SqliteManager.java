@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TreeMap;
 
 import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.BlinkAppInfo;
@@ -926,7 +927,7 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 		java.lang.Object tempObject = null;
 
 		// GroupId에 따라 같은 데이터가 같은 인스턴스에 저장될 수 있도록 맵을 이용한다.
-		HashMap<Integer, java.lang.Object> mObjectMap = new HashMap<Integer, java.lang.Object>();
+		TreeMap<Integer, java.lang.Object> mObjectMap = new TreeMap<Integer, java.lang.Object>();
 		// mMeasurementDataList를 루프를 돌면서 인스턴스에 값을 저장한다.
 		// Map에 데이터가 없으면 새로 인스턴스를 생성해서 값을 저장한 후 Map에 푸시한다.
 
@@ -949,6 +950,7 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 
 		// mObjectMap에 넣은 데이터를 리턴할 ArrayList에 넣어준다.
 		for (Integer key : mObjectMap.keySet()) {
+			Log.i("test", "key : "+key);
 			retObject.add(mObjectMap.get(key));
 		}
 		return gson.toJson(retObject);
