@@ -135,58 +135,6 @@ public class FitnessFragment extends SwipeEventFragment implements
 	}
 
 	@Override
-	public void onHeartBeat(int bpm) {
-		this.mMeasuredBpm = bpm;
-		getActivity().runOnUiThread(mHeartBeatTextAction);
-	}
-
-	/** 비동기적으로 심장박동수를 TextView에 표현하는 Action */
-	private Runnable mHeartBeatTextAction = new Runnable() {
-
-		@Override
-		public void run() {
-			mHeartBeatTextView.setText(Integer.toString(mMeasuredBpm));
-		}
-	};
-
-	/** 심장박동 애니메이션을 보여줄 Thread */
-	private class HeartBeatAction extends Thread {
-		private ScaleAnimation anim = new ScaleAnimation(1.0f, 1.0f, 1.2f, 1.2f);
-		private static final String TAG = "HeartBeatAction";
-
-		private Runnable mAnimation = new Runnable() {
-
-			@Override
-			public void run() {
-				mHeartBeatTextView.startAnimation(anim);
-			}
-		};
-
-		@Override
-		public void run() {
-			Log.d(TAG, "start");
-			while (getHeartBeatPreferenceValue()) {
-				try {
-					synchronized (this) {
-						wait(900);
-					}
-				} catch (InterruptedException e) {
-					break;
-				}
-				mHeartBeatTextView.post(mAnimation);
-			}
-			Log.d(TAG, "end");
-			return;
-		}
-	};
-
-	/** {@link SettingFragment#KEY_MEASURE_HEARTBEAT} 설정값을 가져온다. */
-	boolean getHeartBeatPreferenceValue() {
-		return PreferenceManager.getDefaultSharedPreferences(getActivity())
-				.getBoolean(SettingFragment.KEY_MEASURE_HEARTBEAT, false);
-	}
-
-	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		changeFitness(mCurrentDisplayDbTable);
@@ -280,6 +228,58 @@ public class FitnessFragment extends SwipeEventFragment implements
 		}
 	}
 
+	@Override
+	public void onHeartBeat(int bpm) {
+		this.mMeasuredBpm = bpm;
+		getActivity().runOnUiThread(mHeartBeatTextAction);
+	}
+
+	/** 비동기적으로 심장박동수를 TextView에 표현하는 Action */
+	private Runnable mHeartBeatTextAction = new Runnable() {
+
+		@Override
+		public void run() {
+			mHeartBeatTextView.setText(Integer.toString(mMeasuredBpm));
+		}
+	};
+
+	/** 심장박동 애니메이션을 보여줄 Thread */
+	private class HeartBeatAction extends Thread {
+		private ScaleAnimation anim = new ScaleAnimation(1.0f, 1.0f, 1.2f, 1.2f);
+		private static final String TAG = "HeartBeatAction";
+
+		private Runnable mAnimation = new Runnable() {
+
+			@Override
+			public void run() {
+				mHeartBeatTextView.startAnimation(anim);
+			}
+		};
+
+		@Override
+		public void run() {
+			Log.d(TAG, "start");
+			while (getHeartBeatPreferenceValue()) {
+				try {
+					synchronized (this) {
+						wait(900);
+					}
+				} catch (InterruptedException e) {
+					break;
+				}
+				mHeartBeatTextView.post(mAnimation);
+			}
+			Log.d(TAG, "end");
+			return;
+		}
+	};
+
+	/** {@link SettingFragment#KEY_MEASURE_HEARTBEAT} 설정값을 가져온다. */
+	boolean getHeartBeatPreferenceValue() {
+		return PreferenceManager.getDefaultSharedPreferences(getActivity())
+				.getBoolean(SettingFragment.KEY_MEASURE_HEARTBEAT, false);
+	}
+
 	/** 센서 측정을 시작하고, 카운터 버튼으로 운동 횟수를 측정하도록 설정한다. */
 	private void registerListener() {
 		mSensorManager.registerListener(this, mAccelerormeterSensor,
@@ -336,7 +336,7 @@ public class FitnessFragment extends SwipeEventFragment implements
 
 	/** Toast를 보여준다. */
 	private void showAlertMessage(String msg) {
-		Toast toast = Toast.makeText(getActivity(), msg, 1000);
+		Toast toast = Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT);
 		View toastFrameView = toast.getView();
 		toastFrameView.setBackgroundResource(R.drawable.rectangle_box_shadow);
 		toastFrameView.setPaddingRelative(20, 20, 20, 20);

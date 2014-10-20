@@ -6,6 +6,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import kr.poturns.blink.R;
 import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.Device;
+import kr.poturns.blink.internal.DeviceAnalyzer.Identity;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
@@ -54,8 +55,8 @@ final class ConnectionFragment extends Fragment {
 	BlinkServiceInteraction mInteraction;
 	/** Database manager */
 	SqliteManagerExtended mManager;
-	/** BlinkLibrary를 구동하고 있는 장비를 나타내는 BlinkDevice객체 */
-	BlinkDevice mHostDevice = BlinkDevice.HOST;
+	/** Blink network의 연결 중심 장비 */
+	BlinkDevice mCenterDevice;
 	ProgressDialog mProgressDialog;
 	/** Bluetooth 사용 가능 여부 */
 	boolean mBluetoothEnabled = true;
@@ -65,6 +66,8 @@ final class ConnectionFragment extends Fragment {
 	IConnectionCallback mCurrentChildFragmentInterface;
 
 	static final Handler sHandler = new Handler();
+	/** ProgressDialog가 최대로 보여질 시간 */
+	private static final long PROGRESS_WATING_TIME = 10 * 1000;
 
 	/** ConnectionFragment의 UI와 작업의 Callback을 처리하는 interface */
 	interface IConnectionCallback extends IBlinkEventBroadcast {
@@ -212,7 +215,6 @@ final class ConnectionFragment extends Fragment {
 		mManager = null;
 		mDeviceList = null;
 		mActivityInterface = null;
-		mHostDevice = null;
 		mProgressDialog = null;
 		super.onDestroy();
 	}
@@ -258,8 +260,6 @@ final class ConnectionFragment extends Fragment {
 		onPreLoading(true);
 	}
 
-	/** ProgressDialog가 최대로 보여질 시간 */
-	private static final long PROGRESS_WATING_TIME = 10 * 1000;
 	/** (실행중인) ProgressDialog를 dismiss하는 Action */
 	Runnable mProgressDismissAction = new Runnable() {
 
@@ -304,7 +304,6 @@ final class ConnectionFragment extends Fragment {
 		try {
 			mBlinkOperation.stopDiscovery();
 		} catch (RemoteException e) {
-			e.printStackTrace();
 		}
 		mDeviceList.clear();
 		mFetchTasking = true;
@@ -380,11 +379,6 @@ final class ConnectionFragment extends Fragment {
 		}
 	}
 
-	/** BlinkLibrary를 구동하고 있는 장비에 관한 Dialog를 띄운다. */
-	final void showHostDeviceInfomation() {
-		showDialog(mHostDevice);
-	}
-
 	/** 비동기 작업 전 호출된다. */
 	void onPreLoading(boolean connectionTask) {
 		if (connectionTask)
@@ -438,11 +432,6 @@ final class ConnectionFragment extends Fragment {
 				default:
 					return new BlinkDeviceInfoFragment();
 				}
-			}
-
-			@Override
-			protected int getViewPagerCount() {
-				return 2;
 			}
 
 			@Override
@@ -651,14 +640,14 @@ final class ConnectionFragment extends Fragment {
 			return mParentFragment.mDeviceList;
 		}
 
-		/** BlinkLibrary를 구동하고 있는 장비를 나타내는 BlinkDevice객체를 얻는다.. */
+		/** BlinkLibrary를 구동하고 있는 장비를 나타내는 BlinkDevice객체를 얻는다. */
 		BlinkDevice getHostDevice() {
-			return mParentFragment.mHostDevice;
+			return BlinkDevice.HOST;
 		}
 
-		/** BlinkLibrary를 구동하고 있는 장비에 관한 Dialog를 띄운다. */
-		void showHostDeviceInfoDialog() {
-			mParentFragment.showHostDeviceInfomation();
+		/** Blink network의 연결 중심 장비 객체를 얻는다. */
+		public BlinkDevice getCenterDevice() {
+			return mParentFragment.mCenterDevice;
 		}
 
 		/**
@@ -773,24 +762,6 @@ final class ConnectionFragment extends Fragment {
 		}
 
 		/**
-		 * DeviceList에 HostDevice를 추가 할 것인지 결정한다.
-		 * 
-		 * @param show
-		 *            true - 추가 / false - 추가하지 않음
-		 */
-		void showHostDeviceToList(boolean show) {
-			if (show) {
-				// 이미 있으면 새로 추가하지는 않음
-				if (mParentFragment.mDeviceList
-						.contains(mParentFragment.mHostDevice))
-					return;
-				mParentFragment.mDeviceList.add(0, mParentFragment.mHostDevice);
-			} else {
-				mParentFragment.mDeviceList.remove(mParentFragment.mHostDevice);
-			}
-		}
-
-		/**
 		 * 현재 {@link BaseConnectionFragment#fetchDeviceListFromBluetooth()} 가 작업
 		 * 중 인지 여부를 반환한다.
 		 */
@@ -812,6 +783,31 @@ final class ConnectionFragment extends Fragment {
 			Toast.makeText(getActivity(),
 					R.string.res_blink_bluetooth_discovery_finished,
 					Toast.LENGTH_SHORT).show();
+		}
+
+		@Override
+		public void onDeviceListChanged() {
+			List<BlinkDevice> deviceList = mParentFragment.mDeviceList;
+			final int size = deviceList.size();
+
+			// 리스트에서 Main device 제거
+			for (int i = 0; i < size; i++) {
+				BlinkDevice device = deviceList.get(i);
+				if (device.getIdentity() == Identity.MAIN) {
+					mParentFragment.mCenterDevice = device;
+					deviceList.remove(device);
+					break;
+				}
+			}
+
+			// Center device와 Host device가 같지 않으면
+			// 리스트에 Host device 추가
+			//if (!BlinkDevice.HOST.getAddress().equals(
+			//		mParentFragment.mCenterDevice)) {
+			//	deviceList.add(BlinkDevice.HOST);
+			//} else {
+			//	deviceList.remove(BlinkDevice.HOST);
+			//}
 		}
 
 		@Override

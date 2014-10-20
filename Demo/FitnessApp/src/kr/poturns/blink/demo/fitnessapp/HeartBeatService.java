@@ -28,7 +28,7 @@ public class HeartBeatService extends Service {
 	/** 심장박동수를 측정하는 Thread */
 	private Thread mHeartBeatBackgroundThread;
 	/** 심장박동수를 측정하기까지 걸리는 시간 (초) */
-	private static final int HEART_BEAT_COUNT_INTERVAL = 10;
+	static final int HEART_BEAT_COUNT_INTERVAL = 10;
 	/** intent action */
 	public final static String WIDGET_HEART_BEAT_ACTION = "kr.poturns.blink.demo.fitnessapp.heartbeat";
 	/** intent extra value (heartbeat), (Integer) */
@@ -36,7 +36,7 @@ public class HeartBeatService extends Service {
 	private static final String TAG = HeartBeatService.class.getSimpleName();
 	BlinkServiceInteraction mInteraction;
 	IInternalOperationSupport mIInternalOperationSupport;
-	/** 디버깅 용도*/
+	/** 디버깅 용도 */
 	private boolean DEBUG = true;
 
 	@Override
@@ -79,9 +79,8 @@ public class HeartBeatService extends Service {
 	private Random mRandom = new Random(System.currentTimeMillis());
 
 	/** 심장박동수를 생성한다. 범위는 50-150 */
-	private int generateHeartBeat() {
-		return mRandom.nextInt(20) + mRandom.nextInt(20) + mRandom.nextInt(20)
-				+ mRandom.nextInt(20) + mRandom.nextInt(20) + 50;
+	int generateHeartBeat() {
+		return mRandom.nextInt(100) + 50;
 	}
 
 	private class HeartBeatActionThread extends Thread {
@@ -126,7 +125,8 @@ public class HeartBeatService extends Service {
 		}
 
 		private void recordHeartBeat(int bpm) {
-			SQLiteHelper.getInstance(HeartBeatService.this).insert(bpm);
+			SQLiteHelper.getInstance(HeartBeatService.this)
+					.insertHeartBeat(bpm);
 			if (mInteraction != null) {
 				mInteraction.local.registerMeasurementData(new HeartBeat(bpm,
 						DateTimeUtil.getTimeString()));
@@ -150,7 +150,7 @@ public class HeartBeatService extends Service {
 					}
 				}
 				if (!result)
-					Log.e(TAG, "Cannot reach remote device : "
+					Log.e(TAG, "Could not reach remote device : "
 							+ REMOTE_APP_PACKAGE_NAME);
 			} else {
 				Log.e(TAG, "Blink Service Support == null");

@@ -194,6 +194,7 @@ class PrivateUtil {
 		return bundle.getParcelable(EXTRA_DEVICE_MEASUREMENT);
 	}
 
+	/** ViewPager 코드 단축용 */
 	public static abstract class ViewPagerFragmentProxy {
 		protected TabHost mTabHost;
 		protected ViewPager mViewPager;
@@ -207,8 +208,8 @@ class PrivateUtil {
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
 				Bundle savedInstanceState) {
 			final View v = inflater.inflate(
-					R.layout.res_blink_dialog_fragment_connection_device_info,
-					container, false);
+					R.layout.res_blink_view_tab_with_viewpager, container,
+					false);
 			mTabHost = (TabHost) v.findViewById(android.R.id.tabhost);
 			mTabHost.setup();
 			TabHost.TabContentFactory factory = new TabHost.TabContentFactory() {
@@ -222,8 +223,8 @@ class PrivateUtil {
 					return v;
 				}
 			};
-			final String[] pageTitles = getActivity().getResources()
-					.getStringArray(R.array.res_blink_dialog_data_page_titles);
+			final String[] pageTitles = getTitles();
+
 			int i = 0;
 			for (String title : pageTitles) {
 				mTabHost.addTab(mTabHost.newTabSpec(String.valueOf(i++))
@@ -236,8 +237,7 @@ class PrivateUtil {
 					navigateTab(Integer.valueOf(tabId), false);
 				}
 			});
-			mViewPager = (ViewPager) v
-					.findViewById(R.id.res_blink_dialog_deviceinfo_viewpager);
+			mViewPager = (ViewPager) v.findViewById(R.id.res_blink_viewpager);
 			mViewPager
 					.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 						@Override
@@ -250,7 +250,7 @@ class PrivateUtil {
 
 						@Override
 						public int getCount() {
-							return getViewPagerCount();
+							return pageTitles.length;
 						}
 
 						@Override
@@ -263,8 +263,6 @@ class PrivateUtil {
 
 		/** ViewPager를 한 페이지를 구성하는 Fragment를 얻는다. */
 		abstract protected Fragment getViewPagerPage(int position);
-
-		abstract protected int getViewPagerCount();
 
 		/**
 		 * {@link ViewPager}또는 {@link TabHost}의 page를 이동한다.

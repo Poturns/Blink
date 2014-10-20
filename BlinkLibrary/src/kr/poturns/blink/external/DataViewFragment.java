@@ -17,6 +17,9 @@ import android.app.FragmentManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
@@ -42,11 +45,6 @@ class DataViewFragment extends Fragment {
 		protected String[] getTitles() {
 			return getResources().getStringArray(
 					R.array.res_blink_dialog_data_page_titles);
-		}
-
-		@Override
-		protected int getViewPagerCount() {
-			return 2;
 		}
 
 		@Override
@@ -109,7 +107,8 @@ class DataViewFragment extends Fragment {
 		if (title == null || title.length() < 1)
 			title = PrivateUtil.obtainSplitMeasurementSchema(mMeasurement);
 		getActivity().getActionBar().setTitle(title);
-		getActivity().getActionBar().setSubtitle(mMeasurement.Measurement);
+		getActivity().getActionBar().setSubtitle(
+				PrivateUtil.obtainSplitMeasurementSchema(mMeasurement));
 	}
 
 	@Override
@@ -124,6 +123,19 @@ class DataViewFragment extends Fragment {
 	/** 해당 Device의 App의 Measurement의 Data들을 line graph형태로 보여준다. */
 	private class DataMeasurementsLineGraphFragment extends Fragment {
 		private ViewGroup mGraphView;
+		private List<MeasurementData> mDataList = new ArrayList<MeasurementData>();
+		private int mIndex = 0;
+		private final int MAX_SHOWING = PrivateUtil
+				.isScreenSizeSmall(DataViewFragment.this.getActivity()) ? 20
+				: 40;
+
+		@Override
+		public void onCreate(Bundle savedInstanceState) {
+			super.onCreate(savedInstanceState);
+			setHasOptionsMenu(true);
+			mDataList = DataViewFragment.this.mManager
+					.obtainMeasurementDataList(DataViewFragment.this.mMeasurement);
+		}
 
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -140,6 +152,36 @@ class DataViewFragment extends Fragment {
 			return fragmentLayout;
 		}
 
+		@Override
+		public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+			inflater.inflate(R.menu.res_blink_fragment_data_graph, menu);
+		}
+
+		@Override
+		public boolean onOptionsItemSelected(MenuItem item) {
+			final int id = item.getItemId();
+			if (id == R.id.res_blink_action_prev) {
+				if (mIndex > 0) {
+					mIndex--;
+					mGraphView.removeAllViews();
+					View graph = makeGraph();
+					if (graph != null)
+						mGraphView.addView(graph);
+				}
+				return true;
+			} else if (id == R.id.res_blink_action_next) {
+				if (mIndex * MAX_SHOWING < mDataList.size()) {
+					mIndex++;
+					mGraphView.removeAllViews();
+					View graph = makeGraph();
+					if (graph != null)
+						mGraphView.addView(graph);
+				}
+				return true;
+			} else
+				return false;
+		}
+
 		private View makeGraph() {
 			BubbleGraphVO vo = createBubbleGraphVO();
 			if (vo != null)
@@ -148,12 +190,27 @@ class DataViewFragment extends Fragment {
 				return null;
 		}
 
-		private BubbleGraph makeBubbleGraph(Measurement measurement, int color) {
-			List<MeasurementData> dataList = DataViewFragment.this.mManager
-					.obtainMeasurementDataList(measurement);
+		private BubbleGraphVO createBubbleGraphVO() {
+			// 원래 데이터 리스트에서 보여줄만큼만 취함
+			List<MeasurementData> dataList = mDataList.subList(mIndex
+					* MAX_SHOWING, Math.min(((mIndex + 1) * MAX_SHOWING - 1),
+					mDataList.size()));
 			int size = dataList.size();
-			if (size == 0)
-				return null;
+			String[] legendArr = new String[size];
+			for (int i = 0; i < size; i++) {
+				// yyyy-mm-dd hh:MM:ss 형식으로 된 시간정보에서
+				// mm-dd 만 추출
+				legendArr[i] = dataList.get(i).DateTime.split(" ")[0]
+						.replaceAll("^.*?-", "").replace("-", "");
+			}
+			boolean screenSizeSmall = PrivateUtil
+					.isScreenSizeSmall(getActivity());
+
+			Random random = new Random(System.currentTimeMillis());
+
+			int r = random.nextInt(172) + 64;
+			int g = random.nextInt(172) + 64;
+			int b = random.nextInt(192) + 44;
 			float[] array = new float[size];
 			float[] bubbles = new float[size];
 			for (int i = 0; i < size; i++) {
@@ -161,70 +218,20 @@ class DataViewFragment extends Fragment {
 				bubbles[i] = (float) Math.random() * 10f;
 			}
 
-			return new BubbleGraph(measurement.MeasurementName, color, array,
-					bubbles);
-		}
-
-		private BubbleGraphVO createBubbleGraphVO() {
-			BubbleGraphVO ret = null;
-			List<MeasurementData> dataList = DataViewFragment.this.mManager
-					.obtainMeasurementDataList(DataViewFragment.this.mMeasurement);
-			int size = dataList.size();
-			String[] legendArr = new String[size];
-			for (int i = 0; i < size; i++) {
-				// yyyy-mm-dd hh:MM:ss 형식으로 된 시간정보에서
-				// mm-dd 만 추출
-				legendArr[i] = dataList.get(i).DateTime.split(" ")[0]
-						.replaceAll("^.*?-", "");
-				if (legendArr[i].length() > 6)
-					legendArr[i] = legendArr[i].substring(0, 5);
-				if (PrivateUtil.isScreenSizeSmall(getActivity())) {
-					if (size > 20)
-						legendArr[i] = new String(legendArr[i].substring(4));
-					else if (size > 10)
-						legendArr[i] = new String(legendArr[i].substring(3));
-					else if (size > 5)
-						legendArr[i] = new String(legendArr[i].substring(1));
-				} else {
-					if (size > 100)
-						legendArr[i] = new String(legendArr[i].substring(4));
-					else if (size > 50)
-						legendArr[i] = new String(legendArr[i].substring(3));
-					else if (size > 30)
-						legendArr[i] = new String(legendArr[i].substring(2));
-					else if (size > 20)
-						legendArr[i] = new String(legendArr[i].substring(1));
-				}
-
-			}
-			ret = new BubbleGraphVO(legendArr);
-			ret.setAnimationDuration(1000);
-			ret.setXAxisTextSize(PrivateUtil.isScreenSizeSmall(getActivity()) ? 20
-					: 40);
-			ret.setYAxisTextSize(PrivateUtil.isScreenSizeSmall(getActivity()) ? 23
-					: 40);
-			ret.setIsLineShow(true);
-			ret.setIsAnimaionShow(true);
+			BubbleGraph bg = new BubbleGraph(mMeasurement.MeasurementName,
+					Color.rgb(r, g, b), array, bubbles);
+			BubbleGraphVO bubbleGraphVO = new BubbleGraphVO(legendArr);
+			bubbleGraphVO.setAnimationDuration(1000);
+			bubbleGraphVO.setXAxisTextSize(screenSizeSmall ? 18 : 40);
+			bubbleGraphVO.setYAxisTextSize(screenSizeSmall ? 23 : 40);
+			bubbleGraphVO.setIsLineShow(true);
+			bubbleGraphVO.setIsAnimaionShow(true);
 			GraphNameBox nameBox = new GraphNameBox();
-			nameBox.setNameboxTextSize(30);
+			nameBox.setNameboxTextSize(screenSizeSmall ? 40 : 60);
 			nameBox.setNameboxColor(Color.BLACK);
-			ret.setGraphNameBox(nameBox);
-			Random random = new Random(System.currentTimeMillis());
-			int graphCount = 0;
-
-			int r = random.nextInt(172) + 64;
-			int g = random.nextInt(172) + 64;
-			int b = random.nextInt(172) + 64;
-			BubbleGraph bg = makeBubbleGraph(mMeasurement, Color.rgb(r, g, b));
-			if (bg != null) {
-				ret.add(bg);
-				graphCount++;
-			}
-
-			if (graphCount != 0)
-				return ret;
-			else
-				return null;
+			bubbleGraphVO.setGraphNameBox(nameBox);
+			bubbleGraphVO.add(bg);
+			return bubbleGraphVO;
 		}
 	}
 

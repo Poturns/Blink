@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/res_blink_action_prev"
+        android:orderInCategory="101"
+        android:showAsAction="never"
+        android:title="Prev">
+    </item>
+    <item
+        android:id="@+id/res_blink_action_next"
+        android:orderInCategory="102"
+        android:showAsAction="never"
+        android:title="Next">
+    </item>
+
+</menu>
