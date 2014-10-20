@@ -784,10 +784,6 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 			for (int j = 0; j < mMeasurementList.size(); j++) {
 				if (mMeasurementList.get(j).Measurement.contentEquals(ClassUtil
 						.obtainFieldSchema(mFields[i]))) {
-					Log.i("HealthManager",
-							"new 등록 : " + mMeasurementList.get(j).Measurement
-									+ ","
-									+ ClassUtil.obtainFieldSchema(mFields[i]));
 					mMeasurementData.MeasurementId = mMeasurementList.get(j).MeasurementId;
 					mMeasurementData.Data = mFields[i].get(obj).toString();
 					// GroupId, MeasurementId, Data 등록
@@ -935,7 +931,6 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 			mMeasurementData = mMeasurementDataList.get(i);
 			tempObject = mObjectMap.get(mMeasurementData.GroupId);
 			if (tempObject == null) {
-				Log.i("HealthManager", "new 객체");
 				tempObject = c.newInstance();
 			}
 			setClassField(mFieldMap.get(mMeasurementData.MeasurementId),
@@ -950,7 +945,6 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 
 		// mObjectMap에 넣은 데이터를 리턴할 ArrayList에 넣어준다.
 		for (Integer key : mObjectMap.keySet()) {
-			Log.i("test", "key : "+key);
 			retObject.add(mObjectMap.get(key));
 		}
 		return gson.toJson(retObject);

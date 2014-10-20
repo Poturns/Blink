@@ -1,5 +1,6 @@
 package kr.poturns.blink.schema;
 
+
 /**
  * type 종류
  * 1. 비만형
@@ -23,18 +24,4 @@ public class Inbody extends DefaultSchema.Base{
 	public int usecalorie;
 	public int needcalorie;
 	
-	public Inbody(){
-		type="평균형";
-		gender="남자";
-		age=25;
-		height=174;
-		weight=73;
-		muscle=19;
-		fat=13;
-		needweight=-5;
-		needmuscle=+5;
-		needfat=-3;
-		usecalorie=1500;
-		needcalorie=400;
-	}
 }
