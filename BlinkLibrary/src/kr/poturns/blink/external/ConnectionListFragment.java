@@ -11,18 +11,22 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ListView;
 import android.widget.TextView;
 
 /** 현재 연결된 Device들을 ListView의 형태로 보여주는 Fragment */
 class ConnectionListFragment extends BaseConnectionFragment {
 	SwipeRefreshLayout mSwipeRefreshLayout;
+	AbsListView mListView;
+	TextView mConnectionTitleView;
 	ArrayAdapter<BlinkDevice> mAdapter;
 	boolean mRefresh = false;
-	private boolean mShowOnlyConnected = false;
+	// 초기에는 Discovery를 먼저 보여주지만
+	// 값 변화 감지를 위해 true로 설정
+	/** 현재 리스트가 보여주는 관점이 연결(Connection)인지 여부 */
+	private boolean mShowOnlyConnected = true;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -30,6 +34,8 @@ class ConnectionListFragment extends BaseConnectionFragment {
 		setHasOptionsMenu(true);
 		View v = View.inflate(getActivity(),
 				R.layout.res_blink_fragment_list_connection, null);
+		mConnectionTitleView = (TextView) v.findViewById(android.R.id.title);
+
 		mSwipeRefreshLayout = (SwipeRefreshLayout) v
 				.findViewById(R.id.res_blink_swipe_container);
 		mSwipeRefreshLayout.setOnRefreshListener(mOnRefreshListener);
@@ -38,7 +44,9 @@ class ConnectionListFragment extends BaseConnectionFragment {
 				android.R.color.holo_green_light,
 				android.R.color.holo_orange_light,
 				android.R.color.holo_red_light);
+
 		checkAndRemoveHostDevice();
+
 		mAdapter = new ArrayAdapter<BlinkDevice>(getActivity(),
 				R.layout.res_blink_list_fragment_list_connection,
 				android.R.id.text1, getDeviceList()) {
@@ -54,14 +62,14 @@ class ConnectionListFragment extends BaseConnectionFragment {
 						device.isConnected() ? R.drawable.res_blink_ic_action_device_access_bluetooth_connected
 								: R.drawable.res_blink_ic_action_device_access_bluetooth,
 						0, 0, 0);
-				Button button = (Button) v.findViewById(android.R.id.button1);
-				button.setOnClickListener(new View.OnClickListener() {
+				v.findViewById(android.R.id.button1).setOnClickListener(
+						new View.OnClickListener() {
 
-					@Override
-					public void onClick(View v) {
-						connectOrDisConnectDevice(device);
-					}
-				});
+							@Override
+							public void onClick(View v) {
+								connectOrDisConnectDevice(device);
+							}
+						});
 				return v;
 			}
 		};
@@ -79,13 +87,20 @@ class ConnectionListFragment extends BaseConnectionFragment {
 		hostView.setCompoundDrawablesWithIntrinsicBounds(
 				R.drawable.res_blink_ic_action_android, 0, 0, 0);
 
-		ListView listView = (ListView) mSwipeRefreshLayout
+		mListView = (AbsListView) mSwipeRefreshLayout
 				.findViewById(android.R.id.list);
-		listView.setAdapter(mAdapter);
-		listView.setEmptyView(View.inflate(getActivity(),
+		mListView.setAdapter(mAdapter);
+		mListView.setEmptyView(View.inflate(getActivity(),
 				R.layout.res_blink_view_empty, null));
-		listView.setOnItemClickListener(mOnItemClickListener);
-		listView.setEmptyView(v.findViewById(android.R.id.empty));
+		mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				showBlinkDeviceInfoDialog((BlinkDevice) parent
+						.getItemAtPosition(position));
+			}
+		});
+		mListView.setEmptyView(v.findViewById(android.R.id.empty));
 		return v;
 	}
 
@@ -98,11 +113,13 @@ class ConnectionListFragment extends BaseConnectionFragment {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		final int id = item.getItemId();
 		if (id == R.id.res_blink_action_list_fillter) {
-			if (mShowOnlyConnected)
+			if (mShowOnlyConnected) {
 				retainConnectedDevicesFromList();
-			else
+				mConnectionTitleView.setText("CONNECTION");
+			} else {
 				obtainDiscoveryList();
-
+				mConnectionTitleView.setText("DISCOVERY");
+			}
 			mShowOnlyConnected = !mShowOnlyConnected;
 			return true;
 		} else {
@@ -130,21 +147,16 @@ class ConnectionListFragment extends BaseConnectionFragment {
 		mSwipeRefreshLayout.setRefreshing(false);
 	}
 
-	private AdapterView.OnItemClickListener mOnItemClickListener = new AdapterView.OnItemClickListener() {
-		@Override
-		public void onItemClick(AdapterView<?> parent, View view, int position,
-				long id) {
-			showBlinkDeviceInfoDialog(mAdapter.getItem(position));
-		}
-	};
+	@Override
+	public void onDiscoveryFinished() {
+		super.onDiscoveryFinished();
+		mRefresh = false;
+		mSwipeRefreshLayout.setRefreshing(false);
+	}
 
 	@Override
 	public void onDeviceListChanged() {
-		if (mRefresh) {
-			mRefresh = false;
-			mSwipeRefreshLayout.setRefreshing(false);
-		}
-		checkAndRemoveHostDevice();
+		// checkAndRemoveHostDevice();
 		mAdapter.notifyDataSetChanged();
 	}
 
@@ -157,6 +169,45 @@ class ConnectionListFragment extends BaseConnectionFragment {
 	private void checkAndRemoveHostDevice() {
 		if (getDeviceList().contains(BlinkDevice.HOST)) {
 			getDeviceList().remove(BlinkDevice.HOST);
+		}
+	}
+
+	@Override
+	public void onDeviceConnected(BlinkDevice device) {
+		super.onDeviceConnected(device);
+		changeButtonMsg(device, "Disconnect");
+	}
+
+	@Override
+	public void onDeviceDisconnected(BlinkDevice device) {
+		super.onDeviceDisconnected(device);
+		changeButtonMsg(device, "Connect");
+	}
+
+	// 연결 버튼의 문자열을 바꾼다.
+	private void changeButtonMsg(BlinkDevice device, String msg) {
+		int wantedPosition = getDeviceList().indexOf(device);
+		if (wantedPosition == -1)
+			return;
+		int firstPosition = mListView.getFirstVisiblePosition();
+		// -mListView.getHeaderViewsCount();
+		int wantedChild = wantedPosition - firstPosition;
+
+		if (wantedChild < 0 || wantedChild >= mListView.getChildCount()) {
+			return;
+		}
+		try {
+			View childView = mListView.getChildAt(wantedChild);
+			((TextView) childView.findViewById(android.R.id.button1))
+					.setText(msg);
+			((TextView) childView.findViewById(android.R.id.text1))
+					.setCompoundDrawablesRelativeWithIntrinsicBounds(
+							device.isConnected() ? R.drawable.res_blink_ic_action_device_access_bluetooth_connected
+									: R.drawable.res_blink_ic_action_device_access_bluetooth,
+							0, 0, 0);
+			mListView.postInvalidate();
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 }

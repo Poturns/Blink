@@ -12,6 +12,7 @@ import android.os.Message;
 import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.MotionEvent;
+import android.view.View;
 
 /**
  * 기존 존재하는 ViewGroup에 원의 형태로 ChildView를 추가해주고, <br>
@@ -147,7 +148,9 @@ class CircularViewHelper {
 	 *            생성하려는 View와 관련된 객체
 	 */
 	public final void setCenterViewFromObject(Object obj) {
-		setCenterView(createCenterView(mContext, obj));
+		android.view.View center = createCenterView(mContext, obj);
+		center.setTag(obj);
+		setCenterView(center);
 	}
 
 	/**
@@ -173,7 +176,7 @@ class CircularViewHelper {
 			return;
 		}
 		mCenterViewId = mCenterView.getId();
-		if (mCenterViewId == VIEW_NO_ID) {
+		if (mCenterViewId == View.NO_ID || mCenterViewId == VIEW_NO_ID) {
 			mCenterViewId = android.view.View.generateViewId();
 			mCenterView.setId(mCenterViewId);
 		}
@@ -223,6 +226,13 @@ class CircularViewHelper {
 		tag.mIsDrag = false;
 		tag.mViewPosition = CENTER_VIEW_POSITION;
 		tag.mViewId = mCenterViewId;
+		Object objTag = mCenterView.getTag();
+		if (objTag instanceof ViewInfoTag) {
+			tag.mTag = ((ViewInfoTag) objTag).mTag;
+		} else {
+			tag.mTag = objTag;
+		}
+
 		mCenterView.setTag(tag);
 		mCenterView.setOnDragListener(mOnDragListener);
 		mCenterView.setLayoutParams(mLayoutParams);

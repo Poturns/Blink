@@ -21,8 +21,8 @@
     <string name="res_blink_action_show_as_graphic">그래픽으로 보기</string>
     <!-- OptionsMenu 에서의 '리스트로 보기'를 나타내는 액션 -->
     <string name="res_blink_action_show_as_list">리스트로 보기</string>
-    <!-- OptionsMenu 에서의 '연결된 장비만 보기'를 나타내는 액션 -->
-    <string name="res_blink_action_show_only_connected">연결된 장비만 보기</string>
+    <!-- OptionsMenu 에서의 '보기 전환'를 나타내는 액션 -->
+    <string name="res_blink_action_switch_discovery_connection">Discovery / Connection 전환</string>
     <!-- Empty View의 내용 -->
     <string name="res_blink_empty_data">데이터가 없습니다.</string>
     <!-- 데이터를 삭제하기 직전에 표시되는 문자 -->

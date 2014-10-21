@@ -14,6 +14,6 @@
         android:icon="@drawable/res_blink_ic_action_device_access_bluetooth_connected"
         android:orderInCategory="100"
         android:showAsAction="always"
-        android:title="@string/res_blink_action_show_only_connected"/>
+        android:title="@string/res_blink_action_switch_discovery_connection"/>
 
 </menu>

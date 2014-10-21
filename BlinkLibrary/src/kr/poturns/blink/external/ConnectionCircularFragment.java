@@ -33,11 +33,10 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		checkAndPutHostDevice();
+		// checkAndPutHostDevice();
 		ViewGroup viewGroup = (ViewGroup) View.inflate(getActivity(),
 				R.layout.res_blink_fragment_circular_connection, null);
 		// TODO Center View 를 Host device가 아닌 BLINK network에서 "Center" device로?
-		// XXX 테스트 필요
 		mCircularHelper = new CircularViewHelper(viewGroup) {
 			@Override
 			protected View getView(Context context, int position, Object object) {
@@ -55,6 +54,15 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 					boolean isCenter) {
 				TextView view = (TextView) View.inflate(context,
 						R.layout.res_blink_view_circular, null);
+
+				// 메인 장비 표시
+				BlinkDevice centerDevice = getCenterDevice();
+				if (centerDevice != null
+						&& device.getAddress()
+								.equals(centerDevice.getAddress())) {
+					view.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle_gray);
+				}
+
 				if (device.getAddress().equals(getHostDevice().getAddress())) {
 					view.setCompoundDrawablesWithIntrinsicBounds(0,
 							R.drawable.res_blink_ic_action_android, 0, 0);
@@ -81,7 +89,7 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 			}
 		};
 		mCircularHelper.setOnDragAndDropListener(mDragAndDropListener);
-		mCircularHelper.setCenterViewFromObject(getCenterDevice());
+		mCircularHelper.setCenterViewFromObject(BlinkDevice.HOST);
 		mCircularHelper.drawCircularView(getDeviceList());
 		mSlidingDrawer = (SlidingDrawer) viewGroup
 				.findViewById(R.id.res_blink_fragment_circular_sliding_drawer);
@@ -155,8 +163,8 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 				TextView centerView = (TextView) center;
 				centerView
 						.setText(getString(((BlinkDevice) mCircularHelper
-								.getViewTag(view)).isConnected() ? R.string.res_blink_drop_to_connect
-								: R.string.res_blink_drop_to_disconnect));
+								.getViewTag(view)).isConnected() ? R.string.res_blink_drop_to_disconnect
+								: R.string.res_blink_drop_to_connect));
 				centerView
 						.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle_border);
 			}
@@ -194,8 +202,9 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 	@Override
 	public void onDeviceListChanged() {
 		super.onDeviceListChanged();
-		mCircularHelper.setCenterViewFromObject(getCenterDevice());
-		checkAndPutHostDevice();
+		// mCircularHelper.setCenterViewFromObject(getCenterDevice());
+		// checkAndPutHostDevice();
+		mCircularHelper.setCenterViewFromObject(BlinkDevice.HOST);
 		mCircularHelper.drawCircularView(getDeviceList());
 
 		switch (mSetSeekBarValueMax) {

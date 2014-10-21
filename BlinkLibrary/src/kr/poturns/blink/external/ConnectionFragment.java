@@ -714,12 +714,14 @@ final class ConnectionFragment extends Fragment {
 
 		@Override
 		public void onDeviceConnected(final BlinkDevice device) {
+			device.setConnected(true);
 			logAndPostAboutConnection(device, "onDeviceConnected : ",
 					R.string.res_blink_device_connected);
 		}
 
 		@Override
 		public void onDeviceDisconnected(final BlinkDevice device) {
+			device.setConnected(false);
 			logAndPostAboutConnection(device, "onDeviceDisConnected : ",
 					R.string.res_blink_device_disconnected);
 		}
@@ -736,8 +738,10 @@ final class ConnectionFragment extends Fragment {
 				@Override
 				public void run() {
 					mParentFragment.mProgressDialog.dismiss();
-					Toast.makeText(getActivity(),
-							device.getName() + getString(toastTextRes),
+					Toast.makeText(
+							mParentFragment.getActivity(),
+							device.getName()
+									+ mParentFragment.getString(toastTextRes),
 							Toast.LENGTH_SHORT).show();
 					onDeviceListChanged();
 				}
@@ -746,7 +750,8 @@ final class ConnectionFragment extends Fragment {
 
 		@Override
 		public void onDeviceDiscovered(BlinkDevice device) {
-			mParentFragment.mDeviceList.add(device);
+			if (!mParentFragment.mDeviceList.contains(device))
+				mParentFragment.mDeviceList.add(device);
 			sHandler.postDelayed(new Runnable() {
 
 				@Override
@@ -790,24 +795,29 @@ final class ConnectionFragment extends Fragment {
 			List<BlinkDevice> deviceList = mParentFragment.mDeviceList;
 			final int size = deviceList.size();
 
-			// 리스트에서 Main device 제거
+			mParentFragment.mCenterDevice = null;
 			for (int i = 0; i < size; i++) {
 				BlinkDevice device = deviceList.get(i);
 				if (device.getIdentity() == Identity.MAIN) {
 					mParentFragment.mCenterDevice = device;
-					deviceList.remove(device);
+					// 리스트에서 Main device 제거
+					// deviceList.remove(device);
 					break;
 				}
+			}
+			if (mParentFragment.mCenterDevice == null) {
+				mParentFragment.mCenterDevice = BlinkDevice.HOST.getIdentity() == Identity.MAIN ? BlinkDevice.HOST
+						: null;
 			}
 
 			// Center device와 Host device가 같지 않으면
 			// 리스트에 Host device 추가
-			//if (!BlinkDevice.HOST.getAddress().equals(
-			//		mParentFragment.mCenterDevice)) {
-			//	deviceList.add(BlinkDevice.HOST);
-			//} else {
-			//	deviceList.remove(BlinkDevice.HOST);
-			//}
+			// if (!BlinkDevice.HOST.getAddress().equals(
+			// mParentFragment.mCenterDevice)) {
+			// deviceList.add(BlinkDevice.HOST);
+			// } else {
+			// deviceList.remove(BlinkDevice.HOST);
+			// }
 		}
 
 		@Override
