@@ -42,6 +42,8 @@ public class MainActivity extends Activity implements ActivityInterface {
 	BlinkServiceInteraction mInteraction;
 	IInternalOperationSupport mISupport;
 	GestureDetector mGestureDetector;
+	IntentFilter mHeartBeatActionFilter = new IntentFilter(
+			HeartBeatService.WIDGET_HEART_BEAT_ACTION);
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -62,17 +64,14 @@ public class MainActivity extends Activity implements ActivityInterface {
 			@Override
 			public void onServiceConnected(IInternalOperationSupport iSupport) {
 				mISupport = iSupport;
-				// register meta data
+				// 측정 정보 등록
 				BlinkAppInfo info = mInteraction.obtainBlinkApp();
 				if (!info.isExist) {
-					info.addMeasurement(SitUp.class);
-					info.mMeasurementList.get(0).Description = "Count of Sit Ups";
-					info.addMeasurement(PushUp.class);
-					info.mMeasurementList.get(1).Description = "Count of Push Ups";
-					info.addMeasurement(Squat.class);
-					info.mMeasurementList.get(2).Description = "Count of Squats";
-					info.addMeasurement(HeartBeat.class);
-					info.mMeasurementList.get(3).Description = "Beat per Minute of HeartBeats";
+					info.addMeasurement(SitUp.class, "Count of Sit Ups");
+					info.addMeasurement(PushUp.class, "Count of Push Ups");
+					info.addMeasurement(Squat.class, "Count of Squats");
+					info.addMeasurement(HeartBeat.class,
+							"Beat per Minute of HeartBeats");
 					mInteraction.registerBlinkApp(info);
 				}
 			}
@@ -158,9 +157,7 @@ public class MainActivity extends Activity implements ActivityInterface {
 
 	@Override
 	protected void onResume() {
-		IntentFilter filter = new IntentFilter(
-				HeartBeatService.WIDGET_HEART_BEAT_ACTION);
-		registerReceiver(mHeartBeatReciever, filter);
+		registerReceiver(mHeartBeatReciever, mHeartBeatActionFilter);
 		super.onResume();
 	}
 

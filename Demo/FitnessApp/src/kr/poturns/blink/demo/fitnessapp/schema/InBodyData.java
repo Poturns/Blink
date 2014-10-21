@@ -2,8 +2,6 @@ package kr.poturns.blink.demo.fitnessapp.schema;
 
 import java.io.Serializable;
 
-import kr.poturns.blink.schema.Inbody;
-
 /**
  * kr.poturns.blink.schema package의 Inbody 클래스에<br>
  * Searializable 인터페이스를 구현한 클래스

@@ -4,6 +4,7 @@ import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeListener;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -76,16 +77,30 @@ public class SettingFragment extends PreferenceFragment implements
 			Preference preference) {
 		String key = preference.getKey();
 		if (key.equals(KEY_DELETE_TRAINING_DATA)) {
-			SQLiteHelper.getInstance(getActivity()).dropAllTable();
-			Toast.makeText(getActivity(), "삭제했습니다.", 1000).show();
+			AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
+
+				@Override
+				public void run() {
+					SQLiteHelper.getInstance(getActivity()).dropAllTable();
+					getActivity().runOnUiThread(new Runnable() {
+
+						@Override
+						public void run() {
+							Toast.makeText(getActivity(), "삭제했습니다.",
+									Toast.LENGTH_SHORT).show();
+						}
+					});
+				}
+			});
+
 			return true;
 		} else if (key.equals(KEY_INBODY_DATA)) {
 			if (getActivity().deleteFile(
 					"/data/data/kr.poturns.blink.demo.fitnessapp/"
 							+ FitnessUtil.FILE_INBODY)) {
-				Toast.makeText(getActivity(), "삭제했습니다.", 1000).show();
+				Toast.makeText(getActivity(), "삭제했습니다.", Toast.LENGTH_SHORT).show();
 			} else {
-				Toast.makeText(getActivity(), "실패했습니다.", 1000).show();
+				Toast.makeText(getActivity(), "실패했습니다.", Toast.LENGTH_SHORT).show();
 			}
 			return true;
 		} else if (key.equals(KEY_LOAD_CONTROL)) {

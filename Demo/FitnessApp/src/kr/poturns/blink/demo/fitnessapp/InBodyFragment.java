@@ -206,8 +206,8 @@ public class InBodyFragment extends SwipeEventFragment implements
 			inbody_progressbar.setProgress(0);
 			double todayExersisedCalorie = FitnessUtil
 					.getTodayBurnedCalorie(getActivity());
-			inbody_progressbar_summary.setText(Double
-					.toString(todayExersisedCalorie) + " KCal 소모");
+			inbody_progressbar_summary.setText("오늘 : "
+					+ Double.toString(todayExersisedCalorie) + " KCal 소모");
 		} else {
 			inbody_date.setText("");
 			inbody_age_gender.setText(inbodyData.age + " 세 ("
@@ -215,18 +215,22 @@ public class InBodyFragment extends SwipeEventFragment implements
 			inbody_weight.setText("몸무게 : "
 					+ Integer.toString(inbodyData.weight) + " Kg");
 			inbody_progressbar.setMax(inbodyData.needcalorie);
-			int todayExersisedCalorie = (int) FitnessUtil
+			double todayExersisedCalorie = FitnessUtil
 					.getTodayBurnedCalorie(getActivity());
 
 			// 오늘 운동한 칼로리 / 총 소모해야할 칼로리
-			inbody_progressbar_summary.setText(Integer
+			inbody_progressbar_summary.setText(Double
 					.toString(todayExersisedCalorie)
 					+ " / "
 					+ inbodyData.needcalorie);
-			if (inbodyData.needcalorie < todayExersisedCalorie)
-				todayExersisedCalorie = inbodyData.needcalorie;
+
+			int progress = (int) todayExersisedCalorie / inbodyData.needcalorie
+					* 100;
+			if (progress > 100)
+				progress = 100;
+
 			// 오늘 운동한 만큼 프로그레스 설정
-			inbody_progressbar.setProgress(todayExersisedCalorie);
+			inbody_progressbar.setProgress(progress);
 		}
 	}
 

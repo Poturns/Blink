@@ -74,21 +74,18 @@ public class BlinkAppInfo implements Parcelable, IDatabaseObject {
 		return null;
 	}
 
-	// Java reflect을 이용한 Measurement 추가
+	/**
+	 * 측정 데이터 정보를 등록한다. 측정 데이터 정보에 대한 설명은 등록되지 않는다.
+	 * 
+	 * @param meaurementObject
+	 *            측정 데이터 클래스
+	 */
 	public void addMeasurement(Class<? extends DefaultSchema> obj) {
-		Field[] mFields = obj.getFields();
-		for (Field field : mFields) {
-			if (field.getName().contentEquals("DateTime"))
-				continue;
-			Measurement mMeasurement = new Measurement(obj.getSimpleName(),
-					ClassUtil.obtainFieldSchema(field), field.getType()
-							.getName(), "");
-			mMeasurementList.add(mMeasurement);
-		}
+		addMeasurement(obj, "");
 	}
 
 	/**
-	 * 측정 정보를 등록한다.
+	 * 측정 데이터 정보를 등록한다.
 	 * 
 	 * @param meaurementObject
 	 *            측정 데이터 클래스
