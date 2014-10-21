@@ -5,7 +5,6 @@ import java.util.List;
 
 import kr.poturns.blink.db.archive.CallbackData;
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
-import kr.poturns.blink.demo.fitnessapp.schema.InBodyData;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.schema.Inbody;
 import android.app.ProgressDialog;
@@ -71,7 +70,7 @@ public class InBodyFragment extends SwipeEventFragment implements
 		gson = new Gson();
 
 		try {
-			InBodyData mInbodyData = FitnessUtil
+			Inbody mInbodyData = FitnessUtil
 					.readInBodyFromFile(getActivity());
 			updateView(mInbodyData);
 		} catch (Exception e) {
@@ -154,16 +153,16 @@ public class InBodyFragment extends SwipeEventFragment implements
 								Toast.LENGTH_SHORT).show();
 						return;
 					} else {
-						List<InBodyData> mInbodyList = null;
-						InBodyData mInbodyData = null;
+						List<Inbody> mInbodyList = null;
+						Inbody mInbodyData = null;
 						try {
 							if (data.OutDeviceData != null) {
 								mInbodyList = gson.fromJson(data.OutDeviceData,
-										new TypeToken<List<InBodyData>>() {
+										new TypeToken<List<Inbody>>() {
 										}.getType());
 							} else if (data.InDeviceData != null) {
 								mInbodyList = gson.fromJson(data.InDeviceData,
-										new TypeToken<List<InBodyData>>() {
+										new TypeToken<List<Inbody>>() {
 										}.getType());
 							}
 							mInbodyData = mInbodyList.get(mInbodyList.size() - 1);
@@ -182,8 +181,13 @@ public class InBodyFragment extends SwipeEventFragment implements
 							return;
 						}
 						try {
-							FitnessUtil.saveInBodyFile(getActivity(),
-									mInbodyData);
+							FitnessUtil.saveInBodyFile(getActivity(),mInbodyData);
+							try {
+	                            mInbodyData = FitnessUtil.readInBodyFromFile(getActivity());
+                            } catch (ClassNotFoundException e) {
+	                            // TODO Auto-generated catch block
+	                            e.printStackTrace();
+                            }
 						} catch (IOException e) {
 							e.printStackTrace();
 							return;
@@ -198,7 +202,7 @@ public class InBodyFragment extends SwipeEventFragment implements
 		}
 	}
 
-	private void updateView(InBodyData inbodyData) {
+	private void updateView(Inbody inbodyData) {
 		if (inbodyData == null) {
 			inbody_date.setText("");
 			inbody_age_gender.setText("정보가 없습니다.");

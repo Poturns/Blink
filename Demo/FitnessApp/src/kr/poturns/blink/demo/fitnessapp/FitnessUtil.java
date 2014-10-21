@@ -11,7 +11,10 @@ import java.io.ObjectOutputStream;
 import java.io.StreamCorruptedException;
 import java.util.Calendar;
 
-import kr.poturns.blink.demo.fitnessapp.schema.InBodyData;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import kr.poturns.blink.schema.Inbody;
 import android.content.Context;
 
 /** @author Myungjin.Kim */
@@ -44,18 +47,20 @@ public class FitnessUtil {
 	}
 
 	/** InBody 데이터를 읽어온다 */
-	public static final InBodyData readInBodyFromFile(Context context)
+	public static final Inbody readInBodyFromFile(Context context)
 			throws StreamCorruptedException, IOException,
 			ClassNotFoundException {
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		FileInputStream fis = null;
 		BufferedInputStream bis = null;
 		ObjectInputStream ois = null;
-		InBodyData object = null;
+		Inbody object = null;
 		try {
 			fis = context.openFileInput(FILE_INBODY);
 			bis = new BufferedInputStream(fis);
 			ois = new ObjectInputStream(bis);
-			object = (InBodyData) ois.readObject();
+			String json = ois.readUTF();
+			object = gson.fromJson(json, Inbody.class);
 		} finally {
 			closeStream(ois);
 			closeStream(bis);
@@ -65,17 +70,18 @@ public class FitnessUtil {
 	}
 
 	/** InBody 데이터를 저장한다 */
-	public static boolean saveInBodyFile(Context context, InBodyData obj)
+	public static boolean saveInBodyFile(Context context, Inbody obj)
 			throws IOException {
+		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		boolean state = false;
 		FileOutputStream fos = null;
 		BufferedOutputStream bos = null;
 		ObjectOutputStream oos = null;
 		try {
-			fos = context.openFileOutput(FILE_INBODY, Context.MODE_PRIVATE);
+			fos = context.openFileOutput(FILE_INBODY, Context.MODE_PRIVATE );
 			bos = new BufferedOutputStream(fos);
 			oos = new ObjectOutputStream(bos);
-			oos.writeObject(obj);
+			oos.writeUTF(gson.toJson(obj));
 			state = true;
 		} finally {
 			closeStream(oos);
