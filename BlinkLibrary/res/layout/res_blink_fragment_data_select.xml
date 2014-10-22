@@ -13,14 +13,14 @@
 
         <FrameLayout
             android:id="@+id/res_blink_fragment_content_select_recent_list"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1" >
         </FrameLayout>
 
         <FrameLayout
             android:id="@+id/res_blink_framgent_content_select_device_list"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="2" >
         </FrameLayout>

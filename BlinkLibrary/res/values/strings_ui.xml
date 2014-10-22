@@ -67,7 +67,10 @@
     <string name="res_blink_bluetooth_discovery_finished">Bluetooth 탐색을 완료하였습니다.</string>
     <!-- Bluetooth Discovery가 실패하였음을 표시 -->
     <string name="res_blink_bluetooth_discovery_failed">Bluetooth 탐색요청에 실패하였습니다.</string>
-
+    <!-- 연결 화면에서 현재 표시하고 있는 관점을 나타냄 : 탐색된 device를 보여줌 -->
+    <string name="res_blink_connection_ui_status_scan">SCAN</string>
+    <!-- 연결 화면에서 현재 표시하고 있는 관점을 나타냄 : 연결된 device를 보여줌 -->
+    <string name="res_blink_connection_ui_status_connect">CONNECTION</string>
     <!-- '연결 상태'에서 표시할 장비 정보들 -->
     <string-array name="res_blink_dialog_connect_page_titles">
         <item>Bluetooth 정보</item>

@@ -1,123 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content" >
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center" >
 
-    <RelativeLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" >
+    <ListView
+        android:id="@android:id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:addStatesFromChildren="true"
+        android:cacheColorHint="@android:color/transparent"
+        android:choiceMode="singleChoice"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:divider="@null"
+        android:dividerHeight="30dp"
+        android:fastScrollEnabled="true"
+        android:listSelector="@null"
+        android:paddingBottom="20dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="20dp"
+        android:scrollbarStyle="outsideOverlay" />
 
-        <TextView
-            android:id="@+id/res_blink_dialog_fragment_connection_title_macaddress"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="20dp"
-            android:layout_marginTop="30dp"
-            android:text="@string/res_blink_blink_state_macaddress" />
-
-        <TextView
-            android:id="@+id/res_blink_dialog_fragment_connection_title_device_ego"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/res_blink_dialog_fragment_connection_title_macaddress"
-            android:layout_below="@+id/res_blink_dialog_fragment_connection_title_macaddress"
-            android:layout_marginTop="30dp"
-            android:text="@string/res_blink_blink_state_type" />
-
-        <TextView
-            android:id="@+id/res_blink_dialog_fragment_connection_title_blink_support"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/res_blink_dialog_fragment_connection_title_device_ego"
-            android:layout_below="@+id/res_blink_dialog_fragment_connection_title_device_ego"
-            android:layout_marginTop="30dp"
-            android:text="@string/res_blink_blink_state_support_library" />
-
-        <TextView
-            android:id="@+id/res_blink_dialog_fragment_connection_title_connection"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/res_blink_dialog_fragment_connection_title_blink_support"
-            android:layout_below="@+id/res_blink_dialog_fragment_connection_title_blink_support"
-            android:layout_marginTop="30dp"
-            android:text="@string/res_blink_blink_state_connection" />
-
-        <TextView
-            android:id="@+id/res_blink_dialog_fragment_connection_title_autoconnect"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/res_blink_dialog_fragment_connection_title_connection"
-            android:layout_below="@+id/res_blink_dialog_fragment_connection_title_connection"
-            android:layout_marginTop="30dp"
-            android:text="@string/res_blink_blink_state_auto_connect" />
-
-        <TextView
-            android:id="@+id/res_blink_dialog_fragment_connection_title_ble"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/res_blink_dialog_fragment_connection_title_autoconnect"
-            android:layout_below="@+id/res_blink_dialog_fragment_connection_title_autoconnect"
-            android:layout_marginBottom="10dp"
-            android:layout_marginTop="30dp"
-            android:text="@string/res_blink_blink_state_ble" />
-
-        <TextView
-            android:id="@+id/res_blink_dialog_fragment_connection_macaddress"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/res_blink_dialog_fragment_connection_title_macaddress"
-            android:layout_marginLeft="40dp"
-            android:layout_toRightOf="@+id/res_blink_dialog_fragment_connection_title_macaddress" />
-
-        <TextView
-            android:id="@+id/res_blink_dialog_fragment_connection_device_ego"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/res_blink_dialog_fragment_connection_title_device_ego"
-            android:layout_alignLeft="@+id/res_blink_dialog_fragment_connection_macaddress" />
-
-        <Switch
-            android:id="@+id/res_blink_dialog_fragment_connection_blink_support"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/res_blink_dialog_fragment_connection_title_blink_support"
-            android:layout_alignLeft="@+id/res_blink_dialog_fragment_connection_device_ego"
-            android:enabled="true"
-            android:textOff="@android:string/no"
-            android:textOn="@android:string/yes" />
-
-        <Switch
-            android:id="@+id/res_blink_dialog_fragment_connection_connection"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/res_blink_dialog_fragment_connection_title_connection"
-            android:layout_alignLeft="@+id/res_blink_dialog_fragment_connection_blink_support"
-            android:enabled="true"
-            android:textOff="@android:string/no"
-            android:textOn="@android:string/yes" />
-
-        <Switch
-            android:id="@+id/res_blink_dialog_fragment_connection_autoconnect"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/res_blink_dialog_fragment_connection_title_autoconnect"
-            android:layout_alignLeft="@+id/res_blink_dialog_fragment_connection_connection"
-            android:enabled="true"
-            android:textOff="@android:string/no"
-            android:textOn="@android:string/yes" />
-
-        <Switch
-            android:id="@+id/res_blink_dialog_fragment_connection_ble"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/res_blink_dialog_fragment_connection_title_ble"
-            android:layout_alignLeft="@+id/res_blink_dialog_fragment_connection_autoconnect"
-            android:enabled="true"
-            android:textOff="@android:string/no"
-            android:textOn="@android:string/yes" />
-    </RelativeLayout>
-
-</ScrollView>
+</LinearLayout>

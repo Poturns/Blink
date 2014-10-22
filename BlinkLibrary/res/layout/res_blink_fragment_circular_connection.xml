@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/res_blink_content_frame"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
@@ -31,7 +32,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="10dp"
-                android:text="SCAN" />
+                android:text="@string/res_blink_connection_ui_status_scan" />
 
             <TextView
                 android:id="@+id/res_blink_drawer_text2"
@@ -40,7 +41,7 @@
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
                 android:layout_marginRight="10dp"
-                android:text="CONNECTION" />
+                android:text="@string/res_blink_connection_ui_status_connect" />
 
             <SeekBar
                 android:id="@+id/res_blink_fragment_circular_seekbar"

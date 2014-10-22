@@ -24,7 +24,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/res_blink_list_header_side_margin"
-        android:text="DISCOVERY" />
+        android:text="@string/res_blink_connection_ui_status_scan" />
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -42,7 +42,5 @@
 
         <include layout="@layout/res_blink_view_listview" />
     </android.support.v4.widget.SwipeRefreshLayout>
-
-    <include layout="@layout/res_blink_view_empty" />
 
 </LinearLayout>

@@ -30,6 +30,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.Switch;
@@ -495,6 +496,135 @@ final class ConnectionFragment extends Fragment {
 		 */
 		private class BlinkDeviceInfoFragment extends Fragment {
 			BlinkDevice mDevice = DeviceInfoDialogFragment.this.mBlinkDevice;
+			private static final int TYPE_TEXT = 0x01;
+			private static final int TYPE_SWITCH = 0x02;
+
+			BaseAdapter mAdapter = new BaseAdapter() {
+
+				@Override
+				public View getView(int position, View convertView,
+						ViewGroup parent) {
+					switch (getItemViewType(position)) {
+					case TYPE_TEXT:
+						return makeTextView(position, convertView, parent);
+					case TYPE_SWITCH:
+						return makeSwitchView(position, convertView, parent);
+					}
+					return null;
+				}
+
+				private View makeTextView(int position, View convertView,
+						ViewGroup parent) {
+					TextView title, content;
+
+					if (convertView == null) {
+						convertView = View.inflate(getActivity(),
+								R.layout.res_blink_list_bluetooth_text, null);
+						title = (TextView) convertView
+								.findViewById(R.id.res_blink_list_bluetooth_title);
+						content = (TextView) convertView
+								.findViewById(R.id.res_blink_list_bluetooth_content);
+
+						convertView.setTag(R.id.res_blink_list_bluetooth_title,
+								title);
+						convertView.setTag(
+								R.id.res_blink_list_bluetooth_content, content);
+					} else {
+						title = (TextView) convertView
+								.getTag(R.id.res_blink_list_bluetooth_title);
+						content = (TextView) convertView
+								.getTag(R.id.res_blink_list_bluetooth_content);
+					}
+					switch (position) {
+					case 0:
+						title.setText(R.string.res_blink_blink_state_macaddress);
+						content.setText(mDevice.getAddress());
+						break;
+					case 1:
+						title.setText(R.string.res_blink_blink_state_type);
+						content.setText(mDevice.getIdentity().toString());
+						break;
+					}
+					return convertView;
+				}
+
+				private View makeSwitchView(int position, View convertView,
+						ViewGroup parent) {
+					TextView title;
+					Switch content;
+					if (convertView == null) {
+						convertView = View.inflate(getActivity(),
+								R.layout.res_blink_list_bluetooth_switch, null);
+						title = (TextView) convertView
+								.findViewById(R.id.res_blink_list_bluetooth_title);
+						content = (Switch) convertView
+								.findViewById(R.id.res_blink_list_bluetooth_content);
+
+						convertView.setTag(R.id.res_blink_list_bluetooth_title,
+								title);
+						convertView.setTag(
+								R.id.res_blink_list_bluetooth_content, content);
+					} else {
+						title = (TextView) convertView
+								.getTag(R.id.res_blink_list_bluetooth_title);
+						content = (Switch) convertView
+								.getTag(R.id.res_blink_list_bluetooth_content);
+					}
+					switch (position) {
+					case 2:
+						title.setText(R.string.res_blink_blink_state_support_library);
+						content.setClickable(false);
+						content.setChecked(mDevice.isBlinkSupported());
+						break;
+					case 3:
+						title.setText(R.string.res_blink_blink_state_connection);
+						content.setChecked(mDevice.isConnected());
+						content.setClickable(false);
+						break;
+					case 4:
+						title.setText(R.string.res_blink_blink_state_auto_connect);
+						content.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+							@Override
+							public void onCheckedChanged(
+									CompoundButton buttonView, boolean isChecked) {
+								mDevice.setAutoConnect(isChecked);
+							}
+						});
+						content.setChecked(mDevice.isAutoConnect());
+						break;
+					case 5:
+						title.setText(R.string.res_blink_blink_state_ble);
+						content.setClickable(false);
+						content.setChecked(mDevice.isLESupported());
+						break;
+					}
+					return convertView;
+				}
+
+				@Override
+				public long getItemId(int position) {
+					return 0;
+				}
+
+				@Override
+				public int getItemViewType(int position) {
+					if (position < 2)
+						return TYPE_TEXT;
+					else
+						return TYPE_SWITCH;
+				}
+
+				@Override
+				public Object getItem(int position) {
+					return null;
+				}
+
+				@Override
+				public int getCount() {
+					return 6;
+				}
+			};
 
 			@Override
 			public View onCreateView(LayoutInflater inflater,
@@ -503,36 +633,11 @@ final class ConnectionFragment extends Fragment {
 						.inflate(
 								R.layout.res_blink_dialog_fragment_connection_bluetooth_info,
 								container, false);
-				((TextView) v
-						.findViewById(R.id.res_blink_dialog_fragment_connection_macaddress))
-						.setText(mDevice.getAddress());
-				((TextView) v
-						.findViewById(R.id.res_blink_dialog_fragment_connection_device_ego))
-						.setText(mDevice.getIdentity().toString());
-				Switch isBlinkSupport = (Switch) v
-						.findViewById(R.id.res_blink_dialog_fragment_connection_blink_support);
-				isBlinkSupport.setClickable(false);
-				isBlinkSupport.setChecked(mDevice.isBlinkSupported());
-				Switch isConnected = (Switch) v
-						.findViewById(R.id.res_blink_dialog_fragment_connection_connection);
-				isConnected.setChecked(mDevice.isConnected());
-				isConnected.setClickable(false);
-				Switch isAutoConnect = (Switch) v
-						.findViewById(R.id.res_blink_dialog_fragment_connection_autoconnect);
-				isAutoConnect
-						.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-
-							@Override
-							public void onCheckedChanged(
-									CompoundButton buttonView, boolean isChecked) {
-								mDevice.setAutoConnect(isChecked);
-							}
-						});
-				isAutoConnect.setChecked(mDevice.isAutoConnect());
-				Switch isLESupported = (Switch) v
-						.findViewById(R.id.res_blink_dialog_fragment_connection_ble);
-				isLESupported.setClickable(false);
-				isLESupported.setChecked(mDevice.isLESupported());
+				ListView listView = (ListView) v
+						.findViewById(android.R.id.list);
+				listView.setAdapter(mAdapter);
+				listView.setDividerHeight(30);
+				listView.setDivider(null);
 				return v;
 			}
 		}

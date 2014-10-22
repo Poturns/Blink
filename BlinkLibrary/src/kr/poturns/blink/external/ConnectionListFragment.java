@@ -100,7 +100,8 @@ class ConnectionListFragment extends BaseConnectionFragment {
 						.getItemAtPosition(position));
 			}
 		});
-		mListView.setEmptyView(v.findViewById(android.R.id.empty));
+		mListView.setEmptyView(View.inflate(getActivity(),
+				R.layout.res_blink_view_empty, null));
 		return v;
 	}
 
@@ -115,10 +116,12 @@ class ConnectionListFragment extends BaseConnectionFragment {
 		if (id == R.id.res_blink_action_list_fillter) {
 			if (mShowOnlyConnected) {
 				retainConnectedDevicesFromList();
-				mConnectionTitleView.setText("CONNECTION");
+				mConnectionTitleView
+						.setText(R.string.res_blink_connection_ui_status_connect);
 			} else {
 				obtainDiscoveryList();
-				mConnectionTitleView.setText("DISCOVERY");
+				mConnectionTitleView
+						.setText(R.string.res_blink_connection_ui_status_scan);
 			}
 			mShowOnlyConnected = !mShowOnlyConnected;
 			return true;
@@ -152,6 +155,9 @@ class ConnectionListFragment extends BaseConnectionFragment {
 		super.onDiscoveryFinished();
 		mRefresh = false;
 		mSwipeRefreshLayout.setRefreshing(false);
+		mShowOnlyConnected = true;
+		mConnectionTitleView
+				.setText(R.string.res_blink_connection_ui_status_scan);
 	}
 
 	@Override
