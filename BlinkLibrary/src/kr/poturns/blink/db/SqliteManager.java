@@ -217,7 +217,6 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 		obtainApp(mBlinkAppInfo);
 		registerFunction(mBlinkAppInfo);
 		registerMeasurement(mBlinkAppInfo);
-		CONTEXT.getContentResolver().notifyChange(URI_OBSERVER_SYNC, null);
 		Log.i(tag, "registerBlinkAppSync OK");
 	}
 
