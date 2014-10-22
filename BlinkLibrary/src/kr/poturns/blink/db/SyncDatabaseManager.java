@@ -408,6 +408,7 @@ public class SyncDatabaseManager extends BlinkDatabaseManager {
 			} finally {
 				mSQLiteDatabase.endTransaction();
 			}
+			CONTEXT.getContentResolver().notifyChange(URI_OBSERVER_SYNC, null);
 			return true;
 		}
 
