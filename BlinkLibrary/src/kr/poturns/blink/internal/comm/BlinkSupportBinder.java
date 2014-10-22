@@ -420,7 +420,7 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 			// 다른 어플리케이션의 콜백 호출
 			ServiceKeeper.getInstance(CONTEXT)
 					.obtainBinder()
-					.callbackData(requestCode, json, true,packageName);
+					.callbackData(requestCode, json, true,targetBlinkAppInfo.mApp.PackageName);
 			// 자기 자신에게 reponse를 보냄
 			mCallbackData.ResultDetail = CallbackData.ERROR_NO_OUT_DEVICE;
 			callbackData(requestCode, null, true,packageName);
