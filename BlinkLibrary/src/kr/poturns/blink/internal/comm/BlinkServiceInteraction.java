@@ -56,7 +56,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	private final IntentFilter FILTER;
 
 	private IBlinkEventBroadcast mBlinkEventBroadcast;
-	private IInternalOperationSupport mInternalOperationSupport;
+	private static IInternalOperationSupport mInternalOperationSupport;
 	private IInternalEventCallback mIInternalEventCallback;
 	private BlinkDatabaseManager mBlinkDatabaseManager;
 	private boolean binding;
@@ -64,7 +64,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	 * Application Info
 	 */
 	// 바인더 컨넥션시 획득
-	private BlinkDevice mBlinkDevice;
+	private static BlinkDevice mBlinkDevice;
 	// 생성자에서 초기화
 	private String mPackageName = "";
 	private String mAppName = "";
@@ -124,7 +124,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 */
 		CONTEXT.getContentResolver().registerContentObserver(
 				SqliteManager.URI_OBSERVER_SYNC, false, mContentObserver);
-
+		
 		/**
 		 * Setting Application Info
 		 */
@@ -209,8 +209,8 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		if(mContentObserver!=null)CONTEXT.getContentResolver().unregisterContentObserver(mContentObserver);
 		CONTEXT.unbindService(this);
-
 		stopBroadcastReceiver();
 		// CONTEXT.stopService(intent);
 	}
@@ -431,7 +431,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 			Log.i(tag, "Uri : " + uri);
 			// 새로운 BlinkApp이 추가되면 실행
 			if (uri.equals(SqliteManager.URI_OBSERVER_SYNC)) {
-				Log.i(tag, "if : URI_OBSERVER_SYNC");
+				Log.i(tag, "if : URI_OBSERVER_SYNC why two call??");
 				mBlinkAppInfo = local.obtainBlinkApp();
 			}
 		};

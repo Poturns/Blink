@@ -32,7 +32,8 @@ public class InbodyDetailActivity extends ListActivity {
         
         bodytypeImage = (ImageView)findViewById(R.id.bodytypeimage);
         bodytypetext = (TextView)findViewById(R.id.bodytypetext);
-        if(mInbody.type.equals("비만형")){
+        if(mInbody.type==null)bodytypeImage.setImageResource(R.drawable.fatperson_white);
+        else if(mInbody.type.equals("비만형")){
         	bodytypeImage.setImageResource(R.drawable.fatperson_white);
         }else if(mInbody.type.equals("평균형")){
         	bodytypeImage.setImageResource(R.drawable.avgperson_white);

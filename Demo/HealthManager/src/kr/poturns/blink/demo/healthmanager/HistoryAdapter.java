@@ -21,14 +21,16 @@ import com.google.gson.Gson;
 public class HistoryAdapter extends BaseAdapter {
 
 	private LayoutInflater inflater = null;
-	private ArrayList<HistoryDomain> mHistoryDomainList = null;
-	private List<Inbody> mInbodyList = null;
+	public ArrayList<HistoryDomain> mHistoryDomainList = null;
+	public List<Inbody> mInbodyList = null;
 	private Context context;
 	int history = 0x01;
 	Gson gson = new Gson();
 	public HistoryAdapter(Context context, ArrayList<HistoryDomain> mHistoryDomainList,int history,List<Inbody> mInbodyList) {
 		this.context = context;
 		this.inflater = LayoutInflater.from(context);
+		if(mHistoryDomainList==null)mHistoryDomainList = new ArrayList<HistoryDomain>();
+		if(mInbodyList==null)mInbodyList = new ArrayList<Inbody>();
 		this.mHistoryDomainList = mHistoryDomainList;
 		this.history = history;
 		this.mInbodyList = mInbodyList;
@@ -37,7 +39,6 @@ public class HistoryAdapter extends BaseAdapter {
 	// Adapter가 관리할 Data의 개수를 설정 합니다.
 	@Override
 	public int getCount() {
-		Log.i("HealthManager","count : "+mHistoryDomainList.size());
 		return mHistoryDomainList.size();
 	}
 

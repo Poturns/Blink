@@ -262,8 +262,8 @@ public final class ServiceControlActivity extends Activity implements
 
 	@Override
 	protected void onResume() {
-		if (mInteraction != null)
-			mInteraction.startBroadcastReceiver();
+//		if (mInteraction != null)
+//			mInteraction.startBroadcastReceiver();
 		super.onResume();
 	}
 
