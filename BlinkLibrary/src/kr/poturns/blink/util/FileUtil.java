@@ -93,7 +93,7 @@ public final class FileUtil {
 					Log.d(TAG, name + " created, : " + externalSubFile);
 					createSubDirectory(externalSubFile);
 				} else {
-					Log.d(TAG, name + "could not create");
+					Log.d(TAG, name + " could not create");
 				}
 			}
 		} else {

@@ -28,7 +28,7 @@ public class HeartBeatService extends Service {
 	/** 심장박동수를 측정하는 Thread */
 	private Thread mHeartBeatBackgroundThread;
 	/** 심장박동수를 측정하기까지 걸리는 시간 (초) */
-	static final int HEART_BEAT_COUNT_INTERVAL = 10;
+	static final int HEART_BEAT_COUNT_INTERVAL = 5;
 	/** intent action */
 	public final static String WIDGET_HEART_BEAT_ACTION = "kr.poturns.blink.demo.fitnessapp.heartbeat";
 	/** intent extra value (heartbeat), (Integer) */
@@ -108,8 +108,10 @@ public class HeartBeatService extends Service {
 				if (progress == HEART_BEAT_COUNT_INTERVAL) {
 					count++;
 					int bpm = generateHeartBeat();
-					if (DEBUG && count % 3 == 0)
-						bpm = 140;
+					if (DEBUG && count % 3 == 0) {
+						// 140 - 160 을 디버그용으로 생성
+						bpm = mRandom.nextInt(20) + 140;
+					}
 					intent.putExtra(WIDGET_HEART_BEAT_VALUE, bpm);
 					sendBroadcast(intent);
 					Log.d(TAG, "HeartBeat Thread send broadcast, HeartBeat : "
