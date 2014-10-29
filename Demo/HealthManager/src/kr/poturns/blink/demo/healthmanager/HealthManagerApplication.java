@@ -15,6 +15,7 @@ import com.google.gson.GsonBuilder;
 
 public class HealthManagerApplication extends Application {
 	public static int RESPONSE_CODE_INBODY_DATA = 0;
+	public static int RESPONSE_CODE_LIGHT_ACTION = 1;
 	
 	private BlinkServiceInteraction mBlinkServiceInteraction;
 	Gson gson = new GsonBuilder().setPrettyPrinting().create();
