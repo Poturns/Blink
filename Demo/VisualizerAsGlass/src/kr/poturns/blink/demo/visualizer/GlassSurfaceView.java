@@ -1,11 +1,17 @@
 package kr.poturns.blink.demo.visualizer;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import android.content.Context;
 import android.hardware.Camera;
 import android.hardware.Camera.Parameters;
+import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.Size;
+import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -17,6 +23,7 @@ public class GlassSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 	private SurfaceHolder mSurfaceHolder;
 	private Camera mCamera;
 	private Context context;
+	private PhotoHandler mPhotoHandler;
 	
 	public GlassSurfaceView(Context context, AttributeSet attrs) {
 		super(context, attrs);
@@ -24,6 +31,7 @@ public class GlassSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 		mSurfaceHolder = getHolder();
 		mSurfaceHolder.addCallback(this);
 		this.context = context;
+		mPhotoHandler = new PhotoHandler(context);
 		//mSurfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
 	}
 
@@ -118,4 +126,54 @@ public class GlassSurfaceView extends SurfaceView implements SurfaceHolder.Callb
 		}
 		
 	}
+	
+	public void takePicture(){
+		if(mCamera==null)return;
+		mCamera.takePicture(null, null, mPhotoHandler);
+	}
+	
+	class PhotoHandler implements PictureCallback {
+
+		  private final Context context;
+
+		  public PhotoHandler(Context context) {
+		    this.context = context;
+		  }
+
+		  @Override
+		  public void onPictureTaken(byte[] data, Camera camera) {
+
+		    File pictureFileDir = getDir();
+
+		    if (!pictureFileDir.exists() && !pictureFileDir.mkdirs()) {
+		      Toast.makeText(context, "사진을 저장할 수 없습니다.",Toast.LENGTH_LONG).show();
+		      return;
+
+		    }
+
+		    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmddhhmmss");
+		    String date = dateFormat.format(new Date());
+		    String photoFile = "Picture_" + date + ".jpg";
+		    String filename = pictureFileDir.getPath() + File.separator + photoFile;
+
+		    File pictureFile = new File(filename);
+
+		    try {
+		      FileOutputStream fos = new FileOutputStream(pictureFile);
+		      fos.write(data);
+		      fos.close();
+		      Toast.makeText(context, "사진이 저장되었습니다.",Toast.LENGTH_LONG).show();
+		    } catch (Exception error) {
+		      Toast.makeText(context, "사진을 저장할 수 없습니다.",Toast.LENGTH_LONG).show();
+		    }
+		    
+		    camera.startPreview();
+		  }
+
+		  private File getDir() {
+		    File sdDir = Environment
+		      .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+		    return new File(sdDir, "VisualizerAsGlass");
+		  }
+		} 
 }

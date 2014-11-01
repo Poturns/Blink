@@ -189,4 +189,32 @@
             android:textSize="20dip" />
     </RelativeLayout>
 
+    <RelativeLayout
+          android:id="@+id/button_main_takepicture"
+          android:onClick="onClick"
+        android:layout_width="fill_parent"
+        android:layout_height="40dip"
+        android:layout_marginLeft="3dip"
+        android:layout_marginRight="3dip"
+        android:layout_marginTop="10dip"
+        android:background="@drawable/list_selector_red"
+        android:orientation="horizontal"
+        android:clickable="true" >
+
+        <ImageView
+            android:layout_width="40dip"
+            android:layout_height="40dip"
+            android:layout_centerVertical="true"
+            android:background="#bb382b"
+            android:src="@drawable/icon_heart_white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
+            android:text="사진 찍기"
+            android:textColor="#ffffff"
+            android:textSize="20dip" />
+    </RelativeLayout>
 </LinearLayout>

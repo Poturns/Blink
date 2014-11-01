@@ -15,6 +15,7 @@ import android.widget.RelativeLayout;
 public class MainActivity extends Activity{
 	public static String ACTION_REMOTE_LIGHT_ON = "kr.poturns.blink.demo.visualizer.action.lighton";
 	public static String ACTION_REMOTE_LIGHT_OFF = "kr.poturns.blink.demo.visualizer.action.lightoff";
+	public static String ACTION_TAKE_PICTURE = "kr.poturns.blink.demo.visualizer.action.takepicture";
 	
 	BlinkServiceInteraction mBlinkServiceInteraction;
 	
@@ -66,6 +67,18 @@ public class MainActivity extends Activity{
 					for(Function function : info.mFunctionList){
 						if(function.Action.equals(ACTION_REMOTE_LIGHT_OFF)){
 							mBlinkServiceInteraction.remote.startFunction(function, HealthManagerApplication.RESPONSE_CODE_LIGHT_ACTION);
+						}
+					}
+				}
+			}
+			break;
+		case R.id.button_main_takepicture:
+			mBlinkServiceInteraction.obtainBlinkApp();
+			if (mBlinkServiceInteraction != null) {
+				for (BlinkAppInfo info : mBlinkServiceInteraction.local.obtainBlinkAppAll()) {
+					for(Function function : info.mFunctionList){
+						if(function.Action.equals(ACTION_TAKE_PICTURE)){
+							mBlinkServiceInteraction.remote.startFunction(function, HealthManagerApplication.RESPONSE_CODE_TAKE_PICTURE_ACTION);
 						}
 					}
 				}

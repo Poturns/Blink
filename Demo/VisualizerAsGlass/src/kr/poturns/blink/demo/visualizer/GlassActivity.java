@@ -31,6 +31,7 @@ import android.widget.Toast;
 public class GlassActivity extends SupportMapActivity {
 	public static String ACTION_LIGHT_ON = "kr.poturns.blink.demo.visualizer.action.lighton";
 	public static String ACTION_LIGHT_OFF = "kr.poturns.blink.demo.visualizer.action.lightoff";
+	public static String ACTION_TAKE_PICTURE = "kr.poturns.blink.demo.visualizer.action.takepicture";
 	
 	private BlinkServiceInteraction mInteraction;
 	private IInternalOperationSupport mSupport;
@@ -43,7 +44,7 @@ public class GlassActivity extends SupportMapActivity {
 	private Handler mHandler;
 
 	private boolean isEmergency = false;
-
+	private boolean isMapOpened = false;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -93,7 +94,6 @@ public class GlassActivity extends SupportMapActivity {
 
 				boolean isDeviceConnected = mInteraction.isDeviceConnected();
 				setControlActivityVisibility(!isDeviceConnected);
-				setMapVisibility(false);
 
 				mHeartbeatImageView.setVisibility(View.INVISIBLE);
 				mHeartbeatTextView.setVisibility(View.INVISIBLE);
@@ -150,6 +150,9 @@ public class GlassActivity extends SupportMapActivity {
 					mBlinkAppInfo.addFunction("LightOff", "Turn On the Light",
 							ACTION_LIGHT_OFF,
 							Function.TYPE_BROADCAST);
+					mBlinkAppInfo.addFunction("TakePicture", "Take Picture",
+							ACTION_TAKE_PICTURE,
+							Function.TYPE_BROADCAST);
 					mInteraction.registerBlinkApp(mBlinkAppInfo);
 				}
 
@@ -169,12 +172,6 @@ public class GlassActivity extends SupportMapActivity {
 			mInteraction.startBroadcastReceiver();
 		}
 
-		// TEST
-		/*
-		 * mHeartbeatImageView.setVisibility(View.VISIBLE);
-		 * mHeartbeatTextView.setVisibility(View.VISIBLE);
-		 * setMapVisibility(true);
-		 */
 	}
 
 	@Override
@@ -185,7 +182,6 @@ public class GlassActivity extends SupportMapActivity {
 
 		boolean isDeviceConnected = mInteraction.isDeviceConnected();
 		setControlActivityVisibility(!isDeviceConnected);
-		setMapVisibility(isDeviceConnected && isEmergency);
 
 		mHeartbeatImageView.setVisibility(isDeviceConnected ? View.VISIBLE
 				: View.INVISIBLE);
@@ -209,16 +205,39 @@ public class GlassActivity extends SupportMapActivity {
 		super.onDestroy();
 	}
 
-	private void initiateComponent() {
-		Button mControllerBtn = (Button) findViewById(R.id.glass_btn_controller);
-		mControllerBtn.setOnClickListener(new OnClickListener() {
+	private OnClickListener mOnClickLisener = new OnClickListener(){
 
-			@Override
-			public void onClick(View v) {
+		@Override
+        public void onClick(View v) {
+	        // TODO Auto-generated method stub
+			switch (v.getId()) {
+			case R.id.glass_btn_controller:
 				if (mInteraction != null)
 					mInteraction.openControlActivity();
+				break;
+			case R.id.map_image:
+				ImageView mMapBtn = (ImageView) findViewById(R.id.map_image);
+				if(isMapOpened){
+					isMapOpened = false;
+					mMapBtn.setImageResource(R.drawable.map);
+				}else {
+					isMapOpened = true;
+					mMapBtn.setImageResource(R.drawable.map_opened);
+				}
+				setMapVisibility(isMapOpened);
+				break;
+			default:
+				break;
 			}
-		});
+			
+        }
+		
+	};
+	private void initiateComponent() {
+		Button mControllerBtn = (Button) findViewById(R.id.glass_btn_controller);
+		ImageView mMapBtn = (ImageView) findViewById(R.id.map_image);
+		mControllerBtn.setOnClickListener(mOnClickLisener);
+		mMapBtn.setOnClickListener(mOnClickLisener);
 
 		mAlertList = (ListView) findViewById(R.id.glass_alertlist);
 		mAlertAdapter = new GlassAlertAdapter(this);
@@ -231,12 +250,13 @@ public class GlassActivity extends SupportMapActivity {
 		mHeartbeatImageView.setVisibility(View.INVISIBLE);
 		mHeartbeatTextView = (TextView) findViewById(R.id.heartbeat_figure);
 		mHeartbeatTextView.setVisibility(View.INVISIBLE);
-
+		setMapVisibility(isMapOpened);
 		
 		//Light on / off broadcast receiver 등록
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(ACTION_LIGHT_ON);
 		filter.addAction(ACTION_LIGHT_OFF);
+		filter.addAction(ACTION_TAKE_PICTURE);
 		registerReceiver(mBroadcastReceiver, filter);
 		
 		mHandler = new Handler();
@@ -276,7 +296,6 @@ public class GlassActivity extends SupportMapActivity {
 	private Runnable mRunnableOnEmergency = new Runnable() {
 		@Override
 		public void run() {
-			setMapVisibility(false);
 			findViewById(R.id.glass_frame).setBackground(null);
 		}
 	};
@@ -284,7 +303,6 @@ public class GlassActivity extends SupportMapActivity {
 	private void onEmergency(int heartbeat) {
 		mHandler.removeCallbacks(mRunnableOnEmergency);
 
-		setMapVisibility(true);
 		findViewById(R.id.glass_frame).setBackgroundResource(
 				R.drawable.emergency_surface);
 
@@ -309,6 +327,8 @@ public class GlassActivity extends SupportMapActivity {
 			}
 			else if(action.equals(ACTION_LIGHT_OFF)){
 				mGlassSurfaceView.lightOff();
+			}else if(action.equals(ACTION_TAKE_PICTURE)){
+				mGlassSurfaceView.takePicture();
 			}
 			
 			
