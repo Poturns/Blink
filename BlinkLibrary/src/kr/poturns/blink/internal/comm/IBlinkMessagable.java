@@ -26,6 +26,8 @@ public interface IBlinkMessagable {
 	public static final int TYPE_RESPONSE_MEASUREMENTDATA_SYNC_SUCCESS = 0x11;
 	public static final int TYPE_RESPONSE_MEASUREMENTDATA_SYNC_FAIL = 0x12;
 	
+	public static final int TYPE_ACCEPT_CONNECTION = 0x20;
+	
 	static final int TYPE_REQUEST_IDENTITY_SYNC = 2009920011;
 	static final int TYPE_RESPONSE_IDENTITY_SUCCESS = 2009920005;
 	static final int TYPE_RESPONSE_IDENTITY_SYNC_FAIL = 2009920000;

@@ -146,7 +146,7 @@ abstract class BlinkLocalBaseService extends Service {
 		
 		
 		// Blink Top View
-		mBlinkTopView = new BlinkTopView(this);
+		mBlinkTopView = new BlinkTopView(this, null);
 		
 		WindowManager mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 		Point mPoint = new Point();
@@ -165,6 +165,7 @@ abstract class BlinkLocalBaseService extends Service {
 		mLayoutParams.horizontalMargin = 0.1f;
 		
 		mWindowManager.addView(mBlinkTopView, mLayoutParams);
+		mBlinkTopView.hide();
 	}
 	
 	/**

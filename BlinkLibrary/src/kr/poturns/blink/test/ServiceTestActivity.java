@@ -123,9 +123,9 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 
 		resultView = (TextView) findViewById(R.id.result_textView);
 
-		button1 = (Button) findViewById(R.id.button1);
+		button1 = (Button) findViewById(R.id.btn_cancel);
 		button1.setOnClickListener(this);
-		button2 = (Button) findViewById(R.id.button2);
+		button2 = (Button) findViewById(R.id.btn_accept);
 		button2.setOnClickListener(this);
 		button3 = (Button) findViewById(R.id.button3);
 		button3.setOnClickListener(this);
@@ -177,12 +177,12 @@ public class ServiceTestActivity extends Activity implements OnClickListener {
 
 		Log.d("ServiceTestAcitivity", "onClick() : ");
 		try {
-			if (v.getId() == R.id.button1) {
+			if (v.getId() == R.id.btn_cancel) {
 				// iSupport.registerCallback(IInternalEventCallback.Stub.asInterface(eventCallback));
 				Toast.makeText(this, "Unimplemented RegisterCallback",
 						Toast.LENGTH_SHORT).show();
 
-			} else if (v.getId() == R.id.button2) {
+			} else if (v.getId() == R.id.btn_accept) {
 				// iSupport.unregisterCallback(eventCallback);
 				Toast.makeText(this, "Unimplemented RegisterCallback",
 						Toast.LENGTH_SHORT).show();

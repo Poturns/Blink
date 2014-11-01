@@ -90,8 +90,8 @@ public class ClassicLinkThread extends Thread {
 		Log.d("ClassicLinkThread_run()", "START : " + DEVICE.toString());
 		
 		// 연결 성립시, 상대의 디바이스로 자신의  BlinkDevice를 넣어 Identity 동기화 요청 메세지를 전송한다.
-		ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT)
-						.transferSystemSync(DEVICE, IBlinkMessagable.TYPE_REQUEST_IDENTITY_SYNC);
+		//ServiceKeeper.getInstance(INTER_DEV_MANAGER.MANAGER_CONTEXT)
+		//				.transferSystemSync(DEVICE, IBlinkMessagable.TYPE_REQUEST_IDENTITY_SYNC);
 		
 		// Read Operation
 		while (isRunning) {
@@ -212,7 +212,7 @@ public class ClassicLinkThread extends Thread {
 	void sendMessageToDevice(Object obj) {
 		if ((mOutputStream != null) && (obj != null)) {
 			try {
-				Log.d("InterDeviceManager_sendBlinkMessage()", DEVICE.getName() + " : " + ((BlinkMessage)obj).getMessage().toString());
+				Log.d("InterDeviceManager_sendBlinkMessage()", DEVICE.getName() + " : " + ((BlinkMessage)obj).getMessage());
 				mOutputStream.writeObject(obj);
 				mOutputStream.flush();
 				
