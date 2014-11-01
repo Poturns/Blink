@@ -116,4 +116,6 @@ interface IInternalOperationSupport {
 	 */
 	 void SyncBlinkApp();
 	 void SyncMeasurementData();
+	 
+	 boolean grantMainIdentityFromUser(boolean enable);
 }

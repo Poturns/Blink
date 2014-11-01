@@ -1183,4 +1183,19 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		}
 		return !(devices == null || devices.length == 0);
 	}
+	
+	/**
+	 * 사용자의 권한으로 본 디바이스에 Main Identity를 부여한다.
+	 * @param enable
+	 * @return
+	 */
+	public boolean grantMainIdentityFromUser(boolean enable) {
+		try {
+			if (mInternalOperationSupport != null)
+				return mInternalOperationSupport.grantMainIdentityFromUser(enable);
+		
+		} catch (RemoteException e) { }
+		
+		return false;
+	}
 }

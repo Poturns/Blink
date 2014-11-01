@@ -16,6 +16,7 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
+import android.preference.SwitchPreference;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -198,7 +199,12 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 			String key) {
 		if (KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST.equals(key)) {
-			sendPreferenceDataToService(KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST);
+			//TODO: 
+//			SwitchPreference mSwitchPreference = (SwitchPreference) getPreferenceScreen().findPreference(key);
+//			boolean result = mInterface.getServiceInteration().grantMainIdentityFromUser(!mSwitchPreference.isChecked());
+//			mSwitchPreference.setChecked(result);
+//			mSwitchPreference.shouldCommit();
+			//sendPreferenceDataToService(KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST);
 		}
 	}
 

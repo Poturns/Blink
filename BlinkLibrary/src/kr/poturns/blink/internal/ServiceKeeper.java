@@ -459,6 +459,7 @@ public class ServiceKeeper {
 				switch (BlinkDevice.HOST.getIdentity()) {
 				case MAIN:
 					mAnalyzer.grantMainIdentity(false);
+					mAnalyzer.grantMainIdentityFromUser(false);
 					break;
 					
 				case PROXY:
@@ -468,7 +469,6 @@ public class ServiceKeeper {
 				default:
 				}	
 			}
-			
 			
 		} else {
 			
