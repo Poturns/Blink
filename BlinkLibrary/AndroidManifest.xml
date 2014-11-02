@@ -7,13 +7,15 @@
     <!-- BLINK CUSTOMIZED PERMISSIONs -->
     <permission
         android:name="kr.poturns.blink.permission.LISTEN_STATE_MESSAGE"
-        android:description="@string/res_bllink_app_name"
+        android:description="@string/res_blink_app_name"
         android:label="Listen state callback message _ label" >
     </permission>
 
     <uses-sdk
         android:minSdkVersion="18"
-        android:targetSdkVersion="18" />
+        android:targetSdkVersion="20" />
+
+    <uses-feature android:name="android.hardware.type.watch" />
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -27,13 +29,15 @@
     <application
         android:allowBackup="true"
         android:icon="@drawable/res_blink_ic_launcher"
-        android:label="@string/res_bllink_app_name"
+        android:label="@string/res_blink_app_name"
         android:theme="@android:style/Theme.Holo.Light" >
         <activity android:name="kr.poturns.blink.external.ServiceControlActivity" >
         </activity>
+        <activity android:name="kr.poturns.blink.external.ServiceControlWatchActivity" >
+        </activity>
         <activity
             android:name="kr.poturns.blink.db.TestActivity"
-            android:label="@string/res_bllink_app_name" >
+            android:label="@string/res_blink_app_name" >
         </activity>
         <activity android:name="kr.poturns.blink.test.ServiceTestActivity" >
             <intent-filter>

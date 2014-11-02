@@ -164,13 +164,21 @@ class NetworkMap {
 	 * @return
 	 */
 	public BlinkDevice[] obtainConnectedDevices() {
-		BlinkDevice[] lists = new BlinkDevice[CONNECTED_MAP.size()];
-		int index = 0;
-		for(BlinkDevice device : CONNECTED_MAP.keySet())
-			if (device.isConnected())
-				lists[index++] = device;
+		//XXX review 
+		// CONNECTED_MAP.size()와 실제 연결된 device의 숫자가 다르면
+		// 배열의 나머지 원소가 null이 될 수 있음
+		//BlinkDevice[] lists = new BlinkDevice[CONNECTED_MAP.size()];
+		//int index = 0;
+		ArrayList<BlinkDevice> list = new ArrayList<BlinkDevice>();
+		for(BlinkDevice device : CONNECTED_MAP.keySet()){
+			if (device.isConnected()){
+				//lists[index++] = device;
+				list.add(device);
+			}
+		}
 		
-		return lists;
+		//return lists;
+		return list.toArray(new BlinkDevice[]{});
 	}
 
 	/**

@@ -104,7 +104,12 @@ final class ConnectionFragment extends Fragment {
 		if (activity instanceof IServiceContolActivity) {
 			mActivityInterface = (IServiceContolActivity) activity;
 		}
-		onFragmentChanged(new ConnectionCircularFragment());
+		if (getActivity().getPackageManager().hasSystemFeature(
+				"android.hardware.type.watch")) {
+			onFragmentChanged(new ConnectionWatchFragment());
+		} else {
+			onFragmentChanged(new ConnectionCircularFragment());
+		}
 		mProgressDialog = new ProgressDialog(getActivity());
 		mProgressDialog.setMessage("Loading...");
 		mProgressDialog.setCancelable(false);

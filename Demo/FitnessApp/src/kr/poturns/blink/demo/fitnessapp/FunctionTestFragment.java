@@ -42,13 +42,15 @@ public class FunctionTestFragment extends SwipeEventFragment implements
 	private static final int SENSOR_ACTIVATE_TIME_THRESHOLD = 100;
 	private static final String ACTION_LIGHT_ON = "kr.poturns.blink.demo.visualizer.action.lighton";
 	private static final String ACTION_LIGHT_OFF = "kr.poturns.blink.demo.visualizer.action.lightoff";
-	private static final String ACTION_TAKE_PICTURE = "kr.poturns.blink.demo.visualizer.action.takepicture";
+	//private static final String ACTION_TAKE_PICTURE = "kr.poturns.blink.demo.visualizer.action.takepicture";
+	private static final String ACTION_TAKE_PICTURE = "action.takepicture";
 	private static final int RESPONSE_CODE_LIGHT_ACTION = 0x01;
 	private static final int RESPONSE_CODE_TAKE_PICTURE_ACTION = 0x02;
 	private static final String TAG = FunctionTestFragment.class
 			.getSimpleName();
 	private static final int TEXT_SIZE_READY = 30;
 	private static final int TEXT_SIZE_START = 25;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -82,6 +84,8 @@ public class FunctionTestFragment extends SwipeEventFragment implements
 							.setBackgroundResource(R.drawable.circle_green);
 					mActivated = true;
 					mButtonClickState = true;
+					mSensorManager.registerListener(mSensorListener,
+							mAccelerormeterSensor, SensorManager.SENSOR_DELAY_GAME);
 				}
 			}
 		});
@@ -91,8 +95,9 @@ public class FunctionTestFragment extends SwipeEventFragment implements
 	@Override
 	public void onResume() {
 		super.onResume();
-		mSensorManager.registerListener(mSensorListener, mAccelerormeterSensor,
-				SensorManager.SENSOR_DELAY_GAME);
+		if (mActivated)
+			mSensorManager.registerListener(mSensorListener,
+					mAccelerormeterSensor, SensorManager.SENSOR_DELAY_GAME);
 	}
 
 	@Override
@@ -126,7 +131,8 @@ public class FunctionTestFragment extends SwipeEventFragment implements
 										+ function.toString()
 										+ "-----------------------");
 						mActivityInterface.getBlinkServiceInteraction().remote
-								.startFunction(function, RESPONSE_CODE_TAKE_PICTURE_ACTION);
+								.startFunction(function,
+										RESPONSE_CODE_TAKE_PICTURE_ACTION);
 						count++;
 					}
 				}
@@ -168,7 +174,7 @@ public class FunctionTestFragment extends SwipeEventFragment implements
 							// 이벤트발생!!
 							mSensorMovementReturning.getAndSet(false);
 							runFunctionTest();
-						} 
+						}
 					}
 
 					mSensorLastX = x;

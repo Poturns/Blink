@@ -41,7 +41,7 @@
         <service
             android:name="kr.poturns.blink.internal.BlinkLocalService"
             android:exported="true"
-            android:label="@string/res_bllink_app_name"
+            android:label="@string/res_blink_app_name"
             android:process="kr.poturns.blink.internal" >
             <intent-filter>
                 <action android:name="kr.poturns.blink.internal.BlinkLocalService" />
@@ -50,6 +50,11 @@
 
         <activity
             android:name="kr.poturns.blink.external.ServiceControlActivity"
+            android:exported="true"
+            android:process="kr.poturns.blink.internal" >
+        </activity>
+        <activity
+            android:name="kr.poturns.blink.external.ServiceControlWatchActivity"
             android:exported="true"
             android:process="kr.poturns.blink.internal" >
         </activity>

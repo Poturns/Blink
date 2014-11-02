@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.content.res.TypedArray;
@@ -19,6 +20,7 @@ import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -40,7 +42,7 @@ public final class ServiceControlActivity extends Activity implements
 	ActionBarToggle mActionBarToggle;
 	SlidingPaneLayout mSlidingPaneLayout;
 	/** 왼쪽에 위치한 메뉴 리스트 */
-	ListView mLeftListView;
+	AbsListView mListView;
 	/** 현재 선택된 메뉴(페이지) 번호 */
 	int mCurrentPageSelection = 0;
 	BlinkServiceInteraction mInteraction;
@@ -64,13 +66,18 @@ public final class ServiceControlActivity extends Activity implements
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		FileUtil.createExternalDirectory();
+		if (getPackageManager().hasSystemFeature("android.hardware.type.watch")) {
+			// TODO watch code here
+			startActivity(new Intent(this, ServiceControlWatchActivity.class));
+			finish();
+		}
 		// 기본 화면 설정
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 		requestWindowFeature(Window.FEATURE_ACTION_BAR);
 		setTheme(android.R.style.Theme_Holo_Light);
 		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
-		FileUtil.createExternalDirectory();
-		setTitle(R.string.res_bllink_app_name);
+		setTitle(R.string.res_blink_app_name);
 		setContentView(R.layout.res_blink_activity_service_control);
 		getActionBar().setIcon(R.drawable.res_blink_ic_launcher);
 
@@ -78,15 +85,15 @@ public final class ServiceControlActivity extends Activity implements
 		mSqliteManagerExtended = new SqliteManagerExtended(this);
 		mSlidingPaneLayout = (SlidingPaneLayout) findViewById(R.id.res_blink_activity_sliding_layout);
 		mSlidingPaneLayout.setSliderFadeColor(Color.TRANSPARENT);
-		mLeftListView = (ListView) findViewById(R.id.res_blink_activity_main_left_drawer);
+		mListView = (ListView) findViewById(R.id.res_blink_activity_main_left_drawer);
 		mActionBarToggle = new ActionBarToggle(this, mSlidingPaneLayout,
 				R.drawable.res_blink_ic_navigation_drawer,
-				R.string.res_bllink_app_name, R.string.res_bllink_app_name);
+				R.string.res_blink_app_name, R.string.res_blink_app_name);
 
-		mLeftListView.setAdapter(ArrayAdapter.createFromResource(this,
+		mListView.setAdapter(ArrayAdapter.createFromResource(this,
 				R.array.res_blink_activity_sercive_control_menu_array,
 				android.R.layout.simple_list_item_1));
-		mLeftListView.setOnItemClickListener(mLeftListViewOnItemClickListener);
+		mListView.setOnItemClickListener(mLeftListViewOnItemClickListener);
 		mConnectionFragment = new ConnectionFragment();
 		mConnectionFragment.setArguments(new Bundle());
 
@@ -166,14 +173,14 @@ public final class ServiceControlActivity extends Activity implements
 					.commit();
 		}
 		// 리스트 뷰의 선택된 뷰와 이전 뷰의 배경을 바꿔준다.
-		View prevSelection = mLeftListView.getChildAt(mCurrentPageSelection);
+		View prevSelection = mListView.getChildAt(mCurrentPageSelection);
 
 		if (prevSelection != null) {
 			prevSelection.setBackgroundColor(Color.WHITE);
 			prevSelection.setPaddingRelative(mListViewChildPaddingStart, 0,
 					mListViewChildPaddingEnd, 0);
 		}
-		View presentSelection = mLeftListView.getChildAt(position);
+		View presentSelection = mListView.getChildAt(position);
 		if (presentSelection != null) {
 			presentSelection
 					.setBackgroundResource(R.drawable.res_blink_drawable_left_list_selected);
@@ -183,7 +190,7 @@ public final class ServiceControlActivity extends Activity implements
 
 		mCurrentPageSelection = position;
 		getActionBar().setTitle(
-				mLeftListView.getItemAtPosition(position).toString());
+				mListView.getItemAtPosition(position).toString());
 	}
 
 	@Override
@@ -262,8 +269,8 @@ public final class ServiceControlActivity extends Activity implements
 
 	@Override
 	protected void onResume() {
-//		if (mInteraction != null)
-//			mInteraction.startBroadcastReceiver();
+		// if (mInteraction != null)
+		// mInteraction.startBroadcastReceiver();
 		super.onResume();
 	}
 
@@ -288,8 +295,8 @@ public final class ServiceControlActivity extends Activity implements
 	}
 
 	/**
-	 * {@link ServiceControlActivity#mLeftListView}의 리스너, 메뉴를 터치하였을 때, 화면 전환이
-	 * 되도록 한다.
+	 * {@link ServiceControlActivity#mListView}의 리스너, 메뉴를 터치하였을 때, 화면 전환이 되도록
+	 * 한다.
 	 */
 	private AdapterView.OnItemClickListener mLeftListViewOnItemClickListener = new AdapterView.OnItemClickListener() {
 		@Override
