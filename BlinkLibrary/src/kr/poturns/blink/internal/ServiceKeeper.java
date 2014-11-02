@@ -9,9 +9,11 @@ import kr.poturns.blink.internal.DeviceAnalyzer.Identity;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
 import kr.poturns.blink.internal.comm.BlinkSupportBinder;
+import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
 import kr.poturns.blink.internal.comm.IBlinkMessagable;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import android.bluetooth.BluetoothGatt;
+import android.content.Intent;
 import android.os.RemoteCallbackList;
 import android.util.Log;
 
@@ -401,6 +403,12 @@ public class ServiceKeeper {
 
 		// Identity 정보 동기화
 		otherDevice = BlinkDevice.update(otherDevice);
+		otherDevice.setConnected(true);
+		
+		Intent intent = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);
+		KEEPER_CONTEXT.sendBroadcast(intent, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
+		
+		
 		DeviceAnalyzer mAnalyzer = DeviceAnalyzer.getInstance(KEEPER_CONTEXT);
 
 		if (BLINK_NETWORK_MAP.containsKey(otherDevGroupID)) {
@@ -459,6 +467,7 @@ public class ServiceKeeper {
 				switch (BlinkDevice.HOST.getIdentity()) {
 				case MAIN:
 					mAnalyzer.grantMainIdentity(false);
+					mAnalyzer.grantMainIdentityFromUser(false);
 					break;
 					
 				case PROXY:
@@ -468,7 +477,6 @@ public class ServiceKeeper {
 				default:
 				}	
 			}
-			
 			
 		} else {
 			

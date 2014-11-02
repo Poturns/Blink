@@ -86,8 +86,14 @@ public class MessageProcessor {
 			builder_success.setCode(blinkMessage.getCode());
 
 			int blinkMessage_type = blinkMessage.getType();
-			// 동기화 시작할때 Sync 플래그를 true로, 끝날 때 false로 설정하여 추가 동기화를 막는다.
-			if (blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC) {
+			
+			if (blinkMessage_type == IBlinkMessagable.TYPE_ACCEPT_CONNECTION) {
+				BlinkDevice device = BlinkDevice.load(blinkMessage.getSourceAddress());
+				// 연결 성립시, 상대의 디바이스로 자신의  BlinkDevice를 넣어 Identity 동기화 요청 메세지를 전송한다.
+				SERVICE_KEEPER.transferSystemSync(device, IBlinkMessagable.TYPE_REQUEST_IDENTITY_SYNC);
+				
+			} else if (blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC) {
+				// 동기화 시작할때 Sync 플래그를 true로, 끝날 때 false로 설정하여 추가 동기화를 막는다.
 				Log.i("Blink", "TYPE_REQUEST_BlinkAppInfo_SYNC");
 				setSynchronizing(true);
 				builder_success

@@ -197,6 +197,14 @@ public class DeviceAnalyzer {
 	 * @param enable
 	 */
 	synchronized boolean grantMainIdentityFromUser(boolean enable) {
+		Log.e("GrantMainIdentity", "Identity = " + BlinkDevice.HOST.getIdentityPoint());
+		if (enable) {
+			// 디바이스가 연결되어 있는 상태에서 Main Identity로 변경할 수 없다.
+			int connected = ServiceKeeper.getInstance(ANALYZER_CONTEXT).obtainConnectedDevices().length;
+			if (connected > 0) 
+				return false;
+		}
+		
 		if (BlinkDevice.HOST != null) {
 
 			int mIdentityPoint = BlinkDevice.HOST.getIdentityPoint();
@@ -211,6 +219,7 @@ public class DeviceAnalyzer {
 			BlinkDevice.HOST.setIdentity(mIdentity.ordinal());
 
 			broadcastIdentityChanged(BlinkDevice.HOST, mIdentity);
+			Log.e("GrantMainIdentity", "Identity = " + mIdentityPoint);
 			return true;
 		}
 		return false;

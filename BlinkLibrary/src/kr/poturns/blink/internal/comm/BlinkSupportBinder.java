@@ -16,6 +16,7 @@ import kr.poturns.blink.db.archive.Measurement;
 import kr.poturns.blink.db.archive.MeasurementData;
 import kr.poturns.blink.internal.BlinkLocalService;
 import kr.poturns.blink.internal.ConnectionSupportBinder;
+import kr.poturns.blink.internal.DeviceAnalyzer;
 import kr.poturns.blink.internal.ServiceKeeper;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;

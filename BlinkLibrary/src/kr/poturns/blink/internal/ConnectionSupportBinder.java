@@ -110,4 +110,12 @@ public abstract class ConnectionSupportBinder extends IInternalOperationSupport.
 		ServiceKeeper.getInstance(CONTEXT).sendMessageToDevice(target, jsonMsg);
 	}
 
+	/**
+	 * 사용자의 권한으로 Main Identity를 설정한다. 다른 디바이스와 연결 전에 설정해야한다.
+	 * @param enable
+	 */
+	@Override
+	public boolean grantMainIdentityFromUser(boolean enable) {
+		return DeviceAnalyzer.getInstance(CONTEXT).grantMainIdentityFromUser(enable);
+	}
 }

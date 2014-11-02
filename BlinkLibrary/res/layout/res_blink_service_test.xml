@@ -27,14 +27,14 @@
             android:layout_height="wrap_content" >
 
             <Button
-                android:id="@+id/button1"
+                android:id="@+id/btn_cancel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Register Callback" />
 
             <Button
-                android:id="@+id/button2"
+                android:id="@+id/btn_accept"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"

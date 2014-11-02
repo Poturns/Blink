@@ -165,7 +165,12 @@ class NetworkMap {
 	 */
 	public BlinkDevice[] obtainConnectedDevices() {
 		BlinkDevice[] lists = new BlinkDevice[CONNECTED_MAP.size()];
-		return CONNECTED_MAP.keySet().toArray(lists);
+		int index = 0;
+		for(BlinkDevice device : CONNECTED_MAP.keySet())
+			if (device.isConnected())
+				lists[index++] = device;
+		
+		return lists;
 	}
 
 	/**
