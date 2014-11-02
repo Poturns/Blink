@@ -16,7 +16,6 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
-import android.preference.SwitchPreference;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -195,16 +194,23 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 			return super.onPreferenceTreeClick(preferenceScreen, preference);
 	}
 
+	/** KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST 의 변경이 한번만 일어나게 만들기 위한 변수 */
+	boolean mCommit = false;
+
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 			String key) {
 		if (KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST.equals(key)) {
-			//TODO: 
-//			SwitchPreference mSwitchPreference = (SwitchPreference) getPreferenceScreen().findPreference(key);
-//			boolean result = mInterface.getServiceInteration().grantMainIdentityFromUser(!mSwitchPreference.isChecked());
-//			mSwitchPreference.setChecked(result);
-//			mSwitchPreference.shouldCommit();
-			//sendPreferenceDataToService(KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST);
+			boolean value = sharedPreferences.getBoolean(
+					KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST, false);
+			if (!mCommit) {
+				mCommit = true;
+				boolean result = mInterface.getServiceInteration()
+						.grantMainIdentityFromUser(value);
+				findPreference(KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST)
+						.setDefaultValue(result);
+				mCommit = false;
+			}
 		}
 	}
 
