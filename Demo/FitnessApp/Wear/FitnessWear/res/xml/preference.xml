@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="KEY_MEASURE_HEARTBEAT"
+        android:layout="@layout/list_preference"
+        android:summary="심박수 측정 서비스를 시작/종료합니다."
+        android:title="심박수 측정" />
+
+    <PreferenceScreen
+        android:key="KEY_DELETE_TRAINING_DATA"
+        android:layout="@layout/list_preference"
+        android:summary="저장된 운동 데이터를 삭제합니다."
+        android:title="운동 데이터 삭제" />
+    <PreferenceScreen
+        android:key="KEY_INBODY_DATA"
+        android:layout="@layout/list_preference"
+        android:summary="저장된 INBODY 데이터를 삭제합니다."
+        android:title="INBODY 데이터를 삭제" />
+    <PreferenceScreen
+        android:key="KEY_LOAD_CONTROL"
+        android:layout="@layout/list_preference"
+        android:summary="Blink 서비스 관리화면으로 이동합니다."
+        android:title="Blink Service Control" />
+
+</PreferenceScreen>

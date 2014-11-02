@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.wearable.view.CardScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_scroll_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:layout_box="bottom" >
+
+    <android.support.wearable.view.CardFrame
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="4dp" >
+
+            <TextView
+                android:id="@android:id/text1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-light"
+                android:text="인바디 데이터가 없습니다."
+                android:textColor="@color/black"
+                android:textSize="20sp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" >
+
+                <android.support.wearable.view.DelayedConfirmationView
+                    android:id="@+id/delayed_confirm_load"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/ic_action_content_download"
+                    app:circle_border_color="@color/light_green"
+                    app:circle_border_width="4dp"
+                    app:circle_radius="16dp" >
+                </android.support.wearable.view.DelayedConfirmationView>
+
+                <TextView
+                    android:id="@android:id/text2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:fontFamily="sans-serif-light"
+                    android:text="다운로드 하기"
+                    android:textColor="@color/black"
+                    android:textSize="14sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </android.support.wearable.view.CardFrame>
+
+</android.support.wearable.view.CardScrollView>

@@ -392,6 +392,7 @@ class BluetoothAssistant extends Handler {
 	 */
 	public void connectToDeviceFromClient(BlinkDevice device, UUID uuid) {
 		BluetoothDevice origin = device.obtainBluetoothDevice();
+		INTER_DEV_MANAGER.setConnectionRequest(device);
 		
 		if (device.isLESupported()) {
 			origin.connectGatt(INTER_DEV_MANAGER.MANAGER_CONTEXT, device.isAutoConnect(), mBluetoothGattCallback);

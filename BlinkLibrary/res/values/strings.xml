@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string name="res_blink_system_connection_dialog_content">(가)이 연결을 요청하였습니다. 수락하시겠습니까? </string>
+    
     <!-- Blink Service가 Android에서 구동 중 일 때 표시 될 이름 -->
     <string name="res_bllink_app_name">BlinkControl</string>
     <string name="res_blink_internal_baseservice_unable_alert">BLINK 서비스를 구동할 수 없습니다!</string>

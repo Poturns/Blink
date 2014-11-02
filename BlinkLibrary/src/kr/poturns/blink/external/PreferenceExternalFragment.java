@@ -146,15 +146,13 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 									for (File file : dbDirectory.listFiles()) {
 										result |= !file.delete();
 									}
-									if (!result) {
-										Toast.makeText(getActivity(),
-												R.string.res_blink_deleted,
-												Toast.LENGTH_SHORT).show();
-									} else {
-										Toast.makeText(getActivity(),
-												R.string.res_blink_fail,
-												Toast.LENGTH_SHORT).show();
-									}
+
+									Toast.makeText(
+											getActivity(),
+											result ? R.string.res_blink_fail
+													: R.string.res_blink_deleted,
+											Toast.LENGTH_SHORT).show();
+
 									// 디렉토리 복구 && DB 파일 생성
 									FileUtil.createExternalDirectory();
 									new SqliteManagerExtended(getActivity());
@@ -178,15 +176,12 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 									boolean result = manager
 											.removeCurrentDeviceData();
 									manager.close();
-									if (result) {
-										Toast.makeText(getActivity(),
-												R.string.res_blink_deleted,
-												Toast.LENGTH_SHORT).show();
-									} else {
-										Toast.makeText(getActivity(),
-												R.string.res_blink_fail,
-												Toast.LENGTH_SHORT).show();
-									}
+
+									Toast.makeText(
+											getActivity(),
+											result ? R.string.res_blink_deleted
+													: R.string.res_blink_fail,
+											Toast.LENGTH_SHORT).show();
 								}
 							}).create().show();
 			return true;
@@ -194,11 +189,23 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 			return super.onPreferenceTreeClick(preferenceScreen, preference);
 	}
 
+	/** KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST 의 변경이 한번만 일어나게 만들기 위한 변수 */
+	boolean mCommit = false;
+
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 			String key) {
 		if (KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST.equals(key)) {
-			sendPreferenceDataToService(KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST);
+			boolean value = sharedPreferences.getBoolean(
+					KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST, false);
+			if (!mCommit) {
+				mCommit = true;
+				boolean result = mInterface.getServiceInteration()
+						.grantMainIdentityFromUser(value);
+				findPreference(KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST)
+						.setDefaultValue(result);
+				mCommit = false;
+			}
 		}
 	}
 

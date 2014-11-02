@@ -129,9 +129,11 @@ final class ConnectionFragment extends Fragment {
 
 				// 기존에 discovery 된 장비들을 불러온다.
 				try {
-					for (BlinkDevice device : iSupport
-							.obtainCurrentDiscoveryList()) {
-						mDeviceList.add(device);
+					if (mDeviceList.isEmpty()) {
+						for (BlinkDevice device : iSupport
+								.obtainCurrentDiscoveryList()) {
+							mDeviceList.add(device);
+						}
 					}
 					if (mCurrentChildFragmentInterface != null)
 						mCurrentChildFragmentInterface.onDeviceListChanged();

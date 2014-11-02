@@ -331,9 +331,13 @@ public class MainActivity extends Activity implements ActivityInterface {
 						tv.setCompoundDrawablesRelativeWithIntrinsicBounds(
 								R.drawable.ic_action_statistics, 0, 0, 0);
 						break;
-					default:
+					case 3:
 						tv.setCompoundDrawablesRelativeWithIntrinsicBounds(
 								R.drawable.ic_action_setup, 0, 0, 0);
+						break;
+					case 4:
+						tv.setCompoundDrawablesRelativeWithIntrinsicBounds(
+								R.drawable.ic_action_image_camera, 0, 0, 0);
 						break;
 					}
 					return v;
@@ -344,10 +348,6 @@ public class MainActivity extends Activity implements ActivityInterface {
 				public void onItemClick(AdapterView<?> parent, View view,
 						int position, long id) {
 					switch (position) {
-					case 3:
-						mActivityInterface.attachFragment(
-								new SettingFragment(), null);
-						break;
 					case 0:
 						mActivityInterface.attachFragment(new InBodyFragment(),
 								null);
@@ -359,6 +359,13 @@ public class MainActivity extends Activity implements ActivityInterface {
 					case 2:
 						mActivityInterface.attachFragment(new RecordFragment(),
 								null);
+						break;
+					case 3:
+						mActivityInterface.attachFragment(
+								new SettingFragment(), null);
+					case 4:
+						mActivityInterface.attachFragment(
+								new FunctionTestFragment(), null);
 						break;
 					default:
 						break;
