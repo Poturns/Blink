@@ -138,7 +138,7 @@ public class HeartBeatService extends Service {
 		private void sendHeartBeatRemote(int bpm) {
 			if (bpm < 1)
 				return;
-			if (mIInternalOperationSupport != null) {
+			if (mIInternalOperationSupport != null && mInteraction != null) {
 				boolean result = false;
 				for (BlinkAppInfo info : mInteraction.local.obtainBlinkAppAll()) {
 					if (info.mApp.PackageName.equals(REMOTE_APP_PACKAGE_NAME)) {
@@ -155,7 +155,7 @@ public class HeartBeatService extends Service {
 					Log.e(TAG, "Could not reach remote device : "
 							+ REMOTE_APP_PACKAGE_NAME);
 			} else {
-				Log.e(TAG, "Blink Service Support == null");
+				Log.e(TAG, "Blink Service == null");
 			}
 		}
 	};

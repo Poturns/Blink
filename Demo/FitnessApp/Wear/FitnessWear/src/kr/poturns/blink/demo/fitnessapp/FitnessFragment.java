@@ -7,8 +7,6 @@ import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
 import kr.poturns.blink.schema.PushUp;
 import kr.poturns.blink.schema.SitUp;
 import kr.poturns.blink.schema.Squat;
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
@@ -17,7 +15,6 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.wearable.view.FragmentGridPagerAdapter;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -440,63 +437,5 @@ public class FitnessFragment extends SwipeEventFragment implements
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {
-	}
-
-	public class FitnessGridPagerAdapter extends FragmentGridPagerAdapter {
-		private int mPrevRow = 0;
-		
-		public FitnessGridPagerAdapter(FragmentManager fm) {
-			super(fm);
-		}
-
-		@Override
-		public Fragment getFragment(int row, int column) {
-			Fragment f;
-			String table;
-			if(mPrevRow < row){
-				if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_PUSH_UP)) {
-					table = SQLiteHelper.TABLE_SQUAT;
-				} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SIT_UP)) {
-					table = SQLiteHelper.TABLE_PUSH_UP;
-				} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SQUAT)) {
-					table = SQLiteHelper.TABLE_SIT_UP;
-				} else
-					return null;
-			}else{
-				if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_PUSH_UP)) {
-					table = SQLiteHelper.TABLE_SIT_UP;
-				} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SQUAT)) {
-					table = SQLiteHelper.TABLE_PUSH_UP;
-				} else if (mCurrentDisplayDbTable.equals(SQLiteHelper.TABLE_SIT_UP)) {
-					table = SQLiteHelper.TABLE_SQUAT;
-				} else
-					return null;
-			}
-			if (changeFitness(table)) {
-				Bundle bundle = new Bundle();
-				onSaveInstanceState(bundle);
-				f = new FitnessFragment();
-				f.setArguments(bundle);
-			}
-			return null;
-		}
-
-		@Override
-		public int getColumnCount(int row) {
-			return 1;
-		}
-
-		@Override
-		public int getRowCount() {
-			return Integer.MAX_VALUE;
-		}
-
-	}
-	
-	class InnerFragment extends Fragment{
-		
-	}
-	
-	
-	
+	}	
 }

@@ -19,7 +19,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.wearable.view.CardFragment;
 import android.support.wearable.view.DelayedConfirmationView;
-import android.support.wearable.view.DismissOverlayView;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -40,7 +39,6 @@ public class MainActivity extends Activity implements ActivityInterface {
 	GestureDetector mGestureDetector;
 	IntentFilter mHeartBeatActionFilter = new IntentFilter(
 			HeartBeatService.WIDGET_HEART_BEAT_ACTION);
-	DismissOverlayView mDismissOverlay;
 	static final int THRESHHOLD_NOT_DETECT_SWIPE = 20;
 	static final int THRESHHOLD_DETECT_SWIPE = 100;
 
@@ -112,15 +110,7 @@ public class MainActivity extends Activity implements ActivityInterface {
 						}
 						return false;
 					}
-
-					@Override
-					public void onLongPress(MotionEvent e) {
-						mDismissOverlay.show();
-					}
 				});
-		mDismissOverlay = (DismissOverlayView) findViewById(R.id.dismiss_overlay);
-		mDismissOverlay.setIntroText("종료?");
-		mDismissOverlay.showIntroIfNecessary();
 
 		// 홈 화면으로 이동
 		attachFragment(new HomeFragment(), null, R.animator.slide_in_right,

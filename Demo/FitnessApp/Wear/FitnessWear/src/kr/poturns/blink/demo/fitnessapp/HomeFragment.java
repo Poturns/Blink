@@ -24,10 +24,6 @@ public class HomeFragment extends SwipeEventFragment {
 			@Override
 			public void onClick(WearableListView.ViewHolder view) {
 				switch (((HomeAdapter.ViewHolder) view).position) {
-				case 3:
-					mActivityInterface.attachFragment(new SettingFragment(),
-							null);
-					break;
 				case 0:
 					mActivityInterface.attachFragment(new InBodyFragment(),
 							null);
@@ -40,6 +36,13 @@ public class HomeFragment extends SwipeEventFragment {
 					mActivityInterface.attachFragment(new RecordFragment(),
 							null);
 					break;
+				case 3:
+					mActivityInterface.attachFragment(new SettingFragment(),
+							null);
+					break;
+				case 4:
+					mActivityInterface.attachFragment(
+							new FunctionTestFragment(), null);
 				default:
 					break;
 				}
@@ -97,9 +100,14 @@ public class HomeFragment extends SwipeEventFragment {
 				h.imageView
 						.setImageResource(R.drawable.ic_action_statistics_statistics);
 				break;
-			default:
+			case 3:
 				h.imageView
 						.setImageResource(R.drawable.ic_action_setting_setup);
+				break;
+			case 4:
+				h.imageView.setImageResource(R.drawable.ic_action_image_camera);
+				break;
+			default:
 				break;
 			}
 		}
