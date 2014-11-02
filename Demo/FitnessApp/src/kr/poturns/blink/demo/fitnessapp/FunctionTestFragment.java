@@ -40,7 +40,11 @@ public class FunctionTestFragment extends SwipeEventFragment implements
 	private static final int SHAKE_THRESHOLD = 800;
 	/** 센서가 한번 측정 후, 다시 측정하기까지 걸리는 시간 */
 	private static final int SENSOR_ACTIVATE_TIME_THRESHOLD = 100;
-	private static final String ACTION_TAKE_PICTURE = "action.takepicture";
+	private static final String ACTION_LIGHT_ON = "kr.poturns.blink.demo.visualizer.action.lighton";
+	private static final String ACTION_LIGHT_OFF = "kr.poturns.blink.demo.visualizer.action.lightoff";
+	private static final String ACTION_TAKE_PICTURE = "kr.poturns.blink.demo.visualizer.action.takepicture";
+	private static final int RESPONSE_CODE_LIGHT_ACTION = 0x01;
+	private static final int RESPONSE_CODE_TAKE_PICTURE_ACTION = 0x02;
 	private static final String TAG = FunctionTestFragment.class
 			.getSimpleName();
 	private static final int TEXT_SIZE_READY = 30;
@@ -122,7 +126,7 @@ public class FunctionTestFragment extends SwipeEventFragment implements
 										+ function.toString()
 										+ "-----------------------");
 						mActivityInterface.getBlinkServiceInteraction().remote
-								.startFunction(function, 0x01);
+								.startFunction(function, RESPONSE_CODE_TAKE_PICTURE_ACTION);
 						count++;
 					}
 				}
@@ -196,7 +200,7 @@ public class FunctionTestFragment extends SwipeEventFragment implements
 	public void onReceiveData(int responseCode, CallbackData data)
 			throws RemoteException {
 		switch (responseCode) {
-		case 0x01:
+		case RESPONSE_CODE_TAKE_PICTURE_ACTION:
 			getActivity().runOnUiThread(new Runnable() {
 
 				@Override

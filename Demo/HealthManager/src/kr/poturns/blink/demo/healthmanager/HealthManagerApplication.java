@@ -14,9 +14,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 public class HealthManagerApplication extends Application {
-	public static int RESPONSE_CODE_INBODY_DATA = 0;
-	public static int RESPONSE_CODE_LIGHT_ACTION = 1;
-	public static int RESPONSE_CODE_TAKE_PICTURE_ACTION = 2;
+	public static int RESPONSE_CODE_INBODY_DATA = 0x00;
 	
 	private BlinkServiceInteraction mBlinkServiceInteraction;
 	Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -68,7 +66,6 @@ public class HealthManagerApplication extends Application {
 			else if(code==RESPONSE_CODE_INBODY_DATA){
 				Log.i("HealthManager", data.OutDeviceData);
 				Inbody mInbodyDomain = gson.fromJson(data.OutDeviceData,Inbody.class);
-				Log.i("HealthManager", "나이 : "+mInbodyDomain.age);
 				mBlinkServiceInteraction.local.registerMeasurementData(mInbodyDomain);
 	        }
         }

@@ -48,42 +48,6 @@ public class MainActivity extends Activity{
 			intent.putExtra("HISTORY", HisotryActivity.HISTORY_HEART);
 			startActivity(intent);
 			break;
-		case R.id.button_main_lighton:
-			mBlinkServiceInteraction.obtainBlinkApp();
-			if (mBlinkServiceInteraction != null) {
-				for (BlinkAppInfo info : mBlinkServiceInteraction.local.obtainBlinkAppAll()) {
-					for(Function function : info.mFunctionList){
-						if(function.Action.equals(ACTION_REMOTE_LIGHT_ON)){
-							mBlinkServiceInteraction.remote.startFunction(function, HealthManagerApplication.RESPONSE_CODE_LIGHT_ACTION);
-						}
-					}
-				}
-			}
-			break;
-		case R.id.button_main_lightoff:
-			mBlinkServiceInteraction.obtainBlinkApp();
-			if (mBlinkServiceInteraction != null) {
-				for (BlinkAppInfo info : mBlinkServiceInteraction.local.obtainBlinkAppAll()) {
-					for(Function function : info.mFunctionList){
-						if(function.Action.equals(ACTION_REMOTE_LIGHT_OFF)){
-							mBlinkServiceInteraction.remote.startFunction(function, HealthManagerApplication.RESPONSE_CODE_LIGHT_ACTION);
-						}
-					}
-				}
-			}
-			break;
-		case R.id.button_main_takepicture:
-			mBlinkServiceInteraction.obtainBlinkApp();
-			if (mBlinkServiceInteraction != null) {
-				for (BlinkAppInfo info : mBlinkServiceInteraction.local.obtainBlinkAppAll()) {
-					for(Function function : info.mFunctionList){
-						if(function.Action.equals(ACTION_TAKE_PICTURE)){
-							mBlinkServiceInteraction.remote.startFunction(function, HealthManagerApplication.RESPONSE_CODE_TAKE_PICTURE_ACTION);
-						}
-					}
-				}
-			}
-			break;
 		default:
 			break;
 		}

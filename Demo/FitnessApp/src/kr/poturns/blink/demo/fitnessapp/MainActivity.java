@@ -363,6 +363,7 @@ public class MainActivity extends Activity implements ActivityInterface {
 					case 3:
 						mActivityInterface.attachFragment(
 								new SettingFragment(), null);
+						break;
 					case 4:
 						mActivityInterface.attachFragment(
 								new FunctionTestFragment(), null);
