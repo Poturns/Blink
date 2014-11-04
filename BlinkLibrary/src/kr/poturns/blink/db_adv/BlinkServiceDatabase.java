@@ -34,4 +34,11 @@ public class BlinkServiceDatabase extends BlinkDatabase {
 		}
 		return mBlinkServiceDatabase;
 	}
+	
+	@Override
+	public void registerObserver(){
+		
+	}
+	
+	
 }

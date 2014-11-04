@@ -35,4 +35,8 @@ public class BlinkDatabase {
 		}
 		return mBlinkDatabase;
 	}
+	
+	public void registerObserver(){
+		
+	}
 }
