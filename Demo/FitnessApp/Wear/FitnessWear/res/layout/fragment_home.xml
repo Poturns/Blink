@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.wearable.view.BoxInsetLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center"
@@ -12,10 +13,22 @@
         android:foreground="@drawable/dim" >
     </FrameLayout>
 
-    <android.support.wearable.view.WearableListView
-        android:id="@android:id/list"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
-    </android.support.wearable.view.WearableListView>
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:paddingTop="20dp"
+        android:paddingStart="10dp"
+        app:layout_box="left"
+        android:clipToPadding="false"
+        android:clipChildren="false"
+        android:gravity="center" >
 
-</RelativeLayout>
+        <android.support.wearable.view.WearableListView
+            android:id="@android:id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+        </android.support.wearable.view.WearableListView>
+    </RelativeLayout>
+
+</android.support.wearable.view.BoxInsetLayout>

@@ -2,6 +2,12 @@ package kr.poturns.blink.demo.fitnessapp;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import kr.poturns.blink.db.archive.BlinkAppInfo;
+import kr.poturns.blink.db.archive.CallbackData;
+import kr.poturns.blink.db.archive.Function;
+import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
+import kr.poturns.blink.demo.fitnesswear.R;
+import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -16,11 +22,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-import kr.poturns.blink.db.archive.BlinkAppInfo;
-import kr.poturns.blink.db.archive.CallbackData;
-import kr.poturns.blink.db.archive.Function;
-import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
-import kr.poturns.blink.internal.comm.IInternalEventCallback;
 
 public class FunctionTestFragment extends SwipeEventFragment implements
 		IInternalEventCallback {
@@ -35,7 +36,8 @@ public class FunctionTestFragment extends SwipeEventFragment implements
 	/** 센서가 측정한 위치 값 */
 	private float mSensorLastX, mSensorLastY, mSensorLastZ;
 	private AtomicBoolean mSensorMovementReturning = new AtomicBoolean();
-
+	/** 마지막으로 사진 측정을 요청한 시간 */
+	private long mTimeStamp;
 	/** 센서가 움직임을 감지할 최소한의 속도 */
 	private static final int SHAKE_THRESHOLD = 800;
 	/** 센서가 한번 측정 후, 다시 측정하기까지 걸리는 시간 */
@@ -45,6 +47,8 @@ public class FunctionTestFragment extends SwipeEventFragment implements
 			.getSimpleName();
 	private static final int TEXT_SIZE_READY = 30;
 	private static final int TEXT_SIZE_START = 25;
+	private static final long INTERVAL_REQUEST_SECOND = 3000;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -111,6 +115,12 @@ public class FunctionTestFragment extends SwipeEventFragment implements
 
 	void runFunctionTest() {
 		Log.d(TAG, "function test");
+		if (System.currentTimeMillis() - mTimeStamp < INTERVAL_REQUEST_SECOND) {
+			Toast.makeText(getActivity(), "이미 요청을 보냈습니다. 잠시후에 시도하세요",
+					Toast.LENGTH_SHORT).show();
+			onTestFinished();
+			return;
+		}
 		if (mActivityInterface.getBlinkServiceInteraction() != null) {
 			int count = 0;
 			for (BlinkAppInfo info : mActivityInterface
@@ -123,6 +133,7 @@ public class FunctionTestFragment extends SwipeEventFragment implements
 										+ "-----------------------");
 						mActivityInterface.getBlinkServiceInteraction().remote
 								.startFunction(function, 0x01);
+						mTimeStamp = System.currentTimeMillis();
 						count++;
 					}
 				}
@@ -164,7 +175,7 @@ public class FunctionTestFragment extends SwipeEventFragment implements
 							// 이벤트발생!!
 							mSensorMovementReturning.getAndSet(false);
 							runFunctionTest();
-						} 
+						}
 					}
 
 					mSensorLastX = x;

@@ -9,8 +9,8 @@
         android:id="@+id/circle"
         android:layout_width="24dp"
         android:layout_height="24dp"
+        android:layout_marginStart="10dp"
         android:layout_gravity="center_vertical"
-        android:layout_marginStart="40dp"
         android:background="@drawable/circle_home" />
 
     <TextView
@@ -23,6 +23,7 @@
         android:gravity="center"
         android:lineSpacingExtra="-4sp"
         android:textColor="@color/white"
-        android:textSize="18sp" />
+        android:textStyle="bold"
+        android:textSize="20sp" />
 
 </kr.poturns.blink.demo.fitnessapp.view.WearableListItemLayout>

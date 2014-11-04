@@ -52,6 +52,9 @@
             android:exported="true"
             android:process="kr.poturns.blink.internal" >
         </activity>
+        
+        <meta-data android:name="kr.poturns.blink.demo.fitnessapp"
+            android:resource="@xml/wearable_app_desc"/>
     </application>
 
 </manifest>

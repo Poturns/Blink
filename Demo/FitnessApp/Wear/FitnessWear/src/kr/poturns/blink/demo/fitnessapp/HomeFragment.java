@@ -1,6 +1,7 @@
 package kr.poturns.blink.demo.fitnessapp;
 
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
+import kr.poturns.blink.demo.fitnesswear.R;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.wearable.view.WearableListView;

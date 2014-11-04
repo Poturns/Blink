@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import kr.poturns.blink.demo.fitnessapp.MainActivity.OnHeartBeatEventListener;
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
+import kr.poturns.blink.demo.fitnesswear.R;
 import kr.poturns.blink.schema.PushUp;
 import kr.poturns.blink.schema.SitUp;
 import kr.poturns.blink.schema.Squat;
@@ -285,7 +286,7 @@ public class FitnessFragment extends SwipeEventFragment implements
 		mSensorManager.registerListener(this, mAccelerormeterSensor,
 				SensorManager.SENSOR_DELAY_GAME);
 		mSensorActive = true;
-		mCountTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 60);
+		mCountTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 30);
 		updateCountNumber();
 	}
 
@@ -329,7 +330,7 @@ public class FitnessFragment extends SwipeEventFragment implements
 			mCurrentCount = mCountOfSquats;
 		}
 		Drawable drawable = getResources().getDrawable(resId);
-		drawable.setBounds(0, 0, 200, 200);
+		drawable.setBounds(0, 0, 90, 90);
 		mCountTextView.setCompoundDrawablesRelative(null, drawable, null, null);
 		registerListener();
 	}

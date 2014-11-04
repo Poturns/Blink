@@ -71,6 +71,7 @@ public final class ServiceControlActivity extends Activity implements
 			// TODO watch code here
 			startActivity(new Intent(this, ServiceControlWatchActivity.class));
 			finish();
+			return;
 		}
 		// 기본 화면 설정
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);

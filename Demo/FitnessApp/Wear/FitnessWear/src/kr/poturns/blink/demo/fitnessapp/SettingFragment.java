@@ -1,6 +1,8 @@
 package kr.poturns.blink.demo.fitnessapp;
 
+
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeListener;
+import kr.poturns.blink.demo.fitnesswear.R;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;

@@ -1,6 +1,6 @@
 package kr.poturns.blink.demo.fitnessapp.view;
 
-import kr.poturns.blink.demo.fitnessapp.R;
+import kr.poturns.blink.demo.fitnesswear.R;
 import android.content.Context;
 import android.graphics.drawable.GradientDrawable;
 import android.support.wearable.view.WearableListView;

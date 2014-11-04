@@ -2,6 +2,7 @@ package kr.poturns.blink.demo.fitnessapp;
 
 import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeListener.Direction;
+import kr.poturns.blink.demo.fitnesswear.R;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
@@ -10,6 +11,7 @@ import kr.poturns.blink.schema.PushUp;
 import kr.poturns.blink.schema.SitUp;
 import kr.poturns.blink.schema.Squat;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -17,13 +19,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.wearable.view.CardFragment;
 import android.support.wearable.view.DelayedConfirmationView;
 import android.view.GestureDetector;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 
 /**
  * Fitness App의 메인 Activity <br>
@@ -154,16 +153,29 @@ public class MainActivity extends Activity implements ActivityInterface {
 	}
 
 	private void showInBodyUpdateDialog() {
-		CardFragment card = new CustomCardFragment();
-		getFragmentManager().beginTransaction()
-				.add(R.id.card_frame, card, "card").commit();
-	}
+		final AlertDialog dialog = new AlertDialog.Builder(this).create();
+		View view = View.inflate(this, R.layout.main_inbody_alert, null);
+		DelayedConfirmationView delayedView = (DelayedConfirmationView) view
+				.findViewById(R.id.delayed_confirm_load);
+		delayedView
+				.setListener(new DelayedConfirmationView.DelayedConfirmationListener() {
+					@Override
+					public void onTimerFinished(View view) {
+						dialog.dismiss();
+					}
 
-	void dissmissInBodyUpdateDialog() {
-		Fragment f = getFragmentManager().findFragmentByTag("card");
-		if (f != null) {
-			getFragmentManager().beginTransaction().remove(f).commit();
-		}
+					@Override
+					public void onTimerSelected(View view) {
+						dialog.dismiss();
+						Bundle b = new Bundle();
+						b.putBoolean("hasNotInbody", true);
+						attachFragment(new InBodyFragment(), b);
+					}
+				});
+		delayedView.setTotalTimeMs(2000);
+		delayedView.start();
+		dialog.setView(view);
+		dialog.show();
 	}
 
 	@Override
@@ -298,35 +310,6 @@ public class MainActivity extends Activity implements ActivityInterface {
 			startService(intent);
 		} else {
 			stopService(intent);
-		}
-	}
-
-	private class CustomCardFragment extends CardFragment {
-		@Override
-		public View onCreateContentView(LayoutInflater inflater,
-				ViewGroup parent, Bundle savedInstance) {
-			View view = inflater.inflate(R.layout.main_inbody_alert, parent,
-					false);
-			DelayedConfirmationView delayedView = (DelayedConfirmationView) view
-					.findViewById(R.id.delayed_confirm_load);
-			delayedView
-					.setListener(new DelayedConfirmationView.DelayedConfirmationListener() {
-						@Override
-						public void onTimerFinished(View view) {
-							dissmissInBodyUpdateDialog();
-						}
-
-						@Override
-						public void onTimerSelected(View view) {
-							dissmissInBodyUpdateDialog();
-							Bundle b = new Bundle();
-							b.putBoolean("hasNotInbody", true);
-							attachFragment(new InBodyFragment(), b);
-						}
-					});
-			delayedView.setTotalTimeMs(2000);
-			delayedView.start();
-			return view;
 		}
 	}
 }

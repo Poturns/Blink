@@ -11,6 +11,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * 연결 상태를 Watch의 화면으로 보여주는 Fragment <br>
@@ -42,6 +43,16 @@ class ConnectionWatchFragment extends BaseConnectionFragment {
 				R.layout.res_blink_view_listview, container, false);
 		mListView.setAdapter(mAdapter);
 		mListView.setOnItemLongClickListener(mItemClickListener);
+		mListView.setOnLongClickListener(new View.OnLongClickListener() {
+
+			@Override
+			public boolean onLongClick(View v) {
+				Toast.makeText(getActivity(), "test", Toast.LENGTH_SHORT)
+						.show();
+				getActivity().finish();
+				return true;
+			}
+		});
 		return mListView;
 	}
 

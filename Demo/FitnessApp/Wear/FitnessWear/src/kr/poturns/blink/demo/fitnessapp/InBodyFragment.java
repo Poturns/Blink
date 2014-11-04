@@ -5,6 +5,7 @@ import java.util.List;
 
 import kr.poturns.blink.db.archive.CallbackData;
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
+import kr.poturns.blink.demo.fitnesswear.R;
 import kr.poturns.blink.internal.comm.IInternalEventCallback;
 import kr.poturns.blink.schema.Inbody;
 import android.app.ProgressDialog;
