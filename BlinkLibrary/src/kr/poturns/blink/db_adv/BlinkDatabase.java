@@ -14,11 +14,13 @@ public class BlinkDatabase {
 	/**
 	 * 데이터베이스에서 사용될 기능을 제공하는 객체들
 	 */
-	public SchemaConverter CONVERTER;
+	private SchemaConverter mSchemaConverter;
+	private BlinkObserver mBlinkObserver;
 	
 	protected BlinkDatabase(Context context){
 		this.context = context;
-		CONVERTER = new SchemaConverter(this);
+		mSchemaConverter = new SchemaConverter(this);
+		mBlinkObserver = new BlinkObserver(context);
 	}
 	
 	public static BlinkDatabase getInstance(Context context){
