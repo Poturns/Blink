@@ -2,17 +2,33 @@ package kr.poturns.blink.demo.fitnessapp;
 
 import java.util.Random;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import kr.poturns.blink.schema.HeartBeat;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.fitness.Fitness;
+import com.google.android.gms.fitness.data.DataPoint;
+import com.google.android.gms.fitness.data.DataSource;
+import com.google.android.gms.fitness.data.DataType;
+import com.google.android.gms.fitness.data.Field;
+import com.google.android.gms.fitness.data.Value;
+import com.google.android.gms.fitness.request.DataSourcesRequest;
+import com.google.android.gms.fitness.request.OnDataPointListener;
+import com.google.android.gms.fitness.request.SensorRequest;
+import com.google.android.gms.fitness.result.DataSourcesResult;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * 심장박동수를 측정하는 서비스 <br>
@@ -24,7 +40,9 @@ import android.util.Log;
  * @author Myungjin.Kim
  * 
  */
-public class HeartBeatService extends Service {
+public class HeartBeatService extends Service implements
+		GoogleApiClient.OnConnectionFailedListener,
+		GoogleApiClient.ConnectionCallbacks, OnDataPointListener {
 	/** 심장박동수를 측정하는 Thread */
 	private Thread mHeartBeatBackgroundThread;
 	/** 심장박동수를 측정하기까지 걸리는 시간 (초) */
@@ -38,6 +56,7 @@ public class HeartBeatService extends Service {
 	IInternalOperationSupport mIInternalOperationSupport;
 	/** 디버깅 용도 */
 	private boolean DEBUG = true;
+	GoogleApiClient mGoogleClient;
 
 	@Override
 	public IBinder onBind(Intent intent) {
@@ -60,6 +79,12 @@ public class HeartBeatService extends Service {
 				}
 			};
 			mInteraction.startService();
+			mGoogleClient = new GoogleApiClient.Builder(getApplicationContext())
+					.addApi(Fitness.API).addScope(Fitness.SCOPE_BODY_READ)
+					.addConnectionCallbacks(this)
+					.addOnConnectionFailedListener(this).build();
+			Log.i(TAG, "google play services connecting...");
+			mGoogleClient.connect();
 		}
 		return START_REDELIVER_INTENT;
 	}
@@ -72,7 +97,87 @@ public class HeartBeatService extends Service {
 			Log.d(TAG, "HeartBeat Thread finished");
 		}
 		mInteraction.stopService();
+
+		Fitness.SensorsApi.remove(mGoogleClient, this).setResultCallback(
+				new ResultCallback<Status>() {
+					@Override
+					public void onResult(Status status) {
+						if (status.isSuccess()) {
+							Log.i(TAG,
+									"google services Sensor Listener was removed!");
+						} else {
+							Log.i(TAG,
+									"google services Sensor Listener was not removed.");
+						}
+					}
+				});
+		Log.i(TAG, "google play services disconnecting...");
+		mGoogleClient.disconnect();
 		super.onDestroy();
+	}
+
+	@Override
+	public void onDataPoint(DataPoint dataPoint) {
+		for (Field field : dataPoint.getDataType().getFields()) {
+			Value val = dataPoint.getValue(field);
+			Log.i(TAG, "google services Sensor Detected DataPoint field: "
+					+ field.getName());
+			Log.i(TAG, "google services Sensor Detected DataPoint value: "
+					+ val);
+			Toast.makeText(
+					HeartBeatService.this,
+					field.getName() + "(" + dataPoint.getDataType().getName()
+							+ "):" + val, Toast.LENGTH_SHORT).show();
+		}
+	}
+
+	@Override
+	public void onConnectionSuspended(int cause) {
+		Log.i(TAG, "google play services suspended, cause : " + cause);
+	}
+
+	@Override
+	public void onConnected(Bundle connectionHint) {
+		Log.i(TAG, "google play services connected");
+		Fitness.SensorsApi.findDataSources(
+				mGoogleClient,
+				new DataSourcesRequest.Builder()
+						.setDataTypes(DataType.TYPE_HEART_RATE_BPM)
+						.setDataSourceTypes(DataSource.TYPE_RAW).build())
+				.setResultCallback(new ResultCallback<DataSourcesResult>() {
+					@Override
+					public void onResult(DataSourcesResult dataSourcesResult) {
+						Log.i(TAG, "Result: "
+								+ dataSourcesResult.getStatus().toString());
+						for (DataSource dataSource : dataSourcesResult
+								.getDataSources()) {
+							Log.i(TAG,
+									"Data source found: "
+											+ dataSource.toString());
+							Log.i(TAG, "Data Source type: "
+									+ dataSource.getDataType().getName());
+
+							if (dataSource.getDataType().equals(
+									DataType.TYPE_HEART_RATE_BPM)) {
+								Log.i(TAG,
+										"Data source for HEART_RATE_BPM found!  Registering.");
+								Fitness.SensorsApi
+										.add(mGoogleClient,
+												new SensorRequest.Builder()
+														.setDataSource(
+																dataSource)
+														.build(),
+												HeartBeatService.this);
+							}
+						}
+					}
+				});
+	}
+
+	@Override
+	public void onConnectionFailed(ConnectionResult result) {
+		Log.i(TAG, "google play services connection failed, error code : "
+				+ result.getErrorCode());
 	}
 
 	/** 심장박동수를 생성하기위한 Random */

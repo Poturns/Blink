@@ -26,6 +26,30 @@ import android.widget.TabHost;
 
 /** external package 내부에서 사용 될 Util Class */
 class PrivateUtil {
+	public enum DeviceType {
+		HANDHELD_PHONE, HANDHELD_TABLET, WAREABLE_WATCH
+	}
+
+	/**
+	 * UI를 구동중인 기기 형태를 나타낸다. <br>
+	 * <b>임의로 값을 설정하면 안된다.</b>
+	 */
+	static DeviceType DEVICE_TYPE = null;
+
+	public static DeviceType checkDeviceType(Context context) {
+		if (DEVICE_TYPE == null) {
+			if (context.getPackageManager().hasSystemFeature(
+					"android.hardware.type.watch")) {
+				DEVICE_TYPE = DeviceType.WAREABLE_WATCH;
+			} else if (!isScreenSizeSmall(context)) {
+				DEVICE_TYPE = DeviceType.HANDHELD_TABLET;
+			} else {
+				DEVICE_TYPE = DeviceType.HANDHELD_PHONE;
+			}
+		}
+		return DEVICE_TYPE;
+	}
+
 	/**
 	 * 구동중인 장비의 화면의 크기가 작은 크기인지의 여부를 반환한다. <br>
 	 * 

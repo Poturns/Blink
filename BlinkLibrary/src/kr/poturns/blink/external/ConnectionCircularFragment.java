@@ -4,7 +4,7 @@ import java.util.List;
 
 import kr.poturns.blink.R;
 import kr.poturns.blink.external.CircularViewHelper.OnDragAndDropListener;
-import kr.poturns.blink.external.ConnectionFragment.BaseConnectionFragment;
+import kr.poturns.blink.external.BaseConnectionFragment;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.content.Context;
 import android.os.Bundle;
@@ -220,9 +220,10 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 		mSetSeekBarValueMax = 0;
 	}
 
-	private void checkAndPutHostDevice() {
-		if (!getDeviceList().contains(BlinkDevice.HOST)) {
-			getDeviceList().add(BlinkDevice.HOST);
-		}
-	}
+	// Center View가 Host Device가 아닐 때 리스트에서 Host Device를 제거하기 위함
+	//private void checkAndPutHostDevice() {
+	//	if (!getDeviceList().contains(BlinkDevice.HOST)) {
+	//		getDeviceList().add(BlinkDevice.HOST);
+	//	}
+	//}
 }

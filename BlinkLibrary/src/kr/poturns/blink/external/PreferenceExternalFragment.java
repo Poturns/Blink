@@ -17,6 +17,9 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 /**
@@ -24,13 +27,22 @@ import android.widget.Toast;
  * <br>
  * 변경 된 설정값은 Binder를 통해 Service에 전달된다.
  */
-class PreferenceExternalFragment extends PreferenceFragment implements
+abstract class PreferenceExternalFragment extends PreferenceFragment implements
 		OnSharedPreferenceChangeListener {
-	private static final String TAG = PreferenceExternalFragment.class
-			.getSimpleName();
+	static final String TAG = PreferenceExternalFragment.class.getSimpleName();
 	/** '기기를 센터로 설정'의 Key */
-	private static final String KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST = "KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST";
+	static final String KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST = "KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST";
 	IServiceContolActivity mInterface;
+
+	/** 가동중인 기기에 적절한 Fragment 객체를 반환한다. */
+	static final PreferenceExternalFragment getFragment() {
+		switch (PrivateUtil.DEVICE_TYPE) {
+		case WAREABLE_WATCH:
+			return new PreferenceWatchFragment();
+		default:
+			return new PreferenceHandheldFragment();
+		}
+	}
 
 	@Override
 	public void onAttach(Activity activity) {
@@ -47,7 +59,12 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 				+ FileUtil.EXTERNAL_PREF_FILE_NAME);
 		getPreferenceManager().setSharedPreferencesName(
 				FileUtil.EXTERNAL_PREF_FILE_NAME);
-		addPreferencesFromResource(R.xml.res_blink_preference_external);
+
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
 		bindPreferenceSummaryToValue();
 	}
 
@@ -64,7 +81,7 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 	 * 
 	 * @see ContextImpl
 	 */
-	private void ensurePreferenceDir() {
+	final void ensurePreferenceDir() {
 		try {
 			Context mBase = getActivity().getBaseContext();
 			Class<? extends Context> contextImplClass = mBase.getClass();
@@ -119,7 +136,7 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 	/**
 	 * 설정 화면에서 입력된 값을 반영한다.
 	 */
-	private void bindPreferenceSummaryToValue() {
+	final void bindPreferenceSummaryToValue() {
 		SharedPreferences pref = getPreferenceScreen().getSharedPreferences();
 		pref.registerOnSharedPreferenceChangeListener(this);
 	}
@@ -210,7 +227,49 @@ class PreferenceExternalFragment extends PreferenceFragment implements
 	}
 
 	/** 설정에서 변경된 값을 Service에 전달한다. */
-	private void sendPreferenceDataToService(String keyName) {
+	final void sendPreferenceDataToService(String keyName) {
 		mInterface.getServiceInteration().requestConfigurationChange(keyName);
+	}
+
+}
+
+/** Handheld용 Fragment */
+class PreferenceHandheldFragment extends PreferenceExternalFragment {
+	@Override
+	public void onCreate(Bundle paramBundle) {
+		super.onCreate(paramBundle);
+		addPreferencesFromResource(R.xml.res_blink_preference_external);
+	}
+}
+
+/** Watch용 Fragment */
+class PreferenceWatchFragment extends PreferenceExternalFragment implements
+		SwipeListener {
+	@Override
+	public void onCreate(Bundle paramBundle) {
+		super.onCreate(paramBundle);
+		addPreferencesFromResource(R.xml.res_blink_preference_external_wearable);
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		View root = super.onCreateView(inflater, container, savedInstanceState);
+		root.setPadding(20, 10, 20, 10);
+		((ViewGroup) root).setClipToPadding(false);
+		return root;
+	}
+
+	@Override
+	public boolean onSwipe(Direction direction) {
+		switch (direction) {
+		case LEFT_TO_RIGHT:
+			if (getActivity() instanceof IServiceContolWatchActivity)
+				((IServiceContolWatchActivity) getActivity())
+						.returnToMain(null);
+			return true;
+		default:
+			return false;
+		}
 	}
 }

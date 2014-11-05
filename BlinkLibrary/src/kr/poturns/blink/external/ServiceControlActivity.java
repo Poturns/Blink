@@ -1,6 +1,7 @@
 package kr.poturns.blink.external;
 
 import kr.poturns.blink.R;
+import kr.poturns.blink.external.PrivateUtil.DeviceType;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
@@ -67,7 +68,8 @@ public final class ServiceControlActivity extends Activity implements
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		FileUtil.createExternalDirectory();
-		if (getPackageManager().hasSystemFeature("android.hardware.type.watch")) {
+		PrivateUtil.checkDeviceType(this);
+		if (PrivateUtil.DEVICE_TYPE == DeviceType.WAREABLE_WATCH) {
 			// TODO watch code here
 			startActivity(new Intent(this, ServiceControlWatchActivity.class));
 			finish();
@@ -95,7 +97,7 @@ public final class ServiceControlActivity extends Activity implements
 				R.array.res_blink_activity_sercive_control_menu_array,
 				android.R.layout.simple_list_item_1));
 		mListView.setOnItemClickListener(mLeftListViewOnItemClickListener);
-		mConnectionFragment = new ConnectionFragment();
+		mConnectionFragment = ConnectionFragment.getFragment();
 		mConnectionFragment.setArguments(new Bundle());
 
 		int[] paddingArray = new int[] {
@@ -127,7 +129,7 @@ public final class ServiceControlActivity extends Activity implements
 			f = new LogViewFragment();
 			break;
 		case 3:
-			f = new PreferenceExternalFragment();
+			f = PreferenceExternalFragment.getFragment();
 			break;
 		case 0:
 		default:

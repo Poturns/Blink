@@ -333,11 +333,11 @@ public class MainActivity extends Activity implements ActivityInterface {
 						break;
 					case 3:
 						tv.setCompoundDrawablesRelativeWithIntrinsicBounds(
-								R.drawable.ic_action_setup, 0, 0, 0);
+								R.drawable.ic_action_image_camera, 0, 0, 0);
 						break;
 					case 4:
 						tv.setCompoundDrawablesRelativeWithIntrinsicBounds(
-								R.drawable.ic_action_image_camera, 0, 0, 0);
+								R.drawable.ic_action_setup, 0, 0, 0);
 						break;
 					}
 					return v;
@@ -362,11 +362,11 @@ public class MainActivity extends Activity implements ActivityInterface {
 						break;
 					case 3:
 						mActivityInterface.attachFragment(
-								new SettingFragment(), null);
+								new FunctionTestFragment(), null);
 						break;
 					case 4:
 						mActivityInterface.attachFragment(
-								new FunctionTestFragment(), null);
+								new SettingFragment(), null);
 						break;
 					default:
 						break;

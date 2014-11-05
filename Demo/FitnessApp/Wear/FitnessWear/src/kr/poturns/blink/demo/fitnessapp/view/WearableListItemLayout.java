@@ -48,10 +48,11 @@ public class WearableListItemLayout extends LinearLayout implements
 	public float getProximityMinValue() {
 		return 1f;
 	}
+	
 
 	@Override
 	public float getProximityMaxValue() {
-		return 1.6f;
+		return 1.8f;
 	}
 
 	@Override

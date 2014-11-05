@@ -1,7 +1,7 @@
 package kr.poturns.blink.external;
 
 import kr.poturns.blink.R;
-import kr.poturns.blink.external.ConnectionFragment.BaseConnectionFragment;
+import kr.poturns.blink.external.BaseConnectionFragment;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;

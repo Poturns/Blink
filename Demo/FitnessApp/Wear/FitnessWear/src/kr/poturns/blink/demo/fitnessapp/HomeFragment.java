@@ -38,12 +38,13 @@ public class HomeFragment extends SwipeEventFragment {
 							null);
 					break;
 				case 3:
+					mActivityInterface.attachFragment(
+							new FunctionTestFragment(), null);
+					break;
+				case 4:
 					mActivityInterface.attachFragment(new SettingFragment(),
 							null);
 					break;
-				case 4:
-					mActivityInterface.attachFragment(
-							new FunctionTestFragment(), null);
 				default:
 					break;
 				}
@@ -102,11 +103,11 @@ public class HomeFragment extends SwipeEventFragment {
 						.setImageResource(R.drawable.ic_action_statistics_statistics);
 				break;
 			case 3:
-				h.imageView
-						.setImageResource(R.drawable.ic_action_setting_setup);
+				h.imageView.setImageResource(R.drawable.ic_action_image_camera);
 				break;
 			case 4:
-				h.imageView.setImageResource(R.drawable.ic_action_image_camera);
+				h.imageView
+						.setImageResource(R.drawable.ic_action_setting_setup);
 				break;
 			default:
 				break;

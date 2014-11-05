@@ -37,6 +37,33 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+/** ConnectionFragment의 UI와 작업의 Callback을 처리하는 interface */
+interface IConnectionCallback extends IBlinkEventBroadcast {
+	/** 바뀌어질 Fragment를 얻는다. */
+	BaseConnectionFragment getChangedFragment();
+
+	/** Device 리스트의 변경 요청이 실패하였을 때, 호출된다 */
+	void onDeviceListLoadFailed();
+
+	/** 비동기 작업의 종료 후 호출된다 */
+	void onPostLoading();
+
+	/** 비동기 작업의 시작 전 호출된다 */
+	void onPreLoading();
+
+	/** Device 리스트가 변경되었을 때 호출된다. */
+	void onDeviceListChanged();
+
+	/** Bluetooth Discovery가 종료되었을 때, 호출된다. */
+	void onDiscoveryFinished();
+
+	/** Bluetooth Discovery가 시작되었을 때, 호출된다. */
+	void onDiscoveryStarted();
+
+	/** Bluetooth Discovery가 실패하였을 때, 호출된다. */
+	void onDiscoveryFailed();
+}
+
 /**
  * 연결 관련 처리를 하는 Frament<br>
  * <br>
@@ -45,7 +72,16 @@ import android.widget.Toast;
  * BaseConnectionFragment에서의 BlinkDevice 와 그 List관련 처리는 ConnectionFragment가 대신
  * 하고, UI관련 처리는 BaseConnectionFragment를 상속받는 class가 위임 한다.<br>
  * */
-final class ConnectionFragment extends Fragment {
+abstract class ConnectionFragment extends Fragment {
+	public static final ConnectionFragment getFragment() {
+		switch (PrivateUtil.DEVICE_TYPE) {
+		case WAREABLE_WATCH:
+			return new ConnectionWearableFragment();
+		default:
+			return new ConnectionHandHeldFragment();
+		}
+	}
+
 	/** 현재 가지고 있는 BlinkDevice의 리스트 */
 	List<BlinkDevice> mDeviceList = new CopyOnWriteArrayList<BlinkDevice>();
 	/** Activity의 interface */
@@ -70,33 +106,6 @@ final class ConnectionFragment extends Fragment {
 	/** ProgressDialog가 최대로 보여질 시간 */
 	private static final long PROGRESS_WATING_TIME = 10 * 1000;
 
-	/** ConnectionFragment의 UI와 작업의 Callback을 처리하는 interface */
-	interface IConnectionCallback extends IBlinkEventBroadcast {
-		/** 바뀌어질 Fragment를 얻는다. */
-		BaseConnectionFragment getChangedFragment();
-
-		/** Device 리스트의 변경 요청이 실패하였을 때, 호출된다 */
-		void onDeviceListLoadFailed();
-
-		/** 비동기 작업의 종료 후 호출된다 */
-		void onPostLoading();
-
-		/** 비동기 작업의 시작 전 호출된다 */
-		void onPreLoading();
-
-		/** Device 리스트가 변경되었을 때 호출된다. */
-		void onDeviceListChanged();
-
-		/** Bluetooth Discovery가 종료되었을 때, 호출된다. */
-		void onDiscoveryFinished();
-
-		/** Bluetooth Discovery가 시작되었을 때, 호출된다. */
-		void onDiscoveryStarted();
-
-		/** Bluetooth Discovery가 실패하였을 때, 호출된다. */
-		void onDiscoveryFailed();
-	}
-
 	@Override
 	public void onAttach(final Activity activity) {
 		super.onAttach(activity);
@@ -104,16 +113,15 @@ final class ConnectionFragment extends Fragment {
 		if (activity instanceof IServiceContolActivity) {
 			mActivityInterface = (IServiceContolActivity) activity;
 		}
-		if (getActivity().getPackageManager().hasSystemFeature(
-				"android.hardware.type.watch")) {
-			onFragmentChanged(new ConnectionWatchFragment());
-		} else {
-			onFragmentChanged(new ConnectionCircularFragment());
-		}
-		mProgressDialog = new ProgressDialog(getActivity());
+		mProgressDialog = new ProgressDialog(activity);
 		mProgressDialog.setMessage("Loading...");
 		mProgressDialog.setCancelable(false);
 		mManager = mActivityInterface.getDatabaseHandler();
+	}
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 		mInteraction = mActivityInterface.getServiceInteration();
 		if (mInteraction != null) {
 			mBlinkOperation = mActivityInterface.getInternalOperationSupport();
@@ -170,6 +178,7 @@ final class ConnectionFragment extends Fragment {
 				sHandler.post(new Runnable() {
 					@Override
 					public void run() {
+						onPreLoading(PROGRESS_OPT_ACTION_BAR);
 						ConnectionFragment.this.mCurrentChildFragmentInterface
 								.onDiscoveryStarted();
 					}
@@ -181,6 +190,7 @@ final class ConnectionFragment extends Fragment {
 				sHandler.postDelayed(new Runnable() {
 					@Override
 					public void run() {
+						onPostLoading(PROGRESS_OPT_ACTION_BAR);
 						ConnectionFragment.this.mCurrentChildFragmentInterface
 								.onDiscoveryFinished();
 					}
@@ -204,14 +214,18 @@ final class ConnectionFragment extends Fragment {
 			initInteraction();
 		}
 		mInteraction.startBroadcastReceiver();
-		mInteraction.startService();
+		if (!mInteraction.isBinding()) {
+			mInteraction.startService();
+		}
 		super.onResume();
 	}
 
 	@Override
 	public void onPause() {
-		if (mInteraction != null)
+		if (mInteraction != null) {
 			mInteraction.stopBroadcastReceiver();
+			mInteraction.stopService();
+		}
 		super.onPause();
 	}
 
@@ -265,7 +279,7 @@ final class ConnectionFragment extends Fragment {
 		});
 		sHandler.removeCallbacks(mProgressDismissAction);
 		sHandler.postDelayed(mProgressDismissAction, PROGRESS_WATING_TIME);
-		onPreLoading(true);
+		onPreLoading(PROGRESS_OPT_DIALOG);
 	}
 
 	/** (실행중인) ProgressDialog를 dismiss하는 Action */
@@ -315,9 +329,8 @@ final class ConnectionFragment extends Fragment {
 		}
 		mDeviceList.clear();
 		mFetchTasking = true;
-		onPreLoading(false);
 		if (!fetchDeviceListBluetoothInternal()) {
-			onPostLoading(false);
+			onPostLoading(PROGRESS_OPT_ACTION_BAR);
 			mCurrentChildFragmentInterface.onDeviceListLoadFailed();
 		}
 	}
@@ -388,21 +401,34 @@ final class ConnectionFragment extends Fragment {
 	}
 
 	/** 비동기 작업 전 호출된다. */
-	void onPreLoading(boolean connectionTask) {
-		if (connectionTask)
-			mProgressDialog.show();
-		else
-			getActivity().setProgressBarIndeterminateVisibility(true);
+	void onPreLoading(int options) {
+		if ((options & PROGRESS_OPT_DIALOG) == PROGRESS_OPT_DIALOG) {
+			if (mProgressDialog != null)
+				mProgressDialog.show();
+		}
+		if ((options & PROGRESS_OPT_ACTION_BAR) == PROGRESS_OPT_ACTION_BAR) {
+			if (getActivity() != null) {
+				getActivity().setProgressBarIndeterminateVisibility(true);
+			}
+		}
 		mCurrentChildFragmentInterface.onPreLoading();
 	}
 
+	// Progress를 어떻게 나타낼것인가에 대한 옵션 
+	public static final int PROGRESS_OPT_NONE = 0x00000001;
+	public static final int PROGRESS_OPT_DIALOG = PROGRESS_OPT_NONE << 1;
+	public static final int PROGRESS_OPT_ACTION_BAR = PROGRESS_OPT_DIALOG << 1;
+
 	/** 비동기 작업 후 호출된다. */
-	void onPostLoading(boolean connectionTask) {
-		if (connectionTask) {
+	void onPostLoading(int options) {
+		if ((options & PROGRESS_OPT_DIALOG) == PROGRESS_OPT_DIALOG) {
 			if (mProgressDialog != null)
 				mProgressDialog.dismiss();
-		} else if (getActivity() != null) {
-			getActivity().setProgressBarIndeterminateVisibility(false);
+		}
+		if ((options & PROGRESS_OPT_ACTION_BAR) == PROGRESS_OPT_ACTION_BAR) {
+			if (getActivity() != null) {
+				getActivity().setProgressBarIndeterminateVisibility(false);
+			}
 		}
 		if (mCurrentChildFragmentInterface != null)
 			mCurrentChildFragmentInterface.onPostLoading();
@@ -725,216 +751,259 @@ final class ConnectionFragment extends Fragment {
 		}
 	}
 
+}
+
+class ConnectionHandHeldFragment extends ConnectionFragment {
+	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+		onFragmentChanged(new ConnectionCircularFragment());
+	}
+}
+
+class ConnectionWearableFragment extends ConnectionFragment implements
+		SwipeListener {
+	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+		onFragmentChanged(new ConnectionWatchFragment());
+	}
+
+	@Override
+	public boolean onSwipe(Direction direction) {
+		if (mCurrentChildFragmentInterface instanceof SwipeListener) {
+			return ((SwipeListener) mCurrentChildFragmentInterface)
+					.onSwipe(direction);
+		} else
+			return false;
+	}
+
+	// Wearable에서 ActionBar에 바로 ProgressBar를 보여주는 것은
+	// 실행 불가능 하기 때문에, 무조건 Dialog를 보여준다.
+	@Override
+	void onPreLoading(int options) {
+		if ((options & PROGRESS_OPT_NONE) != PROGRESS_OPT_NONE) {
+			if (mProgressDialog != null)
+				mProgressDialog.show();
+		}
+	}
+
+	@Override
+	void onPostLoading(int options) {
+		if ((options & PROGRESS_OPT_NONE) != PROGRESS_OPT_NONE) {
+			if (mProgressDialog != null)
+				mProgressDialog.dismiss();
+		}
+	}
+}
+
+/**
+ * ConnectionFragment의 위임 class, ConnectionFragment의 주요 기능을 처리한다.<br>
+ * '연결' 을 표시하려는 Fragment class는 이 class를 상속받아 구현하면 된다.
+ */
+abstract class BaseConnectionFragment extends Fragment implements
+		IConnectionCallback {
+	private ConnectionFragment mParentFragment;
+
+	@Override
+	public void onDeviceListLoadFailed() {
+	}
+
+	@Override
+	public void onPostLoading() {
+	}
+
+	@Override
+	public void onPreLoading() {
+	}
+
+	/** 현재 유지되고 있는 BlinkDevice의 리스트를 얻는다. */
+	List<BlinkDevice> getDeviceList() {
+		return mParentFragment.mDeviceList;
+	}
+
+	/** BlinkLibrary를 구동하고 있는 장비를 나타내는 BlinkDevice객체를 얻는다. */
+	BlinkDevice getHostDevice() {
+		return BlinkDevice.HOST;
+	}
+
+	/** Blink network의 연결 중심 장비 객체를 얻는다. */
+	public BlinkDevice getCenterDevice() {
+		return mParentFragment.mCenterDevice;
+	}
+
 	/**
-	 * ConnectionFragment의 위임 class, ConnectionFragment의 주요 기능을 처리한다.<br>
-	 * '연결' 을 표시하려는 Fragment class는 이 class를 상속받아 구현하면 된다.
+	 * 해당 {@link BlinkDevice}에 관한 Dialog를 띄운다.
+	 * 
+	 * @param device
+	 *            정보를 보려는 {@link BlinkDevice}
 	 */
-	abstract static class BaseConnectionFragment extends Fragment implements
-			IConnectionCallback {
-		private ConnectionFragment mParentFragment;
+	void showBlinkDeviceInfoDialog(BlinkDevice device) {
+		mParentFragment.showDialog(device);
+	}
 
-		@Override
-		public void onDeviceListLoadFailed() {
-		}
+	/**
+	 * Service를 통해Bluetooth Discovery를 시작해서 주변에 발견된 BlinkDevice의 list를 비동기적으로
+	 * 가져온다. <br>
+	 * <br>
+	 * {@link BlinkDevice}가 Discovery될 때마다
+	 * {@link BaseConnectionFragment#onDeviceDiscovered(BlinkDevice)}가 호출된다. <br>
+	 * <br>
+	 * 작업에 성공하면 {@link IConnectionCallback#onDiscoveryFinished()}, <br>
+	 * 실패하면 {@link IConnectionCallback#onDeviceListLoadFailed()}가 호출된다. <br>
+	 * <br>
+	 * 작업이 이미 진행 중 이거나, Bluetooth가 비활성화 되어있으면 {@link Toast}를 띄운다.
+	 */
+	void fetchDeviceListFromBluetooth() {
+		mParentFragment.fetchDeviceListFromBluetooth();
+	}
 
-		@Override
-		public void onPostLoading() {
-			if (getActivity() != null)
-				getActivity().setProgressBarIndeterminateVisibility(false);
-		}
+	/** 현재 DeviceList에 이전에 Discovery된 Device의 목록을 유지한다. */
+	void obtainDiscoveryList() {
+		mParentFragment.obtainDiscoveryList();
+	}
 
-		@Override
-		public void onPreLoading() {
-		}
+	/** 현재 DeviceList에서 연결된 Device만 남긴다. */
+	void retainConnectedDevicesFromList() {
+		mParentFragment.retainConnectedDevicesFromList();
+	}
 
-		/** 현재 유지되고 있는 BlinkDevice의 리스트를 얻는다. */
-		List<BlinkDevice> getDeviceList() {
-			return mParentFragment.mDeviceList;
-		}
+	/**
+	 * 현재 기기와 {@link BlinkDevice}를 연결/연결해제 한다.
+	 * 
+	 * @param device
+	 *            연결/연결 해제할 Device
+	 */
+	void connectOrDisConnectDevice(BlinkDevice device) {
+		mParentFragment.connectOrDisConnectDevice(device);
+	}
 
-		/** BlinkLibrary를 구동하고 있는 장비를 나타내는 BlinkDevice객체를 얻는다. */
-		BlinkDevice getHostDevice() {
-			return BlinkDevice.HOST;
-		}
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		this.mParentFragment = (ConnectionFragment) getParentFragment();
+	}
 
-		/** Blink network의 연결 중심 장비 객체를 얻는다. */
-		public BlinkDevice getCenterDevice() {
-			return mParentFragment.mCenterDevice;
-		}
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == R.id.res_blink_action_connection_view_change) {
+			changeFragment();
+			return true;
+		} else
+			return super.onOptionsItemSelected(item);
+	}
 
-		/**
-		 * 해당 {@link BlinkDevice}에 관한 Dialog를 띄운다.
-		 * 
-		 * @param device
-		 *            정보를 보려는 {@link BlinkDevice}
-		 */
-		void showBlinkDeviceInfoDialog(BlinkDevice device) {
-			mParentFragment.showDialog(device);
-		}
+	@Override
+	public void onDeviceConnected(final BlinkDevice device) {
+		device.setConnected(true);
+		logAndPostAboutConnection(device, "onDeviceConnected : ",
+				R.string.res_blink_device_connected);
+	}
 
-		/**
-		 * Service를 통해Bluetooth Discovery를 시작해서 주변에 발견된 BlinkDevice의 list를
-		 * 비동기적으로 가져온다. <br>
-		 * <br>
-		 * {@link BlinkDevice}가 Discovery될 때마다
-		 * {@link BaseConnectionFragment#onDeviceDiscovered(BlinkDevice)}가 호출된다. <br>
-		 * <br>
-		 * 작업에 성공하면 {@link IConnectionCallback#onDiscoveryFinished()}, <br>
-		 * 실패하면 {@link IConnectionCallback#onDeviceListLoadFailed()}가 호출된다. <br>
-		 * <br>
-		 * 작업이 이미 진행 중 이거나, Bluetooth가 비활성화 되어있으면 {@link Toast}를 띄운다.
-		 */
-		void fetchDeviceListFromBluetooth() {
-			mParentFragment.fetchDeviceListFromBluetooth();
-		}
+	@Override
+	public void onDeviceDisconnected(final BlinkDevice device) {
+		device.setConnected(false);
+		logAndPostAboutConnection(device, "onDeviceDisConnected : ",
+				R.string.res_blink_device_disconnected);
+	}
 
-		/** 현재 DeviceList에 이전에 Discovery된 Device의 목록을 유지한다. */
-		void obtainDiscoveryList() {
-			mParentFragment.obtainDiscoveryList();
-		}
-
-		/** 현재 DeviceList에서 연결된 Device만 남긴다. */
-		void retainConnectedDevicesFromList() {
-			mParentFragment.retainConnectedDevicesFromList();
-		}
-
-		/**
-		 * 현재 기기와 {@link BlinkDevice}를 연결/연결해제 한다.
-		 * 
-		 * @param device
-		 *            연결/연결 해제할 Device
-		 */
-		void connectOrDisConnectDevice(BlinkDevice device) {
-			mParentFragment.connectOrDisConnectDevice(device);
-		}
-
-		@Override
-		public void onCreate(Bundle savedInstanceState) {
-			super.onCreate(savedInstanceState);
-			this.mParentFragment = (ConnectionFragment) getParentFragment();
-			getActivity().setProgressBarIndeterminateVisibility(isFetching());
-		}
-
-		@Override
-		public boolean onOptionsItemSelected(MenuItem item) {
-			if (item.getItemId() == R.id.res_blink_action_connection_view_change) {
-				changeFragment();
-				return true;
-			} else
-				return super.onOptionsItemSelected(item);
-		}
-
-		@Override
-		public void onDeviceConnected(final BlinkDevice device) {
-			device.setConnected(true);
-			logAndPostAboutConnection(device, "onDeviceConnected : ",
-					R.string.res_blink_device_connected);
-		}
-
-		@Override
-		public void onDeviceDisconnected(final BlinkDevice device) {
-			device.setConnected(false);
-			logAndPostAboutConnection(device, "onDeviceDisConnected : ",
-					R.string.res_blink_device_disconnected);
-		}
-
-		/*
-		 * 장비 연결 상태에 대한 정보를 로그캣에 남긴다.<br> UI Thread에서는 Toast를 남기고,
-		 * onDeviceListChanged()를 호출하도록 한다.
-		 */
-		private void logAndPostAboutConnection(final BlinkDevice device,
-				String logMsg, final int toastTextRes) {
-			sHandler.removeCallbacks(mParentFragment.mProgressDismissAction);
-			Log.d("ConnectionFragment", logMsg + device);
-			sHandler.post(new Runnable() {
-				@Override
-				public void run() {
-					mParentFragment.mProgressDialog.dismiss();
-					Toast.makeText(
-							mParentFragment.getActivity(),
-							device.getName()
-									+ mParentFragment.getString(toastTextRes),
-							Toast.LENGTH_SHORT).show();
-					onDeviceListChanged();
-				}
-			});
-		}
-
-		@Override
-		public void onDeviceDiscovered(BlinkDevice device) {
-			if (!mParentFragment.mDeviceList.contains(device))
-				mParentFragment.mDeviceList.add(device);
-			sHandler.postDelayed(new Runnable() {
-
-				@Override
-				public void run() {
-					onDeviceListChanged();
-				}
-			}, 100);
-		}
-
-		/** 다른 Fragment로 UI를 변경한다. */
-		void changeFragment() {
-			mParentFragment.onFragmentChanged(getChangedFragment());
-		}
-
-		/**
-		 * 현재 {@link BaseConnectionFragment#fetchDeviceListFromBluetooth()} 가 작업
-		 * 중 인지 여부를 반환한다.
-		 */
-		final boolean isFetching() {
-			return mParentFragment.mFetchTasking;
-		}
-
-		@Override
-		public void onDiscoveryStarted() {
-			getActivity().setProgressBarIndeterminateVisibility(true);
-		}
-
-		@Override
-		public void onDiscoveryFinished() {
-			mParentFragment.mFetchTasking = false;
-			onPostLoading();
-			obtainDiscoveryList();
-			onDeviceListChanged();
-			Toast.makeText(getActivity(),
-					R.string.res_blink_bluetooth_discovery_finished,
-					Toast.LENGTH_SHORT).show();
-		}
-
-		@Override
-		public void onDeviceListChanged() {
-			List<BlinkDevice> deviceList = mParentFragment.mDeviceList;
-			final int size = deviceList.size();
-
-			mParentFragment.mCenterDevice = null;
-			for (int i = 0; i < size; i++) {
-				BlinkDevice device = deviceList.get(i);
-				if (device.getIdentity() == Identity.MAIN) {
-					mParentFragment.mCenterDevice = device;
-					// 리스트에서 Main device 제거
-					// deviceList.remove(device);
-					break;
-				}
+	/*
+	 * 장비 연결 상태에 대한 정보를 로그캣에 남긴다.<br> UI Thread에서는 Toast를 남기고,
+	 * onDeviceListChanged()를 호출하도록 한다.
+	 */
+	private void logAndPostAboutConnection(final BlinkDevice device,
+			String logMsg, final int toastTextRes) {
+		ConnectionFragment.sHandler
+				.removeCallbacks(mParentFragment.mProgressDismissAction);
+		Log.d("ConnectionFragment", logMsg + device);
+		ConnectionFragment.sHandler.post(new Runnable() {
+			@Override
+			public void run() {
+				mParentFragment.mProgressDialog.dismiss();
+				Toast.makeText(
+						mParentFragment.getActivity(),
+						device.getName()
+								+ mParentFragment.getString(toastTextRes),
+						Toast.LENGTH_SHORT).show();
+				onDeviceListChanged();
 			}
-			if (mParentFragment.mCenterDevice == null) {
-				mParentFragment.mCenterDevice = BlinkDevice.HOST.getIdentity() == Identity.MAIN ? BlinkDevice.HOST
-						: null;
+		});
+	}
+
+	@Override
+	public void onDeviceDiscovered(BlinkDevice device) {
+		if (!mParentFragment.mDeviceList.contains(device))
+			mParentFragment.mDeviceList.add(device);
+		ConnectionFragment.sHandler.postDelayed(new Runnable() {
+
+			@Override
+			public void run() {
+				onDeviceListChanged();
 			}
+		}, 100);
+	}
 
-			// Center device와 Host device가 같지 않으면
-			// 리스트에 Host device 추가
-			// if (!BlinkDevice.HOST.getAddress().equals(
-			// mParentFragment.mCenterDevice)) {
-			// deviceList.add(BlinkDevice.HOST);
-			// } else {
-			// deviceList.remove(BlinkDevice.HOST);
-			// }
+	/** 다른 Fragment로 UI를 변경한다. */
+	void changeFragment() {
+		mParentFragment.onFragmentChanged(getChangedFragment());
+	}
+
+	/**
+	 * 현재 {@link BaseConnectionFragment#fetchDeviceListFromBluetooth()} 가 작업 중
+	 * 인지 여부를 반환한다.
+	 */
+	final boolean isFetching() {
+		return mParentFragment.mFetchTasking;
+	}
+
+	@Override
+	public void onDiscoveryStarted() {
+		getActivity().setProgressBarIndeterminateVisibility(true);
+	}
+
+	@Override
+	public void onDiscoveryFinished() {
+		mParentFragment.mFetchTasking = false;
+		onPostLoading();
+		obtainDiscoveryList();
+		onDeviceListChanged();
+		Toast.makeText(getActivity(),
+				R.string.res_blink_bluetooth_discovery_finished,
+				Toast.LENGTH_SHORT).show();
+	}
+
+	@Override
+	public void onDeviceListChanged() {
+		List<BlinkDevice> deviceList = mParentFragment.mDeviceList;
+		final int size = deviceList.size();
+
+		mParentFragment.mCenterDevice = null;
+		for (int i = 0; i < size; i++) {
+			BlinkDevice device = deviceList.get(i);
+			if (device.getIdentity() == Identity.MAIN) {
+				mParentFragment.mCenterDevice = device;
+				// 리스트에서 Main device 제거
+				// deviceList.remove(device);
+				break;
+			}
+		}
+		if (mParentFragment.mCenterDevice == null) {
+			mParentFragment.mCenterDevice = BlinkDevice.HOST.getIdentity() == Identity.MAIN ? BlinkDevice.HOST
+					: null;
 		}
 
-		@Override
-		public void onDiscoveryFailed() {
-			mParentFragment.mFetchTasking = false;
-		}
+		// Center device와 Host device가 같지 않으면
+		// 리스트에 Host device 추가
+		// if (!BlinkDevice.HOST.getAddress().equals(
+		// mParentFragment.mCenterDevice)) {
+		// deviceList.add(BlinkDevice.HOST);
+		// } else {
+		// deviceList.remove(BlinkDevice.HOST);
+		// }
+	}
+
+	@Override
+	public void onDiscoveryFailed() {
+		mParentFragment.mFetchTasking = false;
 	}
 }

@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -61,6 +62,8 @@ public class FitnessUtil {
 			ois = new ObjectInputStream(bis);
 			String json = ois.readUTF();
 			object = gson.fromJson(json, Inbody.class);
+		} catch (FileNotFoundException e) {
+			return null;
 		} finally {
 			closeStream(ois);
 			closeStream(bis);
@@ -78,7 +81,7 @@ public class FitnessUtil {
 		BufferedOutputStream bos = null;
 		ObjectOutputStream oos = null;
 		try {
-			fos = context.openFileOutput(FILE_INBODY, Context.MODE_PRIVATE );
+			fos = context.openFileOutput(FILE_INBODY, Context.MODE_PRIVATE);
 			bos = new BufferedOutputStream(fos);
 			oos = new ObjectOutputStream(bos);
 			oos.writeUTF(gson.toJson(obj));
