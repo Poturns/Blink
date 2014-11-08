@@ -451,12 +451,17 @@ abstract class ConnectionFragment extends Fragment {
 				.replace(R.id.res_blink_fragment_connection_content, callback)
 				.commit();
 	}
+	
+	/** 즐겨찾기에 등록된 BlinkDevice들에게 연결 요청을 보낸다.*/
+	void connectFavoriteDevices(){
+		//TODO
+	}
 
 	/** BlinkDevice의 정보를 보여주는 DialogFragment */
 	private class DeviceInfoDialogFragment extends DialogFragment {
 		BlinkDevice mBlinkDevice;
 		Device mDevice;
-		private PrivateUtil.ViewPagerFragmentProxy mFragmentProxy = new PrivateUtil.ViewPagerFragmentProxy() {
+		private ViewPagerFragmentProxy mFragmentProxy = new ViewPagerFragmentProxy() {
 
 			@Override
 			protected Fragment getViewPagerPage(int position) {

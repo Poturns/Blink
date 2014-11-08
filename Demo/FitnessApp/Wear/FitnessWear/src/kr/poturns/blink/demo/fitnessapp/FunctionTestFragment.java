@@ -106,11 +106,10 @@ public class FunctionTestFragment extends SwipeEventFragment implements
 		switch (direction) {
 		case LEFT_TO_RIGHT:
 			mActivityInterface.returnToMain();
-			break;
+			return true;
 		default:
-			break;
+			return false;
 		}
-		return false;
 	}
 
 	void runFunctionTest() {
@@ -138,6 +137,7 @@ public class FunctionTestFragment extends SwipeEventFragment implements
 					}
 				}
 			}
+			Log.d(TAG, "Function Test : send count - " + count);
 			if (count == 0)
 				onTestFinished();
 		} else {

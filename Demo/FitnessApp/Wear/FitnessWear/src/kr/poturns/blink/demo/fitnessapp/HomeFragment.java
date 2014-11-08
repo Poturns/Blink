@@ -2,6 +2,7 @@ package kr.poturns.blink.demo.fitnessapp;
 
 import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
 import kr.poturns.blink.demo.fitnesswear.R;
+import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.wearable.view.WearableListView;
@@ -13,6 +14,20 @@ import android.widget.TextView;
 
 /** 웨어러블 메인 화면 */
 public class HomeFragment extends SwipeEventFragment {
+	/** 웨어러블 메인 화면 리스트를 터치하면 이동될 화면 Fragment의 이름 */
+	static final String[] FRAGMENT_NAMES = { InBodyFragment.class.getName(),
+			FitnessFragment.class.getName(), RecordFragment.class.getName(),
+			HeartBeatFragment.class.getName(),
+			FunctionTestFragment.class.getName(),
+			SettingFragment.class.getName() };
+	/** 웨어러블 메인 화면 리스트에서 보여질 아이콘의 목록 */
+	static final int[] LIST_ICONS = { R.drawable.ic_action_image_timer_auto,
+			R.drawable.ic_action_health_dumbbell,
+			R.drawable.ic_action_statistics_statistics,
+			R.drawable.ic_action_health_heart_white,
+			R.drawable.ic_action_image_camera,
+			R.drawable.ic_action_setting_setup };
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -24,30 +39,11 @@ public class HomeFragment extends SwipeEventFragment {
 
 			@Override
 			public void onClick(WearableListView.ViewHolder view) {
-				switch (((HomeAdapter.ViewHolder) view).position) {
-				case 0:
-					mActivityInterface.attachFragment(new InBodyFragment(),
-							null);
-					break;
-				case 1:
-					mActivityInterface.attachFragment(new FitnessFragment(),
-							null);
-					break;
-				case 2:
-					mActivityInterface.attachFragment(new RecordFragment(),
-							null);
-					break;
-				case 3:
-					mActivityInterface.attachFragment(
-							new FunctionTestFragment(), null);
-					break;
-				case 4:
-					mActivityInterface.attachFragment(new SettingFragment(),
-							null);
-					break;
-				default:
-					break;
-				}
+				mActivityInterface.attachFragment(
+						Fragment.instantiate(
+								getActivity(),
+								FRAGMENT_NAMES[((HomeAdapter.ViewHolder) view).position]),
+						null);
 			}
 
 			@Override
@@ -70,8 +66,8 @@ public class HomeFragment extends SwipeEventFragment {
 	}
 
 	private static class HomeAdapter extends WearableListView.Adapter {
-		String[] mItems;
-		LayoutInflater mInflater;
+		private String[] mItems;
+		private LayoutInflater mInflater;
 
 		public HomeAdapter(Context context) {
 			mItems = context.getResources().getStringArray(R.array.title_entry);
@@ -89,29 +85,7 @@ public class HomeFragment extends SwipeEventFragment {
 			ViewHolder h = (ViewHolder) vh;
 			h.position = position;
 			h.textView.setText(mItems[position]);
-			switch (position) {
-			case 0:
-				h.imageView
-						.setImageResource(R.drawable.ic_action_image_timer_auto);
-				break;
-			case 1:
-				h.imageView
-						.setImageResource(R.drawable.ic_action_health_dumbbell);
-				break;
-			case 2:
-				h.imageView
-						.setImageResource(R.drawable.ic_action_statistics_statistics);
-				break;
-			case 3:
-				h.imageView.setImageResource(R.drawable.ic_action_image_camera);
-				break;
-			case 4:
-				h.imageView
-						.setImageResource(R.drawable.ic_action_setting_setup);
-				break;
-			default:
-				break;
-			}
+			h.imageView.setImageResource(LIST_ICONS[position]);
 		}
 
 		@Override
@@ -130,7 +104,6 @@ public class HomeFragment extends SwipeEventFragment {
 				textView = (TextView) itemView.findViewById(R.id.name);
 				imageView = (ImageView) itemView.findViewById(R.id.circle);
 			}
-
 		}
 	}
 }

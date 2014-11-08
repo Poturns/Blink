@@ -217,96 +217,95 @@ class PrivateUtil {
 			return null;
 		return bundle.getParcelable(EXTRA_DEVICE_MEASUREMENT);
 	}
+}
+/** ViewPager 코드 단축용 */
+abstract class ViewPagerFragmentProxy {
+	protected TabHost mTabHost;
+	protected ViewPager mViewPager;
 
-	/** ViewPager 코드 단축용 */
-	public static abstract class ViewPagerFragmentProxy {
-		protected TabHost mTabHost;
-		protected ViewPager mViewPager;
+	abstract protected String[] getTitles();
 
-		abstract protected String[] getTitles();
+	abstract protected Activity getActivity();
 
-		abstract protected Activity getActivity();
+	abstract protected FragmentManager getFragmentManager();
 
-		abstract protected FragmentManager getFragmentManager();
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		final View v = inflater.inflate(
+				R.layout.res_blink_view_tab_with_viewpager, container,
+				false);
+		mTabHost = (TabHost) v.findViewById(android.R.id.tabhost);
+		mTabHost.setup();
+		TabHost.TabContentFactory factory = new TabHost.TabContentFactory() {
 
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			final View v = inflater.inflate(
-					R.layout.res_blink_view_tab_with_viewpager, container,
-					false);
-			mTabHost = (TabHost) v.findViewById(android.R.id.tabhost);
-			mTabHost.setup();
-			TabHost.TabContentFactory factory = new TabHost.TabContentFactory() {
-
-				@Override
-				public View createTabContent(String tag) {
-					View v = new View(getActivity());
-					v.setMinimumWidth(0);
-					v.setMinimumHeight(0);
-					v.setTag(tag);
-					return v;
-				}
-			};
-			final String[] pageTitles = getTitles();
-
-			int i = 0;
-			for (String title : pageTitles) {
-				mTabHost.addTab(mTabHost.newTabSpec(String.valueOf(i++))
-						.setIndicator(title).setContent(factory));
+			@Override
+			public View createTabContent(String tag) {
+				View v = new View(getActivity());
+				v.setMinimumWidth(0);
+				v.setMinimumHeight(0);
+				v.setTag(tag);
+				return v;
 			}
+		};
+		final String[] pageTitles = getTitles();
 
-			mTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
-				@Override
-				public void onTabChanged(String tabId) {
-					navigateTab(Integer.valueOf(tabId), false);
-				}
-			});
-			mViewPager = (ViewPager) v.findViewById(R.id.res_blink_viewpager);
-			mViewPager
-					.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-						@Override
-						public void onPageSelected(int position) {
-							navigateTab(position, true);
-						}
-					});
-			mViewPager
-					.setAdapter(new FragmentPagerAdapter(getFragmentManager()) {
-
-						@Override
-						public int getCount() {
-							return pageTitles.length;
-						}
-
-						@Override
-						public Fragment getItem(int position) {
-							return getViewPagerPage(position);
-						}
-					});
-			return v;
+		int i = 0;
+		for (String title : pageTitles) {
+			mTabHost.addTab(mTabHost.newTabSpec(String.valueOf(i++))
+					.setIndicator(title).setContent(factory));
 		}
 
-		/** ViewPager를 한 페이지를 구성하는 Fragment를 얻는다. */
-		abstract protected Fragment getViewPagerPage(int position);
-
-		/**
-		 * {@link ViewPager}또는 {@link TabHost}의 page를 이동한다.
-		 * 
-		 * @param position
-		 *            움직일 page또는 tab의 인덱스
-		 * @param isFromPager
-		 *            이동 요청이 {@link ViewPager}로 부터 왔는지 여부
-		 */
-		protected void navigateTab(int position, boolean isFromPager) {
-			if (isFromPager) {
-				mTabHost.setCurrentTab(position);
-			} else {
-				mViewPager.setCurrentItem(position);
+		mTabHost.setOnTabChangedListener(new TabHost.OnTabChangeListener() {
+			@Override
+			public void onTabChanged(String tabId) {
+				navigateTab(Integer.valueOf(tabId), false);
 			}
-		}
+		});
+		mViewPager = (ViewPager) v.findViewById(R.id.res_blink_viewpager);
+		mViewPager
+				.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+					@Override
+					public void onPageSelected(int position) {
+						navigateTab(position, true);
+					}
+				});
+		mViewPager
+				.setAdapter(new FragmentPagerAdapter(getFragmentManager()) {
 
-		public void onDestroyView() {
-			mTabHost = null;
-			mViewPager = null;
+					@Override
+					public int getCount() {
+						return pageTitles.length;
+					}
+
+					@Override
+					public Fragment getItem(int position) {
+						return getViewPagerPage(position);
+					}
+				});
+		return v;
+	}
+
+	/** ViewPager를 한 페이지를 구성하는 Fragment를 얻는다. */
+	abstract protected Fragment getViewPagerPage(int position);
+
+	/**
+	 * {@link ViewPager}또는 {@link TabHost}의 page를 이동한다.
+	 * 
+	 * @param position
+	 *            움직일 page또는 tab의 인덱스
+	 * @param isFromPager
+	 *            이동 요청이 {@link ViewPager}로 부터 왔는지 여부
+	 */
+	protected void navigateTab(int position, boolean isFromPager) {
+		if (isFromPager) {
+			mTabHost.setCurrentTab(position);
+		} else {
+			mViewPager.setCurrentItem(position);
 		}
+	}
+
+	public void onDestroyView() {
+		mTabHost = null;
+		mViewPager = null;
 	}
 }

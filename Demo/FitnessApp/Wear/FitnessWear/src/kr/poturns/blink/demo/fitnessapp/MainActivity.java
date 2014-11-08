@@ -116,18 +116,18 @@ public class MainActivity extends Activity implements ActivityInterface {
 				R.animator.slide_out_left);
 	}
 
-	@Override
-	protected void onPostCreate(Bundle savedInstanceState) {
-		super.onPostCreate(savedInstanceState);
-		try {
-			if (FitnessUtil.readInBodyFromFile(this) == null) {
-				showInBodyUpdateDialog();
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			showInBodyUpdateDialog();
-		}
-	}
+	//@Override
+	//protected void onPostCreate(Bundle savedInstanceState) {
+	//	super.onPostCreate(savedInstanceState);
+	//	try {
+	//		if (FitnessUtil.readInBodyFromFile(this) == null) {
+	//			showInBodyUpdateDialog();
+	//		}
+	//	} catch (Exception e) {
+	//		e.printStackTrace();
+	//		showInBodyUpdateDialog();
+	//	}
+	//}
 
 	@Override
 	protected void onResume() {

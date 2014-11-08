@@ -115,26 +115,22 @@ public class RecordFragment extends SwipeEventFragment {
 			float currentData = showCalorie ? (float) FitnessUtil
 					.calculateCalorie(table, currentCount) : currentCount;
 
-			String title = "";
 			//int color;
 			int iconRes;
 			if (table.equals(SQLiteHelper.TABLE_PUSH_UP)) {
-				title = "팔굽";
 				//color = getResources().getColor(R.color.orange);
 				iconRes = R.drawable.ic_action_health_push_up;
 			} else if (table.equals(SQLiteHelper.TABLE_SIT_UP)) {
-				title = "윗몸";
 				//color = getResources().getColor(R.color.green);
 				iconRes = R.drawable.ic_action_health_sit_up;
 			} else if (table.equals(SQLiteHelper.TABLE_SQUAT)) {
-				title = "스쿼트";
 				//color = getResources().getColor(R.color.blue);
 				iconRes = R.drawable.ic_action_health_squat;
 			} else {
-				title = "팔굽";
 				//color = getResources().getColor(R.color.orange);
 				iconRes = R.drawable.ic_action_health_push_up;
 			}
+			String title = table;
 			if (showCalorie)
 				title += " (KCal)";
 			String text = "어제 : " + prevData + "\n오늘 : " + currentData;

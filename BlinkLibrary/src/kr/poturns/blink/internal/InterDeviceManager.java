@@ -170,6 +170,7 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			
 		} else if (BluetoothDevice.ACTION_UUID.equals(action)) {
 			// 블루투스 UUID 탐색 >> 결과 UUID 값을 BlinkDevice Cache에 갱신한다.
+			//TODO : Filtering
 			
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			BlinkDevice device = BlinkDevice.load(origin);

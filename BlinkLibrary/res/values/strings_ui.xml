@@ -71,6 +71,10 @@
     <string name="res_blink_connection_ui_status_scan">SCAN</string>
     <!-- 연결 화면에서 현재 표시하고 있는 관점을 나타냄 : 연결된 device를 보여줌 -->
     <string name="res_blink_connection_ui_status_connect">CONNECTION</string>
+    <string name="res_blink_connection_favorite_register">즐겨찾기 등록</string>
+    <string name="res_blink_connection_favorite_unregister">즐겨찾기 해제</string>
+    <string name="res_blink_connection_connect">연결</string>
+    <string name="res_blink_connection_disconnect">연결 해제</string>
     <!-- '연결 상태'에서 표시할 장비 정보들 -->
     <string-array name="res_blink_dialog_connect_page_titles">
         <item>Bluetooth 정보</item>

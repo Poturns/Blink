@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
-import android.preference.TwoStatePreference;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -42,9 +41,6 @@ public class SettingFragment extends PreferenceFragment implements
 	}
 
 	private void bindPreferenceSummaryToValue() {
-		TwoStatePreference preference = (TwoStatePreference) findPreference(KEY_MEASURE_HEARTBEAT);
-		preference.setChecked(getPreferenceScreen().getSharedPreferences()
-				.getBoolean(KEY_MEASURE_HEARTBEAT, false));
 	}
 
 	@Override
@@ -54,7 +50,7 @@ public class SettingFragment extends PreferenceFragment implements
 				.findViewById(android.R.id.list);
 		listView.setDivider(getResources().getDrawable(
 				android.R.color.transparent));
-		listView.setPaddingRelative(10, 30, 10, 30);
+		listView.setPaddingRelative(32, 50, 50, 32);
 		listView.setDividerHeight(60);
 		listView.setBackground(getResources().getDrawable(
 				R.drawable.image_sunset));
@@ -124,11 +120,6 @@ public class SettingFragment extends PreferenceFragment implements
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 			String key) {
-		if (key.equals(KEY_MEASURE_HEARTBEAT)) {
-			boolean start = sharedPreferences.getBoolean(KEY_MEASURE_HEARTBEAT,
-					false);
-			mActivityInterface.startOrStopService(start);
-		}
 	}
 
 }
