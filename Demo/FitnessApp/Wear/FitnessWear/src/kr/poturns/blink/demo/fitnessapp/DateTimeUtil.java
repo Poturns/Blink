@@ -29,6 +29,8 @@ public class DateTimeUtil {
 		return DateFormat.format(FORMAT, timeInMills).toString();
 	}
 	
+	@Deprecated
+	/** 제대로 된 시간을 반환하지 않는다.*/
 	public static final String getTimeStringNano(long timeInNanos){
 		long millis = TimeUnit.MILLISECONDS.convert(timeInNanos, TimeUnit.NANOSECONDS); 
 		java.text.DateFormat formatter = new SimpleDateFormat(FORMAT);

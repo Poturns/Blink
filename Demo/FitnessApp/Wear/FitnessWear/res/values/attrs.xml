@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="WearableListItemLayout">
+        <attr name="fadedCircleColor" format="reference|color" />
+        <attr name="chosenCircleColor" format="reference|color" />
+        <attr name="enableDrawableChange" format="boolean" />
+        <attr name="minProximityValue" format="float"/>
+        <attr name="maxProximityValue" format="float"/>
+    </declare-styleable>
+
+</resources>

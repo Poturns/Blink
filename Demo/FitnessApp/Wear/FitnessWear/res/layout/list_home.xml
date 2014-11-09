@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <kr.poturns.blink.demo.fitnessapp.view.WearableListItemLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res/kr.poturns.blink.demo.fitnesswear"
     android:layout_width="match_parent"
     android:layout_height="80dp"
     android:layout_gravity="center_vertical"
-    android:gravity="center_vertical" >
+    android:gravity="center_vertical"
+    app:chosenCircleColor="@color/orange"
+    app:enableDrawableChange="true"
+    app:fadedCircleColor="@color/light_grey" >
 
     <ImageView
         android:id="@+id/circle"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:layout_marginStart="10dp"
         android:layout_gravity="center_vertical"
+        android:layout_marginStart="10dp"
         android:background="@drawable/circle_home" />
 
     <TextView
@@ -23,7 +27,7 @@
         android:gravity="center"
         android:lineSpacingExtra="-4sp"
         android:textColor="@color/white"
-        android:textStyle="bold"
-        android:textSize="20sp" />
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
 </kr.poturns.blink.demo.fitnessapp.view.WearableListItemLayout>

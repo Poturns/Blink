@@ -1,17 +1,16 @@
 package kr.poturns.blink.demo.fitnessapp;
 
-
-import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeListener;
+import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
 import kr.poturns.blink.demo.fitnesswear.R;
-import android.app.Activity;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceScreen;
-import android.widget.ListView;
+import android.support.wearable.view.CircledImageView;
+import android.support.wearable.view.WearableListView;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /**
@@ -19,93 +18,76 @@ import android.widget.Toast;
  * 
  * @author Myungjin.Kim
  */
-public class SettingFragment extends PreferenceFragment implements
-		SwipeListener, OnSharedPreferenceChangeListener {
-	ActivityInterface mActivityInterface;
+public class SettingFragment extends SwipeEventFragment {
 	public static final String KEY_MEASURE_HEARTBEAT = "KEY_MEASURE_HEARTBEAT";
 	public static final String KEY_DELETE_TRAINING_DATA = "KEY_DELETE_TRAINING_DATA";
 	public static final String KEY_INBODY_DATA = "KEY_INBODY_DATA";
 	public static final String KEY_LOAD_CONTROL = "KEY_LOAD_CONTROL";
 
 	@Override
-	public void onAttach(Activity activity) {
-		super.onAttach(activity);
-		mActivityInterface = (ActivityInterface) activity;
-	}
-
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		addPreferencesFromResource(R.xml.preference);
-		bindPreferenceSummaryToValue();
-	}
-
-	private void bindPreferenceSummaryToValue() {
-	}
-
-	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-		ListView listView = (ListView) getView()
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		final View v = inflater.inflate(R.layout.fragment_home, container,
+				false);
+		v.setBackgroundResource(R.drawable.image_sunset);
+		WearableListView listView = (WearableListView) v
 				.findViewById(android.R.id.list);
-		listView.setDivider(getResources().getDrawable(
-				android.R.color.transparent));
-		listView.setPaddingRelative(32, 50, 50, 32);
-		listView.setDividerHeight(60);
-		listView.setBackground(getResources().getDrawable(
-				R.drawable.image_sunset));
-	}
+		listView.setAdapter(new SettingListViewAdapter(getActivity()));
+		listView.setClickListener(new WearableListView.ClickListener() {
 
-	@Override
-	public void onResume() {
-		getPreferenceScreen().getSharedPreferences()
-				.registerOnSharedPreferenceChangeListener(this);
-		super.onResume();
-	}
-
-	@Override
-	public void onPause() {
-		getPreferenceScreen().getSharedPreferences()
-				.unregisterOnSharedPreferenceChangeListener(this);
-		super.onPause();
-	}
-
-	@Override
-	public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen,
-			Preference preference) {
-		String key = preference.getKey();
-		if (key.equals(KEY_DELETE_TRAINING_DATA)) {
-			AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
-
-				@Override
-				public void run() {
-					SQLiteHelper.getInstance(getActivity()).dropAllTable();
-					getActivity().runOnUiThread(new Runnable() {
-
-						@Override
-						public void run() {
-							Toast.makeText(getActivity(), "삭제했습니다.",
-									Toast.LENGTH_SHORT).show();
-						}
-					});
+			@Override
+			public void onClick(WearableListView.ViewHolder view) {
+				switch (view.getPosition()) {
+				case 0:
+					deleteFitnessData();
+					break;
+				case 1:
+					deleteInbodyData();
+					break;
+				case 2:
+					openControlActivity();
+					break;
+				default:
+					break;
 				}
-			});
-
-			return true;
-		} else if (key.equals(KEY_INBODY_DATA)) {
-			if (getActivity().deleteFile(
-					"/data/data/kr.poturns.blink.demo.fitnessapp/"
-							+ FitnessUtil.FILE_INBODY)) {
-				Toast.makeText(getActivity(), "삭제했습니다.", Toast.LENGTH_SHORT).show();
-			} else {
-				Toast.makeText(getActivity(), "실패했습니다.", Toast.LENGTH_SHORT).show();
 			}
-			return true;
-		} else if (key.equals(KEY_LOAD_CONTROL)) {
-			mActivityInterface.getBlinkServiceInteraction()
-					.openControlActivity();
+
+			@Override
+			public void onTopEmptyRegionClick() {
+			}
+
+		});
+		return v;
+	}
+
+	private void deleteFitnessData() {
+		AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
+
+			@Override
+			public void run() {
+				SQLiteHelper.getInstance(getActivity()).dropAllTable();
+				getActivity().runOnUiThread(new Runnable() {
+
+					@Override
+					public void run() {
+						Toast.makeText(getActivity(), "삭제했습니다.",
+								Toast.LENGTH_SHORT).show();
+					}
+				});
+			}
+		});
+	}
+
+	private void deleteInbodyData() {
+		if (getActivity().deleteFile(FitnessUtil.FILE_INBODY)) {
+			Toast.makeText(getActivity(), "삭제했습니다.", Toast.LENGTH_SHORT).show();
+		} else {
+			Toast.makeText(getActivity(), "실패했습니다.", Toast.LENGTH_SHORT).show();
 		}
-		return false;
+	}
+
+	private void openControlActivity() {
+		mActivityInterface.getBlinkServiceInteraction().openControlActivity();
 	}
 
 	@Override
@@ -117,9 +99,48 @@ public class SettingFragment extends PreferenceFragment implements
 		return false;
 	}
 
-	@Override
-	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
-			String key) {
-	}
+	private static class SettingListViewAdapter extends
+			WearableListView.Adapter {
+		private String[] mItems;
+		private LayoutInflater mInflater;
+		private static int[] LIST_ICONS = { R.drawable.ic_action_action_delete,
+				R.drawable.ic_action_action_delete,
+				R.drawable.ic_action_device_bluetooth_connected };
 
+		public SettingListViewAdapter(Context context) {
+			mItems = new String[] { "운동자료 삭제", "인바디 삭제", "Blink 관리화면" };
+			mInflater = LayoutInflater.from(context);
+		}
+
+		@Override
+		public int getItemCount() {
+			return mItems.length;
+		}
+
+		@Override
+		public void onBindViewHolder(WearableListView.ViewHolder vh,
+				int position) {
+			ViewHolder h = (ViewHolder) vh;
+			h.textView.setText(mItems[position]);
+			h.imageView.setImageResource(LIST_ICONS[position]);
+		}
+
+		@Override
+		public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+			return new ViewHolder(mInflater.inflate(R.layout.list_preference,
+					parent, false));
+		}
+
+		static class ViewHolder extends WearableListView.ViewHolder {
+			TextView textView;
+			CircledImageView imageView;
+
+			public ViewHolder(View itemView) {
+				super(itemView);
+				textView = (TextView) itemView.findViewById(R.id.name);
+				imageView = (CircledImageView) itemView
+						.findViewById(R.id.circle);
+			}
+		}
+	}
 }

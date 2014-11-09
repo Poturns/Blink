@@ -1,57 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginRight="15dp"
-    android:layout_marginLeft="15dp"
+<kr.poturns.blink.demo.fitnessapp.view.WearableListItemLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="80dp"
+    android:layout_gravity="center_vertical"
     android:gravity="center_vertical"
-    android:minHeight="?android:attr/listPreferredItemHeight"
-    android:paddingRight="?android:attr/scrollbarSize" >
+    app:enableDrawableChange="false"
+    app:maxProximityValue="1.6"
+    app:minProximityValue="0.9" >
 
-    <RelativeLayout
+    <android.support.wearable.view.CircledImageView
+        android:id="@+id/circle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="6dip"
-        android:layout_marginLeft="15dip"
-        android:layout_marginRight="6dip"
-        android:layout_marginTop="6dip"
-        android:layout_weight="1" >
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="10dp"
+        android:clipToPadding="false"
+        app:circle_border_color="@color/white"
+        app:circle_border_width="1dp"
+        app:circle_color="@null"
+        app:circle_padding="4dp"
+        app:circle_radius="20dp"
+        app:circle_radius_pressed="18dp" />
 
-        <TextView
-            android:id="@+android:id/title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:ellipsize="marquee"
-            android:fadingEdge="horizontal"
-            android:singleLine="true"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@android:color/white"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+android:id/summary"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@android:id/title"
-            android:layout_below="@android:id/title"
-            android:maxLines="2"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@android:color/white" />
-
-        <ImageView
-            android:id="@+id/ImageView01"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true" />
-    </RelativeLayout>
-
-    <!-- Preference should place its actual preference widget here. -->
-
-    <LinearLayout
-        android:id="@+android:id/widget_frame"
+    <TextView
+        android:id="@+id/name"
         android:layout_width="wrap_content"
-        android:layout_height="fill_parent"
-        android:gravity="center_vertical"
-        android:orientation="vertical" />
+        android:layout_height="match_parent"
+        android:layout_marginEnd="16dp"
+        android:layout_marginStart="20dp"
+        android:fontFamily="sans-serif-condensed-light"
+        android:gravity="center"
+        android:lineSpacingExtra="-4sp"
+        android:textColor="@color/white"
+        android:textSize="16sp" />
 
-</LinearLayout>
+</kr.poturns.blink.demo.fitnessapp.view.WearableListItemLayout>

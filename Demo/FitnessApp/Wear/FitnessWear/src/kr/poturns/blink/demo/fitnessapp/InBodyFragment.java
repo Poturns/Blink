@@ -71,8 +71,7 @@ public class InBodyFragment extends SwipeEventFragment implements
 		gson = new Gson();
 
 		try {
-			Inbody mInbodyData = FitnessUtil
-					.readInBodyFromFile(getActivity());
+			Inbody mInbodyData = FitnessUtil.readInBodyFromFile(getActivity());
 			updateView(mInbodyData);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -167,7 +166,13 @@ public class InBodyFragment extends SwipeEventFragment implements
 										}.getType());
 							}
 							mInbodyData = mInbodyList.get(mInbodyList.size() - 1);
-
+							try {
+								FitnessUtil.saveInBodyFile(getActivity(),
+										mInbodyData);
+							} catch (IOException e) {
+								e.printStackTrace();
+								return;
+							}
 						} catch (JsonParseException e) {
 							e.printStackTrace();
 							Toast.makeText(getActivity(),
@@ -179,18 +184,6 @@ public class InBodyFragment extends SwipeEventFragment implements
 							Toast.makeText(getActivity(),
 									"인바디 데이터를 받을 수 없습니다.", Toast.LENGTH_SHORT)
 									.show();
-							return;
-						}
-						try {
-							FitnessUtil.saveInBodyFile(getActivity(),mInbodyData);
-							try {
-	                            mInbodyData = FitnessUtil.readInBodyFromFile(getActivity());
-                            } catch (ClassNotFoundException e) {
-	                            // TODO Auto-generated catch block
-	                            e.printStackTrace();
-                            }
-						} catch (IOException e) {
-							e.printStackTrace();
 							return;
 						}
 						updateView(mInbodyData);
@@ -214,7 +207,7 @@ public class InBodyFragment extends SwipeEventFragment implements
 			inbody_progressbar_summary.setText("오늘 : "
 					+ Double.toString(todayExersisedCalorie) + " KCal 소모");
 		} else {
-			inbody_date.setText("");
+			inbody_date.setText(inbodyData.DateTime);
 			inbody_age_gender.setText(inbodyData.age + " 세 ("
 					+ inbodyData.gender + ")");
 			inbody_weight.setText("몸무게 : "

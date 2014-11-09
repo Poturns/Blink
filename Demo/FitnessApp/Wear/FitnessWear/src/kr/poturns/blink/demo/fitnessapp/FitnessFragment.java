@@ -281,7 +281,7 @@ public class FitnessFragment extends SwipeEventFragment implements
 		view.setTextColor(getResources().getColor(R.color.orange));
 		view.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
 		view.setShadowLayer(0, 0, 0, 0);
-		view.setPaddingRelative(30, 30, 30, 30);
+		view.setPaddingRelative(10, 10, 10, 10);
 		toast.show();
 	}
 

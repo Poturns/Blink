@@ -40,10 +40,8 @@ public class HomeFragment extends SwipeEventFragment {
 			@Override
 			public void onClick(WearableListView.ViewHolder view) {
 				mActivityInterface.attachFragment(
-						Fragment.instantiate(
-								getActivity(),
-								FRAGMENT_NAMES[((HomeAdapter.ViewHolder) view).position]),
-						null);
+						Fragment.instantiate(getActivity(),
+								FRAGMENT_NAMES[view.getPosition()]), null);
 			}
 
 			@Override
@@ -83,7 +81,6 @@ public class HomeFragment extends SwipeEventFragment {
 		public void onBindViewHolder(WearableListView.ViewHolder vh,
 				int position) {
 			ViewHolder h = (ViewHolder) vh;
-			h.position = position;
 			h.textView.setText(mItems[position]);
 			h.imageView.setImageResource(LIST_ICONS[position]);
 		}
@@ -97,7 +94,6 @@ public class HomeFragment extends SwipeEventFragment {
 		static class ViewHolder extends WearableListView.ViewHolder {
 			TextView textView;
 			ImageView imageView;
-			int position;
 
 			public ViewHolder(View itemView) {
 				super(itemView);

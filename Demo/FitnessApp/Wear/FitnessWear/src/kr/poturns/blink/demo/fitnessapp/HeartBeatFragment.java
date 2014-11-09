@@ -1,5 +1,8 @@
 package kr.poturns.blink.demo.fitnessapp;
 
+import kr.poturns.blink.demo.fitnessapp.MainActivity.OnHeartBeatEventListener;
+import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
+import kr.poturns.blink.demo.fitnesswear.R;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -7,23 +10,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.ScaleAnimation;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-import kr.poturns.blink.demo.fitnessapp.MainActivity.OnHeartBeatEventListener;
-import kr.poturns.blink.demo.fitnessapp.MainActivity.SwipeEventFragment;
-import kr.poturns.blink.demo.fitnesswear.R;
 
 public class HeartBeatFragment extends SwipeEventFragment implements
 		OnHeartBeatEventListener {
 	/** 심장박동 애니메이션을 보여줄 Thread */
 	private Thread mHeartBeatingThread;
 	private TextView mHeartBeatTextView, mActionTextView;
+	private ProgressBar mProgressBar;
 	/** 서비스가 측정한 BPM */
 	int mMeasuredBpm;
 	private int mColorRed, mColorWhite;
 	private boolean mMeasuring = false;
 
-	private final ScaleAnimation BEATING_AMINATION = new ScaleAnimation(1f,
-			1f, .9f, 1.1f, 0f, -1f);
+	private final ScaleAnimation BEATING_AMINATION = new ScaleAnimation(1f, 1f,
+			.9f, 1.1f, 0f, -1f);
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -33,6 +35,7 @@ public class HeartBeatFragment extends SwipeEventFragment implements
 		mColorWhite = getResources().getColor(android.R.color.white);
 		final View v = inflater.inflate(R.layout.fragment_heartbeat, container,
 				false);
+		mProgressBar = (ProgressBar) v.findViewById(android.R.id.progress);
 		mHeartBeatTextView = (TextView) v.findViewById(R.id.heartbeat_heart);
 		mActionTextView = (TextView) v.findViewById(android.R.id.button1);
 		mActionTextView.setOnClickListener(new View.OnClickListener() {
@@ -96,6 +99,8 @@ public class HeartBeatFragment extends SwipeEventFragment implements
 		}
 		mHeartBeatingThread = new HeartBeatAction();
 		mHeartBeatingThread.start();
+		mProgressBar.setIndeterminate(true);
+		mProgressBar.setVisibility(View.VISIBLE);
 	}
 
 	void disableMeasureUI() {
@@ -108,6 +113,8 @@ public class HeartBeatFragment extends SwipeEventFragment implements
 			mHeartBeatingThread.interrupt();
 			mHeartBeatingThread = null;
 		}
+		mProgressBar.setIndeterminate(false);
+		mProgressBar.setVisibility(View.INVISIBLE);
 	}
 
 	/**
