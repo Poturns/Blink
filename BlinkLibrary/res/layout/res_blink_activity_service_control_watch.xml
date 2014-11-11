@@ -21,7 +21,7 @@
     <FrameLayout
         android:id="@+id/res_blink_activity_main_fragment_content"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="fill_parent"
         android:clipChildren="false" />
 
 </LinearLayout>

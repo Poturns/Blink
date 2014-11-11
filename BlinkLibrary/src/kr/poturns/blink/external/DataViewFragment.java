@@ -40,7 +40,7 @@ class DataViewFragment extends Fragment {
 	App mApp;
 	Measurement mMeasurement;
 	SqliteManagerExtended mManager;
-	ViewPagerFragmentProxy fragmentProxy = new ViewPagerFragmentProxy() {
+	ViewPagerFragmentDelegate fragmentProxy = new ViewPagerFragmentDelegate() {
 		@Override
 		protected String[] getTitles() {
 			return getResources().getStringArray(

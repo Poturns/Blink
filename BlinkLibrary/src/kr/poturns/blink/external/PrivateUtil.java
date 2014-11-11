@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -217,9 +218,29 @@ class PrivateUtil {
 			return null;
 		return bundle.getParcelable(EXTRA_DEVICE_MEASUREMENT);
 	}
+
+	public static int getBlinkDeviceType(BlinkDevice device) {
+		return BluetoothAdapter.getDefaultAdapter()
+				.getRemoteDevice(device.getAddress()).getBluetoothClass()
+				.getMajorDeviceClass();
+	}
+
+	public static int getBlinkDeviceTypeIcon(BlinkDevice deivce) {
+		switch (getBlinkDeviceType(deivce)) {
+		case BluetoothClass.Device.Major.COMPUTER:
+			return R.drawable.res_blink_ic_action_hardware_computer;
+		case BluetoothClass.Device.Major.PHONE:
+			return R.drawable.res_blink_ic_action_hardware_phone_android;
+		case BluetoothClass.Device.Major.WEARABLE:
+			return R.drawable.res_blink_ic_action_hardware_watch;
+		default:
+			return R.drawable.res_blink_ic_action_device_access_bluetooth;
+		}
+	}
 }
+
 /** ViewPager 코드 단축용 */
-abstract class ViewPagerFragmentProxy {
+abstract class ViewPagerFragmentDelegate {
 	protected TabHost mTabHost;
 	protected ViewPager mViewPager;
 
@@ -232,8 +253,7 @@ abstract class ViewPagerFragmentProxy {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		final View v = inflater.inflate(
-				R.layout.res_blink_view_tab_with_viewpager, container,
-				false);
+				R.layout.res_blink_view_tab_with_viewpager, container, false);
 		mTabHost = (TabHost) v.findViewById(android.R.id.tabhost);
 		mTabHost.setup();
 		TabHost.TabContentFactory factory = new TabHost.TabContentFactory() {
@@ -269,19 +289,18 @@ abstract class ViewPagerFragmentProxy {
 						navigateTab(position, true);
 					}
 				});
-		mViewPager
-				.setAdapter(new FragmentPagerAdapter(getFragmentManager()) {
+		mViewPager.setAdapter(new FragmentPagerAdapter(getFragmentManager()) {
 
-					@Override
-					public int getCount() {
-						return pageTitles.length;
-					}
+			@Override
+			public int getCount() {
+				return pageTitles.length;
+			}
 
-					@Override
-					public Fragment getItem(int position) {
-						return getViewPagerPage(position);
-					}
-				});
+			@Override
+			public Fragment getItem(int position) {
+				return getViewPagerPage(position);
+			}
+		});
 		return v;
 	}
 

@@ -4,7 +4,18 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <include layout="@layout/res_blink_view_listview" />
+    <include
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="0dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="0dp"
+        layout="@layout/res_blink_view_listview"
+        android:paddingBottom="10dp"
+        android:paddingTop="2dp"
+        android:paddingLeft="30dp"
+        android:paddingRight="30dp" />
 
     <include layout="@layout/res_blink_view_empty" />
 

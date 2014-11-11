@@ -2,6 +2,7 @@ package kr.poturns.blink.external;
 
 import kr.poturns.blink.R;
 import kr.poturns.blink.external.SwipeListener.Direction;
+import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.app.Activity;
@@ -41,30 +42,54 @@ interface SwipeListener {
 	public boolean onSwipe(Direction direction);
 }
 
+/** Wearable을 위한 추가적인 기능이 있는 인터페이스 */
 interface IServiceContolWatchActivity extends IServiceContolActivity {
-	static int POSITION_MAIN = 0;
-	static int POSITION_CONNECTION = 1;
-	static int POSITION_PREFERENCE = 2;
+	/**
+	 * {@link #transitFragment(int, Bundle)}를 위한 상수<br>
+	 * <br>
+	 * <b>홈 화면</b>
+	 */
+	static final int POSITION_MAIN = 0;
+	/**
+	 * {@link #transitFragment(int, Bundle)}를 위한 상수<br>
+	 * <br>
+	 * <b>연결 상태 화면</b>
+	 */
+	static final int POSITION_CONNECTION = 1;
+	/**
+	 * {@link #transitFragment(int, Bundle)}를 위한 상수<br>
+	 * <br>
+	 * <b>설정 화면</b>
+	 */
+	static final int POSITION_PREFERENCE = 2;
 
+	/** 홈 화면으로 이동한다. */
 	void returnToMain(Bundle arguments);
 }
 
+/** TitleBar를 Long Click 했을 때, 호출되는 인터페이스 */
+interface OnTitleBarLongClickListener {
+	/**
+	 * TitleBar를 Long Click 했을 때, 호출된다.
+	 * 
+	 * @param titleView
+	 *            TitleView
+	 * @return 작업의 처리 여부, false를 반환할 경우 기본 동작은 Activity가 종료되는 것이다.
+	 * */
+	boolean onTitleViewLongClick(View titleView);
+}
+
 /**
- * Watch를 위한 Activity
+ * Service에서 실행 되어, Blink Service와 일부 상호작용하는 {@link android.app.Activity}<br>
+ * Wearable 화면을 위해 수행할 수 있는 기능이 간략화 되었다.<br>
+ * <br>
+ * 이 {@link android.app.Activity}를 통해 다음과 같은 작업을 수행 할 수 있다. <br>
+ * <li>{@link BlinkDevice}의 연결 상태 표시 및 관리</li><br>
+ * <li>
+ * Service 설정 값 변경</li>
  * 
  * @author myungjin
  */
-// FIXME 추가적으로 Watch를 위한 인터페이스를 구현하는 것은 좋지 않음,
-// PreferenceFragment.create(Context); 와 같은 방식으로
-// Fragment 객체 생성 시점에 적당한 객체를 반환하도록 구현할 것.
-// public static final create(Context context){
-// swich(deviceType){
-// case handHeld:
-// return new PreferenceExternalFragment();
-// case watch:
-// return new PreferenceWatchFragment();
-// .....
-//
 public class ServiceControlWatchActivity extends Activity implements
 		IServiceContolWatchActivity {
 	BlinkServiceInteraction mInteraction;
@@ -79,6 +104,24 @@ public class ServiceControlWatchActivity extends Activity implements
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.res_blink_activity_service_control_watch);
+
+		// titleBar
+		findViewById(android.R.id.text1).setOnLongClickListener(
+				new View.OnLongClickListener() {
+
+					@Override
+					public boolean onLongClick(View v) {
+						if (mSwipeListener instanceof OnTitleBarLongClickListener) {
+							if (!((OnTitleBarLongClickListener) mSwipeListener)
+									.onTitleViewLongClick(v)) {
+								finish();
+							}
+						} else {
+							finish();
+						}
+						return true;
+					}
+				});
 
 		mGestureDetector = new GestureDetector(this,
 				new GestureDetector.SimpleOnGestureListener() {

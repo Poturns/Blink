@@ -1,6 +1,7 @@
 package kr.poturns.blink.external;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import kr.poturns.blink.R;
@@ -414,7 +415,7 @@ abstract class ConnectionFragment extends Fragment {
 		mCurrentChildFragmentInterface.onPreLoading();
 	}
 
-	// Progress를 어떻게 나타낼것인가에 대한 옵션 
+	// Progress를 어떻게 나타낼것인가에 대한 옵션
 	public static final int PROGRESS_OPT_NONE = 0x00000001;
 	public static final int PROGRESS_OPT_DIALOG = PROGRESS_OPT_NONE << 1;
 	public static final int PROGRESS_OPT_ACTION_BAR = PROGRESS_OPT_DIALOG << 1;
@@ -451,17 +452,17 @@ abstract class ConnectionFragment extends Fragment {
 				.replace(R.id.res_blink_fragment_connection_content, callback)
 				.commit();
 	}
-	
-	/** 즐겨찾기에 등록된 BlinkDevice들에게 연결 요청을 보낸다.*/
-	void connectFavoriteDevices(){
-		//TODO
+
+	/** 즐겨찾기에 등록된 BlinkDevice들에게 연결 요청을 보낸다. */
+	void connectFavoriteDevices() {
+		// TODO
 	}
 
 	/** BlinkDevice의 정보를 보여주는 DialogFragment */
 	private class DeviceInfoDialogFragment extends DialogFragment {
 		BlinkDevice mBlinkDevice;
 		Device mDevice;
-		private ViewPagerFragmentProxy mFragmentProxy = new ViewPagerFragmentProxy() {
+		private ViewPagerFragmentDelegate mFragmentProxy = new ViewPagerFragmentDelegate() {
 
 			@Override
 			protected Fragment getViewPagerPage(int position) {
@@ -767,7 +768,7 @@ class ConnectionHandHeldFragment extends ConnectionFragment {
 }
 
 class ConnectionWearableFragment extends ConnectionFragment implements
-		SwipeListener {
+		SwipeListener, OnTitleBarLongClickListener {
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
@@ -800,6 +801,15 @@ class ConnectionWearableFragment extends ConnectionFragment implements
 				mProgressDialog.dismiss();
 		}
 	}
+
+	@Override
+	public boolean onTitleViewLongClick(View titleView) {
+		if (mCurrentChildFragmentInterface instanceof OnTitleBarLongClickListener)
+			return ((OnTitleBarLongClickListener) mCurrentChildFragmentInterface)
+					.onTitleViewLongClick(titleView);
+		else
+			return false;
+	}
 }
 
 /**
@@ -809,6 +819,7 @@ class ConnectionWearableFragment extends ConnectionFragment implements
 abstract class BaseConnectionFragment extends Fragment implements
 		IConnectionCallback {
 	private ConnectionFragment mParentFragment;
+	private static final ConcurrentHashMap<BlinkDevice, Runnable> sConnectionTaskCallbackMap = new ConcurrentHashMap<BlinkDevice, Runnable>();
 
 	@Override
 	public void onDeviceListLoadFailed() {
@@ -883,6 +894,11 @@ abstract class BaseConnectionFragment extends Fragment implements
 		mParentFragment.connectOrDisConnectDevice(device);
 	}
 
+	void connectOrDisConnectDevice(BlinkDevice device, Runnable postRunCallback) {
+		mParentFragment.connectOrDisConnectDevice(device);
+		sConnectionTaskCallbackMap.put(device, postRunCallback);
+	}
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -933,6 +949,11 @@ abstract class BaseConnectionFragment extends Fragment implements
 				onDeviceListChanged();
 			}
 		});
+
+		// 연결 완료 후 등록된 콜백을 UI Thread에서 실행
+		Runnable command = sConnectionTaskCallbackMap.remove(device);
+		if (command != null)
+			ConnectionFragment.sHandler.post(command);
 	}
 
 	@Override
