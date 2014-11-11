@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
@@ -148,6 +149,16 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 		inflater.inflate(R.menu.res_blink_fragment_circular_connection, menu);
 	}
 
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		final int id = item.getItemId();
+		if (id == R.id.res_blink_action_connection_connect_favorite) {
+			connectFavoriteDevices();
+			return true;
+		} else
+			return super.onOptionsItemSelected(item);
+	}
+
 	private OnDragAndDropListener mDragAndDropListener = new OnDragAndDropListener() {
 
 		@Override
@@ -221,9 +232,9 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 	}
 
 	// Center View가 Host Device가 아닐 때 리스트에서 Host Device를 제거하기 위함
-	//private void checkAndPutHostDevice() {
-	//	if (!getDeviceList().contains(BlinkDevice.HOST)) {
-	//		getDeviceList().add(BlinkDevice.HOST);
-	//	}
-	//}
+	// private void checkAndPutHostDevice() {
+	// if (!getDeviceList().contains(BlinkDevice.HOST)) {
+	// getDeviceList().add(BlinkDevice.HOST);
+	// }
+	// }
 }

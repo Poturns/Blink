@@ -1,6 +1,7 @@
 package kr.poturns.blink.external;
 
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -102,10 +103,12 @@ abstract class ConnectionFragment extends Fragment {
 	boolean mFetchTasking = false;
 	/** UI를 표시하는 ChildFragment */
 	IConnectionCallback mCurrentChildFragmentInterface;
+	Set<String> mFavoriteDeviceAddressSet;
 
 	static final Handler sHandler = new Handler();
 	/** ProgressDialog가 최대로 보여질 시간 */
 	private static final long PROGRESS_WATING_TIME = 10 * 1000;
+	static final String TAG = ConnectionFragment.class.getSimpleName();
 
 	@Override
 	public void onAttach(final Activity activity) {
@@ -131,6 +134,8 @@ abstract class ConnectionFragment extends Fragment {
 		} else {
 			initInteraction();
 		}
+		mFavoriteDeviceAddressSet = PrivateUtil.IO
+				.getFavoriteSet(getActivity());
 	}
 
 	private void initInteraction() {
@@ -239,6 +244,8 @@ abstract class ConnectionFragment extends Fragment {
 		mDeviceList = null;
 		mActivityInterface = null;
 		mProgressDialog = null;
+		PrivateUtil.IO
+				.saveFavoriteSet(getActivity(), mFavoriteDeviceAddressSet);
 		super.onDestroy();
 	}
 
@@ -284,7 +291,7 @@ abstract class ConnectionFragment extends Fragment {
 	}
 
 	/** (실행중인) ProgressDialog를 dismiss하는 Action */
-	Runnable mProgressDismissAction = new Runnable() {
+	final Runnable mProgressDismissAction = new Runnable() {
 
 		@Override
 		public void run() {
@@ -401,6 +408,15 @@ abstract class ConnectionFragment extends Fragment {
 		}
 	}
 
+	// -------------- Progress 관련 메소드
+
+	/** Progress를 어떻게 나타낼것인가에 대한 옵션, 아무것도 보여주지 않는다. */
+	public static final int PROGRESS_OPT_NONE = 0x00000001;
+	/** Progress를 어떻게 나타낼것인가에 대한 옵션, Dialog를 보여준다. */
+	public static final int PROGRESS_OPT_DIALOG = PROGRESS_OPT_NONE << 1;
+	/** Progress를 어떻게 나타낼것인가에 대한 옵션, ActionBar에서 ProgressBar를 보여준다. */
+	public static final int PROGRESS_OPT_ACTION_BAR = PROGRESS_OPT_DIALOG << 1;
+
 	/** 비동기 작업 전 호출된다. */
 	void onPreLoading(int options) {
 		if ((options & PROGRESS_OPT_DIALOG) == PROGRESS_OPT_DIALOG) {
@@ -414,11 +430,6 @@ abstract class ConnectionFragment extends Fragment {
 		}
 		mCurrentChildFragmentInterface.onPreLoading();
 	}
-
-	// Progress를 어떻게 나타낼것인가에 대한 옵션
-	public static final int PROGRESS_OPT_NONE = 0x00000001;
-	public static final int PROGRESS_OPT_DIALOG = PROGRESS_OPT_NONE << 1;
-	public static final int PROGRESS_OPT_ACTION_BAR = PROGRESS_OPT_DIALOG << 1;
 
 	/** 비동기 작업 후 호출된다. */
 	void onPostLoading(int options) {
@@ -435,6 +446,7 @@ abstract class ConnectionFragment extends Fragment {
 			mCurrentChildFragmentInterface.onPostLoading();
 	}
 
+	// ------------
 	/**
 	 * ChildFragment를 변경할 때 호출한다.
 	 * 
@@ -453,9 +465,43 @@ abstract class ConnectionFragment extends Fragment {
 				.commit();
 	}
 
+	// ------- 즐겨찾기 기능 ----------
+
 	/** 즐겨찾기에 등록된 BlinkDevice들에게 연결 요청을 보낸다. */
 	void connectFavoriteDevices() {
-		// TODO
+		onPreLoading(PROGRESS_OPT_DIALOG);
+		AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
+
+			@Override
+			public void run() {
+				for (String favor : mFavoriteDeviceAddressSet) {
+					try {
+						Log.d(TAG, "favor connection try : " + favor);
+						mBlinkOperation.connectDevice(BlinkDevice.load(favor));
+					} catch (Exception re) {
+						re.printStackTrace();
+					}
+				}
+
+				sHandler.post(new Runnable() {
+
+					@Override
+					public void run() {
+						onPostLoading(PROGRESS_OPT_DIALOG);
+					}
+				});
+			}
+		});
+	}
+
+	/** 즐겨찾기 목록에 device를 추가한다. */
+	boolean addDeviceToFavoriteSet(BlinkDevice device) {
+		return mFavoriteDeviceAddressSet.add(device.getAddress());
+	}
+
+	/** 즐겨찾기 목록에서 device를 삭제한다. */
+	boolean removeDeviceFromFavoriteSet(BlinkDevice device) {
+		return mFavoriteDeviceAddressSet.remove(device.getAddress());
 	}
 
 	/** BlinkDevice의 정보를 보여주는 DialogFragment */
@@ -538,7 +584,22 @@ abstract class ConnectionFragment extends Fragment {
 			private static final int TYPE_TEXT = 0x01;
 			private static final int TYPE_SWITCH = 0x02;
 
-			BaseAdapter mAdapter = new BaseAdapter() {
+			@Override
+			public View onCreateView(LayoutInflater inflater,
+					ViewGroup container, Bundle savedInstanceState) {
+				final View v = inflater
+						.inflate(
+								R.layout.res_blink_dialog_fragment_connection_bluetooth_info,
+								container, false);
+				ListView listView = (ListView) v
+						.findViewById(android.R.id.list);
+				listView.setAdapter(mAdapter);
+				listView.setDividerHeight(30);
+				listView.setDivider(null);
+				return v;
+			}
+
+			private BaseAdapter mAdapter = new BaseAdapter() {
 
 				@Override
 				public View getView(int position, View convertView,
@@ -637,13 +698,33 @@ abstract class ConnectionFragment extends Fragment {
 						content.setClickable(false);
 						content.setChecked(mDevice.isLESupported());
 						break;
+					case 6:
+						title.setText(R.string.res_blink_connection_favorite);
+						content.setChecked(mFavoriteDeviceAddressSet
+								.contains(mBlinkDevice));
+						content.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+							@Override
+							public void onCheckedChanged(
+									CompoundButton buttonView, boolean isChecked) {
+								if (isChecked) {
+									if (!addDeviceToFavoriteSet(mBlinkDevice))
+										buttonView.setChecked(false);
+								} else {
+									if (!removeDeviceFromFavoriteSet(mBlinkDevice))
+										buttonView.setChecked(true);
+								}
+							}
+						});
+						break;
 					}
+
 					return convertView;
 				}
 
 				@Override
 				public long getItemId(int position) {
-					return 0;
+					return position;
 				}
 
 				@Override
@@ -661,24 +742,9 @@ abstract class ConnectionFragment extends Fragment {
 
 				@Override
 				public int getCount() {
-					return 6;
+					return 7;
 				}
 			};
-
-			@Override
-			public View onCreateView(LayoutInflater inflater,
-					ViewGroup container, Bundle savedInstanceState) {
-				final View v = inflater
-						.inflate(
-								R.layout.res_blink_dialog_fragment_connection_bluetooth_info,
-								container, false);
-				ListView listView = (ListView) v
-						.findViewById(android.R.id.list);
-				listView.setAdapter(mAdapter);
-				listView.setDividerHeight(30);
-				listView.setDivider(null);
-				return v;
-			}
 		}
 
 		/**
@@ -716,9 +782,13 @@ abstract class ConnectionFragment extends Fragment {
 
 									@Override
 									public void onClick(View v) {
-										ConnectionFragment.this.mActivityInterface.transitFragment(
-												1, PrivateUtil.toBundle(
-														mDevice, app));
+										ConnectionFragment.this.mActivityInterface
+												.transitFragment(
+														1,
+														PrivateUtil.Bundles
+																.toBundle(
+																		mDevice,
+																		app));
 										((DialogFragment) DatabaseDeviceInfoFragment.this
 												.getParentFragment()).dismiss();
 									}
@@ -729,9 +799,13 @@ abstract class ConnectionFragment extends Fragment {
 
 									@Override
 									public void onClick(View v) {
-										ConnectionFragment.this.mActivityInterface.transitFragment(
-												2, PrivateUtil.toBundle(
-														mDevice, app));
+										ConnectionFragment.this.mActivityInterface
+												.transitFragment(
+														2,
+														PrivateUtil.Bundles
+																.toBundle(
+																		mDevice,
+																		app));
 										((DialogFragment) DatabaseDeviceInfoFragment.this
 												.getParentFragment()).dismiss();
 									}
@@ -1032,4 +1106,19 @@ abstract class BaseConnectionFragment extends Fragment implements
 	public void onDiscoveryFailed() {
 		mParentFragment.mFetchTasking = false;
 	}
+
+	void connectFavoriteDevices() {
+		mParentFragment.connectFavoriteDevices();
+	}
+
+	/** 즐겨찾기 목록에 device를 추가한다. */
+	boolean addDeviceToFavoriteSet(BlinkDevice device) {
+		return mParentFragment.addDeviceToFavoriteSet(device);
+	}
+
+	/** 즐겨찾기 목록에서 device를 삭제한다. */
+	boolean removeDeviceFromFavoriteSet(BlinkDevice device) {
+		return mParentFragment.removeDeviceFromFavoriteSet(device);
+	}
+
 }

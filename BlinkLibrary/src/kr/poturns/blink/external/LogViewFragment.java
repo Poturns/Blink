@@ -38,8 +38,10 @@ class LogViewFragment extends Fragment {
 	App mApp;
 	SqliteManagerExtended mManager;
 	int mPrevTitleViewSelectionId;
-	int[] mTitleViewsIdArray = new int[] { R.id.res_blink_fragment_logview_text_device,
-			R.id.res_blink_fragment_logview_text_app, R.id.res_blink_fragment_logview_text_content,
+	int[] mTitleViewsIdArray = new int[] {
+			R.id.res_blink_fragment_logview_text_device,
+			R.id.res_blink_fragment_logview_text_app,
+			R.id.res_blink_fragment_logview_text_content,
 			R.id.res_blink_fragment_logview_text_datetime };
 
 	@Override
@@ -81,8 +83,8 @@ class LogViewFragment extends Fragment {
 	void checkArgumentAndResolveData() {
 		Bundle arg = getArguments();
 		if (arg != null && !arg.isEmpty()) {
-			mDevice = PrivateUtil.obtainDevice(arg);
-			mApp = PrivateUtil.obtainApp(arg);
+			mDevice = PrivateUtil.Bundles.obtainDevice(arg);
+			mApp = PrivateUtil.Bundles.obtainApp(arg);
 			StringBuilder subTitle = new StringBuilder(mDevice.Device);
 			if (mApp != null)
 				subTitle.append(" / ").append(mApp.AppName);
@@ -101,7 +103,8 @@ class LogViewFragment extends Fragment {
 			Bundle savedInstanceState) {
 		final View view = inflater.inflate(R.layout.res_blink_fragment_logview,
 				container, false);
-		View titleLayout = view.findViewById(R.id.res_blink_fragment_logview_table_title);
+		View titleLayout = view
+				.findViewById(R.id.res_blink_fragment_logview_table_title);
 		ListView listView = (ListView) view.findViewById(android.R.id.list);
 		listView.setAdapter(mArrayAdapter);
 		listView.setEmptyView(view.findViewById(android.R.id.empty));

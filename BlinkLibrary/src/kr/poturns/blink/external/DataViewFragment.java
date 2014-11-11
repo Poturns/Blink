@@ -82,9 +82,9 @@ class DataViewFragment extends Fragment {
 		// 이 fragment에 진입했다는 것은, argument가 존재한다는 의미이다.
 		Bundle arg = getArguments();
 
-		mDevice = PrivateUtil.obtainDevice(arg);
-		mApp = PrivateUtil.obtainApp(arg);
-		mMeasurement = PrivateUtil.obtainMeasurement(arg);
+		mDevice = PrivateUtil.Bundles.obtainDevice(arg);
+		mApp = PrivateUtil.Bundles.obtainApp(arg);
+		mMeasurement = PrivateUtil.Bundles.obtainMeasurement(arg);
 	}
 
 	@Override

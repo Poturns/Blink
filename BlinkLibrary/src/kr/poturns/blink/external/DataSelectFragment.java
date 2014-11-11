@@ -77,7 +77,7 @@ class DataSelectFragment extends Fragment {
 							new DeviceMapFragment()).commit();
 		}
 		Bundle arg = getArguments();
-		if (PrivateUtil.obtainApp(arg) != null) {
+		if (PrivateUtil.Bundles.obtainApp(arg) != null) {
 			showMeasurementList(arg, getActivity().getActionBar().getTitle(),
 					getActivity().getActionBar().getSubtitle());
 		}
@@ -193,10 +193,10 @@ class DataSelectFragment extends Fragment {
 
 						@Override
 						public void onClick(View v) {
-							changeFragment(PrivateUtil.toBundle(device, app,
-									measurement), getActivity().getActionBar()
-									.getTitle(), getActivity().getActionBar()
-									.getSubtitle());
+							changeFragment(PrivateUtil.Bundles.toBundle(device,
+									app, measurement), getActivity()
+									.getActionBar().getTitle(), getActivity()
+									.getActionBar().getSubtitle());
 						}
 					});
 					return v;
@@ -282,11 +282,11 @@ class DataSelectFragment extends Fragment {
 				convertView.setOnClickListener(new View.OnClickListener() {
 					@Override
 					public void onClick(View v) {
-						DataSelectFragment.this.showMeasurementList(PrivateUtil
-								.toBundle((Device) getGroup(groupPosition),
-										item), getActivity().getActionBar()
-								.getTitle(), getActivity().getActionBar()
-								.getSubtitle());
+						DataSelectFragment.this.showMeasurementList(
+								PrivateUtil.Bundles.toBundle(
+										(Device) getGroup(groupPosition), item),
+								getActivity().getActionBar().getTitle(),
+								getActivity().getActionBar().getSubtitle());
 					}
 				});
 			}
@@ -318,8 +318,8 @@ class DataSelectFragment extends Fragment {
 			mManager = ((IServiceContolActivity) getActivity())
 					.getDatabaseHandler();
 			Bundle bundle = getArguments();
-			mDevice = PrivateUtil.obtainDevice(bundle);
-			mApp = PrivateUtil.obtainApp(bundle);
+			mDevice = PrivateUtil.Bundles.obtainDevice(bundle);
+			mApp = PrivateUtil.Bundles.obtainApp(bundle);
 			mDatabaseObjectList = new ArrayList<IDatabaseObject>();
 			mDatabaseObjectList.addAll(mManager.obtainFunctionList(mApp));
 			mDatabaseObjectList.addAll(mManager.obtainMeasurementList(mApp));
@@ -384,8 +384,8 @@ class DataSelectFragment extends Fragment {
 						int position, long id) {
 					Object item = parent.getItemAtPosition(position);
 					if (item instanceof Measurement) {
-						changeFragment(PrivateUtil.toBundle(mDevice, mApp,
-								(Measurement) item), getActivity()
+						changeFragment(PrivateUtil.Bundles.toBundle(mDevice,
+								mApp, (Measurement) item), getActivity()
 								.getActionBar().getTitle(), getActivity()
 								.getActionBar().getSubtitle());
 					}
