@@ -16,12 +16,15 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -32,7 +35,7 @@ public class GlassActivity extends SupportMapActivity {
 	public static String ACTION_LIGHT_ON = "kr.poturns.blink.demo.visualizer.action.lighton";
 	public static String ACTION_LIGHT_OFF = "kr.poturns.blink.demo.visualizer.action.lightoff";
 	public static String ACTION_TAKE_PICTURE = "kr.poturns.blink.demo.visualizer.action.takepicture";
-	
+
 	private BlinkServiceInteraction mInteraction;
 	private IInternalOperationSupport mSupport;
 
@@ -40,11 +43,13 @@ public class GlassActivity extends SupportMapActivity {
 	private TextView mHeartbeatTextView;
 	private ListView mAlertList;
 	private GlassAlertAdapter mAlertAdapter;
-
+	private Button mControllerBtn;
 	private Handler mHandler;
+	private AlphaAnimation mAlphaAnimation;
 
 	private boolean isEmergency = false;
 	private boolean isMapOpened = false;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -130,8 +135,8 @@ public class GlassActivity extends SupportMapActivity {
 			@Override
 			public void onServiceConnected(IInternalOperationSupport iSupport) {
 				Log.i("Glass", "onServiceConnected");
-				Toast.makeText(getApplicationContext(),
-						"Binder Service Connected!", Toast.LENGTH_SHORT).show();
+				Toast.makeText(getApplicationContext(), "Blink 서비스와 연결되었습니다.",
+						Toast.LENGTH_SHORT).show();
 
 				mSupport = iSupport;
 
@@ -145,14 +150,11 @@ public class GlassActivity extends SupportMapActivity {
 					// TODO: AppInfo에 Function을 등록하더라도 실제 Function을 제공하는 것에 대한
 					// 신뢰성 보장이 되지 않음..
 					mBlinkAppInfo.addFunction("LightOn", "Turn On the Light",
-							ACTION_LIGHT_ON,
-							Function.TYPE_BROADCAST);
+							ACTION_LIGHT_ON, Function.TYPE_BROADCAST);
 					mBlinkAppInfo.addFunction("LightOff", "Turn On the Light",
-							ACTION_LIGHT_OFF,
-							Function.TYPE_BROADCAST);
+							ACTION_LIGHT_OFF, Function.TYPE_BROADCAST);
 					mBlinkAppInfo.addFunction("TakePicture", "Take Picture",
-							ACTION_TAKE_PICTURE,
-							Function.TYPE_BROADCAST);
+							ACTION_TAKE_PICTURE, Function.TYPE_BROADCAST);
 					mInteraction.registerBlinkApp(mBlinkAppInfo);
 				}
 
@@ -205,11 +207,11 @@ public class GlassActivity extends SupportMapActivity {
 		super.onDestroy();
 	}
 
-	private OnClickListener mOnClickLisener = new OnClickListener(){
+	private OnClickListener mOnClickLisener = new OnClickListener() {
 
 		@Override
-        public void onClick(View v) {
-	        // TODO Auto-generated method stub
+		public void onClick(View v) {
+			// TODO Auto-generated method stub
 			switch (v.getId()) {
 			case R.id.glass_btn_controller:
 				if (mInteraction != null)
@@ -217,33 +219,46 @@ public class GlassActivity extends SupportMapActivity {
 				break;
 			case R.id.map_image:
 				ImageView mMapBtn = (ImageView) findViewById(R.id.map_image);
-				if(isMapOpened){
+				if (isMapOpened) {
 					isMapOpened = false;
-					mMapBtn.setImageResource(R.drawable.map);
-				}else {
+					mMapBtn.setImageResource(R.drawable.ic_action_map);
+				} else {
 					isMapOpened = true;
-					mMapBtn.setImageResource(R.drawable.map_opened);
+					mMapBtn.setImageResource(R.drawable.ic_action_map_opened);
 				}
 				setMapVisibility(isMapOpened);
 				break;
 			default:
 				break;
 			}
-			
-        }
-		
+
+		}
+
 	};
+
 	private void initiateComponent() {
-		Button mControllerBtn = (Button) findViewById(R.id.glass_btn_controller);
+		mControllerBtn = (Button) findViewById(R.id.glass_btn_controller);
+		Drawable d = getResources().getDrawable(
+				R.drawable.ic_action_alert_error);
+		d.setBounds(0, 0, 100, 100);
+		mControllerBtn.setCompoundDrawables(d, null, null, null);
 		ImageView mMapBtn = (ImageView) findViewById(R.id.map_image);
 		mControllerBtn.setOnClickListener(mOnClickLisener);
+		mAlphaAnimation = new AlphaAnimation(1f, 0f);
+		mAlphaAnimation.setDuration(750);
+		mAlphaAnimation.setInterpolator(this,android.R.anim.cycle_interpolator);
+		mAlphaAnimation.setRepeatCount(Animation.INFINITE);
+		mAlphaAnimation.setRepeatMode(Animation.RESTART);
+
 		mMapBtn.setOnClickListener(mOnClickLisener);
 
 		mAlertList = (ListView) findViewById(R.id.glass_alertlist);
+		mAlertList.setSelector(R.drawable.selector);
 		mAlertAdapter = new GlassAlertAdapter(this);
-		mAlertAdapter.pushNewMessage("Welcome to Visualizer !! ");
 		mAlertAdapter
-				.pushNewMessage("You are watching ahead on wearing glasses. ");
+				.pushNewMessage("왼쪽 상단 버튼을 통해 지도를 켤 수 있습니다.");
+		mAlertAdapter
+		.pushNewMessage("오른쪽 하단에 심박수가 표시됩니다.");
 		mAlertList.setAdapter(mAlertAdapter);
 
 		mHeartbeatImageView = (ImageView) findViewById(R.id.heartbeat_image);
@@ -251,14 +266,14 @@ public class GlassActivity extends SupportMapActivity {
 		mHeartbeatTextView = (TextView) findViewById(R.id.heartbeat_figure);
 		mHeartbeatTextView.setVisibility(View.INVISIBLE);
 		setMapVisibility(isMapOpened);
-		
-		//Light on / off broadcast receiver 등록
+
+		// Light on / off broadcast receiver 등록
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(ACTION_LIGHT_ON);
 		filter.addAction(ACTION_LIGHT_OFF);
 		filter.addAction(ACTION_TAKE_PICTURE);
 		registerReceiver(mBroadcastReceiver, filter);
-		
+
 		mHandler = new Handler();
 	}
 
@@ -266,6 +281,11 @@ public class GlassActivity extends SupportMapActivity {
 		Button mControllerBtn = (Button) findViewById(R.id.glass_btn_controller);
 		mControllerBtn.setVisibility(enabled ? View.VISIBLE : View.INVISIBLE);
 		mControllerBtn.setClickable(enabled);
+		if (enabled)
+			mControllerBtn.startAnimation(mAlphaAnimation);
+		else
+			mControllerBtn.clearAnimation();
+
 	}
 
 	private Runnable mRunnableOnHeartbeat = new Runnable() {
@@ -308,32 +328,31 @@ public class GlassActivity extends SupportMapActivity {
 
 		mHandler.postDelayed(mRunnableOnEmergency, 5000);
 
-		StringBuilder builder = new StringBuilder("Emergency!! ");
-		builder.append(heartbeat < 80 ? "Low " : heartbeat > 120 ? "High " : "");
-		builder.append("Heartbeat : ");
+		StringBuilder builder = new StringBuilder("경고!! ");
+		builder.append(heartbeat < 80 ? "심박수가 낮습니다. "
+				: heartbeat > 120 ? "심박수가 높습니다. " : "");
+		builder.append("심박수 : ");
 		builder.append(heartbeat);
 
 		mAlertAdapter.pushNewMessage(builder.toString());
 	}
-	
-	private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver(){
+
+	private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
 		@Override
-        public void onReceive(Context arg0, Intent arg1) {
-	        // TODO Auto-generated method stub
+		public void onReceive(Context arg0, Intent arg1) {
+			// TODO Auto-generated method stub
 			String action = arg1.getAction();
-			GlassSurfaceView mGlassSurfaceView = (GlassSurfaceView)findViewById(R.id.glass_surfaceView);
-			if(action.equals(ACTION_LIGHT_ON)){
+			GlassSurfaceView mGlassSurfaceView = (GlassSurfaceView) findViewById(R.id.glass_surfaceView);
+			if (action.equals(ACTION_LIGHT_ON)) {
 				mGlassSurfaceView.lightOn();
-			}
-			else if(action.equals(ACTION_LIGHT_OFF)){
+			} else if (action.equals(ACTION_LIGHT_OFF)) {
 				mGlassSurfaceView.lightOff();
-			}else if(action.equals(ACTION_TAKE_PICTURE)){
+			} else if (action.equals(ACTION_TAKE_PICTURE)) {
 				mGlassSurfaceView.takePicture();
 			}
-			
-			
-        }
-		
+
+		}
+
 	};
 
 }
