@@ -15,30 +15,17 @@
         
 		<com.nhn.android.maps.NMapView
 		    android:id="@+id/glass_map"
-		    android:layout_width="0dp"
+		    android:layout_gravity="left|top"
+		    android:layout_width="250dp"
 		    android:layout_height="150dp"
-		    android:layout_margin="10dp"
-		    android:layout_weight="1"
+		    android:layout_margin="20dp"
 		    android:padding="10dp" />
 
-	    <Button
-	        android:id="@+id/glass_btn_controller"
-	        style="?android:attr/buttonStyleSmall"
-	        android:layout_width="0dp"
-	        android:layout_height="200dp"
-	        android:layout_weight="1"
-	        android:layout_margin="10dp"
-	        android:layout_gravity="center"
-	        android:background="@drawable/controller_button"
-	        android:padding="10dp"
-	        android:text="NO CONNECTED DEVICE!\nClick to open controller."
-	        android:textColor="@android:color/white" />
-	        
 	    <ListView
 	        android:id="@+id/glass_alertlist"
-	        android:layout_width="0dp"
+	        android:layout_gravity="right|top"
+	        android:layout_width="wrap_content"
 	        android:layout_height="match_parent"
-	        android:layout_weight="1"
 	        android:layout_margin="10dp"
 	        android:dividerHeight="5dp"
 	        android:divider="@android:color/transparent"/>
@@ -47,13 +34,39 @@
     <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_margin="5dp"
         android:layout_gravity="top|left">
         <ImageView
             android:id="@+id/map_image"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:padding="5dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:clickable="true"
-            android:src="@drawable/map" />
+            android:background="@drawable/circle"
+            android:src="@drawable/ic_action_map" />
+    </FrameLayout>
+    
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+        
+        <Button
+	        android:id="@+id/glass_btn_controller"
+	        android:drawableStart="@drawable/ic_action_alert_error"
+	        android:drawingCacheQuality="high"
+	        style="?android:attr/buttonStyleSmall"
+	        android:layout_width="300dp"
+	        android:layout_height="100dp"
+	        android:layout_margin="10dp"
+	        android:layout_gravity="center"
+	        android:background="@drawable/rectangle"
+	        android:clickable="true"
+	        android:padding="10dp"
+	        android:textColor="#111111"
+	        android:textSize="20dp"
+	        android:text="연결된 장치가 없습니다!" />
+        
     </FrameLayout>
     
     <FrameLayout
