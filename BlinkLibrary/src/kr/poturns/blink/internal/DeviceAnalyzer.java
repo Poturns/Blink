@@ -154,11 +154,7 @@ public class DeviceAnalyzer {
 				mIdentityPoint |= IDENTITY_POINTLINE_ETHERNET;
 
 		}
-		Log.d("blink", "check if i am a SHV phone");
-		if (BlinkDevice.HOST.getAddress().equals("9C:E6:E7:CB:C9:5F")) {
-			Log.i("Blink", "I am SHV Phone");
-			mIdentityPoint |= IDENTITY_POINTLINE_USER;
-		}
+		
 		return mIdentityPoint;
 	}
 

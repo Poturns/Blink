@@ -56,6 +56,7 @@ public class BlinkDevice implements Parcelable, Serializable,
 		if (HOST != null && mAdapter != null) {
 			HOST.setName(mAdapter.getName());
 			HOST.setConnected(true);
+			HOST.BlinkSupported = true;
 		}
 	}
 
