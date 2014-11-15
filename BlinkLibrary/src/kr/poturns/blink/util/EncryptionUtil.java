@@ -25,8 +25,7 @@ public class EncryptionUtil {
 						16).substring(1));
 			}
 
-		} catch (NoSuchAlgorithmException e) {
-		}
+		} catch (NoSuchAlgorithmException e) { ; }
 
 		return builder.reverse().toString();
 	}
