@@ -341,6 +341,8 @@ public class MessageProcessor {
 			Log.d("sendBlinkMessageTo", "i am center");
 		}
 		Log.d("SendBlinkMessage", "targetMac =="+message.getDestinationAddress());
+		Log.d("SendBlinkMessage", "nextMac =="+toDevice.getAddress());
+		
 		SERVICE_KEEPER.sendMessageToDevice(toDevice, message);
 		Log.d("Blink", "sendBlinkMessage in Message send!");
 		// 동기화 메시지를 전송했으므로 동기화중으로 설정

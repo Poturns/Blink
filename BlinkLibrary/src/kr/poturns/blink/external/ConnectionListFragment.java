@@ -125,9 +125,6 @@ class ConnectionListFragment extends BaseConnectionFragment {
 			}
 			mShowOnlyConnected = !mShowOnlyConnected;
 			return true;
-		} else if (id == R.id.res_blink_action_connection_connect_favorite) {
-			connectFavoriteDevices();
-			return true;
 		} else {
 			return super.onOptionsItemSelected(item);
 		}

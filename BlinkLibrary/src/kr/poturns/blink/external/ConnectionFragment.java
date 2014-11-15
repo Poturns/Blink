@@ -1,5 +1,6 @@
 package kr.poturns.blink.external;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8,12 +9,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import kr.poturns.blink.R;
 import kr.poturns.blink.db.archive.App;
 import kr.poturns.blink.db.archive.Device;
-import kr.poturns.blink.internal.DeviceAnalyzer.Identity;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
 import kr.poturns.blink.internal.comm.IInternalOperationSupport;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -21,6 +22,7 @@ import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.DialogInterface;
 import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -90,22 +92,25 @@ abstract class ConnectionFragment extends Fragment {
 	IServiceContolActivity mActivityInterface;
 	/** Binder interface */
 	IInternalOperationSupport mBlinkOperation;
-	/***/
+	/** ServiceConnection */
 	BlinkServiceInteraction mInteraction;
 	/** Database manager */
 	SqliteManagerExtended mManager;
 	/** Blink network의 연결 중심 장비 */
 	BlinkDevice mCenterDevice;
 	ProgressDialog mProgressDialog;
-	/** Bluetooth 사용 가능 여부 */
-	boolean mBluetoothEnabled = true;
+	AlertDialog mFavoriteDeviceDialog;
 	/** BlinkDevice Discovery 작업 여부 */
 	boolean mFetchTasking = false;
 	/** UI를 표시하는 ChildFragment */
 	IConnectionCallback mCurrentChildFragmentInterface;
+	/** 즐겨찾기 등록된 BlinkDevice의 MacAddress Set */
 	Set<String> mFavoriteDeviceAddressSet;
+	ArrayAdapter<BlinkDevice> mFavoriteDialogAdapter;
 
 	static final Handler sHandler = new Handler();
+	/** 연결/연결 해제 요청이 완료 되었을 때, 호출될 Callback */
+	static final ConcurrentHashMap<BlinkDevice, Runnable> sConnectionTaskCallbackMap = new ConcurrentHashMap<BlinkDevice, Runnable>();
 	/** ProgressDialog가 최대로 보여질 시간 */
 	private static final long PROGRESS_WATING_TIME = 10 * 1000;
 	static final String TAG = ConnectionFragment.class.getSimpleName();
@@ -136,6 +141,84 @@ abstract class ConnectionFragment extends Fragment {
 		}
 		mFavoriteDeviceAddressSet = PrivateUtil.IO
 				.getFavoriteSet(getActivity());
+		initFavoriteDialog();
+	}
+
+	void initFavoriteDialog() {
+		mFavoriteDialogAdapter = new ArrayAdapter<BlinkDevice>(getActivity(),
+				R.layout.res_blink_list_favorite_list) {
+			private LayoutInflater mInflater = LayoutInflater
+					.from(getActivity());
+			private ArrayList<String> mFavoriteList = new ArrayList<String>(
+					mFavoriteDeviceAddressSet);
+
+			@Override
+			public int getCount() {
+				return mFavoriteList.size();
+			}
+
+			@Override
+			public BlinkDevice getItem(int position) {
+				return BlinkDevice.load(mFavoriteList.get(position));
+			}
+
+			@Override
+			public View getView(int position, View convertView, ViewGroup parent) {
+				TextView title, button;
+				if (convertView == null) {
+					convertView = mInflater.inflate(
+							R.layout.res_blink_list_favorite_list, parent,
+							false);
+				}
+
+				title = (TextView) convertView.findViewById(android.R.id.text1);
+				button = (TextView) convertView
+						.findViewById(android.R.id.button1);
+				final BlinkDevice item = getItem(position);
+				item.setConnected(false);
+				String name = item.getName();
+				if (name.equals("")) {
+					name = mFavoriteList.get(position);
+				}
+				title.setText(item.getName());
+				button.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						connectOrDisConnectDevice(item);
+					}
+				});
+				return convertView;
+			}
+
+			@Override
+			public void notifyDataSetChanged() {
+				mFavoriteList.clear();
+				mFavoriteList.addAll(mFavoriteDeviceAddressSet);
+				super.notifyDataSetChanged();
+
+			}
+		};
+		mFavoriteDeviceDialog = new AlertDialog.Builder(getActivity())
+				.setTitle(R.string.res_blink_connection_favorite)
+				.setIcon(R.drawable.res_blink_ic_action_action_favorite)
+				.setAdapter(mFavoriteDialogAdapter, null)
+				.setPositiveButton("Connect All",
+						new DialogInterface.OnClickListener() {
+
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								connectFavoriteDevices();
+							}
+						}).setNegativeButton(android.R.string.cancel, null)
+				.create();
+
+		mFavoriteDeviceDialog.getListView()
+				.setEmptyView(
+						View.inflate(getActivity(),
+								R.layout.res_blink_view_empty, null));
+
 	}
 
 	private void initInteraction() {
@@ -246,6 +329,7 @@ abstract class ConnectionFragment extends Fragment {
 		mProgressDialog = null;
 		PrivateUtil.IO
 				.saveFavoriteSet(getActivity(), mFavoriteDeviceAddressSet);
+		sConnectionTaskCallbackMap.clear();
 		super.onDestroy();
 	}
 
@@ -312,8 +396,7 @@ abstract class ConnectionFragment extends Fragment {
 	 */
 	final void fetchDeviceListFromBluetooth() {
 		// Bluetooth가 사용 가능하지 않은 경우
-		if (!mBluetoothEnabled
-				|| !BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+		if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
 			Toast.makeText(getActivity(),
 					R.string.res_blink_bluetooth_disabled, Toast.LENGTH_SHORT)
 					.show();
@@ -470,38 +553,53 @@ abstract class ConnectionFragment extends Fragment {
 	/** 즐겨찾기에 등록된 BlinkDevice들에게 연결 요청을 보낸다. */
 	void connectFavoriteDevices() {
 		onPreLoading(PROGRESS_OPT_DIALOG);
-		AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
-
-			@Override
-			public void run() {
-				for (String favor : mFavoriteDeviceAddressSet) {
-					try {
-						Log.d(TAG, "favor connection try : " + favor);
-						mBlinkOperation.connectDevice(BlinkDevice.load(favor));
-					} catch (Exception re) {
-						re.printStackTrace();
-					}
-				}
-
-				sHandler.post(new Runnable() {
-
-					@Override
-					public void run() {
-						onPostLoading(PROGRESS_OPT_DIALOG);
-					}
-				});
-			}
-		});
+		AsyncTask.THREAD_POOL_EXECUTOR.execute(mFavoriteConnectAction);
 	}
+
+	/** 즐겨찾기에 등록된 BlinkDevice들에게 연결 요청을 보내는 Action. */
+	private final Runnable mFavoriteConnectAction = new Runnable() {
+
+		@Override
+		public void run() {
+			for (String favor : mFavoriteDeviceAddressSet) {
+				try {
+					Log.d(TAG, "favor connection try : " + favor);
+					mBlinkOperation.connectDevice(BlinkDevice.load(favor));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+
+			sHandler.post(new Runnable() {
+
+				@Override
+				public void run() {
+					onPostLoading(PROGRESS_OPT_DIALOG);
+				}
+			});
+		}
+	};
 
 	/** 즐겨찾기 목록에 device를 추가한다. */
 	boolean addDeviceToFavoriteSet(BlinkDevice device) {
-		return mFavoriteDeviceAddressSet.add(device.getAddress());
+		boolean b = mFavoriteDeviceAddressSet.add(device.getAddress());
+		mFavoriteDialogAdapter.notifyDataSetChanged();
+		return b;
 	}
 
 	/** 즐겨찾기 목록에서 device를 삭제한다. */
 	boolean removeDeviceFromFavoriteSet(BlinkDevice device) {
-		return mFavoriteDeviceAddressSet.remove(device.getAddress());
+		boolean b = mFavoriteDeviceAddressSet.remove(device.getAddress());
+		mFavoriteDialogAdapter.notifyDataSetChanged();
+		return b;
+	}
+
+	boolean containsFavoriteSet(BlinkDevice device) {
+		return mFavoriteDeviceAddressSet.contains(device.getAddress());
+	}
+
+	void showFavoriteListDialog() {
+		mFavoriteDeviceDialog.show();
 	}
 
 	/** BlinkDevice의 정보를 보여주는 DialogFragment */
@@ -701,7 +799,7 @@ abstract class ConnectionFragment extends Fragment {
 					case 6:
 						title.setText(R.string.res_blink_connection_favorite);
 						content.setChecked(mFavoriteDeviceAddressSet
-								.contains(mBlinkDevice));
+								.contains(mBlinkDevice.getAddress()));
 						content.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 
 							@Override
@@ -893,7 +991,6 @@ class ConnectionWearableFragment extends ConnectionFragment implements
 abstract class BaseConnectionFragment extends Fragment implements
 		IConnectionCallback {
 	private ConnectionFragment mParentFragment;
-	private static final ConcurrentHashMap<BlinkDevice, Runnable> sConnectionTaskCallbackMap = new ConcurrentHashMap<BlinkDevice, Runnable>();
 
 	@Override
 	public void onDeviceListLoadFailed() {
@@ -968,9 +1065,18 @@ abstract class BaseConnectionFragment extends Fragment implements
 		mParentFragment.connectOrDisConnectDevice(device);
 	}
 
+	/**
+	 * 현재 기기와 {@link BlinkDevice}를 연결/연결해제 한다.
+	 * 
+	 * @param device
+	 *            연결/연결 해제할 Device
+	 * @param postRunCallback
+	 *            연결/연결 해제 완료 후 실행 될 callback
+	 */
 	void connectOrDisConnectDevice(BlinkDevice device, Runnable postRunCallback) {
 		mParentFragment.connectOrDisConnectDevice(device);
-		sConnectionTaskCallbackMap.put(device, postRunCallback);
+		ConnectionFragment.sConnectionTaskCallbackMap.put(device,
+				postRunCallback);
 	}
 
 	@Override
@@ -981,8 +1087,12 @@ abstract class BaseConnectionFragment extends Fragment implements
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getItemId() == R.id.res_blink_action_connection_view_change) {
+		final int id = item.getItemId();
+		if (id == R.id.res_blink_action_connection_view_change) {
 			changeFragment();
+			return true;
+		} else if (id == R.id.res_blink_action_connection_connect_favorite) {
+			mParentFragment.showFavoriteListDialog();
 			return true;
 		} else
 			return super.onOptionsItemSelected(item);
@@ -1025,9 +1135,12 @@ abstract class BaseConnectionFragment extends Fragment implements
 		});
 
 		// 연결 완료 후 등록된 콜백을 UI Thread에서 실행
-		Runnable command = sConnectionTaskCallbackMap.remove(device);
+		Runnable command = ConnectionFragment.sConnectionTaskCallbackMap
+				.remove(device);
 		if (command != null)
 			ConnectionFragment.sHandler.post(command);
+		// TODO callback map에 저장된 Runnable이 호출되지 않을 경우,
+		// 이 Runnable이 계속 유지될 가능성이 있음
 	}
 
 	@Override
@@ -1074,21 +1187,25 @@ abstract class BaseConnectionFragment extends Fragment implements
 
 	@Override
 	public void onDeviceListChanged() {
+		// XXX Potential Concurrent Modification
 		List<BlinkDevice> deviceList = mParentFragment.mDeviceList;
 		final int size = deviceList.size();
 
+		// Center Device 판별
 		mParentFragment.mCenterDevice = null;
 		for (int i = 0; i < size; i++) {
 			BlinkDevice device = deviceList.get(i);
-			if (device.getIdentity() == Identity.MAIN) {
+			if (device.isCenterDevice()) {
 				mParentFragment.mCenterDevice = device;
 				// 리스트에서 Main device 제거
 				// deviceList.remove(device);
 				break;
 			}
 		}
+
+		// Center Device 를 찾을 수 없다면 Host Device를 판별함.
 		if (mParentFragment.mCenterDevice == null) {
-			mParentFragment.mCenterDevice = BlinkDevice.HOST.getIdentity() == Identity.MAIN ? BlinkDevice.HOST
+			mParentFragment.mCenterDevice = BlinkDevice.HOST.isCenterDevice() ? BlinkDevice.HOST
 					: null;
 		}
 
@@ -1119,6 +1236,10 @@ abstract class BaseConnectionFragment extends Fragment implements
 	/** 즐겨찾기 목록에서 device를 삭제한다. */
 	boolean removeDeviceFromFavoriteSet(BlinkDevice device) {
 		return mParentFragment.removeDeviceFromFavoriteSet(device);
+	}
+
+	boolean containsFavoriteSet(BlinkDevice device) {
+		return mParentFragment.containsFavoriteSet(device);
 	}
 
 }

@@ -47,7 +47,7 @@ public class HeartBeatService extends Service implements SensorEventListener {
 	/** remote app package name */
 	private static final String REMOTE_APP_PACKAGE_NAME = "kr.poturns.blink.demo.visualizer";
 	private static final long MEASURE_DIV = 1000 * 1000 * 100;
-	/** 측정 주기 - ( 10 ^ -1 sec)*/
+	/** 측정 주기 - ( 10 ^ -1 sec) */
 	private static final long MEASURE_THRESHOLD = 3 * 10;
 
 	/** G Watch R - Heart Rate Monitor(PPG)의 type code */
@@ -98,13 +98,13 @@ public class HeartBeatService extends Service implements SensorEventListener {
 	@Override
 	public void onSensorChanged(SensorEvent event) {
 		switch (event.accuracy) {
-		case SensorManager.SENSOR_STATUS_NO_CONTACT:
-		case SensorManager.SENSOR_STATUS_UNRELIABLE:
-			return;
-		case SensorManager.SENSOR_STATUS_ACCURACY_HIGH:
 		case SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM:
 		case SensorManager.SENSOR_STATUS_ACCURACY_LOW:
+		case SensorManager.SENSOR_STATUS_NO_CONTACT:
+		case SensorManager.SENSOR_STATUS_UNRELIABLE:
 		default:
+			return;
+		case SensorManager.SENSOR_STATUS_ACCURACY_HIGH:
 			final int heartRate = (int) (event.values[0]);
 			String result = "Sensor value : ( " + heartRate
 					+ " ), timestamp : " + event.timestamp + ", accuracy : "
@@ -114,7 +114,7 @@ public class HeartBeatService extends Service implements SensorEventListener {
 
 			Log.d(TAG, "measure diff : " + diff);
 			if (diff < MEASURE_THRESHOLD) {
-				//Log.d(TAG, result);
+				// Log.d(TAG, result);
 			} else {
 				Log.i(TAG, result);
 				if (heartRate > 0) {

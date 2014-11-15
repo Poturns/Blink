@@ -157,86 +157,14 @@ class ConnectionWatchFragment extends BaseConnectionFragment implements
 			@Override
 			public Fragment getItem(final int position) {
 				switch (position) {
+				default:
 				case 0:
 					// 간략 정보
 					return new InfoFragment();
-				default:
-					// 연결/연결해제, 즐겨찾기 등록/등록해제
-					return new Fragment() {
-						@Override
-						public View onCreateView(LayoutInflater inflater,
-								ViewGroup container, Bundle savedInstanceState) {
-							final View rootView = inflater
-									.inflate(
-											R.layout.res_blink_dialog_fragment_connection_watch_twostate,
-											container, false);
-							final ImageView button = (ImageView) rootView
-									.findViewById(android.R.id.button1);
-							final TextView title = (TextView) rootView
-									.findViewById(android.R.id.text1);
-							boolean enable;
-							int textRes, iconRes;
-							// 연결/연결해제
-							if (position == 1) {
-								enable = mBlinkDevice.isConnected();
-								textRes = enable ? R.string.res_blink_connection_disconnect
-										: R.string.res_blink_connection_connect;
-							}
-							// 즐겨찾기 등록/등록해제
-							else {
-								enable = false;
-								textRes = enable ? R.string.res_blink_connection_favorite_unregister
-										: R.string.res_blink_connection_favorite_register;
-							}
-							iconRes = enable ? R.drawable.res_blink_ic_action_content_remove
-									: R.drawable.res_blink_ic_action_content_add;
-							title.setText(textRes);
-							button.setImageDrawable(getResources()
-									.getDrawableForDensity(iconRes,
-											DisplayMetrics.DENSITY_HIGH));
-							button.setBackgroundResource(enable ? R.drawable.res_blink_drawable_rounded_circle_red
-									: R.drawable.res_blink_drawable_rounded_circle_green);
-							button.setOnClickListener(new View.OnClickListener() {
-
-								@Override
-								public void onClick(View v) {
-									if (position == 1) {
-										if (mBlinkDevice.isBlinkSupported()) {
-											connectOrDisConnectDevice(
-													mBlinkDevice,
-													new Runnable() {
-														@Override
-														public void run() {
-															boolean connected = mBlinkDevice
-																	.isConnected();
-															title.setText(connected ? R.string.res_blink_connection_disconnect
-																	: R.string.res_blink_connection_connect);
-															button.setBackgroundResource(connected ? R.drawable.res_blink_drawable_rounded_circle_red
-																	: R.drawable.res_blink_drawable_rounded_circle_green);
-															button.setImageDrawable(getResources()
-																	.getDrawableForDensity(
-																			connected ? R.drawable.res_blink_ic_action_content_remove
-																					: R.drawable.res_blink_ic_action_content_add,
-																			DisplayMetrics.DENSITY_HIGH));
-														}
-													});
-										} else {
-											Toast.makeText(
-													getActivity(),
-													"Device does not support Blink Library",
-													Toast.LENGTH_SHORT).show();
-										}
-									} else {
-										// register favorite
-										Toast.makeText(getActivity(),
-												"Not supported yet",
-												Toast.LENGTH_SHORT).show();
-									}
-								}
-							});
-							return rootView;
-						}
-					};
+				case 1:
+					return new ConnectFragment();
+				case 2:
+					return new FavoriteFragment();
 				}
 			}
 		}
@@ -266,6 +194,118 @@ class ConnectionWatchFragment extends BaseConnectionFragment implements
 						.findViewById(android.R.id.text2);
 				type.setText(mBlinkDevice.getIdentity().toString());
 				return rootView;
+			}
+		}
+
+		private class ConnectFragment extends Fragment {
+			@Override
+			public View onCreateView(LayoutInflater inflater,
+					ViewGroup container, Bundle savedInstanceState) {
+				final View rootView = inflater
+						.inflate(
+								R.layout.res_blink_dialog_fragment_connection_watch_twostate,
+								container, false);
+				final ImageView button = (ImageView) rootView
+						.findViewById(android.R.id.button1);
+				final TextView title = (TextView) rootView
+						.findViewById(android.R.id.text1);
+				boolean enable = mBlinkDevice.isConnected();
+				setViewState(title, button, enable);
+
+				button.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						// if (mBlinkDevice.isBlinkSupported()) {
+						connectOrDisConnectDevice(mBlinkDevice, new Runnable() {
+							@Override
+							public void run() {
+								setViewState(title, button,
+										mBlinkDevice.isConnected());
+							}
+						});
+						// } else {
+						// Toast.makeText(
+						// getActivity(),
+						// "Device does not support Blink Library",
+						// Toast.LENGTH_SHORT).show();
+						// }
+					}
+				});
+				return rootView;
+			}
+
+			/** true : 연결해제 , false : 연결 - 표시 */
+			private void setViewState(TextView tv, ImageView b, boolean state) {
+				int textRes = state ? R.string.res_blink_connection_disconnect
+						: R.string.res_blink_connection_connect;
+				int iconRes = state ? R.drawable.res_blink_ic_action_content_remove
+						: R.drawable.res_blink_ic_action_content_add;
+				tv.setText(textRes);
+				b.setImageDrawable(getResources().getDrawableForDensity(
+						iconRes, DisplayMetrics.DENSITY_HIGH));
+				b.setBackgroundResource(state ? R.drawable.res_blink_drawable_rounded_circle_red
+						: R.drawable.res_blink_drawable_rounded_circle_green);
+			}
+		}
+
+		private class FavoriteFragment extends Fragment {
+			@Override
+			public View onCreateView(LayoutInflater inflater,
+					ViewGroup container, Bundle savedInstanceState) {
+				final View rootView = inflater
+						.inflate(
+								R.layout.res_blink_dialog_fragment_connection_watch_twostate,
+								container, false);
+				final ImageView button = (ImageView) rootView
+						.findViewById(android.R.id.button1);
+				final TextView title = (TextView) rootView
+						.findViewById(android.R.id.text1);
+				final boolean enable = containsFavoriteSet(mBlinkDevice);
+				setViewState(title, button, enable);
+
+				button.setOnClickListener(new View.OnClickListener() {
+
+					@Override
+					public void onClick(View v) {
+						if (enable) {
+							if (removeDeviceFromFavoriteSet(mBlinkDevice)) {
+								setViewState(title, button, false);
+								Toast.makeText(getActivity(),
+										"Favorite unregistered.",
+										Toast.LENGTH_SHORT).show();
+							} else {
+								Toast.makeText(getActivity(),
+										"Fail to unregister favorite.",
+										Toast.LENGTH_SHORT).show();
+							}
+						} else {
+							if (addDeviceToFavoriteSet(mBlinkDevice)) {
+								setViewState(title, button, true);
+								Toast.makeText(getActivity(),
+										"Fail to register favorite.",
+										Toast.LENGTH_SHORT).show();
+							} else {
+
+							}
+						}
+					}
+				});
+				return rootView;
+			}
+
+			/** true : 즐겨찾기해제 , false : 즐겨찾기등록 - 표시 */
+			private void setViewState(TextView tv, ImageView b, boolean state) {
+				int textRes = state ? R.string.res_blink_connection_favorite_unregister
+						: R.string.res_blink_connection_favorite_register;
+
+				int iconRes = state ? R.drawable.res_blink_ic_action_content_remove
+						: R.drawable.res_blink_ic_action_content_add;
+				tv.setText(textRes);
+				b.setImageDrawable(getResources().getDrawableForDensity(
+						iconRes, DisplayMetrics.DENSITY_HIGH));
+				b.setBackgroundResource(state ? R.drawable.res_blink_drawable_rounded_circle_red
+						: R.drawable.res_blink_drawable_rounded_circle_green);
 			}
 		}
 	}
