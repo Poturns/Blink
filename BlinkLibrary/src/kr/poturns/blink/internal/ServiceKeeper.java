@@ -425,9 +425,6 @@ public class ServiceKeeper {
 				return;
 			}
 				
-			
-			
-			
 			// 형성된 그룹이 존재하거나, OpenGroup으로 연결.
 			// TODO : 그룹 동기화 문제 분리... 그룹 동기화의 경우 [그룹 초대]를 통하여 별도의 메세지를 통해 그룹을 형성하도록 한다.
 			// TODO : Default 기능으로는 OpenGroup을 형성하여, BLINK 네트워크를 형성하는 모든 디바이스가 연결 될 수 있도록 함. (단, OpenGroup Mode일 경우, Data보호 문제 필요..)
