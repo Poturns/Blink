@@ -3,9 +3,9 @@
 
     <CheckBoxPreference
         android:defaultValue="false"
-        android:key="@string/res_blink_preference_external_key_set_this_device_to_host"
-        android:summary="@string/res_blink_preference_external_summary_set_this_device_to_host"
-        android:title="@string/res_blink_preference_external_title_set_this_device_to_host" />
+        android:key="@string/res_blink_preference_external_key_set_this_device_to_main"
+        android:summary="@string/res_blink_preference_external_summary_set_this_device_to_main"
+        android:title="@string/res_blink_preference_external_title_set_this_device_to_main" />
 
     <PreferenceScreen
         android:key="@string/res_blink_preference_external_key_delete_database"
