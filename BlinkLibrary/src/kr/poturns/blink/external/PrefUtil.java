@@ -79,7 +79,7 @@ public class PrefUtil {
 
 	public final SharedPreferences getSharedPreferences() {
 		return mContext.getSharedPreferences(
-				FileUtil.EXTERNAL_PREF_DIRECTORY_NAME,
+				FileUtil.EXTERNAL_PREF_FILE_NAME,
 				Context.MODE_MULTI_PROCESS);
 	}
 
