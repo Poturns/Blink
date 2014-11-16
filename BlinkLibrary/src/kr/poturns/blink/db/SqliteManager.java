@@ -793,7 +793,7 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 		ArrayList<Measurement> mMeasurementList = mBlinkAppInfo.mMeasurementList;
 		Field[] mFields = obj.getClass().getFields();
 		int GroupId = obtainMeasurementDataGroupId() + 1;
-		Log.i(tag, "GroupId : " + GroupId + " Fields Length : "+mFields.length);
+		Log.i(tag, "GroupId : " + GroupId + " Fields Length : "+mFields.length + " Measurement Size : "+mMeasurementList.size());
 		for (int i = 0; i < mFields.length; i++) {
 			for (int j = 0; j < mMeasurementList.size(); j++) {
 				if (mMeasurementList.get(j).Measurement.contentEquals(ClassUtil

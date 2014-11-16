@@ -369,7 +369,7 @@ public class ServiceKeeper {
 			
 		case BlinkMessage.TYPE_REQUEST_BlinkAppInfo_SYNC:
 			if (!BlinkDevice.HOST.isCenterDevice())
-				message = SYNC_DB_MANAGER.obtainBlinkApp();
+				message = SYNC_DB_MANAGER.obtainBlinkAppInDevice(BlinkDevice.HOST.getName());
 			break;
 			
 		default:
