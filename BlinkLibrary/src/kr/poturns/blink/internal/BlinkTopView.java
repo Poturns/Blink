@@ -4,6 +4,7 @@ import kr.poturns.blink.R;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
 import kr.poturns.blink.internal.comm.IBlinkMessagable;
+import android.content.res.Resources;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -38,8 +39,11 @@ public class BlinkTopView extends FrameLayout implements OnClickListener{
 		DEVICE = device;
 		
 		TextView content = (TextView) findViewById(R.id.content);
-		if (device != null)
+		if (device != null){
+			content.setText(R.string.res_blink_system_connection_dialog_content);
+			
 			content.setText(device.getName() + content.getText());
+		}
 		
 		show();
 	}

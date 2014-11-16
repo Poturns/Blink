@@ -175,7 +175,8 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			BlinkDevice device = BlinkDevice.load(origin);
 			
-			mServiceKeeper.addDiscovery(device);
+			//if (device.isBlinkSupported())
+				mServiceKeeper.addDiscovery(device);
 			
 			// $SYSTEM$ : AutoConnect 디바이스가 발견되었을 때, 자동 연결을 수행한다.
 			if (isAutoConnectEnabled && device.isAutoConnect()) {
@@ -193,7 +194,26 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 			// 블루투스 Pairing 상태 변화 감지
 			
 			// TODO : 페어링 관련 처리 여부...
+			
 			int state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, 0);
+			switch (state) {
+			case BluetoothDevice.BOND_BONDED:
+				Log.d("BluetoothPairing", "Pairing Bonded");
+				BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+				BlinkDevice device = BlinkDevice.load(origin);
+				
+				if (!mConnectionRequest.contains(device)) {
+					MANAGER_CONTEXT.getTopView().show(device);
+				}
+				break;
+			case BluetoothDevice.BOND_BONDING:
+				Log.d("BluetoothPairing", "Pairing Bonding");
+				break;
+			case BluetoothDevice.BOND_NONE:
+				Log.d("BluetoothPairing", "Pairing None");
+				break;
+			}
+			
 			if (BluetoothDevice.BOND_BONDED == state) {
 				
 			}
@@ -202,14 +222,18 @@ public class InterDeviceManager extends BroadcastReceiver implements LeScanCallb
 		} else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
 			// 해당 디바이스와 블루투스 연결 성립
 			// Connection Broadcast는 해당 ConnectionThread에서 발생시킨다.
-
+			
 			BluetoothDevice origin = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			BlinkDevice device = BlinkDevice.load(origin);
 			//device.setConnected(true);
 			
-			if (!mConnectionRequest.contains(device)) {
-				MANAGER_CONTEXT.getTopView().show(device);
+			// TODO:
+			if (origin.getBondState() == BluetoothDevice.BOND_BONDED) {
+				if (!mConnectionRequest.contains(device)) {
+					MANAGER_CONTEXT.getTopView().show(device);
+				}
 			}
+			
 			
 			Log.d("InterDeviceManager", "ACTION_ACL_CONNECTED : " + origin.getAddress());
 			
