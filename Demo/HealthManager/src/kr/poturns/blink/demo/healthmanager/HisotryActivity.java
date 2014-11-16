@@ -64,13 +64,7 @@ public class HisotryActivity extends ListActivity implements OnItemClickListener
 		startActivity(intent);
     }
 	
-	public class DateCompare implements Comparator<Inbody> {
-		public int compare(Inbody arg0, Inbody arg1) {
-			// TODO Auto-generated method stub
-			return arg1.DateTime.compareTo(arg0.DateTime);
-		}
- 
-	}
+	
 	
 	public class HistoryDomainCompare implements Comparator<HistoryDomain> {
 		public int compare(HistoryDomain arg0, HistoryDomain arg1) {

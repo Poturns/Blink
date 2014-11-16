@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="#000000"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="1" >
+
+        <LinearLayout
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.8"
+            android:orientation="vertical" >
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="#000000"
+                android:gravity="center"
+                android:text="Health Manager"
+                android:textColor="#ffffff"
+                android:textSize="20dip" />
+
+            <TextView
+                android:id="@+id/history_subtitle"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:background="#000000"
+                android:gravity="center"
+                android:text="Inbody History"
+                android:textColor="#636363"
+                android:textSize="20dip" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/refresh"
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="0.2"
+            android:clickable="true"
+            android:src="@drawable/refresh_white" />
+    </LinearLayout>
+
+	<LinearLayout
+	    android:orientation="vertical"
+		android:id="@+id/layoutGraphView" 
+		android:layout_width="match_parent"
+		android:layout_height="270dip">
+		
+	</LinearLayout>
+	<LinearLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="5dip"
+	        android:background="#f4988c"
+	    >
+	    
+	    
+	</LinearLayout>
+	<RelativeLayout
+		android:id="@+id/layoutGraphView2" 
+		android:layout_width="match_parent"
+		android:layout_height="270dip">
+		
+	</RelativeLayout>
+		<RelativeLayout
+		android:id="@+id/layoutGraphView3" 
+		android:layout_width="match_parent"
+		android:layout_height="300dip">
+		
+	</RelativeLayout>
+</LinearLayout>
