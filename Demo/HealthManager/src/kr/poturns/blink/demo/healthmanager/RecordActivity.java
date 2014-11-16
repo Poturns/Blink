@@ -3,7 +3,9 @@ package kr.poturns.blink.demo.healthmanager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.List;
 
 
 import java.util.Set;
+import java.util.TreeMap;
 
 import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
 import kr.poturns.blink.schema.Inbody;
@@ -29,8 +32,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.ViewGroup;
 
+import com.google.common.primitives.Floats;
 import com.google.gson.Gson;
 import com.handstudio.android.hzgrapherlib.animation.GraphAnimation;
+import com.handstudio.android.hzgrapherlib.graphview.LineGraphView;
 
 import kr.poturns.blink.demo.healthmanager.util.*;
 
@@ -53,8 +58,8 @@ public class RecordActivity extends Activity {
 	float [] inbodyFats;
 	float [] inbodyKgs;
 	
-	float [] todayExercise;
-	HashMap<String, Integer> exerciseHashMap;
+	float [] todayExercise = null;
+	TreeMap<String, Integer> exerciseHashMap;
 	ArrayList exerciseDateList;
 	ArrayList todayCaloriesList;
 	
@@ -70,7 +75,7 @@ public class RecordActivity extends Activity {
 		layoutGraphView3 = (ViewGroup) findViewById(R.id.layoutGraphView3);
 		exerciseDateList = new ArrayList();
 		todayCaloriesList = new ArrayList();
-		exerciseHashMap = new HashMap<String, Integer>();
+		exerciseHashMap = new TreeMap<String, Integer>();
 		setLineGraph();
 		
 	}
@@ -82,9 +87,9 @@ public class RecordActivity extends Activity {
 		//default setting
 	//	LineGraphVO vo = makeLineGraphDefaultSetting();
 		
-		layoutGraphView.addView(new CustomLineGraphView(this, vo));
+		layoutGraphView.addView(new LineGraphView(this, vo));
 		
-		layoutGraphView2.addView(new CustomLineGraphView(this, vo2));
+		layoutGraphView2.addView(new LineGraphView(this, vo2));
 	}
 	private void getAllExercises(){
 		List<PushUp> mPushUpList = null;
@@ -163,71 +168,100 @@ public class RecordActivity extends Activity {
 	private LineGraphVO makeExerciseGraph()
 	{
 		getAllExercises();
+		Log.d("RecordActivity", "getAllExercise is completed");
 		int paddingBottom 	= LineGraphVO.DEFAULT_PADDING;
 		int paddingTop 		= LineGraphVO.DEFAULT_PADDING;
 		int paddingLeft 	= LineGraphVO.DEFAULT_PADDING;
 		int paddingRight 	= LineGraphVO.DEFAULT_PADDING;
 
-		//graph margin
+
 		int marginTop 		= LineGraphVO.DEFAULT_MARGIN_TOP;
 		int marginRight 	= LineGraphVO.DEFAULT_MARGIN_RIGHT;
-	
-		//max value
-		int maxValue 		= 120;
 
-		//increment
-		int increment 		= LineGraphVO.DEFAULT_INCREMENT;
-		
-		//GRAPH SETTING
-		/*String[] legendArr 	= {"1","2","3","4","5"};
-		float[] graph1 		= {500,100,300,200,100};
-		float[] graph2 		= {000,100,200,100,200};
-		float[] graph3 		= {200,500,300,400,000};
-		*/
 		List<LineGraph> arrGraph 		= new ArrayList<LineGraph>();
-		/*
-		arrGraph.add(new LineGraph("android", 0xaa66ff33, graph1, R.drawable.ic_launcher));
-		arrGraph.add(new LineGraph("ios", 0xaa00ffff, graph2));
-		arrGraph.add(new LineGraph("tizen", 0xaaff0066, graph3));*/
-		/*TODO : 운동량 float array로 변환*/
+
+		
 		Set<String> keys = exerciseHashMap.keySet();
-		String[] keyStrings =  keys.toArray(new String[keys.size()]);
-		todayExercise = new float[keys.size()];
+		String[] keyStrings = null;
+		if(keys.size()==1){
+			String[] keyStrings_tmp =  keys.toArray(new String[keys.size()]);
+			keyStrings = new String[keyStrings_tmp.length+1];
+			for(int i=0; i<keyStrings.length; i++){
+				if(i==0){
+					keyStrings[i]="0";
+				
+				}
+				else{
+					keyStrings[i] = keyStrings_tmp[i-1];
+				}
+			}
+			}
+		else{
+			keyStrings = keys.toArray(new String[keys.size()]);
+		}
+		int maxValue = 0;
+		int increment = 0;
+		
+		if(keys.size() != 0){
+		
+		int maxvalue = 0;
+		todayExercise = new float[keyStrings.length];
+		Log.d("RecordActivity", "keyStrings 길이="+keyStrings.length);
 		for(int i=0; i<keyStrings.length; i++){
-			
+			if(i!=0){
+				Log.d("RecordActivity", "KeyString["+i+"]="+keyStrings[i]);
 			todayExercise[i] =  exerciseHashMap.get(keyStrings[i]);
 			Log.d("RecordActivity", "총 운동량="+todayExercise[i]);
-			
+			Log.d("RecordActivity", "날짜="+keyStrings[i]);
+			}
+			else{
+				todayExercise[i]=0;
+			}
 		}
 		
-		arrGraph.add(new LineGraph("총 운동량", 0xaa66ff33, inbodyFats));
+		for(int i=0; i<todayExercise.length; i++){
+			if(maxvalue < todayExercise[i]){
+				maxvalue = (int) todayExercise[i];
+			}
+		}
 		
+		maxValue 		= maxvalue+20;
+		increment 		= maxvalue/5;
+		//List b = Arrays.asList(ArrayUtils.toObject(a));t
+		arrGraph.add(new LineGraph("총 운동량(kcal)", 0xaa66ff33, todayExercise));
+		}/*
+		else{
+			Log.d("RecordActivity", "There are no exercise datas");
+			keyStrings = new String[1];
+			
+			todayExercise = new float[1];
+			arrGraph.add(new LineGraph("총 운동량", 0xaa66ff33, todayExercise));
+			maxValue = 0;
+			increment = 0;
+		}*/
+		
+		Log.d("RecordActivity", "maxvalue = "+maxValue);
+		Log.d("RecordActivity", "increment = "+increment);
+		Log.d("RecordActivity", "keyStrings[0] = "+keyStrings[0]);
+		//Log.d("RecordActivity", " = "+maxValue);
 		LineGraphVO vo = new LineGraphVO(
 				paddingBottom, paddingTop, paddingLeft, paddingRight,
 				marginTop, marginRight, maxValue, increment, keyStrings, arrGraph, R.drawable.blackbackground2);
-		
-		//vo.setLineColor(Color.WHITE);
-	   
-	//	vo.set
-		//set animation
+
 		vo.setAnimation(new GraphAnimation(GraphAnimation.LINEAR_ANIMATION, GraphAnimation.DEFAULT_DURATION));
-		//set graph name box
+	
 		GraphNameBox gnb = new GraphNameBox();
 		gnb.setNameboxColor(Color.WHITE);
 		gnb.setNameboxTextColor(Color.WHITE);
 		vo.setGraphNameBox(gnb);
-		//set draw graph region
-//		vo.setDrawRegion(true);
-		// vo.setGraphBG(Color.BLACK);
+		vo.setAxisLineColor(Color.WHITE);
+		vo.setBaseLineColor(Color.WHITE);
+		vo.setAxisLineWidth(8);
+		vo.setBaseLineWidth(5);
+		vo.setMarkTextColor(Color.WHITE);
+		vo.setMarkTextSize(25);
 		
-		//use icon
-//		arrGraph.add(new Graph(0xaa66ff33, graph1, R.drawable.icon1));
-//		arrGraph.add(new Graph(0xaa00ffff, graph2, R.drawable.icon2));
-//		arrGraph.add(new Graph(0xaaff0066, graph3, R.drawable.icon3));
-		
-//		LineGraphVO vo = new LineGraphVO(
-//				paddingBottom, paddingTop, paddingLeft, paddingRight,
-//				marginTop, marginRight, maxValue, increment, legendArr, arrGraph, R.drawable.bg);
+		Log.d("RecordActivity", "makeExerciseGraph is completed");
 		return vo;
 	}
 	private LineGraphVO makeLineGraphDefaultSetting() {
@@ -272,10 +306,10 @@ public class RecordActivity extends Activity {
 		int marginRight 	= LineGraphVO.DEFAULT_MARGIN_RIGHT;
 	
 		//max value
-		int maxValue 		= 120;
+		//int maxValue 		= 120;
 
 		//increment
-		int increment 		= LineGraphVO.DEFAULT_INCREMENT;
+		//int increment 		= LineGraphVO.DEFAULT_INCREMENT;
 		
 		//GRAPH SETTING
 		String[] legendArr 	= {"1","2","3","4","5"};
@@ -284,13 +318,42 @@ public class RecordActivity extends Activity {
 		float[] graph3 		= {200,500,300,400,000};
 		
 		List<LineGraph> arrGraph 		= new ArrayList<LineGraph>();
-		/*
-		arrGraph.add(new LineGraph("android", 0xaa66ff33, graph1, R.drawable.ic_launcher));
-		arrGraph.add(new LineGraph("ios", 0xaa00ffff, graph2));
-		arrGraph.add(new LineGraph("tizen", 0xaaff0066, graph3));*/
-		arrGraph.add(new LineGraph("몸무게", 0xaa66ff33, inbodyFats));
-		arrGraph.add(new LineGraph("근육량", 0xaa00ffff,inbodyMuscles));
-		arrGraph.add(new LineGraph("지방량", 0xaaff0066,inbodyKgs));
+		int maxvalue = 0;
+		for(int i=0; i< inbodyKgs.length; i++){
+			if(maxvalue < inbodyKgs[i]){
+				maxvalue = (int) inbodyKgs[i];
+			}
+		}
+		int maxValue 		= 120;
+		int increment 		= 25;
+		
+		
+		Arrays.sort(inbodyDates);
+		List<Float> floatList = Floats.asList(inbodyKgs);
+		Collections.sort(floatList, Collections.reverseOrder());
+		int i = 0;
+
+		for (Float f : floatList) {
+		    inbodyKgs[i++] = (f != null ? f : Float.NaN); // Or whatever default you want.
+		}
+		List<Float> floatList2 = Floats.asList(inbodyMuscles);
+		Collections.sort(floatList2, Collections.reverseOrder());
+		i = 0;
+
+		for (Float f : floatList2) {
+		    inbodyMuscles[i++] = (f != null ? f : Float.NaN); // Or whatever default you want.
+		}
+		List<Float> floatList3 = Floats.asList(inbodyFats);
+		Collections.sort(floatList3, Collections.reverseOrder());
+		 i = 0;
+
+		for (Float f : floatList3) {
+		    inbodyFats[i++] = (f != null ? f : Float.NaN); // Or whatever default you want.
+		}
+
+		arrGraph.add(new LineGraph("몸무게(kg)", 0xaa66ff33, inbodyKgs));
+		arrGraph.add(new LineGraph("근육량(kg)", 0xaa00ffff,inbodyMuscles));
+		arrGraph.add(new LineGraph("지방량(kg)", 0xaaff0066,inbodyFats));
 		LineGraphVO vo = new LineGraphVO(
 				paddingBottom, paddingTop, paddingLeft, paddingRight,
 				marginTop, marginRight, maxValue, increment, inbodyDates, arrGraph, R.drawable.blackbackground2);
@@ -305,18 +368,13 @@ public class RecordActivity extends Activity {
 		gnb.setNameboxColor(Color.WHITE);
 		gnb.setNameboxTextColor(Color.WHITE);
 		vo.setGraphNameBox(gnb);
-		//set draw graph region
-//		vo.setDrawRegion(true);
-		// vo.setGraphBG(Color.BLACK);
-		
-		//use icon
-//		arrGraph.add(new Graph(0xaa66ff33, graph1, R.drawable.icon1));
-//		arrGraph.add(new Graph(0xaa00ffff, graph2, R.drawable.icon2));
-//		arrGraph.add(new Graph(0xaaff0066, graph3, R.drawable.icon3));
-		
-//		LineGraphVO vo = new LineGraphVO(
-//				paddingBottom, paddingTop, paddingLeft, paddingRight,
-//				marginTop, marginRight, maxValue, increment, legendArr, arrGraph, R.drawable.bg);
+		vo.setAxisLineColor(Color.WHITE);
+		vo.setBaseLineColor(Color.WHITE);
+		vo.setAxisLineWidth(8);
+		vo.setBaseLineWidth(5);
+		vo.setMarkTextColor(Color.WHITE);
+		vo.setMarkTextSize(25);
+
 		return vo;
 	}
 }
