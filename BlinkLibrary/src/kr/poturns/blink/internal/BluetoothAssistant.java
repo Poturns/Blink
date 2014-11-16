@@ -213,6 +213,7 @@ class BluetoothAssistant extends Handler {
 				BluetoothAdapter adapter = mBluetoothManager.getAdapter();
 				
 				try {
+					
 					mServerSocket = secure? 
 							adapter.listenUsingRfcommWithServiceRecord(name, uuid) :
 								adapter.listenUsingInsecureRfcommWithServiceRecord(name, uuid);
