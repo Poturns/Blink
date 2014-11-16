@@ -185,7 +185,12 @@ class DataViewFragment extends Fragment {
 		private View makeGraph() {
 			BubbleGraphVO vo = createBubbleGraphVO();
 			if (vo != null)
-				return new BubbleGraphView(getActivity(), vo);
+				try {
+					return new BubbleGraphView(getActivity(), vo);
+				} catch (Exception e) {
+					e.printStackTrace();
+					return null;
+				}
 			else
 				return null;
 		}

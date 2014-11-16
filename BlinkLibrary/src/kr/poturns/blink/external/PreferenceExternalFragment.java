@@ -155,7 +155,7 @@ abstract class PreferenceExternalFragment extends PreferenceFragment implements
 												// 디렉토리 복구 && DB 파일 생성
 												FileUtil.createExternalDirectory();
 												new SqliteManagerExtended(
-														getActivity());
+														getActivity()).close();
 											}
 										});
 
@@ -208,7 +208,7 @@ abstract class PreferenceExternalFragment extends PreferenceFragment implements
 						}).create().show();
 	}
 
-	/** KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST 의 변경이 한번만 일어나게 만들기 위한 변수 */
+	/** KEY_EXTERNAL_SET_THIS_DEVICE_TO_MAIN 의 변경이 한번만 일어나게 만들기 위한 변수 */
 	boolean mCommit = false;
 
 	@Override
@@ -221,8 +221,17 @@ abstract class PreferenceExternalFragment extends PreferenceFragment implements
 				mCommit = true;
 				boolean result = mInterface.getServiceInteration()
 						.grantMainIdentityFromUser(value);
-				findPreference(PrefUtil.KEY_EXTERNAL_SET_THIS_DEVICE_TO_MAIN)
-						.setDefaultValue(result);
+				if (result) {
+					findPreference(
+							PrefUtil.KEY_EXTERNAL_SET_THIS_DEVICE_TO_MAIN)
+							.setDefaultValue(value);
+				} else {
+					Toast.makeText(getActivity(), "Fail..", Toast.LENGTH_SHORT)
+							.show();
+					findPreference(
+							PrefUtil.KEY_EXTERNAL_SET_THIS_DEVICE_TO_MAIN)
+							.setDefaultValue(!value);
+				}
 				mCommit = false;
 			}
 		}
