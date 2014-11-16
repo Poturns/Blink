@@ -110,7 +110,7 @@ abstract class ConnectionFragment extends Fragment {
 
 	static final Handler sHandler = new Handler();
 	/** 연결/연결 해제 요청이 완료 되었을 때, 호출될 Callback */
-	static final ConcurrentHashMap<BlinkDevice, Runnable> sConnectionTaskCallbackMap = new ConcurrentHashMap<BlinkDevice, Runnable>();
+	static final ConcurrentHashMap<String, Runnable> sConnectionTaskCallbackMap = new ConcurrentHashMap<String, Runnable>();
 	/** ProgressDialog가 최대로 보여질 시간 */
 	private static final long PROGRESS_WATING_TIME = 10 * 1000;
 	static final String TAG = ConnectionFragment.class.getSimpleName();
@@ -1075,7 +1075,7 @@ abstract class BaseConnectionFragment extends Fragment implements
 	 */
 	void connectOrDisConnectDevice(BlinkDevice device, Runnable postRunCallback) {
 		mParentFragment.connectOrDisConnectDevice(device);
-		ConnectionFragment.sConnectionTaskCallbackMap.put(device,
+		ConnectionFragment.sConnectionTaskCallbackMap.put(device.getAddress(),
 				postRunCallback);
 	}
 
@@ -1091,9 +1091,9 @@ abstract class BaseConnectionFragment extends Fragment implements
 		if (id == R.id.res_blink_action_connection_view_change) {
 			changeFragment();
 			return true;
-		} else if (id == R.id.res_blink_action_connection_connect_favorite) {
-			mParentFragment.showFavoriteListDialog();
-			return true;
+		//} else if (id == R.id.res_blink_action_connection_connect_favorite) {
+		//	mParentFragment.showFavoriteListDialog();
+		//	return true;
 		} else
 			return super.onOptionsItemSelected(item);
 	}
@@ -1136,11 +1136,11 @@ abstract class BaseConnectionFragment extends Fragment implements
 
 		// 연결 완료 후 등록된 콜백을 UI Thread에서 실행
 		Runnable command = ConnectionFragment.sConnectionTaskCallbackMap
-				.remove(device);
+				.remove(device.getAddress());
 		if (command != null)
 			ConnectionFragment.sHandler.post(command);
-		// TODO callback map에 저장된 Runnable이 호출되지 않을 경우,
-		// 이 Runnable이 계속 유지될 가능성이 있음
+		// callback map에 저장된 Runnable이 호출되지 않을 경우,
+		// 이 Runnable은 ConnectionFragment가 파괴될 때, 해제된다.
 	}
 
 	@Override

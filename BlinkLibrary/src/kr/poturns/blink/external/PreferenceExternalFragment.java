@@ -1,13 +1,11 @@
 package kr.poturns.blink.external;
 
 import java.io.File;
-import java.lang.reflect.Field;
 
 import kr.poturns.blink.R;
 import kr.poturns.blink.util.FileUtil;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
@@ -36,9 +34,8 @@ import android.widget.Toast;
 abstract class PreferenceExternalFragment extends PreferenceFragment implements
 		OnSharedPreferenceChangeListener {
 	static final String TAG = PreferenceExternalFragment.class.getSimpleName();
-	/** '기기를 센터로 설정'의 Key */
-	static final String KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST = "KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST";
 	IServiceContolActivity mInterface;
+	PrefUtil mPrefUtil;
 
 	/** 가동중인 기기에 적절한 Fragment 객체를 반환한다. */
 	static final PreferenceExternalFragment getFragment() {
@@ -56,6 +53,7 @@ abstract class PreferenceExternalFragment extends PreferenceFragment implements
 		if (activity instanceof IServiceContolActivity) {
 			mInterface = (IServiceContolActivity) activity;
 		}
+		mPrefUtil = new PrefUtil(getActivity());
 	}
 
 	@Override
@@ -65,7 +63,6 @@ abstract class PreferenceExternalFragment extends PreferenceFragment implements
 				+ FileUtil.EXTERNAL_PREF_FILE_NAME);
 		getPreferenceManager().setSharedPreferencesName(
 				FileUtil.EXTERNAL_PREF_FILE_NAME);
-
 	}
 
 	@Override
@@ -76,59 +73,19 @@ abstract class PreferenceExternalFragment extends PreferenceFragment implements
 
 	@Override
 	public PreferenceManager getPreferenceManager() {
-		ensurePreferenceDir();
+		mPrefUtil.ensurePreferenceDir();
 		return super.getPreferenceManager();
-	}
-
-	/**
-	 * 현재 preference directory를 외부 directory로 변경한다. <br>
-	 * <br>
-	 * 실제 하는 작업은 reflection으로 ContextImpl의 mPreferencesDir을 바꿔치기 하는 것 이다.
-	 * 
-	 * @see ContextImpl
-	 */
-	final void ensurePreferenceDir() {
-		try {
-			Context mBase = getActivity().getBaseContext();
-			Class<? extends Context> contextImplClass = mBase.getClass();
-
-			// sharedPreference Directory
-			Field mPreferenceDirField = contextImplClass
-					.getDeclaredField("mPreferencesDir");
-			mPreferenceDirField.setAccessible(true);
-			File mPreferenceDir = FileUtil
-					.obtainExternalDirectory(FileUtil.EXTERNAL_PREF_DIRECTORY_NAME);
-			Log.d(TAG, "will use : " + mPreferenceDir);
-			mPreferenceDirField.set(mBase, mPreferenceDir);
-			Log.d(TAG, "use : " + mPreferenceDir);
-		} catch (Exception e) {
-			e.printStackTrace();
-			Log.w(TAG, "could not change mPreferenceDir");
-		}
 	}
 
 	@Override
 	public void onDestroy() {
-		try {
-			Context mBase = getActivity().getBaseContext();
-			Class<? extends Context> contextImplClass = mBase.getClass();
-
-			// sharedPreference Directory
-			Field mPreferenceDirField = contextImplClass
-					.getDeclaredField("mPreferencesDir");
-			mPreferenceDirField.setAccessible(true);
-			mPreferenceDirField.set(mBase, null);
-			Log.d(TAG, "restore : null ");
-		} catch (Exception e) {
-			e.printStackTrace();
-			Log.w(TAG, "could not change mPreferenceDir");
-		}
+		mPrefUtil.restorePreferenceDir();
 		super.onDestroy();
 	}
 
 	@Override
 	public PreferenceScreen getPreferenceScreen() {
-		ensurePreferenceDir();
+		mPrefUtil.ensurePreferenceDir();
 		return super.getPreferenceScreen();
 	}
 
@@ -257,14 +214,14 @@ abstract class PreferenceExternalFragment extends PreferenceFragment implements
 	@Override
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 			String key) {
-		if (KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST.equals(key)) {
+		if (PrefUtil.KEY_EXTERNAL_SET_THIS_DEVICE_TO_MAIN.equals(key)) {
 			boolean value = sharedPreferences.getBoolean(
-					KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST, false);
+					PrefUtil.KEY_EXTERNAL_SET_THIS_DEVICE_TO_MAIN, false);
 			if (!mCommit) {
 				mCommit = true;
 				boolean result = mInterface.getServiceInteration()
 						.grantMainIdentityFromUser(value);
-				findPreference(KEY_EXTERNAL_SET_THIS_DEVICE_TO_HOST)
+				findPreference(PrefUtil.KEY_EXTERNAL_SET_THIS_DEVICE_TO_MAIN)
 						.setDefaultValue(result);
 				mCommit = false;
 			}
@@ -285,7 +242,7 @@ class PreferenceHandheldFragment extends PreferenceExternalFragment {
 		super.onCreate(paramBundle);
 		addPreferencesFromResource(R.xml.res_blink_preference_external);
 	}
-	
+
 	@Override
 	public void onResume() {
 		super.onResume();

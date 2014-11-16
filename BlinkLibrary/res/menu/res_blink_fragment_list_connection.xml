@@ -15,6 +15,8 @@
         android:orderInCategory="100"
         android:showAsAction="always"
         android:title="@string/res_blink_action_switch_discovery_connection"/>
+
+    <!--
     <item
         android:id="@+id/res_blink_action_connection_connect_favorite"
         android:icon="@drawable/res_blink_ic_action_action_favorite"
@@ -22,5 +24,6 @@
         android:showAsAction="ifRoom"
         android:title="@string/res_blink_connection_favorite">
     </item>
+    -->
 
 </menu>

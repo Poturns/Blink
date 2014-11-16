@@ -8,11 +8,6 @@ import java.util.List;
 import kr.poturns.blink.R;
 import android.annotation.SuppressLint;
 import android.content.ClipData;
-import android.os.Message;
-import android.view.DragEvent;
-import android.view.Gravity;
-import android.view.MotionEvent;
-import android.view.View;
 
 /**
  * 기존 존재하는 ViewGroup에 원의 형태로 ChildView를 추가해주고, <br>
@@ -176,7 +171,8 @@ class CircularViewHelper {
 			return;
 		}
 		mCenterViewId = mCenterView.getId();
-		if (mCenterViewId == View.NO_ID || mCenterViewId == VIEW_NO_ID) {
+		if (mCenterViewId == android.view.View.NO_ID
+				|| mCenterViewId == VIEW_NO_ID) {
 			mCenterViewId = android.view.View.generateViewId();
 			mCenterView.setId(mCenterViewId);
 		}
@@ -215,7 +211,7 @@ class CircularViewHelper {
 		mChildViewDistance = (screenSize - mViewSize - actionBarSize * 2) / 2;
 		mLayoutParams = new android.widget.FrameLayout.LayoutParams(mViewSize,
 				mViewSize);
-		mLayoutParams.gravity = Gravity.CENTER;
+		mLayoutParams.gravity = android.view.Gravity.CENTER;
 	}
 
 	/** 중앙의 View를 현재 Spec에 맞게 다시 그리고, 필요하다면 주어진 ViewGroup에 추가한다 */
@@ -320,7 +316,8 @@ class CircularViewHelper {
 	private android.view.View.OnTouchListener mOnTouchListener = new android.view.View.OnTouchListener() {
 		@SuppressLint("ClickableViewAccessibility")
 		@Override
-		public boolean onTouch(final android.view.View v, MotionEvent event) {
+		public boolean onTouch(final android.view.View v,
+				android.view.MotionEvent event) {
 			if (v.getAlpha() == 1.0f) {
 				ViewInfoTag tag = (ViewInfoTag) v.getTag();
 				tag.mIsDrag = true;
@@ -334,7 +331,7 @@ class CircularViewHelper {
 	/* Touch 이벤트에서 Click 이벤트를 호출할 때 사용하는 Handler */
 	private static final android.os.Handler sHandler = new android.os.Handler() {
 		@Override
-		public void handleMessage(Message msg) {
+		public void handleMessage(android.os.Message msg) {
 			switch (msg.what) {
 			case ACTION_CLICK:
 				android.view.View v = (android.view.View) msg.obj;
@@ -357,22 +354,22 @@ class CircularViewHelper {
 			ViewInfoTag tag = (ViewInfoTag) v.getTag();
 
 			switch (action) {
-			case DragEvent.ACTION_DRAG_STARTED:
+			case android.view.DragEvent.ACTION_DRAG_STARTED:
 				return true;
-			case DragEvent.ACTION_DRAG_ENTERED:
+			case android.view.DragEvent.ACTION_DRAG_ENTERED:
 				// Drag를 시작하는 View에게만 이벤트 전달
 				if (tag.mIsDrag && mDragAndDropListener != null)
 					mDragAndDropListener.onStartDrag(v, mCenterView);
 				return true;
-			case DragEvent.ACTION_DRAG_LOCATION:
+			case android.view.DragEvent.ACTION_DRAG_LOCATION:
 				return true;
-			case DragEvent.ACTION_DRAG_EXITED:
+			case android.view.DragEvent.ACTION_DRAG_EXITED:
 				// Drag가 해당 View의 범위를 벗어나면 Click 이벤트를 발생시키지 않는다.
 				sHandler.removeMessages(ACTION_CLICK);
 				return true;
-			case DragEvent.ACTION_DROP:
+			case android.view.DragEvent.ACTION_DROP:
 				return checkDropEvent(v, tag, event);
-			case DragEvent.ACTION_DRAG_ENDED:
+			case android.view.DragEvent.ACTION_DRAG_ENDED:
 				// Drag를 시작한 View에게만 이벤트 전달
 				if (tag.mIsDrag) {
 					// Center View로 Drop된 것이 확실한 경우
@@ -401,7 +398,7 @@ class CircularViewHelper {
 			// 즉 Click 이벤트를 실행하기 원하는 경우
 			// Click 이벤트를 실행하고, Drag 이벤트는 무시한다.
 			if (tag.mIsDrag && !sHandler.hasMessages(ACTION_CLICK)) {
-				Message m = Message.obtain();
+				android.os.Message m = android.os.Message.obtain();
 				m.what = ACTION_CLICK;
 				m.obj = v;
 				sHandler.sendMessageDelayed(m, 100);
