@@ -3,20 +3,9 @@ package kr.poturns.blink.demo.healthmanager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-
-
-
-
-
-
-
-
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -26,7 +15,6 @@ import kr.poturns.blink.schema.PushUp;
 import kr.poturns.blink.schema.SitUp;
 import kr.poturns.blink.schema.Squat;
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -36,14 +24,9 @@ import com.google.common.primitives.Floats;
 import com.google.gson.Gson;
 import com.handstudio.android.hzgrapherlib.animation.GraphAnimation;
 import com.handstudio.android.hzgrapherlib.graphview.LineGraphView;
-
-import kr.poturns.blink.demo.healthmanager.util.*;
-
 import com.handstudio.android.hzgrapherlib.vo.GraphNameBox;
 import com.handstudio.android.hzgrapherlib.vo.linegraph.LineGraph;
 import com.handstudio.android.hzgrapherlib.vo.linegraph.LineGraphVO;
-
-import dalvik.annotation.TestTarget;
 
 public class RecordActivity extends Activity {
 

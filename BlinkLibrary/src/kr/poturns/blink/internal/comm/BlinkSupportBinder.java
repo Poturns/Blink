@@ -83,8 +83,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		super(context);
 		mBlinkDatabaseManager = new SyncDatabaseManager(context);
 		mBlinkDevice = BlinkDevice.HOST;
-		if (mBlinkDevice == null)
-			Log.i(TAG, "BlinkDevice.HOST : null");
 	}
 
 	/**
@@ -142,12 +140,10 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	 *            : 통신이 정상적으로 되었는지 결과
 	 */
 	public void callbackData(int responseCode, String data, boolean result,String packageName) {
-		Log.i(TAG, "Binder callbackData");
 		ServiceKeeper mServiceKeeper = ServiceKeeper.getInstance(CONTEXT);
 		RemoteCallbackList<IInternalEventCallback> mRemoteCallbackList = mServiceKeeper
 				.obtainRemoteCallbackList(packageName);
 		if (mRemoteCallbackList == null) {
-			Log.i(TAG, "Binder mRemoteCallbackList is null");
 			return;
 		}
 		CallbackData mCallbackData = CALLBACK_DATA_MAP.get(responseCode);
@@ -160,7 +156,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		int N = mRemoteCallbackList.beginBroadcast();
 		for (int i = 0; i < N; i++) {
 			try {
-				Log.i(TAG, "Binder call onReceiveData");
 				mRemoteCallbackList.getBroadcastItem(i).onReceiveData(
 						responseCode, mCallbackData);
 			} catch (RemoteException e) {
@@ -199,7 +194,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	public void obtainMeasurementData(String ClassName, String DateTimeFrom,
 			String DateTimeTo, int ContainType, int requestCode,String packageName)
 			throws RemoteException {
-		Log.i(TAG, "Binder obtainMeasurementData");
 	
 		CallbackData mCallbackData = new CallbackData();
 	
@@ -242,16 +236,13 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 				if (ServiceKeeper.getInstance(CONTEXT)
 						.obtainCurrentCenterDevice().getAddress()
 						.contentEquals(mBlinkDevice.getAddress())) {
-					Log.i(TAG, "Binder obtainMeasurementData : I am center");
 					mCallbackData.ResultDetail = CallbackData.ERROR_CENTER_DEVICE;
 					callbackData(requestCode, null, false,packageName);
 				} else {
-					Log.i(TAG, "Binder obtainMeasurementData : I am not center");
 					CONTEXT.mMessageProcessor.sendBlinkMessageTo(mBlinkMessage,
 							null);
 				}
 			} else {
-				Log.i(TAG, "Binder obtainMeasurementData : no out device");
 				mCallbackData.ResultDetail = CallbackData.ERROR_NO_OUT_DEVICE;
 				if (requestPolicy == REQUEST_TYPE_DUAL_DEVICE) {
 					mCallbackData.InDeviceData = mBlinkDatabaseManager
@@ -293,7 +284,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 					.setType(DatabaseMessage.OBTAIN_DATA_BY_ID).build();
 
 			String temp = gson.toJson(mDatabaseMessage);
-			Log.i(TAG + " : test", temp);
 			mBlinkMessage = new BlinkMessage.Builder()
 					.setDestinationDevice((String) null)
 					.setDestinationApplication(null)
@@ -382,7 +372,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	@Override
 	public void sendMeasurementData(BlinkAppInfo targetBlinkAppInfo,
 			String json, int requestCode,String packageName) throws RemoteException {
-		Log.i("Blink", "sendMeasurementData");
 
 		CallbackData mCallbackData = new CallbackData();
 
@@ -399,7 +388,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 		else if (!targetBlinkAppInfo.mDevice.MacAddress
 				.contentEquals(mBlinkDevice.getAddress())) {
 			// BlinkMessage 생성
-			Log.i("Blink", "sendMeasurementData remote!");
 			mBlinkMessage = new BlinkMessage.Builder()
 					.setDestinationDevice(
 							BlinkDevice
@@ -433,7 +421,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 	 */
 	@Override
 	public void SyncBlinkApp() throws RemoteException {
-		Log.i("Blink", "SyncBlinkApp");
 		CONTEXT.mContentObserver.onChange(true,
 				SqliteManager.URI_OBSERVER_BLINKAPP);
 
@@ -441,7 +428,6 @@ public class BlinkSupportBinder extends ConnectionSupportBinder {
 
 	@Override
 	public void SyncMeasurementData() throws RemoteException {
-		Log.i("Blink", "SyncMeasurementData");
 		CONTEXT.mContentObserver.onChange(true,
 				SqliteManager.URI_OBSERVER_MEASUREMENTDATA);
 	}
