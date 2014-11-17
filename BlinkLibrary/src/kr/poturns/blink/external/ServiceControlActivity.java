@@ -152,7 +152,7 @@ public final class ServiceControlActivity extends Activity implements
 
 		// 바뀌는 Fragment가 ConnectionFragment가 아닌 경우
 		if (position != 0) {
-
+			mConnectionFragment.setUserVisibleHint(false);
 			// 현재 Fragment가 ConnectionFragment가 아닌 경우,
 			// FragmentTransaction에서 prevFragment를 삭제한다.
 			if (mCurrentPageSelection != 0 && prevFragment != null)
@@ -166,6 +166,7 @@ public final class ServiceControlActivity extends Activity implements
 					.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
 					.commit();
 		} else {
+			f.setUserVisibleHint(true);
 			f.getArguments().clear();
 			if (arguments != null)
 				f.getArguments().putAll(arguments);

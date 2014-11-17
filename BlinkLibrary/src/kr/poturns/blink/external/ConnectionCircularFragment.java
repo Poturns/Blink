@@ -120,13 +120,6 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 		return viewGroup;
 	}
 
-	@Override
-	public void onResume() {
-		super.onResume();
-		// Fragment가 보여질 때 마다, 그래픽을 최신화 한다.
-		onDeviceListChanged();
-	}
-
 	/** 연결되지 않은 Device를 나타내는 View의 alpha값을 변경한다. */
 	void setFilteringViewAlpha(int percent) {
 		List<View> list = mCircularHelper.getChildViews();
