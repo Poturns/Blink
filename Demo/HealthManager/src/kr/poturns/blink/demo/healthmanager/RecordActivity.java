@@ -72,7 +72,8 @@ public class RecordActivity extends Activity {
 		
 		layoutGraphView.addView(new LineGraphView(this, vo));
 		
-		layoutGraphView2.addView(new LineGraphView(this, vo2));
+		if(vo2 != null)
+			layoutGraphView2.addView(new LineGraphView(this, vo2));
 	}
 	private void getAllExercises(){
 		List<PushUp> mPushUpList = null;
@@ -225,7 +226,11 @@ public class RecordActivity extends Activity {
 		
 		Log.d("RecordActivity", "maxvalue = "+maxValue);
 		Log.d("RecordActivity", "increment = "+increment);
-		Log.d("RecordActivity", "keyStrings[0] = "+keyStrings[0]);
+		
+		if(keyStrings.length == 0)
+			return null;
+		else
+			Log.d("RecordActivity", "keyStrings[0] = "+keyStrings[0]);
 		//Log.d("RecordActivity", " = "+maxValue);
 		LineGraphVO vo = new LineGraphVO(
 				paddingBottom, paddingTop, paddingLeft, paddingRight,
