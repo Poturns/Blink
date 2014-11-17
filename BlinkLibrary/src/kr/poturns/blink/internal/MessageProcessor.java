@@ -118,6 +118,7 @@ public class MessageProcessor {
 					ArrayList<BlinkAppInfo> mergedBlinkAppInfoList = new ArrayList<BlinkAppInfo>();
 					mergedBlinkAppInfoList = syncDatabaseManager
 							.obtainBlinkApp();
+					
 					String jsonResponseMessage = JsonManager
 							.obtainJsonBlinkAppInfo(mergedBlinkAppInfoList);
 					builder_success.setMessage(jsonResponseMessage);
