@@ -9,13 +9,13 @@ import kr.poturns.blink.db.SyncDatabaseManager;
 import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.Function;
 import kr.poturns.blink.db.archive.MeasurementData;
+import kr.poturns.blink.internal.ServiceKeeper.CONNECTION_STATE;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
 import kr.poturns.blink.internal.comm.BlinkMessage.Builder;
 import kr.poturns.blink.internal.comm.IBlinkMessagable;
 import android.content.Intent;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -40,8 +40,6 @@ public class MessageProcessor {
 	private final BlinkLocalService OPERATOR_CONTEXT;
 	private final ServiceKeeper SERVICE_KEEPER;
 
-	private boolean Synchronizing = false;
-
 	public MessageProcessor(BlinkLocalBaseService context) {
 		OPERATOR_CONTEXT = (BlinkLocalService) context;
 		SERVICE_KEEPER = ServiceKeeper.getInstance(context);
@@ -64,7 +62,7 @@ public class MessageProcessor {
 			BlinkDevice fromDevice) {
 		Log.d("acceptBlinkMessage", "accept start!!");
 		Log.d("acceptBlinkMessage", "Message target MacAddr="
-				+ blinkMessage.getDestinationAddress().toString());
+				+ blinkMessage.getDestinationAddress().toString() + " / type : " + blinkMessage.getType());
 
 		String currentAddress = null;
 		BlinkDevice currentDevice = null;
@@ -89,6 +87,9 @@ public class MessageProcessor {
 			int blinkMessage_type = blinkMessage.getType();
 
 			if (blinkMessage_type == IBlinkMessagable.TYPE_ACCEPT_CONNECTION) {
+				Log.i("Blink", "TYPE_ACCEPT_CONNECTION");
+				ServiceKeeper.getInstance(OPERATOR_CONTEXT).setCurrentState(CONNECTION_STATE.INITIALIZING);
+				
 				BlinkDevice device = BlinkDevice.load(blinkMessage
 						.getSourceAddress());
 				// 연결 성립시, 상대의 디바이스로 자신의 BlinkDevice를 넣어 Identity 동기화 요청 메세지를
@@ -99,7 +100,6 @@ public class MessageProcessor {
 			} else if (blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC) {
 				// 동기화 시작할때 Sync 플래그를 true로, 끝날 때 false로 설정하여 추가 동기화를 막는다.
 				Log.i("Blink", "TYPE_REQUEST_BlinkAppInfo_SYNC");
-				setSynchronizing(true);
 				builder_success
 						.setType(IBlinkMessagable.TYPE_RESPONSE_BlinkAppInfo_SYNC_SUCCESS);
 				SyncDatabaseManager syncDatabaseManager = new SyncDatabaseManager(
@@ -130,11 +130,8 @@ public class MessageProcessor {
 					// syncDatabaseManager.wearable.syncBlinkDatabase(ret);
 				}
 
-				setSynchronizing(false);
 			}
-			// 동기화 시작할때 Sync 플래그를 true로, 끝날 때 false로 설정하여 추가 동기화를 막는다.
 			if (blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC) {
-				setSynchronizing(true);
 				Log.i("acceptBlinkMessage", "TYPE_REQUEST_MEASUREMENTDATA_SYNC");
 				builder_success
 						.setType(IBlinkMessagable.TYPE_RESPONSE_MEASUREMENTDATA_SYNC_SUCCESS);
@@ -161,7 +158,6 @@ public class MessageProcessor {
 				BlinkMessage successBlinkMessage = builder_success.build();
 				sendBlinkMessageTo(successBlinkMessage,
 						BlinkDevice.load(blinkMessage.getSourceAddress()));
-				setSynchronizing(false);
 			} else if (blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_FUNCTION) {//
 				Log.i("acceptBlinkMessage", "TYPE_REQUEST_FUNCTION");
 				// call back
@@ -192,7 +188,7 @@ public class MessageProcessor {
 			} else if (blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_NETWORK_SYNC) {
 				JsonArray mJsonArray = new JsonParser().parse(
 						blinkMessage.getMessage()).getAsJsonArray();
-
+				
 				HashSet<BlinkDevice> mHashSet = new HashSet<BlinkDevice>();
 				Gson gson = new Gson();
 				for (JsonElement element : mJsonArray)
@@ -203,10 +199,12 @@ public class MessageProcessor {
 				ServiceKeeper.getInstance(OPERATOR_CONTEXT).handleNetworkSync(
 						mHashSet, device.getGroupID());
 
-				ServiceKeeper
-						.getInstance(OPERATOR_CONTEXT)
-						.transferSystemSync(device,
-								IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC);
+				if(ServiceKeeper.getInstance(OPERATOR_CONTEXT).getCurrnentState()!=CONNECTION_STATE.CONNECTED){
+					ServiceKeeper
+					.getInstance(OPERATOR_CONTEXT)
+					.transferSystemSync(device,
+							IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC);
+				}
 
 			}/*
 			 * -> 일단 fromdevice로 보내면 되겠네 if (i am main) { BlinkDevice = } else
@@ -233,7 +231,7 @@ public class MessageProcessor {
 					syncDatabaseManager.wearable
 							.syncBlinkDatabase(mergedBlinkAppInfo);
 				}
-				setSynchronizing(false);
+				ServiceKeeper.getInstance(OPERATOR_CONTEXT).setCurrentState(CONNECTION_STATE.CONNECTED);
 			} else if (blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_IDENTITY_SUCCESS) {
 
 			} else if (blinkMessage_type == IBlinkMessagable.TYPE_RESPONSE_FUNCTION_SUCCESS) {
@@ -259,7 +257,6 @@ public class MessageProcessor {
 				syncDatabaseManager.wearable.syncMeasurementDatabase(
 						SERVICE_KEEPER.obtainCurrentCenterDevice(),
 						Integer.parseInt(blinkMessage.getMessage()));
-				setSynchronizing(false);
 			}
 
 		} else { // message의 최종 목적지가 현재 디바이스가 아니여서 다른 디바이스로 Pass해야 할 때
@@ -323,14 +320,6 @@ public class MessageProcessor {
 	 * @author Ho.Kwon
 	 */
 	public void sendBlinkMessageTo(BlinkMessage message, BlinkDevice toDevice) {
-		Log.d("sendBlinkMessageTo", "Send!!");
-
-		// 동기화 중간에 재동기화 요청을 할 수 없도록 리턴
-		// if(message.getType()==IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC
-		// ||
-		// message.getType()==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
-		// if(isSynchronizing())return;
-		// }
 
 		BlinkDevice centerDevice = null;
 		if (SERVICE_KEEPER.obtainCurrentCenterDevice() != BlinkDevice.HOST) {
@@ -353,13 +342,6 @@ public class MessageProcessor {
 		Log.d("SendBlinkMessage", "nextMac ==" + toDevice.getAddress());
 
 		SERVICE_KEEPER.sendMessageToDevice(toDevice, message);
-		Log.d("Blink", "sendBlinkMessage in Message send!");
-		// 동기화 메시지를 전송했으므로 동기화중으로 설정
-		// if(message.getType()==IBlinkMessagable.TYPE_REQUEST_MEASUREMENTDATA_SYNC
-		// ||
-		// message.getType()==IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC){
-		// setSynchronizing(true);
-		// }
 
 	}
 
@@ -377,15 +359,6 @@ public class MessageProcessor {
 			OPERATOR_CONTEXT.startService(new Intent(function.Action));
 		else if (function.Type == Function.TYPE_BROADCAST)
 			OPERATOR_CONTEXT.sendBroadcast(new Intent(function.Action));
-	}
-
-	public boolean isSynchronizing() {
-		return Synchronizing;
-	}
-
-	public void setSynchronizing(boolean synchronizing) {
-		Log.d("sendBlinkMessageTo", "Set Synchronizing " + synchronizing);
-		Synchronizing = synchronizing;
 	}
 
 	/**
