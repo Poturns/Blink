@@ -428,10 +428,9 @@ public class BlinkServiceInteraction implements ServiceConnection,
 	private ContentObserver mContentObserver = new ContentObserver(
 			new Handler()) {
 		public void onChange(boolean selfChange, Uri uri) {
-			Log.i(tag, "Uri : " + uri);
+			Log.i(tag, "ContentObserver : " + uri);
 			// 새로운 BlinkApp이 추가되면 실행
 			if (uri.equals(SqliteManager.URI_OBSERVER_SYNC)) {
-				Log.i(tag, "if : URI_OBSERVER_SYNC why two call??");
 				mBlinkAppInfo = local.obtainBlinkApp();
 			}
 		};
