@@ -1,5 +1,7 @@
 package kr.poturns.blink.demo.visualizer;
 
+import java.io.File;
+
 import kr.poturns.blink.db.archive.BlinkAppInfo;
 import kr.poturns.blink.db.archive.CallbackData;
 import kr.poturns.blink.db.archive.Function;
@@ -17,7 +19,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.RemoteException;
 import android.util.Log;
@@ -43,6 +47,7 @@ public class GlassActivity extends SupportMapActivity {
 	private TextView mHeartbeatTextView;
 	private ListView mAlertList;
 	private GlassAlertAdapter mAlertAdapter;
+	private GlassSurfaceView mGlassSurfaceView;
 	private Button mControllerBtn;
 	private Handler mHandler;
 	private AlphaAnimation mAlphaAnimation;
@@ -207,7 +212,7 @@ public class GlassActivity extends SupportMapActivity {
 		super.onDestroy();
 	}
 
-	private OnClickListener mOnClickLisener = new OnClickListener() {
+	private OnClickListener mOnClickListener = new OnClickListener() {
 
 		@Override
 		public void onClick(View v) {
@@ -217,6 +222,7 @@ public class GlassActivity extends SupportMapActivity {
 				if (mInteraction != null)
 					mInteraction.openControlActivity();
 				break;
+				
 			case R.id.map_image:
 				ImageView mMapBtn = (ImageView) findViewById(R.id.map_image);
 				if (isMapOpened) {
@@ -228,6 +234,22 @@ public class GlassActivity extends SupportMapActivity {
 				}
 				setMapVisibility(isMapOpened);
 				break;
+				
+				
+			case R.id.camera_rotate:
+				mGlassSurfaceView.rotate();
+				break;
+				
+			case R.id.gallery:
+				File sdDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+				Uri uri = Uri.fromFile(new File(sdDir, "VisualizerAsGlass"));
+		        sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, uri));
+		        
+				Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+				intent.setType("image/-");
+				startActivity(intent);
+				break;
+				
 			default:
 				break;
 			}
@@ -241,19 +263,30 @@ public class GlassActivity extends SupportMapActivity {
 		Drawable d = getResources().getDrawable(
 				R.drawable.ic_action_alert_error);
 		d.setBounds(0, 0, 100, 100);
-		mControllerBtn.setCompoundDrawables(d, null, null, null);
+
 		ImageView mMapBtn = (ImageView) findViewById(R.id.map_image);
-		mControllerBtn.setOnClickListener(mOnClickLisener);
+		mMapBtn.setOnClickListener(mOnClickListener);
+		
+		ImageView mRotateBtn = (ImageView) findViewById(R.id.camera_rotate);
+		mRotateBtn.setOnClickListener(mOnClickListener);
+		
+		ImageView mGalleryBtn = (ImageView) findViewById(R.id.gallery);
+		mGalleryBtn.setOnClickListener(mOnClickListener);
+		
+		mGlassSurfaceView = (GlassSurfaceView) findViewById(R.id.glass_surfaceView);
+		
+		mControllerBtn.setCompoundDrawables(d, null, null, null);
+		mControllerBtn.setOnClickListener(mOnClickListener);
+		
 		mAlphaAnimation = new AlphaAnimation(1f, 0f);
 		mAlphaAnimation.setDuration(750);
 		mAlphaAnimation.setInterpolator(this,android.R.anim.cycle_interpolator);
 		mAlphaAnimation.setRepeatCount(Animation.INFINITE);
 		mAlphaAnimation.setRepeatMode(Animation.RESTART);
 
-		mMapBtn.setOnClickListener(mOnClickLisener);
 
 		mAlertList = (ListView) findViewById(R.id.glass_alertlist);
-		mAlertList.setSelector(R.drawable.selector);
+		mAlertList.setSelector(R.drawable.circle_background);
 		mAlertAdapter = new GlassAlertAdapter(this);
 		mAlertAdapter
 				.pushNewMessage("왼쪽 상단 버튼을 통해 지도를 켤 수 있습니다.");
@@ -343,10 +376,13 @@ public class GlassActivity extends SupportMapActivity {
 			// TODO Auto-generated method stub
 			String action = arg1.getAction();
 			GlassSurfaceView mGlassSurfaceView = (GlassSurfaceView) findViewById(R.id.glass_surfaceView);
+			
 			if (action.equals(ACTION_LIGHT_ON)) {
 				mGlassSurfaceView.lightOn();
+				
 			} else if (action.equals(ACTION_LIGHT_OFF)) {
 				mGlassSurfaceView.lightOff();
+				
 			} else if (action.equals(ACTION_TAKE_PICTURE)) {
 				mGlassSurfaceView.takePicture();
 			}
