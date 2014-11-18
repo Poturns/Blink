@@ -46,6 +46,32 @@
             android:src="@drawable/ic_action_map" />
     </FrameLayout>
     
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:orientation="horizontal"
+        android:layout_gravity="bottom|left">
+        <ImageView
+            android:id="@+id/camera_rotate"
+            android:padding="5dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginRight="5dp"
+            android:clickable="true"
+            android:background="@drawable/circle_background"
+            android:src="@drawable/camera_rotate" />
+        <ImageView
+            android:id="@+id/gallery"
+            android:padding="5dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="5dp"
+            android:clickable="true"
+            android:background="@drawable/circle_background"
+            android:src="@drawable/gallery" />
+    </LinearLayout>
+    
     <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
