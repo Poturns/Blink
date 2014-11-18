@@ -25,6 +25,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.handstudio.android.hzgrapherlib.graphview.BubbleGraphView;
 import com.handstudio.android.hzgrapherlib.vo.GraphNameBox;
@@ -161,21 +162,27 @@ class DataViewFragment extends Fragment {
 		public boolean onOptionsItemSelected(MenuItem item) {
 			final int id = item.getItemId();
 			if (id == R.id.res_blink_action_prev) {
-				if (mIndex > 0) {
+				if ((mIndex - 1) > 0) {
 					mIndex--;
 					mGraphView.removeAllViews();
 					View graph = makeGraph();
 					if (graph != null)
 						mGraphView.addView(graph);
+				} else {
+					Toast.makeText(getActivity(), "Not exist",
+							Toast.LENGTH_SHORT).show();
 				}
 				return true;
 			} else if (id == R.id.res_blink_action_next) {
-				if (mIndex * MAX_SHOWING < mDataList.size()) {
+				if ((mIndex + 1) * MAX_SHOWING < mDataList.size()) {
 					mIndex++;
 					mGraphView.removeAllViews();
 					View graph = makeGraph();
 					if (graph != null)
 						mGraphView.addView(graph);
+				} else {
+					Toast.makeText(getActivity(), "Not exist",
+							Toast.LENGTH_SHORT).show();
 				}
 				return true;
 			} else
@@ -185,7 +192,12 @@ class DataViewFragment extends Fragment {
 		private View makeGraph() {
 			BubbleGraphVO vo = createBubbleGraphVO();
 			if (vo != null)
-				return new BubbleGraphView(getActivity(), vo);
+				try {
+					return new BubbleGraphView(getActivity(), vo);
+				} catch (Exception e) {
+					e.printStackTrace();
+					return null;
+				}
 			else
 				return null;
 		}
@@ -214,7 +226,18 @@ class DataViewFragment extends Fragment {
 			float[] array = new float[size];
 			float[] bubbles = new float[size];
 			for (int i = 0; i < size; i++) {
-				array[i] = Float.valueOf(dataList.get(i).Data);
+				MeasurementData data = dataList.get(i);
+				if (mMeasurement.Type == Measurement.TYPE_STRING) {
+					array[i] = 0;
+				} else {
+					try {
+						array[i] = Float.valueOf(data.Data);
+					} catch (Exception e) {
+						// 값이 숫자가 아닌 경우
+						e.printStackTrace();
+						array[i] = 0;
+					}
+				}
 				bubbles[i] = (float) Math.random() * 10f;
 			}
 

@@ -54,7 +54,7 @@ public class HealthManagerApplication extends Application {
 	};
 	
 	
-	IInternalEventCallback.Stub mIInternalEventCallback = new IInternalEventCallback.Stub() {
+	IInternalEventCallback.Stub mIInternalEventCallback =  new IInternalEventCallback.Stub() {
 		@Override
         public void onReceiveData(int code, CallbackData data)
                 throws RemoteException {

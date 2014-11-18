@@ -279,7 +279,22 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 		}
 		return mBlinkAppInfoList;
 	}
-
+	
+	/**
+	 * 모든 BlinkAppInfo를 검색하여 리턴한다.
+	 * 
+	 * @return
+	 */
+	public ArrayList<BlinkAppInfo> obtainBlinkAppInDevice(String device) {
+		ArrayList<BlinkAppInfo> mBlinkAppInfoList = obtainBlinkApp();
+		ArrayList<BlinkAppInfo> mResultBlinkAppInfoList = new ArrayList<BlinkAppInfo>();
+		for (int i = 0; i < mBlinkAppInfoList.size(); i++) {
+			if(mBlinkAppInfoList.get(i).mDevice.Device.equals(device))
+				mResultBlinkAppInfoList.add(mBlinkAppInfoList.get(i));
+		}
+		return mResultBlinkAppInfoList;
+	}
+	
 	/**
 	 * Device을 검색한다. 검색 조건과 결과는 매개변수로 넘긴 BlinkAppInfo 객체에 저장된다. Device를 등록했을 때
 	 * ID를 비롯한 자동 생성되는 데이터를 얻어오기 위해 사용된다. 사용자가 직접 호출할 일은 없다.
@@ -778,7 +793,7 @@ public class SqliteManager extends SQLiteOpenHelper implements IBlinkDatabase {
 		ArrayList<Measurement> mMeasurementList = mBlinkAppInfo.mMeasurementList;
 		Field[] mFields = obj.getClass().getFields();
 		int GroupId = obtainMeasurementDataGroupId() + 1;
-		Log.i(tag, "GroupId : " + GroupId + " Fields Length : "+mFields.length);
+		Log.i(tag, "GroupId : " + GroupId + " Fields Length : "+mFields.length + " Measurement Size : "+mMeasurementList.size());
 		for (int i = 0; i < mFields.length; i++) {
 			for (int j = 0; j < mMeasurementList.size(); j++) {
 				if (mMeasurementList.get(j).Measurement.contentEquals(ClassUtil

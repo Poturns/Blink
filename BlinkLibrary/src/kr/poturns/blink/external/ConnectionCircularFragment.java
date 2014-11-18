@@ -55,10 +55,7 @@ final class ConnectionCircularFragment extends BaseConnectionFragment {
 						R.layout.res_blink_view_circular, null);
 
 				// 메인 장비 표시
-				BlinkDevice centerDevice = getCenterDevice();
-				if (centerDevice != null
-						&& device.getAddress()
-								.equals(centerDevice.getAddress())) {
+				if (device.isCenterDevice()) {
 					view.setBackgroundResource(R.drawable.res_blink_drawable_rounded_circle_gray);
 				}
 

@@ -46,13 +46,23 @@ public class ServiceKeeper {
 		return sInstance;
 	}
 
-	
+	/**
+	 * BLINK 서비스가 갖는 상태의 종류를 가지고 있는 enum
+	 * @author Jiwon
+	 *
+	 */
+	enum CONNECTION_STATE {
+		DISCONNECTED,
+		INITIALIZING,
+		CONNECTED
+	}
 	
 	// *** FIELD DECLARATION *** //
 	private final BlinkLocalBaseService KEEPER_CONTEXT;
 	
 	private final SyncDatabaseManager SYNC_DB_MANAGER;
 	
+	private CONNECTION_STATE mState;
 	/**
 	 * 탐색된 디바이스들을 담는 HashSet.
 	 */
@@ -88,6 +98,7 @@ public class ServiceKeeper {
 		BLINK_NETWORK_MAP.put(null, new NetworkMap(null));
 		BINDER_MAP = null;
 		CALLBACK_MAP = new HashMap<String,RemoteCallbackList<IInternalEventCallback>>();
+		mState = CONNECTION_STATE.DISCONNECTED;
 	}
 
 	/**
@@ -99,6 +110,18 @@ public class ServiceKeeper {
 	void destroy() {
 		clearDiscovery();
 		
+	}
+	
+	/**
+	 * 현재 BLNIK의 상태를 리턴한다.
+	 * @return
+	 */
+	public CONNECTION_STATE getCurrnentState(){
+		return mState;
+	}
+	
+	public void setCurrentState(CONNECTION_STATE state){
+		mState = state;
 	}
 	
 	/**
@@ -369,7 +392,7 @@ public class ServiceKeeper {
 			
 		case BlinkMessage.TYPE_REQUEST_BlinkAppInfo_SYNC:
 			if (!BlinkDevice.HOST.isCenterDevice())
-				message = SYNC_DB_MANAGER.obtainBlinkApp();
+				message = SYNC_DB_MANAGER.obtainBlinkAppInDevice(BlinkDevice.HOST.getName());
 			break;
 			
 		default:

@@ -2,17 +2,15 @@ package kr.poturns.blink.internal;
 
 import java.io.Serializable;
 
-import kr.poturns.blink.R;
+import kr.poturns.blink.external.PrefUtil;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
 import kr.poturns.blink.util.EncryptionUtil;
-import kr.poturns.blink.util.FileUtil;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 /**
@@ -115,15 +113,21 @@ public class DeviceAnalyzer {
 			BlinkDevice.HOST.setIdentityPoint(mIdentityPoint);
 			BlinkDevice.HOST.setIdentity(mIdentity.ordinal());
 			
-			// TODO : PREFERENCE
-			SharedPreferences pref = context.getSharedPreferences(FileUtil.EXTERNAL_PREF_FILE_NAME, Context.MODE_PRIVATE);
-			boolean fromUser = pref.getBoolean(context.getString(R.string.res_blink_preference_external_key_set_this_device_to_host), false);
+			boolean fromUser = getMainIdentityFromPref();
 			
 			if (fromUser)
 				grantMainIdentityFromUser(true);
 		}
 	}
 
+	private boolean getMainIdentityFromPref(){
+		PrefUtil mPrefUtil = new PrefUtil(ANALYZER_CONTEXT);
+		SharedPreferences pref = mPrefUtil.getSharedPreferences();
+		boolean isMain = pref.getBoolean(PrefUtil.KEY_EXTERNAL_SET_THIS_DEVICE_TO_MAIN, false);
+		Log.i("test", "isMain : "+isMain);
+		mPrefUtil.restorePreferenceDir();
+		return isMain;
+	}
 	/**
 	 * 자신의 디바이스 Feature를 분석하여, IdentityPoint를 도출한다.
 	 * 
