@@ -16,7 +16,8 @@ import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.widget.SlidingPaneLayout;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.widget.DrawerLayout;
 import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,7 +26,6 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import dev.dworks.libs.actionbartoggle.ActionBarToggle;
 
 /**
  * Service에서 실행 되어, Blink Service와 일부 상호작용하는 {@link android.app.Activity}<br>
@@ -37,11 +37,12 @@ import dev.dworks.libs.actionbartoggle.ActionBarToggle;
  * <li>
  * Service 설정 값 변경</li>
  */
+// TODO WatchActivity를 분리하지 않고 보여주기 (반응형)
 public final class ServiceControlActivity extends Activity implements
 		IServiceContolActivity {
 	/** ActionBar 좌 상단의 Toggle Button */
-	ActionBarToggle mActionBarToggle;
-	SlidingPaneLayout mSlidingPaneLayout;
+	ActionBarDrawerToggle mActionBarToggle;
+	DrawerLayout mDrawerLayout;
 	/** 왼쪽에 위치한 메뉴 리스트 */
 	AbsListView mListView;
 	/** 현재 선택된 메뉴(페이지) 번호 */
@@ -86,10 +87,31 @@ public final class ServiceControlActivity extends Activity implements
 
 		// 변수 초기화, 뷰 설정
 		mSqliteManagerExtended = new SqliteManagerExtended(this);
-		mSlidingPaneLayout = (SlidingPaneLayout) findViewById(R.id.res_blink_activity_sliding_layout);
-		mSlidingPaneLayout.setSliderFadeColor(Color.TRANSPARENT);
+		mDrawerLayout = (DrawerLayout) findViewById(R.id.res_blink_activity_drawer_layout);
+		mDrawerLayout.setDrawerListener(new DrawerLayout.DrawerListener() {
+
+			@Override
+			public void onDrawerStateChanged(int newState) {
+				mActionBarToggle.onDrawerStateChanged(newState);
+			}
+
+			@Override
+			public void onDrawerSlide(View drawerView, float slideOffset) {
+				mActionBarToggle.onDrawerSlide(drawerView, slideOffset);
+			}
+
+			@Override
+			public void onDrawerOpened(View drawerView) {
+				mActionBarToggle.onDrawerOpened(drawerView);
+			}
+
+			@Override
+			public void onDrawerClosed(View drawerView) {
+				mActionBarToggle.onDrawerClosed(drawerView);
+			}
+		});
 		mListView = (ListView) findViewById(R.id.res_blink_activity_main_left_drawer);
-		mActionBarToggle = new ActionBarToggle(this, mSlidingPaneLayout,
+		mActionBarToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
 				R.drawable.res_blink_ic_navigation_drawer,
 				R.string.res_blink_app_name, R.string.res_blink_app_name);
 
@@ -215,13 +237,9 @@ public final class ServiceControlActivity extends Activity implements
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case android.R.id.home:
-			if (mSlidingPaneLayout.isOpen())
-				mSlidingPaneLayout.closePane();
-			else
-				mSlidingPaneLayout.openPane();
+		if (mActionBarToggle.onOptionsItemSelected(item))
 			return true;
+		switch (item.getItemId()) {
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -253,8 +271,8 @@ public final class ServiceControlActivity extends Activity implements
 		// 왼쪽 메뉴를 닫을 필요가 없다.
 		if (PrivateUtil.isScreenSizeSmall(this)
 				&& getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT
-				&& mSlidingPaneLayout.isOpen())
-			mSlidingPaneLayout.closePane();
+				&& mDrawerLayout.isDrawerOpen(mListView))
+			mDrawerLayout.closeDrawer(mListView);
 		else {
 			// backstack에 저장되어 있는 Fragment 복귀
 			if (!getFragmentManager().popBackStackImmediate()) {
@@ -306,15 +324,15 @@ public final class ServiceControlActivity extends Activity implements
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position,
 				long id) {
-			if (!mSlidingPaneLayout.isOpen())
+			if (!mDrawerLayout.isDrawerOpen(mListView))
 				return;
 			if (mCurrentPageSelection == position) {
-				mSlidingPaneLayout.closePane();
+				mDrawerLayout.closeDrawer(mListView);
 				return;
 			}
 			// connection / data / log / setting fragment
 			transitFragment(position, null);
-			mSlidingPaneLayout.closePane();
+			mDrawerLayout.closeDrawer(mListView);
 		}
 	};
 

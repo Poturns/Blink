@@ -138,7 +138,10 @@ abstract class ConnectionFragment extends Fragment {
 					.setOnBlinkEventBroadcast(mCurrentChildFragmentInterface);
 		} else {
 			initInteraction();
+			mInteraction.startBroadcastReceiver();
+			mInteraction.startService();
 		}
+
 		mFavoriteDeviceAddressSet = PrivateUtil.IO
 				.getFavoriteSet(getActivity());
 		initFavoriteDialog();
@@ -840,7 +843,12 @@ abstract class ConnectionFragment extends Fragment {
 
 				@Override
 				public int getCount() {
-					return 7;
+					// Host Device에서는 즐겨찾기를 보여주지 않음.
+					if (mDevice.getAddress().equals(
+							BlinkDevice.HOST.getAddress())) {
+						return 6;
+					} else
+						return 7;
 				}
 			};
 		}
@@ -1091,15 +1099,18 @@ abstract class BaseConnectionFragment extends Fragment implements
 		if (id == R.id.res_blink_action_connection_view_change) {
 			changeFragment();
 			return true;
-		//} else if (id == R.id.res_blink_action_connection_connect_favorite) {
-		//	mParentFragment.showFavoriteListDialog();
-		//	return true;
+		} else if (id == R.id.res_blink_action_connection_connect_favorite) {
+			mParentFragment.showFavoriteListDialog();
+			return true;
 		} else
 			return super.onOptionsItemSelected(item);
 	}
 
 	@Override
 	public void onDeviceConnected(final BlinkDevice device) {
+		if (device == null) {
+			return;
+		}
 		device.setConnected(true);
 		logAndPostAboutConnection(device, "onDeviceConnected : ",
 				R.string.res_blink_device_connected);
@@ -1107,6 +1118,9 @@ abstract class BaseConnectionFragment extends Fragment implements
 
 	@Override
 	public void onDeviceDisconnected(final BlinkDevice device) {
+		if (device == null) {
+			return;
+		}
 		device.setConnected(false);
 		logAndPostAboutConnection(device, "onDeviceDisConnected : ",
 				R.string.res_blink_device_disconnected);
@@ -1145,6 +1159,9 @@ abstract class BaseConnectionFragment extends Fragment implements
 
 	@Override
 	public void onDeviceDiscovered(BlinkDevice device) {
+		if (device == null) {
+			return;
+		}
 		if (!mParentFragment.mDeviceList.contains(device))
 			mParentFragment.mDeviceList.add(device);
 		ConnectionFragment.sHandler.postDelayed(new Runnable() {

@@ -189,6 +189,10 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		Intent intent = new Intent(BlinkLocalService.INTENT_ACTION_NAME);
 		intent.putExtra(BlinkLocalService.INTENT_EXTRA_SOURCE_PACKAGE,
 				CONTEXT.getPackageName());
+		
+		//XXX 이 구문을 실행하면, Log에서 Security관련 Warning이 뜨지 않지만
+		// 서비스가 해당 Package에만 응답 할 수도?
+		//intent.setPackage(CONTEXT.getPackageName());
 
 		CONTEXT.startService(intent);
 		CONTEXT.bindService(intent, this, Context.BIND_AUTO_CREATE);
@@ -205,7 +209,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		try {
 			mInternalOperationSupport.unregisterCallback(
 					mIInternalEventCallback, mPackageName);
-		} catch (RemoteException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
