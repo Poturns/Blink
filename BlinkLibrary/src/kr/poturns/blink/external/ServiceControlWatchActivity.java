@@ -178,8 +178,13 @@ public class ServiceControlWatchActivity extends Activity implements
 	protected void onDestroy() {
 		if (mSqliteManagerExtended != null)
 			mSqliteManagerExtended.close();
-		if (mInteraction != null)
-			mInteraction.stopService();
+		if (mInteraction != null) {
+			try {
+				mInteraction.stopService();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 		super.onDestroy();
 	}
 
