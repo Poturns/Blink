@@ -123,7 +123,7 @@ public class GlassActivity extends SupportMapActivity {
 
 		mInteraction = new BlinkServiceInteraction(this, iBlinkEventBroadcast,
 				mIInternalEventCallback) {
-
+			
 			@Override
 			public void onServiceFailed() {
 				Toast.makeText(getApplicationContext(), "Failed...",
