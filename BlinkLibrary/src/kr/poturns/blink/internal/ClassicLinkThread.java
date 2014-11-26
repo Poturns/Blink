@@ -49,9 +49,11 @@ public class ClassicLinkThread extends Thread {
 		// Connection Broadcasting...
 		BlinkLocalBaseService mContext = INTER_DEV_MANAGER.MANAGER_CONTEXT;
 		
-		Intent mActionConnected = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);
-		mActionConnected.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
-		mContext.sendBroadcast(mActionConnected, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
+		//XXX ClassicLinkThread의 생성이 Blink연결을 의미한다고 생각하지 않아서 주석처리함 - mj
+		// 이 부분은 MessageProcessor에 추가함.(IBlinkMessagable.TYPE_ACCEPT_CONNECTION)
+		//Intent mActionConnected = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);
+		//mActionConnected.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
+		//mContext.sendBroadcast(mActionConnected, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
 		
 		ServiceKeeper.getInstance(mContext).addConnection(device, this);
 	}

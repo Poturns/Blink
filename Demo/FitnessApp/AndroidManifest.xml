@@ -7,6 +7,13 @@
     <uses-sdk
         android:minSdkVersion="18"
         android:targetSdkVersion="20" />
+    <!-- BLINK CUSTOMIZED PERMISSIONs -->
+    <permission
+        android:name="kr.poturns.blink.permission.LISTEN_STATE_MESSAGE"
+        android:description="@string/res_blink_app_name"
+        android:label="Listen state callback message _ label"
+        android:protectionLevel="normal" >
+    </permission>
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -52,9 +59,10 @@
             android:exported="true"
             android:process="kr.poturns.blink.internal" >
         </activity>
-        
-        <meta-data android:name="kr.poturns.blink.demo.fitnessapp"
-            android:resource="@xml/wearable_app_desc"/>
+
+        <meta-data
+            android:name="kr.poturns.blink.demo.fitnessapp"
+            android:resource="@xml/wearable_app_desc" />
     </application>
 
 </manifest>

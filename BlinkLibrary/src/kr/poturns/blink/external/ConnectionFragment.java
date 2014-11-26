@@ -1,5 +1,7 @@
 package kr.poturns.blink.external;
 
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -110,7 +112,7 @@ abstract class ConnectionFragment extends Fragment {
 
 	static final Handler sHandler = new Handler();
 	/** 연결/연결 해제 요청이 완료 되었을 때, 호출될 Callback */
-	static final ConcurrentHashMap<String, Runnable> sConnectionTaskCallbackMap = new ConcurrentHashMap<String, Runnable>();
+	static final ConcurrentHashMap<String, SoftReference<Runnable>> sConnectionTaskCallbackMap = new ConcurrentHashMap<String, SoftReference<Runnable>>();
 	/** ProgressDialog가 최대로 보여질 시간 */
 	private static final long PROGRESS_WATING_TIME = 10 * 1000;
 	static final String TAG = ConnectionFragment.class.getSimpleName();
@@ -138,7 +140,10 @@ abstract class ConnectionFragment extends Fragment {
 					.setOnBlinkEventBroadcast(mCurrentChildFragmentInterface);
 		} else {
 			initInteraction();
+			mInteraction.startBroadcastReceiver();
+			mInteraction.startService();
 		}
+
 		mFavoriteDeviceAddressSet = PrivateUtil.IO
 				.getFavoriteSet(getActivity());
 		initFavoriteDialog();
@@ -840,7 +845,12 @@ abstract class ConnectionFragment extends Fragment {
 
 				@Override
 				public int getCount() {
-					return 7;
+					// Host Device에서는 즐겨찾기를 보여주지 않음.
+					if (mDevice.getAddress().equals(
+							BlinkDevice.HOST.getAddress())) {
+						return 6;
+					} else
+						return 7;
 				}
 			};
 		}
@@ -1076,7 +1086,7 @@ abstract class BaseConnectionFragment extends Fragment implements
 	void connectOrDisConnectDevice(BlinkDevice device, Runnable postRunCallback) {
 		mParentFragment.connectOrDisConnectDevice(device);
 		ConnectionFragment.sConnectionTaskCallbackMap.put(device.getAddress(),
-				postRunCallback);
+				new SoftReference<Runnable>(postRunCallback));
 	}
 
 	@Override
@@ -1091,15 +1101,18 @@ abstract class BaseConnectionFragment extends Fragment implements
 		if (id == R.id.res_blink_action_connection_view_change) {
 			changeFragment();
 			return true;
-		//} else if (id == R.id.res_blink_action_connection_connect_favorite) {
-		//	mParentFragment.showFavoriteListDialog();
-		//	return true;
+		} else if (id == R.id.res_blink_action_connection_connect_favorite) {
+			mParentFragment.showFavoriteListDialog();
+			return true;
 		} else
 			return super.onOptionsItemSelected(item);
 	}
 
 	@Override
 	public void onDeviceConnected(final BlinkDevice device) {
+		if (device == null) {
+			return;
+		}
 		device.setConnected(true);
 		logAndPostAboutConnection(device, "onDeviceConnected : ",
 				R.string.res_blink_device_connected);
@@ -1107,6 +1120,9 @@ abstract class BaseConnectionFragment extends Fragment implements
 
 	@Override
 	public void onDeviceDisconnected(final BlinkDevice device) {
+		if (device == null) {
+			return;
+		}
 		device.setConnected(false);
 		logAndPostAboutConnection(device, "onDeviceDisConnected : ",
 				R.string.res_blink_device_disconnected);
@@ -1135,16 +1151,24 @@ abstract class BaseConnectionFragment extends Fragment implements
 		});
 
 		// 연결 완료 후 등록된 콜백을 UI Thread에서 실행
-		Runnable command = ConnectionFragment.sConnectionTaskCallbackMap
+		SoftReference<Runnable> commandRef = ConnectionFragment.sConnectionTaskCallbackMap
 				.remove(device.getAddress());
-		if (command != null)
-			ConnectionFragment.sHandler.post(command);
-		// callback map에 저장된 Runnable이 호출되지 않을 경우,
-		// 이 Runnable은 ConnectionFragment가 파괴될 때, 해제된다.
+
+		if (commandRef != null) {
+			Runnable command = commandRef.get();
+			if (command != null)
+				ConnectionFragment.sHandler.post(command);
+			// callback map에 저장된 Runnable이 호출되지 않을 경우,
+			// 이 Runnable은 ConnectionFragment가 파괴될 때, 해제된다.
+			commandRef.clear();
+		}
 	}
 
 	@Override
 	public void onDeviceDiscovered(BlinkDevice device) {
+		if (device == null) {
+			return;
+		}
 		if (!mParentFragment.mDeviceList.contains(device))
 			mParentFragment.mDeviceList.add(device);
 		ConnectionFragment.sHandler.postDelayed(new Runnable() {
