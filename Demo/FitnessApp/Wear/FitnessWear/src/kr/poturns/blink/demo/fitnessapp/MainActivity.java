@@ -72,7 +72,6 @@ public class MainActivity extends Activity implements ActivityInterface {
 				}
 			}
 		};
-		mInteraction.startBroadcastReceiver();
 		mInteraction.startService();
 
 		// 심박수 측정 서비스 시작/종료

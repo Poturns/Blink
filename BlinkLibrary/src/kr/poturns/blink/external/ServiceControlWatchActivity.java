@@ -168,9 +168,23 @@ public class ServiceControlWatchActivity extends Activity implements
 	}
 
 	@Override
+	protected void onPause() {
+		super.onPause();
+		if (mInteraction != null)
+			mInteraction.stopBroadcastReceiver();
+	}
+
+	@Override
 	protected void onDestroy() {
 		if (mSqliteManagerExtended != null)
 			mSqliteManagerExtended.close();
+		if (mInteraction != null) {
+			try {
+				mInteraction.stopService();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 		super.onDestroy();
 	}
 

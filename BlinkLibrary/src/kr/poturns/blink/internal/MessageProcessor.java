@@ -1,5 +1,6 @@
 package kr.poturns.blink.internal;
 
+import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -13,6 +14,7 @@ import kr.poturns.blink.internal.ServiceKeeper.CONNECTION_STATE;
 import kr.poturns.blink.internal.comm.BlinkDevice;
 import kr.poturns.blink.internal.comm.BlinkMessage;
 import kr.poturns.blink.internal.comm.BlinkMessage.Builder;
+import kr.poturns.blink.internal.comm.IBlinkEventBroadcast;
 import kr.poturns.blink.internal.comm.IBlinkMessagable;
 import android.content.Intent;
 import android.util.Log;
@@ -96,6 +98,11 @@ public class MessageProcessor {
 				// 전송한다.
 				SERVICE_KEEPER.transferSystemSync(device,
 						IBlinkMessagable.TYPE_REQUEST_IDENTITY_SYNC);
+				
+				//XXX 여기서 진정한 연결의 성립이라고 판단함 - mj
+				Intent mActionConnected = new Intent(IBlinkEventBroadcast.BROADCAST_DEVICE_CONNECTED);
+				mActionConnected.putExtra(IBlinkEventBroadcast.EXTRA_DEVICE, (Serializable) device);
+				OPERATOR_CONTEXT.sendBroadcast(mActionConnected, IBlinkEventBroadcast.PERMISSION_LISTEN_STATE_MESSAGE);
 
 			} else if (blinkMessage_type == IBlinkMessagable.TYPE_REQUEST_BlinkAppInfo_SYNC) {
 				// 동기화 시작할때 Sync 플래그를 true로, 끝날 때 false로 설정하여 추가 동기화를 막는다.
@@ -118,6 +125,7 @@ public class MessageProcessor {
 					ArrayList<BlinkAppInfo> mergedBlinkAppInfoList = new ArrayList<BlinkAppInfo>();
 					mergedBlinkAppInfoList = syncDatabaseManager
 							.obtainBlinkApp();
+					
 					String jsonResponseMessage = JsonManager
 							.obtainJsonBlinkAppInfo(mergedBlinkAppInfoList);
 					builder_success.setMessage(jsonResponseMessage);

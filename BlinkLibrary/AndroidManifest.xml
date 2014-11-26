@@ -8,7 +8,8 @@
     <permission
         android:name="kr.poturns.blink.permission.LISTEN_STATE_MESSAGE"
         android:description="@string/res_blink_app_name"
-        android:label="Listen state callback message _ label" >
+        android:label="Listen state callback message _ label"
+        android:protectionLevel="normal" >
     </permission>
 
     <uses-sdk

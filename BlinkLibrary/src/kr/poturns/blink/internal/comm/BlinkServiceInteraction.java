@@ -124,7 +124,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		 */
 		CONTEXT.getContentResolver().registerContentObserver(
 				SqliteManager.URI_OBSERVER_SYNC, false, mContentObserver);
-		
+
 		/**
 		 * Setting Application Info
 		 */
@@ -190,6 +190,10 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		intent.putExtra(BlinkLocalService.INTENT_EXTRA_SOURCE_PACKAGE,
 				CONTEXT.getPackageName());
 
+		// XXX 이 구문을 실행하면, Log에서 Security관련 Warning이 뜨지 않지만
+		// 서비스가 해당 Package에만 응답 할 수도?
+		// intent.setPackage(CONTEXT.getPackageName());
+
 		CONTEXT.startService(intent);
 		CONTEXT.bindService(intent, this, Context.BIND_AUTO_CREATE);
 	}
@@ -205,11 +209,13 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		try {
 			mInternalOperationSupport.unregisterCallback(
 					mIInternalEventCallback, mPackageName);
-		} catch (RemoteException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if(mContentObserver!=null)CONTEXT.getContentResolver().unregisterContentObserver(mContentObserver);
+		if (mContentObserver != null)
+			CONTEXT.getContentResolver().unregisterContentObserver(
+					mContentObserver);
 		CONTEXT.unbindService(this);
 		stopBroadcastReceiver();
 		// CONTEXT.stopService(intent);
@@ -295,6 +301,9 @@ public class BlinkServiceInteraction implements ServiceConnection,
 
 			BlinkDevice device = (BlinkDevice) intent
 					.getSerializableExtra(EXTRA_DEVICE);
+
+			if (device == null)
+				return;
 
 			if (BROADCAST_DEVICE_DISCOVERED.equals(action)) {
 				onDeviceDiscovered(device);
@@ -647,7 +656,7 @@ public class BlinkServiceInteraction implements ServiceConnection,
 							Field field = clazz.getField(entry.getKey());
 							field.setAccessible(true);
 							// check primitive type
-							checkTypeAndPut(data,field, entry.getValue());
+							checkTypeAndPut(data, field, entry.getValue());
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -1182,19 +1191,22 @@ public class BlinkServiceInteraction implements ServiceConnection,
 		}
 		return !(devices == null || devices.length == 0);
 	}
-	
+
 	/**
 	 * 사용자의 권한으로 본 디바이스에 Main Identity를 부여한다.
+	 * 
 	 * @param enable
 	 * @return
 	 */
 	public boolean grantMainIdentityFromUser(boolean enable) {
 		try {
 			if (mInternalOperationSupport != null)
-				return mInternalOperationSupport.grantMainIdentityFromUser(enable);
-		
-		} catch (RemoteException e) { }
-		
+				return mInternalOperationSupport
+						.grantMainIdentityFromUser(enable);
+
+		} catch (RemoteException e) {
+		}
+
 		return false;
 	}
 }

@@ -150,9 +150,13 @@ class ConnectionWatchFragment extends BaseConnectionFragment implements
 
 			@Override
 			public int getCount() {
+				// 간략 정보
+				if (mBlinkDevice.getAddress().equals(
+						BlinkDevice.HOST.getAddress()))
+					return 1;
 				// 간략 정보, 연결/연결해제, 즐겨찾기 등록/등록해제
-				//return 3;
-				return 2;
+				else
+					return 3;
 			}
 
 			@Override

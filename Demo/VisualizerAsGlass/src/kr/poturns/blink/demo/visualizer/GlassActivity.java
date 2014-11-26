@@ -243,7 +243,7 @@ public class GlassActivity extends SupportMapActivity {
 			case R.id.gallery:
 				File sdDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
 				Uri uri = Uri.fromFile(new File(sdDir, "VisualizerAsGlass"));
-		        sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, uri));
+		        sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri));
 		        
 				Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
 				intent.setType("image/-");
