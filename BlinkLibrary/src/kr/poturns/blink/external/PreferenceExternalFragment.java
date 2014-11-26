@@ -50,9 +50,7 @@ abstract class PreferenceExternalFragment extends PreferenceFragment implements
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
-		if (activity instanceof IServiceContolActivity) {
-			mInterface = (IServiceContolActivity) activity;
-		}
+		mInterface = ((ServiceControlActivity) activity).getInterface();
 		mPrefUtil = new PrefUtil(getActivity());
 	}
 
@@ -337,9 +335,8 @@ class PreferenceWatchFragment extends PreferenceExternalFragment implements
 	public boolean onSwipe(Direction direction) {
 		switch (direction) {
 		case LEFT_TO_RIGHT:
-			if (getActivity() instanceof IServiceContolWatchActivity)
-				((IServiceContolWatchActivity) getActivity())
-						.returnToMain(null);
+			if (mInterface instanceof IServiceContolWatchActivity)
+				((IServiceContolWatchActivity) mInterface).returnToMain(null);
 			return true;
 		default:
 			return false;

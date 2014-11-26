@@ -3,9 +3,6 @@ package kr.poturns.blink.external;
 import kr.poturns.blink.R;
 import kr.poturns.blink.external.SwipeListener.Direction;
 import kr.poturns.blink.internal.comm.BlinkDevice;
-import kr.poturns.blink.internal.comm.BlinkServiceInteraction;
-import kr.poturns.blink.internal.comm.IInternalOperationSupport;
-import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.view.GestureDetector;
@@ -80,33 +77,33 @@ interface OnTitleBarLongClickListener {
 }
 
 /**
- * Service에서 실행 되어, Blink Service와 일부 상호작용하는 {@link android.app.Activity}<br>
  * Wearable 화면을 위해 수행할 수 있는 기능이 간략화 되었다.<br>
  * <br>
- * 이 {@link android.app.Activity}를 통해 다음과 같은 작업을 수행 할 수 있다. <br>
+ * 이 {@link ServiceControlActivityDelegate}를 통해 다음과 같은 작업을 수행 할 수 있다. <br>
  * <li>{@link BlinkDevice}의 연결 상태 표시 및 관리</li><br>
  * <li>
  * Service 설정 값 변경</li>
  * 
  * @author myungjin
  */
-public class ServiceControlWatchActivity extends Activity implements
-		IServiceContolWatchActivity {
-	BlinkServiceInteraction mInteraction;
-	IInternalOperationSupport mBlinkOperation;
-	SqliteManagerExtended mSqliteManagerExtended;
+class ServiceControlActivityDelegateWatch extends
+		ServiceControlActivityDelegate implements IServiceContolWatchActivity {
 	private GestureDetector mGestureDetector;
 	SwipeListener mSwipeListener;
 	static final int THRESHHOLD_NOT_DETECT_SWIPE = 20;
 	static final int THRESHHOLD_DETECT_SWIPE = 100;
 
+	ServiceControlActivityDelegateWatch(ServiceControlActivity activity) {
+		super(activity);
+	}
+
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.res_blink_activity_service_control_watch);
+	void onCreate(Bundle savedInstanceState) {
+		mActivity
+				.setContentView(R.layout.res_blink_activity_service_control_watch);
 
 		// titleBar
-		findViewById(android.R.id.text1).setOnLongClickListener(
+		mActivity.findViewById(android.R.id.text1).setOnLongClickListener(
 				new View.OnLongClickListener() {
 
 					@Override
@@ -114,16 +111,16 @@ public class ServiceControlWatchActivity extends Activity implements
 						if (mSwipeListener instanceof OnTitleBarLongClickListener) {
 							if (!((OnTitleBarLongClickListener) mSwipeListener)
 									.onTitleViewLongClick(v)) {
-								finish();
+								mActivity.finish();
 							}
 						} else {
-							finish();
+							mActivity.finish();
 						}
 						return true;
 					}
 				});
 
-		mGestureDetector = new GestureDetector(this,
+		mGestureDetector = new GestureDetector(mActivity,
 				new GestureDetector.SimpleOnGestureListener() {
 					@Override
 					public boolean onFling(MotionEvent e1, MotionEvent e2,
@@ -157,35 +154,13 @@ public class ServiceControlWatchActivity extends Activity implements
 	}
 
 	@Override
-	public boolean onTouchEvent(MotionEvent ev) {
-		return mGestureDetector.onTouchEvent(ev) || super.onTouchEvent(ev);
+	boolean onTouchEvent(MotionEvent ev) {
+		return mGestureDetector.onTouchEvent(ev);
 	}
 
 	@Override
-	public boolean dispatchTouchEvent(MotionEvent ev) {
-		return mGestureDetector.onTouchEvent(ev)
-				|| super.dispatchTouchEvent(ev);
-	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
-		if (mInteraction != null)
-			mInteraction.stopBroadcastReceiver();
-	}
-
-	@Override
-	protected void onDestroy() {
-		if (mSqliteManagerExtended != null)
-			mSqliteManagerExtended.close();
-		if (mInteraction != null) {
-			try {
-				mInteraction.stopService();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		super.onDestroy();
+	boolean dispatchTouchEvent(MotionEvent ev) {
+		return mGestureDetector.onTouchEvent(ev);
 	}
 
 	@Override
@@ -210,7 +185,8 @@ public class ServiceControlWatchActivity extends Activity implements
 			throw new RuntimeException("not implement SwipeLitener");
 		}
 
-		getFragmentManager()
+		mActivity
+				.getFragmentManager()
 				.beginTransaction()
 				.setCustomAnimations(android.R.animator.fade_in,
 						android.R.animator.fade_out)
@@ -221,32 +197,6 @@ public class ServiceControlWatchActivity extends Activity implements
 	@Override
 	public void returnToMain(Bundle arguments) {
 		transitFragment(0, arguments);
-	}
-
-	@Override
-	public BlinkServiceInteraction getServiceInteration() {
-		return mInteraction;
-	}
-
-	@Override
-	public void setServiceInteration(BlinkServiceInteraction interaction) {
-		mInteraction = interaction;
-	}
-
-	@Override
-	public void setInternalOperationSupport(
-			IInternalOperationSupport blinkOperation) {
-		mBlinkOperation = blinkOperation;
-	}
-
-	@Override
-	public IInternalOperationSupport getInternalOperationSupport() {
-		return mBlinkOperation;
-	}
-
-	@Override
-	public SqliteManagerExtended getDatabaseHandler() {
-		return mSqliteManagerExtended;
 	}
 
 }
@@ -288,8 +238,8 @@ final class HomeFragment extends Fragment implements SwipeListener {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
-				((IServiceContolActivity) getActivity()).transitFragment(
-						position + 1, null);
+				((ServiceControlActivity) getActivity()).getInterface()
+						.transitFragment(position + 1, null);
 			}
 		});
 		listView.setPaddingRelative(30, 30, 10, 30);

@@ -61,11 +61,6 @@
             android:exported="true"
             android:process="kr.poturns.blink.internal" >
         </activity>
-        <activity
-            android:name="kr.poturns.blink.external.ServiceControlWatchActivity"
-            android:exported="true"
-            android:process="kr.poturns.blink.internal" >
-        </activity>
     </application>
 
 </manifest>

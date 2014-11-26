@@ -47,7 +47,7 @@ class LogViewFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mManager = ((IServiceContolActivity) getActivity())
+		mManager = ((ServiceControlActivity) getActivity()).getInterface()
 				.getDatabaseHandler();
 		if (savedInstanceState != null) {
 			mLogList = savedInstanceState.getParcelableArrayList("list");

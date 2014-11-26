@@ -49,7 +49,7 @@ class DataSelectFragment extends Fragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setHasOptionsMenu(true);
-		mManager = ((IServiceContolActivity) getActivity())
+		mManager = ((ServiceControlActivity) getActivity()).getInterface()
 				.getDatabaseHandler();
 	}
 
@@ -315,7 +315,7 @@ class DataSelectFragment extends Fragment {
 		@Override
 		public void onCreate(Bundle savedInstanceState) {
 			super.onCreate(savedInstanceState);
-			mManager = ((IServiceContolActivity) getActivity())
+			mManager = ((ServiceControlActivity) getActivity()).getInterface()
 					.getDatabaseHandler();
 			Bundle bundle = getArguments();
 			mDevice = PrivateUtil.Bundles.obtainDevice(bundle);

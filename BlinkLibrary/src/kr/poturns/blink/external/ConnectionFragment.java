@@ -1,7 +1,6 @@
 package kr.poturns.blink.external;
 
 import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -121,9 +120,7 @@ abstract class ConnectionFragment extends Fragment {
 	public void onAttach(final Activity activity) {
 		super.onAttach(activity);
 		setHasOptionsMenu(true);
-		if (activity instanceof IServiceContolActivity) {
-			mActivityInterface = (IServiceContolActivity) activity;
-		}
+		mActivityInterface = ((ServiceControlActivity) activity).getInterface();
 		mProgressDialog = new ProgressDialog(activity);
 		mProgressDialog.setMessage("Loading...");
 		mProgressDialog.setCancelable(false);
@@ -180,7 +177,7 @@ abstract class ConnectionFragment extends Fragment {
 				button = (TextView) convertView
 						.findViewById(android.R.id.button1);
 				final BlinkDevice item = getItem(position);
-				item.setConnected(false);
+
 				String name = item.getName();
 				if (name.equals("")) {
 					name = mFavoriteList.get(position);
@@ -190,7 +187,11 @@ abstract class ConnectionFragment extends Fragment {
 
 					@Override
 					public void onClick(View v) {
-						connectOrDisConnectDevice(item);
+						if (item.isConnected()) {
+							Toast.makeText(getContext(), "already connected!",
+									Toast.LENGTH_SHORT).show();
+						} else
+							connectOrDisConnectDevice(item);
 					}
 				});
 				return convertView;
@@ -568,8 +569,12 @@ abstract class ConnectionFragment extends Fragment {
 		public void run() {
 			for (String favor : mFavoriteDeviceAddressSet) {
 				try {
-					Log.d(TAG, "favor connection try : " + favor);
-					mBlinkOperation.connectDevice(BlinkDevice.load(favor));
+
+					BlinkDevice device = BlinkDevice.load(favor);
+					if (!device.isConnected()) {
+						Log.d(TAG, "favor connection try : " + favor);
+						mBlinkOperation.connectDevice(device);
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

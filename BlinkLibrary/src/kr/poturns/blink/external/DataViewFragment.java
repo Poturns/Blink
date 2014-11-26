@@ -77,7 +77,7 @@ class DataViewFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		mManager = ((IServiceContolActivity) getActivity())
+		mManager = ((ServiceControlActivity) getActivity()).getInterface()
 				.getDatabaseHandler();
 
 		// 이 fragment에 진입했다는 것은, argument가 존재한다는 의미이다.

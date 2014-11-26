@@ -98,9 +98,8 @@ class ConnectionWatchFragment extends BaseConnectionFragment implements
 	public boolean onSwipe(Direction direction) {
 		switch (direction) {
 		case LEFT_TO_RIGHT:
-			if (getActivity() instanceof IServiceContolWatchActivity)
-				((IServiceContolWatchActivity) getActivity())
-						.returnToMain(null);
+			((IServiceContolWatchActivity) ((ServiceControlActivity) getActivity())
+					.getInterface()).returnToMain(null);
 			return true;
 		default:
 			return false;
@@ -113,6 +112,10 @@ class ConnectionWatchFragment extends BaseConnectionFragment implements
 		return true;
 	}
 
+	@Override
+	public void onDiscoveryStarted() {
+	}
+	
 	public void show(FragmentManager manager, BlinkDevice device) {
 		DialogFragment dialog;
 		if ((dialog = (DialogFragment) manager.findFragmentByTag("dialog")) == null) {
