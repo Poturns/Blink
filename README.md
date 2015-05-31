@@ -23,7 +23,7 @@ BLINK is under [Apache License v2](http://www.apache.org/licenses/LICENSE-2.0)
 - Click the upper image if you want to watch a demo video!
 
 ##BLINK Members
-- [Yeonho Kim](https://github.com/YeonhoKim) (김연호 [PL])
+- [Yeonho Kim](https://github.com/YeonhoKim) (김연호)
 - [Jiwon Kim](https://github.com/kjo6152) (김지원)
 - [Myungjin Kim](https://github.com/weumj) (김명진)
 - [Ho Kwon](https://github.com/HoKwon) (권 호)
